@@ -6,7 +6,7 @@
 
 保留原生语义的彩铅风格 React 组件库，提供稳定笔迹、纸面材质和可交互的文档示例。
 
-**发布状态：正在准备首个 `0.1.0`。** 当前包版本仍是 `0.0.1-alpha.0`，仓库建立不代表 npm 已发布。正式发布前通过本地候选包试用。网站发布由 inkrajs.github.io 仓库负责，与 npm 发版独立。
+**发布状态：`0.1.0` 候选包已进入发布准备。** 版本号不代表 npm 已发布，正式发布前通过本地候选包试用。网站发布由 inkrajs.github.io 仓库负责，与 npm 发版独立。
 
 ## 组件范围
 
@@ -40,7 +40,7 @@ npm run check:package
 npm run build
 npm run check:package
 # 在另一个 React 项目中安装 .release/manifest.json 对应的 tgz 文件。
-npm install /absolute/path/to/inkra/.release/inkra-0.0.1-alpha.0.tgz
+npm install /absolute/path/to/inkra/.release/inkra-0.1.0.tgz
 ```
 
 在应用入口引入一次样式：
@@ -59,7 +59,7 @@ export function NoteForm() {
 }
 ```
 
-提供 ESM 和 TypeScript 声明，React 与 React DOM 为 peer dependencies。候选验证矩阵为 React 18/19；Next.js/RSC 和安装包的浏览器水合仍是单独的首发验收项，不能用客户端渲染的文档站正常运行代替。详见[发布检查表](docs/releasing.md)。
+提供 ESM 和 TypeScript 声明，React 与 React DOM 为 peer dependencies。候选验证矩阵为 React 18/19；发布流水线使用真实安装包验证服务端输出后的浏览器水合、控件、弹层、画布恢复及地图懒加载。React 18 日历的上游警告和未经验证的 Next.js/RSC 边界见[渲染支持说明](docs/rendering.md)。
 
 ## 开发与维护
 

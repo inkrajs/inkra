@@ -1,4 +1,5 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useBrowserLayoutEffect } from '../internal/useBrowserLayoutEffect.js';
 import type { RefObject } from 'react';
 
 interface NativeCheckedOptions {
@@ -17,7 +18,7 @@ export function useNativeChecked({
   const controlled = checked !== undefined;
   const [uncontrolledChecked, setUncontrolledChecked] = useState(Boolean(defaultChecked));
 
-  useLayoutEffect(() => {
+  useBrowserLayoutEffect(() => {
     const input = inputRef.current;
     if (input) input.indeterminate = indeterminate;
   }, [indeterminate, inputRef]);

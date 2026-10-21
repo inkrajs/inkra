@@ -1,4 +1,5 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useRef } from 'react';
+import { useBrowserLayoutEffect } from '../internal/useBrowserLayoutEffect.js';
 import type { RefObject } from 'react';
 
 import { effectiveDpr } from '../internal/cache.js';
@@ -250,7 +251,7 @@ export function EditablePencilText({
   const scheduleRef = useRef<() => void>(() => {});
   const composingRef = useRef(false);
 
-  useLayoutEffect(() => {
+  useBrowserLayoutEffect(() => {
     const control = controlRef.current;
     const canvas = canvasRef.current;
     if (!control || !canvas) return undefined;
@@ -339,7 +340,7 @@ export function EditablePencilText({
     };
   }, [controlRef, multiline, seed]);
 
-  useLayoutEffect(() => {
+  useBrowserLayoutEffect(() => {
     if (composingRef.current) return;
     controlRef.current?.closest<HTMLElement>('.inkra-field-control-hit')
       ?.removeAttribute('data-pencil-editable-ready');

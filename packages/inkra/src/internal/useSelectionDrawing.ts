@@ -1,4 +1,5 @@
-import { useLayoutEffect, useRef, type RefObject } from 'react';
+import { useRef, type RefObject } from 'react';
+import { useBrowserLayoutEffect } from './useBrowserLayoutEffect.js';
 import { PENCIL_SELECTION_WASH } from './surfaceRenderer.js';
 
 // Reveal the cached pigment in alternating diagonal strokes, without repainting it.
@@ -39,7 +40,7 @@ function drawingFrames(width: number, height: number): Keyframe[] {
 export function useSelectionDrawing(ref: RefObject<HTMLElement | null>, selected: boolean, animated = true): void {
   const previous = useRef(selected);
   const progress = useRef(selected ? 1 : 0);
-  useLayoutEffect(() => {
+  useBrowserLayoutEffect(() => {
     const changed = selected !== previous.current;
     previous.current = selected;
     const node = ref.current;

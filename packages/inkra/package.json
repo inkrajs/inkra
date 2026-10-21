@@ -1,6 +1,6 @@
 {
   "name": "inkra",
-  "version": "0.0.1-alpha.0",
+  "version": "0.1.0",
   "description": "Hand-drawn React controls with native semantics and deterministic decoration.",
   "type": "module",
   "license": "MIT",
@@ -9,7 +9,7 @@
     "url": "git+https://github.com/inkrajs/inkra.git",
     "directory": "packages/inkra"
   },
-  "homepage": "https://github.com/inkrajs/inkra#readme",
+  "homepage": "https://inkrajs.github.io/",
   "bugs": { "url": "https://github.com/inkrajs/inkra/issues" },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -74,7 +74,7 @@
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
     "access": "public",
-    "tag": "alpha"
+    "tag": "latest"
   },
   "keywords": [
     "react",

@@ -1,4 +1,5 @@
-import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { useBrowserLayoutEffect } from '../internal/useBrowserLayoutEffect.js';
 import { Button } from '../Button.js';
 import { PencilIcon } from '../PencilIcon.js';
 import { Input } from '../form/Input.js';
@@ -60,7 +61,7 @@ export const InputNumber = forwardRef<HTMLInputElement, InputNumberProps>(functi
   latest.current = { isControlled, value, defaultValue };
   useImperativeHandle(forwardedRef, () => inputRef.current as HTMLInputElement);
 
-  useLayoutEffect(() => {
+  useBrowserLayoutEffect(() => {
     if (isControlled && currentValue !== finiteValue(value)) setDraft(format(value));
   }, [currentValue, draft, isControlled, value]);
 

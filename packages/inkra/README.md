@@ -8,7 +8,9 @@ Source and maintenance: [inkrajs/inkra](https://github.com/inkrajs/inkra).
 
 The package is prepared for npm-compatible installation, but this repository does not assume that a release has been published. In a workspace, depend on the local package according to the workspace package manager's conventions.
 
-The manifest currently declares React 18 or newer as a peer dependency; candidate checks target React 18 and 19. ESM, TypeScript declarations, CSS and font assets are included. Next.js/RSC boundaries and installed-package browser hydration are separate first-release gates, not implied by SSR checks. Do not interpret the peer range as testing every future React version.
+The manifest declares React 18 or newer as a peer dependency; release checks target React 18 and 19. ESM, TypeScript declarations, CSS and font assets are included. The release pipeline verifies SSR-to-browser hydration from the installed package, including form controls, portals, canvas recovery and the lazy-loaded map. Do not interpret the peer range as testing every future React version.
+
+Inkra components require a React client boundary. Next.js and React Server Components are not a certified integration in 0.1.0; do not import interactive components directly into a Server Component. React 18 development SSR of Calendar still reports a layout-effect warning from react-day-picker 9; its browser hydration is checked separately. Applications requiring warning-free React 18 SSR should mount Calendar after hydration. Server and client must use matching locale, dates, values and theme inputs.
 
 ## Usage
 
@@ -123,6 +125,8 @@ outside interaction, modal focus trapping and focus return.
 `Tabs` exposes `Root`, `List`, `Trigger` and `Content`. It supports controlled or default values, horizontal/vertical orientation, RTL, automatic/manual activation and disabled triggers. `Content forceMount` preserves child state while hiding inactive panels. The selected pigment draws in and erases out, with reduced-motion fallbacks.
 
 `Root.size` accepts `sm | md | lg` (default `md`), and `Root.animated={false}` disables pigment animation. `List.align` accepts `start | center | end`, `List.fullWidth` distributes triggers equally, and `List.loop={false}` stops keyboard wrapping. `Trigger.startIcon` and `Trigger.endIcon` accept decorative React nodes; provide an accessible name for icon-only triggers. Small tabs keep a minimum 44px hit target.
+
+`List.divided` adds pencil separators between adjacent triggers (default false), following horizontal or vertical orientation without changing keyboard navigation.
 
 `Tooltip` exposes `Provider`, `Root`, `Trigger`, `Portal` and `Content`. Use it for supplementary non-interactive text, never as the only accessible name or essential instructions. Portal content inherits the trigger's theme.
 

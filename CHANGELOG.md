@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased - 0.1.0 Preparation
+## 0.1.0 - Release Candidate
 
 No `0.1.0` npm package or GitHub Release has been published from this workspace.
 This is candidate scope, not a completed release.
@@ -23,9 +23,18 @@ This is candidate scope, not a completed release.
 - A manually triggered, approval-gated npm pipeline: candidate validation,
   OIDC publishing, first-package staging and registry installation verification.
 
-### Outstanding Gates
+### Rendering And Compatibility
 
-- Final API/documentation parity and installed-browser/RSC validation.
-- React 18 server-rendering layout-effect warnings in drawing components.
+- Server-safe layout effects for Inkra drawing and input components, and
+  React 18-compatible ref forwarding through portal theme containers.
+- Installed-package StrictMode hydration checks for React 18/19, including
+  controls, portals, lazy maps, canvas recovery and unavailable-canvas fallback.
+
+### Known Limits And Publication Status
+
+- Calendar's upstream DayPicker animation hook emits a React 18 development
+  SSR layout-effect warning. Browser hydration is tested separately.
+- Next.js/RSC integration is not certified; components require a client boundary.
 - npm ownership and publishing authorization; the public source and website are live.
-- Approval of the exact `0.1.0` candidate before publication.
+- The candidate is not published. Registry verification and the GitHub Release
+  must complete before announcing availability.

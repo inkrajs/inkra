@@ -1,4 +1,4 @@
-import { useLayoutEffect } from 'react';
+import { useBrowserLayoutEffect } from './useBrowserLayoutEffect.js';
 import type { RefObject } from 'react';
 
 import { PENCIL_RENDERER_VERSION, effectiveDpr } from './cache.js';
@@ -20,7 +20,7 @@ export function usePencilSurface(
   clipContent: boolean,
   radius?: number,
 ): void {
-  useLayoutEffect(() => {
+  useBrowserLayoutEffect(() => {
     const root = rootRef.current;
     const canvas = canvasRef.current;
     if (!root || !canvas) return undefined;

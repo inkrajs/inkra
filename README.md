@@ -7,8 +7,8 @@
 A pencil-styled React component library with semantic controls, deterministic
 hand-drawn materials, and an interactive documentation playground.
 
-**Release status:** preparing the first `0.1.0` release. The manifest is still
-`0.0.1-alpha.0`; the presence of this repository does not mean `0.1.0` is on npm.
+**Release status:** the `0.1.0` candidate is prepared for the publishing pipeline;
+the presence of this repository does not mean `0.1.0` is on npm.
 Use a local candidate until the release is announced. Website publication is
 owned by [inkrajs.github.io](https://github.com/inkrajs/inkrajs.github.io),
 separately from npm releases.
@@ -54,7 +54,7 @@ is an optional launcher from this checkout; it does not refresh the candidate.
 npm run build
 npm run check:package
 # In a separate React project, install the archive named in .release/manifest.json.
-npm install /absolute/path/to/inkra/.release/inkra-0.0.1-alpha.0.tgz
+npm install /absolute/path/to/inkra/.release/inkra-0.1.0.tgz
 ```
 
 Import styles once at the application entry point:
@@ -74,9 +74,10 @@ export function NoteForm() {
 ```
 
 The package is ESM with TypeScript declarations and React/React DOM peers.
-React 18/19 form the candidate matrix. Next.js/RSC and installed-package browser
-hydration remain explicit first-release gates, not implied by the client-rendered
-installed-package playground. See [release readiness](docs/releasing.md).
+React 18/19 form the candidate matrix. The release pipeline checks browser hydration
+from server markup, controls, portals, canvas recovery and the lazy-loaded map
+using the installed archive. See [rendering support and limits](docs/rendering.md)
+for the known React 18 Calendar warning and the unverified Next.js/RSC boundary.
 
 ## Repository
 

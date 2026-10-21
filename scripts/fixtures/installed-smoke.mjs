@@ -4,6 +4,9 @@ import { createElement as h } from 'react';
 import { renderToString } from 'react-dom/server';
 import * as Inkra from 'inkra';
 
+console.error = (...args) => { throw new Error(args.join(' ')); };
+console.warn = console.error;
+
 for (const name of ['Button', 'ButtonLink', 'ButtonGroup', 'PencilIcon', 'Input', 'InputNumber', 'Slider', 'Select', 'Tabs', 'Calendar', 'DayAgenda', 'JourneyMap', 'DropdownMenu', 'Card', 'Table']) assert(Inkra[name], `Missing public export ${name}`);
 const markup = renderToString(h('main', null,
   h(Inkra.Button, null, 'Save'),

@@ -1,8 +1,8 @@
 # React Package Releases
 
 Repository: inkrajs/inkra. Package: inkra. Intended first release: 0.1.0.
-The current package is still 0.0.1-alpha.0. Website deployment is complete;
-it does not publish an npm package.
+The package and lockfile declare the 0.1.0 candidate, with latest as its
+publication tag. Website deployment does not publish an npm package.
 
 ## Pipeline
 
@@ -25,7 +25,9 @@ documentation checkpoint, not a moving branch.
 Every mode starts with a clean source checkout and npm 11.21.0. The workflow
 checks repository portability, release-policy tests, components, package
 contents, exports, styles/fonts and installed-package SSR/types with React
-18 and 19. The independent docs checkout installs that exact archive, then
+18 and 19. It also hydrates server-rendered fixtures in Chromium with both
+React versions, checking controls, portals, lazy maps and canvas recovery.
+The independent docs checkout installs that exact archive, then
 builds and runs its browser smoke and homepage suites.
 
 Only the resulting tarball and manifest are passed to the publishing job.
@@ -63,6 +65,12 @@ minimally scoped granular access token and store it directly as the
 NPM_BOOTSTRAP_TOKEN secret in GitHub's npm-release environment.
 The token needs package creation/write permission; no bypass-2FA option is
 needed for staging. The npm account must have 2FA enabled.
+
+The CLI can store the secret using `gh secret set NPM_BOOTSTRAP_TOKEN
+--repo inkrajs/inkra --env npm-release`. Supply the credential through its
+interactive prompt or standard input, never a command argument or log.
+GitHub authentication cannot create an npm credential. An optional npm web
+login can establish an authorized npm session; it never publishes locally.
 
 Run bootstrap-stage for the reviewed stable tag and approve the GitHub
 environment deployment. This uses npm stage publish, not a local publish.
@@ -104,20 +112,24 @@ Never overwrite a tag, package version or release asset. A staged version
 that is waiting for approval must be approved or rejected on npm before a
 retry; do not submit another version merely to bypass the approval.
 
-## Remaining 0.1.0 Product Gates
+## 0.1.0 Release Checklist
 
-- Review final API/docs parity and approve the exact stable candidate.
-- Verify browser hydration, canvas recovery, portals and lazy-loaded maps;
-  client-rendered docs checks alone are not hydration acceptance.
-- Resolve React 18 server-rendering layout-effect warnings, or explicitly
-  narrow the supported SSR contract. Validate or document Next.js/RSC support.
-- Update package and lockfile to 0.1.0, use latest, and finalize the changelog.
+- Package and lockfile versions agree on 0.1.0 and latest; the changelog
+  describes candidate scope without claiming a public release.
+- Run all candidate checks on the exact commit, including the independent
+  docs_ref consumer. Existing alpha artifacts are not release evidence.
+- Rendering coverage and explicit Calendar/Next.js limits are documented in
+  [rendering.md](rendering.md). Do not claim warning-free Calendar SSR or RSC
+  certification from the browser tests.
 - Record compatible source revisions in the organization integration inventory.
-- Configure and verify npm package ownership and the authorization above.
-- After publication, update the docs to the released registry version and
-  verify the deployed consumer. Do not relabel the existing alpha site as 0.1.0.
+- Configure and verify npm package ownership and publishing authorization;
+  only then dispatch bootstrap-stage or publish for the immutable v0.1.0 tag.
+- After approval/publication, run registry verification and create the GitHub
+  Release. Update the docs to the released registry version and verify the
+  deployed consumer; do not relabel the existing alpha site as 0.1.0.
 
-Do not publish while one of these product gates is unresolved.
+Do not claim a completed release while registry verification or authorization
+is unresolved. Required maintainer approvals must not be bypassed.
 
 ## References
 

@@ -15,12 +15,13 @@ const major = Number(reactVersion.split('.')[0]);
 assert([18, 19].includes(major), 'Only React 18 and 19 are in this validation matrix');
 const directory = await mkdtemp(join(tmpdir(), 'inkra-installed-'));
 const fromRegistry = process.argv.includes('--registry');
+const browserChecks = process.argv.includes('--browser');
 assert.equal(candidate.name, 'inkra');
 assert(/^\d+\.\d+\.\d+(?:-[\w.-]+)?$/.test(candidate.version), 'Invalid candidate version');
 try {
   await writeFile(join(directory, 'package.json'), JSON.stringify({ private: true, type: 'module' }));
   const installSource = fromRegistry ? candidate.name + '@' + candidate.version : tarball;
-  execFileSync('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--registry=https://registry.npmjs.org', installSource, `react@${reactVersion}`, `react-dom@${reactVersion}`, 'typescript@5.9.3', `@types/react@${major}`, `@types/react-dom@${major}`], { cwd: directory, stdio: 'inherit', timeout: 180000 });
+  execFileSync('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--registry=https://registry.npmjs.org', installSource, `react@${reactVersion}`, `react-dom@${reactVersion}`, 'typescript@5.9.3', `@types/react@${major}`, `@types/react-dom@${major}`, ...(browserChecks ? ['vite@8.3.4'] : [])], { cwd: directory, stdio: 'inherit', timeout: 180000 });
   const installedLock = JSON.parse(await readFile(join(directory, 'package-lock.json'), 'utf8'));
   assert.equal(installedLock.packages['node_modules/inkra'].integrity, candidate.integrity, 'Installed bytes differ from candidate');
   assert(!(await lstat(join(directory, 'node_modules/inkra'))).isSymbolicLink(), 'Must test the installed tarball, not a workspace link');
@@ -28,7 +29,8 @@ try {
   await cp(new URL('./fixtures/installed-types.tsx', import.meta.url), join(directory, 'types.tsx'));
   execFileSync(process.execPath, ['smoke.mjs'], { cwd: directory, stdio: 'inherit' });
   execFileSync(process.execPath, ['node_modules/typescript/bin/tsc', '--noEmit', '--strict', '--module', 'NodeNext', '--moduleResolution', 'NodeNext', '--target', 'ES2020', '--jsx', 'react-jsx', 'types.tsx'], { cwd: directory, stdio: 'inherit' });
-  console.log(`Installed ${fromRegistry ? 'registry package' : 'tarball'} SSR/import/type checks passed with React ${reactVersion}. Browser hydration is a separate release gate.`);
+  if (browserChecks) await (await import('./check-hydration.mjs')).checkHydration(directory);
+  console.log(`Installed ${fromRegistry ? 'registry package' : 'tarball'} SSR/import/type${browserChecks ? '/hydration' : ''} checks passed with React ${reactVersion}.`);
 } finally {
   await rm(directory, { recursive: true, force: true });
 }

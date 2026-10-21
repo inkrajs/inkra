@@ -54,6 +54,11 @@ jobs:
           REACT_VERSION: 18.3.1
       - name: Verify candidate identity
         run: node scripts/release.mjs candidate
+      - run: npx playwright install --with-deps chromium
+      - name: Hydrate the installed archive with React 18 and 19
+        run: |
+          REACT_VERSION=18.3.1 node scripts/check-installed.mjs --browser
+          REACT_VERSION=19.3.1 node scripts/check-installed.mjs --browser
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: inkrajs/docs

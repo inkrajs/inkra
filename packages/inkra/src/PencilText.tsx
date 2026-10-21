@@ -1,4 +1,5 @@
-import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { useBrowserLayoutEffect } from './internal/useBrowserLayoutEffect.js';
 import type {
   ComponentPropsWithoutRef,
   ComponentPropsWithRef,
@@ -122,7 +123,7 @@ const PencilTextImplementation = forwardRef<HTMLElement, PencilTextImplementatio
     const resolvedSeed = seed ?? children;
     useImperativeHandle(forwardedRef, () => elementRef.current as HTMLElement);
 
-    useLayoutEffect(() => {
+    useBrowserLayoutEffect(() => {
       if (!ellipsis) {
         setText(children);
         return undefined;

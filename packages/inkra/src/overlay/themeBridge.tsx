@@ -1,5 +1,6 @@
 import {
   createContext,
+  forwardRef,
   useCallback,
   useContext,
   useEffect,
@@ -138,7 +139,7 @@ export function usePortalTriggerRef<Element extends HTMLElement>(forwardedRef: F
   }, [captureTrigger, forwardedRef]);
 }
 
-export function PortalThemeBridge({ children }: { children: ReactNode }) {
+export const PortalThemeBridge = forwardRef<HTMLDivElement, { children: ReactNode }>(function PortalThemeBridge({ children }, ref) {
   const context = useContext(PortalThemeContext);
   const depth = context?.depth ?? 0;
   const snapshot = context?.snapshot ?? emptySnapshot;
@@ -150,6 +151,7 @@ export function PortalThemeBridge({ children }: { children: ReactNode }) {
   return (
     <div
       className="inkra-portal-theme-bridge"
+      ref={ref}
       data-inkra-theme={snapshot.inkraTheme}
       data-theme={snapshot.theme}
       dir={snapshot.direction}
@@ -159,4 +161,4 @@ export function PortalThemeBridge({ children }: { children: ReactNode }) {
       {children}
     </div>
   );
-}
+});
