@@ -63,12 +63,7 @@ jobs:
           path: source/.release
           merge-multiple: true
       - name: Check immutable source and archive
-        working-directory: source
-        env:
-          RELEASE_ACTION: publish
-          GITHUB_REF: refs/tags/v0.1.0
-          GITHUB_SHA: 3f3af14a9f6db230cf39db2c7fe5b30e606795f3
-        run: node scripts/release.mjs candidate
+        run: node scripts/bootstrap-publish.mjs "$GITHUB_WORKSPACE/source" candidate
       - name: Start official npm web authorization
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}
@@ -83,9 +78,4 @@ jobs:
       - name: Wait for npm authorization and publication
         run: python3 scripts/bootstrap-publish.py wait "$RUNNER_TEMP/npm-bootstrap" "$GITHUB_WORKSPACE/source"
       - name: Check published registry archive
-        working-directory: source
-        env:
-          RELEASE_ACTION: verify
-          GITHUB_REF: refs/tags/v0.1.0
-          GITHUB_SHA: 3f3af14a9f6db230cf39db2c7fe5b30e606795f3
-        run: node scripts/release.mjs verify
+        run: node scripts/bootstrap-publish.mjs "$GITHUB_WORKSPACE/source" verify

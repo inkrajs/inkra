@@ -5,9 +5,10 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const source = resolve(process.argv[2]);
+const operation = process.argv[3] ?? 'publish';
+assert(['candidate', 'publish', 'verify'].includes(operation));
 assert.equal(process.env.GITHUB_REPOSITORY, 'inkrajs/inkra');
 assert.equal(process.env.GITHUB_REF, 'refs/heads/main');
-assert(process.env.NODE_AUTH_TOKEN, 'Missing protected bootstrap credential');
 const git = args => execFileSync('git', args, { cwd: source, encoding: 'utf8' }).trim();
 const commit = '3f3af14a9f6db230cf39db2c7fe5b30e606795f3';
 assert.equal(git(['rev-parse', 'HEAD']), commit);
@@ -21,9 +22,24 @@ checkSource({ pkg, lock: await json('package-lock.json'), action: 'publish', ref
 const manifest = await json('.release/manifest.json');
 const archive = resolve(source, '.release/inkra-0.1.0.tgz');
 checkArchive(manifest, await readFile(archive), pkg, commit);
-if (await readPublished(manifest)) {
+if (operation === 'candidate') {
+  console.log('Original immutable source and validated archive match.');
+} else if (operation === 'verify') {
+  let published;
+  for (let attempt = 0; attempt < 6; attempt++) {
+    published = await readPublished(manifest);
+    if (published) break;
+    await new Promise(resolve => setTimeout(resolve, 10000));
+  }
+  assert(published, 'Version is not public');
+  const response = await fetch(published.dist.tarball, { signal: AbortSignal.timeout(30000) });
+  assert(response.ok, 'Cannot download the published archive');
+  checkArchive(manifest, Buffer.from(await response.arrayBuffer()), pkg, commit);
+  console.log('Public registry archive matches the validated candidate.');
+} else if (await readPublished(manifest)) {
   console.log('The exact candidate is already public; no duplicate publish.');
 } else {
+  assert(process.env.NODE_AUTH_TOKEN, 'Missing protected bootstrap credential');
   // Keep the real workflow identity intact for the provenance attestation.
   execFileSync('npm', ['publish', archive, '--registry=https://registry.npmjs.org/', '--access=public', '--tag=latest', '--provenance', '--ignore-scripts'], { cwd: source, stdio: 'inherit' });
 }
