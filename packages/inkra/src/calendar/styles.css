@@ -1,0 +1,54 @@
+.inkra-calendar-scroll { max-width: 100%; min-width: 0; overflow-x: auto; }
+.inkra-calendar { color: var(--inkra-ink); font: inherit; }
+.inkra-calendar .rdp-months { display: flex; flex-wrap: wrap; gap: 24px; position: relative; width: max-content; max-width: 100%; }
+.inkra-calendar .rdp-month { width: 308px; min-width: 308px; }
+.inkra-calendar .rdp-month_caption { height: 44px; display: flex; align-items: center; padding-inline: 8px 88px; }
+.inkra-calendar .rdp-nav { position: absolute; top: 0; inset-inline-end: 0; display: flex; }
+.inkra-calendar .rdp-button_previous, .inkra-calendar .rdp-button_next { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; background: transparent; color: inherit; cursor: pointer; }
+.inkra-calendar .rdp-chevron { width: 20px; height: 20px; fill: currentColor; }
+.inkra-calendar .rdp-month_grid { width: 308px; min-width: 0; table-layout: fixed; border-collapse: collapse; }
+.inkra-calendar[data-week-numbers] .rdp-month, .inkra-calendar[data-week-numbers] .rdp-month_grid { width: 352px; min-width: 352px; }
+.inkra-calendar .rdp-week_number, .inkra-calendar .rdp-week_number_header { width: 44px; height: 44px; padding: 0; color: var(--inkra-ink-muted); font: 12px/1.5 monospace; text-align: center; }
+.inkra-calendar__event[data-indicator="dot"] { inset-inline-end: 5px; font-size: 16px; }
+.inkra-calendar .rdp-weekday, .inkra-calendar .rdp-day { border: 0; padding: 0; width: 44px; height: 44px; font-weight: 400; text-align: center; }
+.inkra-calendar .rdp-weekday { color: var(--inkra-ink-muted); font-size: 13px; }
+.inkra-calendar .rdp-day_button { position: relative; width: 44px; height: 44px; display: grid; place-items: center; border: 0; background: transparent; padding: 0; color: inherit; font: inherit; cursor: pointer; }
+.inkra-calendar .rdp-week { background: transparent; }
+.inkra-calendar__selection { position: absolute; inset: 0; pointer-events: none; }
+.inkra-calendar__event { position: absolute; bottom: 1px; inset-inline-end: 3px; font: 10px/1.2 monospace; color: var(--inkra-accent-strong); }
+.inkra-calendar .rdp-outside { color: var(--inkra-ink-subtle); }
+.inkra-calendar .rdp-range_start, .inkra-calendar .rdp-range_end { color: var(--inkra-accent-strong); text-decoration: underline; text-underline-offset: 5px; }
+.inkra-calendar .rdp-today { text-decoration: underline; text-underline-offset: 5px; }
+.inkra-calendar .rdp-hidden { visibility: hidden; }
+.inkra-calendar button:disabled { opacity: .4; cursor: not-allowed; }
+.inkra-calendar button:not(.inkra-button):focus-visible { outline: 2px solid var(--inkra-focus); outline-offset: -2px; }
+.inkra-calendar .rdp-dropdowns { display: flex; gap: 8px; }
+.inkra-calendar .rdp-footer { padding-block: 8px; }
+@media (forced-colors: active) { .inkra-calendar .rdp-selected { outline: 2px solid Highlight; outline-offset: -2px; } }
+
+/* Ported from AdventureCalendar: seven spaced day cards, density by container. */
+.inkra-calendar-scroll[data-appearance="itinerary"] { width: 100%; container-type: inline-size; }
+.inkra-calendar[data-appearance="itinerary"] .rdp-months { width: 100%; }
+.inkra-calendar[data-appearance="itinerary"] .rdp-month { width: 100%; min-width: 0; }
+.inkra-calendar[data-appearance="itinerary"] .rdp-month_grid { width: 100%; border-collapse: separate; border-spacing: 6px; }
+.inkra-calendar[data-appearance="itinerary"] .rdp-day { width: auto; height: auto; vertical-align: top; }
+.inkra-calendar[data-appearance="itinerary"] .rdp-week:not(:has(.rdp-day:not(.rdp-hidden))) { display: none; }
+.inkra-calendar__day-card { position: relative; min-height: 152px; padding: 44px 5px 8px; box-sizing: border-box; }
+.inkra-calendar__day-paper { position: absolute; inset: 0; pointer-events: none; }
+.inkra-calendar[data-appearance="itinerary"] .rdp-day_button { position: absolute; inset: 0; width: 100%; height: 100%; min-width: 0; display: flex; align-items: start; justify-content: start; padding: 10px; text-align: start; }
+.inkra-calendar__events { position: relative; display: grid; gap: 4px; pointer-events: none; }
+.inkra-calendar__event-card { min-width: 0; min-height: 44px; width: 100%; text-align: start; padding: 4px 6px; pointer-events: auto; font: inherit; border: 0; background: transparent; color: inherit; }
+.inkra-calendar__event-card .inkra-pencil-text { max-width: 100%; }
+.inkra-calendar__accessory { position: absolute; top: 0; inset-inline-end: 2px; max-width: 50%; }
+.inkra-calendar[data-appearance="itinerary"] .rdp-outside { opacity: .45; }
+.inkra-calendar[data-appearance="itinerary"] .rdp-week_number { width: 28px; }
+@container (max-width: 1000px) {
+  .inkra-calendar__event-card:nth-child(n + 3) { display: none; }
+}
+@container (max-width: 700px) {
+  .inkra-calendar__events { display: none; }
+  .inkra-calendar__day-card { min-height: 100px; padding: 0; }
+  .inkra-calendar[data-appearance="itinerary"] .rdp-day_button { justify-content: center; padding: 12px 0 0; }
+  .inkra-calendar[data-appearance="itinerary"] .rdp-month_grid { border-spacing: 2px 6px; }
+  .inkra-calendar__accessory { top: 46px; inset-inline: 0; margin: auto; max-width: 100%; }
+}

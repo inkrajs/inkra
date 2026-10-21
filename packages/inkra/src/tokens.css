@@ -1,0 +1,355 @@
+:root,
+[data-theme="light"],
+[data-inkra-theme="light"],
+[data-theme="auto"],
+[data-inkra-theme="auto"] {
+  color-scheme: light;
+
+  --inkra-ocean-50: #c4e7f0;
+  --inkra-ocean-100: #b4dfe9;
+  --inkra-ocean-200: #a2d3df;
+  --inkra-ocean-300: #93c7d0;
+  --inkra-ocean-400: #78a9b3;
+  --inkra-ocean-500: #5ca0b0;
+  --inkra-ocean-600: #4b96aa;
+  --inkra-ocean-700: #3e7b8c;
+  --inkra-ocean-800: #305e6b;
+  --inkra-ocean-900: #294c56;
+  --inkra-ocean-950: #172f36;
+  --inkra-graphite-50: #f5f6f5;
+  --inkra-graphite-100: #e6e9e7;
+  --inkra-graphite-200: #ced4d0;
+  --inkra-graphite-300: #acb7b0;
+  --inkra-graphite-400: #85958c;
+  --inkra-graphite-500: #64766b;
+  --inkra-graphite-600: #4d5e54;
+  --inkra-graphite-700: #3b4b41;
+  --inkra-graphite-800: #293d33;
+  --inkra-graphite-900: #202d25;
+  --inkra-graphite-950: #141c17;
+  --inkra-cinnabar-50: #fcf3f0;
+  --inkra-cinnabar-100: #f6e2da;
+  --inkra-cinnabar-200: #ecc2b4;
+  --inkra-cinnabar-300: #dfa492;
+  --inkra-cinnabar-400: #cf806b;
+  --inkra-cinnabar-500: #b96350;
+  --inkra-cinnabar-600: #994f3f;
+  --inkra-cinnabar-700: #803c30;
+  --inkra-cinnabar-800: #672e26;
+  --inkra-cinnabar-900: #51251f;
+  --inkra-cinnabar-950: #311510;
+  --inkra-pine-50: #f1f7f0;
+  --inkra-pine-100: #e0eedc;
+  --inkra-pine-200: #c5ddbd;
+  --inkra-pine-300: #a4c69b;
+  --inkra-pine-400: #82ad7b;
+  --inkra-pine-500: #629568;
+  --inkra-pine-600: #4c7952;
+  --inkra-pine-700: #395e40;
+  --inkra-pine-800: #294a32;
+  --inkra-pine-900: #203b29;
+  --inkra-pine-950: #112218;
+  --inkra-warm-50: #fdfcf8;
+  --inkra-warm-100: #f8f5ec;
+  --inkra-warm-200: #f4f0e3;
+  --inkra-warm-300: #f2ead7;
+  --inkra-warm-400: #ddd6c4;
+  --inkra-warm-500: #b6b39d;
+  --inkra-warm-600: #8d8b78;
+  --inkra-warm-700: #5f6052;
+  --inkra-warm-800: #3f4037;
+  --inkra-warm-900: #292920;
+  --inkra-warm-950: #1b1b17;
+
+  --inkra-paper: #f4f0e3;
+  --inkra-surface: #fdfcf8;
+  --inkra-surface-muted: #f2ead7;
+  --inkra-ink: #172b21;
+  --inkra-ink-muted: #45594c;
+  --inkra-ink-subtle: #616d63;
+  --inkra-accent: #4b96aa;
+  --inkra-accent-strong: #305e6b;
+  --inkra-accent-soft: #78a9b3;
+  --inkra-on-accent: #173b45;
+  --inkra-coral: #994f3f;
+  --inkra-coral-soft: #d49b8b;
+  --inkra-blue: #4d91a0;
+  --inkra-blue-soft: #87bbc0;
+  --inkra-border: #99aa9b;
+  --inkra-border-strong: #536d59;
+  --inkra-focus: #305e6b;
+  --inkra-danger: #873e36;
+  --inkra-danger-soft: #d49b8b;
+  --inkra-success-pigment: #629568;
+  --inkra-success-foreground: #21472f;
+  --inkra-success-surface: var(--inkra-paper);
+  --inkra-warning-surface: var(--inkra-paper);
+  --inkra-danger-surface: var(--inkra-paper);
+  --inkra-info-surface: var(--inkra-paper);
+  --inkra-warning-pigment: #e6c17b;
+  --inkra-warning-foreground: #6b4d1f;
+  --inkra-danger-pigment: #d49b8b;
+  --inkra-danger-foreground: #873e36;
+  --inkra-info-pigment: #4b96aa;
+  --inkra-info-foreground: #173b45;
+  --inkra-selection: #d6b781;
+  --inkra-selection-pigment: #769566;
+  --inkra-selection-foreground: #173b2b;
+  --inkra-overlay: rgb(24 35 28 / 20%);
+  --inkra-shadow-overlay: 0 3px 12px rgb(24 35 28 / 20%);
+
+  --inkra-font-hand: "HanziPen SC", "Hannotate SC", "Kaiti SC", "STKaiti",
+    "Trip Map Hand", cursive;
+  --inkra-font-body: var(--inkra-font-hand);
+  --inkra-font-display: var(--inkra-font-hand);
+  --inkra-font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --inkra-text-xs: 12px;
+  --inkra-text-sm: 13px;
+  --inkra-text-md: 15px;
+  --inkra-text-lg: 17px;
+  --inkra-text-xl: 20px;
+  --inkra-text-2xl: 24px;
+  --inkra-text-3xl: 28px;
+  --inkra-weight-regular: 400;
+  --inkra-weight-medium: 400;
+  --inkra-weight-semibold: 400;
+  --inkra-line-tight: 1.2;
+  --inkra-line-ui: 1.45;
+  --inkra-line-body: 1.6;
+  --inkra-letter-spacing: 0;
+
+  --inkra-space-0: 0;
+  --inkra-space-1: 4px;
+  --inkra-space-2: 8px;
+  --inkra-space-3: 12px;
+  --inkra-space-4: 16px;
+  --inkra-space-5: 20px;
+  --inkra-space-6: 24px;
+  --inkra-space-7: 28px;
+  --inkra-space-8: 32px;
+  --inkra-space-9: 36px;
+  --inkra-space-10: 40px;
+  --inkra-space-11: 44px;
+  --inkra-space-12: 48px;
+  --inkra-space-13: 52px;
+  --inkra-space-14: 56px;
+  --inkra-space-15: 60px;
+  --inkra-space-16: 64px;
+  --inkra-radius-none: 0;
+  --inkra-radius-sm: 3px;
+  --inkra-radius-md: 6px;
+  --inkra-radius-lg: 8px;
+  --inkra-control-xs: 32px;
+  --inkra-control-sm: 36px;
+  --inkra-control-md: 44px;
+  --inkra-control-lg: 48px;
+  --inkra-touch-target: 44px;
+  --inkra-icon-xs: 14px;
+  --inkra-icon-sm: 16px;
+  --inkra-icon-md: 20px;
+  --inkra-icon-lg: 24px;
+  --inkra-content-width: 72rem;
+  --inkra-reading-width: 44rem;
+  --inkra-sidebar-width: 15rem;
+  --inkra-header-height: 64px;
+  --inkra-focus-width: 2px;
+  --inkra-focus-offset: 3px;
+
+  --inkra-motion-fast: 120ms;
+  --inkra-motion-normal: 180ms;
+  --inkra-motion-slow: 420ms;
+  --inkra-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --inkra-z-base: 0;
+  --inkra-z-sticky: 10;
+  --inkra-z-popover: 20;
+  --inkra-z-modal: 30;
+  --inkra-z-tooltip: 40;
+
+  --inkra-stroke-width: 1.2px;
+  --inkra-stroke-variation: 0.82;
+  --inkra-stroke-grain: 0.7;
+  --inkra-stroke-breaks: 0.2;
+  --inkra-stroke-amplitude: 0.6px;
+  --inkra-stroke-step: 0.8px;
+  --inkra-stroke-passes: 3;
+  --inkra-stroke-gain: 2.1;
+  --inkra-action-stroke-width: 1.35px;
+  --inkra-action-stroke-gain: 2.5;
+  --inkra-quiet-stroke-width: 0.75px;
+  --inkra-quiet-stroke-passes: 2;
+  --inkra-badge-stroke-width: 0.9px;
+  --inkra-badge-stroke-passes: 2;
+
+  --inkra-wash-opacity: 0.48;
+  --inkra-wash-strength: 0.48;
+  --inkra-wash-spacing: 1.8px;
+  --inkra-wash-roughness: 3;
+  --inkra-wash-inset: 2px;
+  --inkra-wash-edge-reach: 0px;
+  --inkra-quiet-wash-strength: 0.18;
+  --inkra-badge-wash-strength: 0.25;
+
+  --inkra-letter-variation: 0.52;
+  --inkra-letter-breaks: 0.18;
+  --inkra-letter-outline: 0.96;
+  --inkra-letter-fill: 0.34;
+  --inkra-letter-grain: 0.45;
+  --inkra-paper-tile-size: 384px;
+  --inkra-render-dpr-cap: 2;
+}
+
+[data-theme="dark"],
+[data-inkra-theme="dark"] {
+  color-scheme: dark;
+
+  --inkra-paper: #191d1e;
+  --inkra-surface: #272d2e;
+  --inkra-surface-muted: #23292a;
+  --inkra-ink: #f5f6ed;
+  --inkra-ink-muted: #becbbb;
+  --inkra-ink-subtle: #96a591;
+  --inkra-accent: #82bdcb;
+  --inkra-accent-strong: #d3e9ee;
+  --inkra-accent-soft: #8cb2ba;
+  --inkra-on-accent: #edf8fa;
+  --inkra-coral: #ffd1c6;
+  --inkra-coral-soft: #292920;
+  --inkra-blue: #78b8c8;
+  --inkra-blue-soft: #78a9b3;
+  --inkra-border: #a7b5a6;
+  --inkra-border-strong: #a7b5a6;
+  --inkra-focus: #a1c9d3;
+  --inkra-danger: #ffd1c6;
+  --inkra-danger-soft: #d49b8b;
+  --inkra-success-pigment: #76a37b;
+  --inkra-success-foreground: #d5efd7;
+  --inkra-success-surface: #20372b;
+  --inkra-warning-surface: #3a3020;
+  --inkra-danger-surface: #3b2727;
+  --inkra-info-surface: #20343c;
+  --inkra-warning-pigment: #d6b67c;
+  --inkra-warning-foreground: #ffe5b3;
+  --inkra-danger-pigment: #c98f82;
+  --inkra-danger-foreground: #ffd1c6;
+  --inkra-info-pigment: #82bdcb;
+  --inkra-info-foreground: #d8f1f5;
+  --inkra-selection: #d6b781;
+  --inkra-selection-pigment: #9bbd85;
+  --inkra-selection-foreground: #e9f3e3;
+  --inkra-overlay: rgb(4 4 3 / 64%);
+  --inkra-shadow-overlay: 0 8px 28px rgb(0 0 0 / 28%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]):not([data-inkra-theme]),
+  [data-theme="auto"],
+  [data-inkra-theme="auto"] {
+    color-scheme: dark;
+
+    --inkra-paper: #191d1e;
+    --inkra-surface: #272d2e;
+    --inkra-surface-muted: #23292a;
+    --inkra-ink: #f5f6ed;
+    --inkra-ink-muted: #becbbb;
+    --inkra-ink-subtle: #96a591;
+    --inkra-accent: #82bdcb;
+    --inkra-accent-strong: #d3e9ee;
+    --inkra-accent-soft: #8cb2ba;
+    --inkra-on-accent: #edf8fa;
+    --inkra-coral: #ffd1c6;
+    --inkra-coral-soft: #292920;
+    --inkra-blue: #78b8c8;
+    --inkra-blue-soft: #78a9b3;
+    --inkra-border: #a7b5a6;
+    --inkra-border-strong: #a7b5a6;
+    --inkra-focus: #a1c9d3;
+    --inkra-danger: #ffd1c6;
+    --inkra-danger-soft: #d49b8b;
+    --inkra-success-pigment: #76a37b;
+    --inkra-success-foreground: #d5efd7;
+    --inkra-success-surface: #20372b;
+    --inkra-warning-surface: #3a3020;
+    --inkra-danger-surface: #3b2727;
+    --inkra-info-surface: #20343c;
+    --inkra-warning-pigment: #d6b67c;
+    --inkra-warning-foreground: #ffe5b3;
+    --inkra-danger-pigment: #c98f82;
+    --inkra-danger-foreground: #ffd1c6;
+    --inkra-info-pigment: #82bdcb;
+    --inkra-info-foreground: #d8f1f5;
+    --inkra-selection: #d6b781;
+    --inkra-selection-pigment: #9bbd85;
+    --inkra-selection-foreground: #e9f3e3;
+    --inkra-overlay: rgb(4 4 3 / 64%);
+    --inkra-shadow-overlay: 0 8px 28px rgb(0 0 0 / 28%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root,
+  [data-theme],
+  [data-inkra-theme] {
+    --inkra-motion-fast: 0ms;
+    --inkra-motion-normal: 0ms;
+    --inkra-motion-slow: 0ms;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root,
+  [data-theme],
+  [data-inkra-theme] {
+    --inkra-ink-muted: var(--inkra-ink);
+    --inkra-border: var(--inkra-border-strong);
+    --inkra-focus-width: 3px;
+    --inkra-wash-opacity: 0.18;
+    --inkra-wash-strength: 0.18;
+  }
+}
+
+@media (forced-colors: active) {
+  :root,
+  [data-theme],
+  [data-inkra-theme] {
+    --inkra-paper: Canvas;
+    --inkra-surface: Canvas;
+    --inkra-surface-muted: Canvas;
+    --inkra-ink: CanvasText;
+    --inkra-ink-muted: CanvasText;
+    --inkra-ink-subtle: CanvasText;
+    --inkra-accent: Highlight;
+    --inkra-accent-strong: Highlight;
+    --inkra-accent-soft: Canvas;
+    --inkra-on-accent: HighlightText;
+    --inkra-coral: CanvasText;
+    --inkra-coral-soft: Canvas;
+    --inkra-blue: LinkText;
+    --inkra-blue-soft: Canvas;
+    --inkra-border: CanvasText;
+    --inkra-border-strong: CanvasText;
+    --inkra-focus: Highlight;
+    --inkra-danger: Mark;
+    --inkra-danger-soft: Canvas;
+    --inkra-success-pigment: Highlight;
+    --inkra-success-foreground: CanvasText;
+    --inkra-warning-pigment: Highlight;
+    --inkra-warning-foreground: CanvasText;
+    --inkra-danger-pigment: Mark;
+    --inkra-danger-foreground: MarkText;
+    --inkra-info-pigment: Highlight;
+    --inkra-info-foreground: LinkText;
+    --inkra-selection: Highlight;
+    --inkra-selection-pigment: Highlight;
+    --inkra-selection-foreground: HighlightText;
+    --inkra-overlay: rgb(0 0 0 / 50%);
+    --inkra-shadow-overlay: none;
+    --inkra-stroke-grain: 0;
+    --inkra-stroke-breaks: 0;
+    --inkra-wash-opacity: 0;
+    --inkra-wash-strength: 0;
+    --inkra-quiet-wash-strength: 0;
+    --inkra-badge-wash-strength: 0;
+    --inkra-letter-breaks: 0;
+    --inkra-letter-grain: 0;
+  }
+}

@@ -1,0 +1,628 @@
+@import "./tokens.css";
+
+@font-face {
+  font-family: "Trip Map Hand";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./assets/ui-hand-yozai.woff2") format("woff2");
+}
+
+.inkra-pencil-surface {
+  background: transparent;
+  box-sizing: border-box;
+  isolation: isolate;
+  position: relative;
+}
+
+.inkra-pencil-surface > .inkra-pencil-surface__ink {
+  display: block;
+  height: 100%;
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+  z-index: -1;
+}
+
+.inkra-pencil-surface--wash > .inkra-pencil-surface__ink {
+  height: calc(100% + 24px);
+  inset: -12px;
+  width: calc(100% + 24px);
+}
+
+.inkra-pencil-surface--selection {
+  color: var(--inkra-selection-foreground, #244b37);
+}
+
+.inkra-pencil-surface__content {
+  align-items: inherit;
+  display: inherit;
+  height: 100%;
+  justify-content: inherit;
+  min-width: 0;
+  position: relative;
+  width: 100%;
+  z-index: 1;
+}
+
+.inkra-pencil-surface--clipped > .inkra-pencil-surface__content {
+  clip-path: var(--inkra-pencil-clip, inset(3px));
+}
+
+.inkra-pencil-surface > .inkra-pencil-surface__border {
+  height: 100%;
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+  z-index: 2;
+}
+
+.inkra-pencil-surface:is(button, a, span) {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+.inkra-pencil-surface:is(button, a) {
+  border: 0;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.inkra-pencil-surface:is(button, a):focus-visible {
+  outline: var(--inkra-focus-width) solid var(--inkra-focus);
+  outline-offset: var(--inkra-focus-offset);
+}
+
+.inkra-pencil-surface:disabled,
+.inkra-pencil-surface[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.inkra-pencil-surface[data-pencil-fallback="true"] {
+  background: var(--inkra-surface);
+  border: 1px solid var(--inkra-border-strong);
+}
+
+.inkra-pencil-surface--action[data-pencil-fallback="true"] {
+  background: var(--inkra-accent-soft);
+}
+
+.inkra-pencil-surface--outline[data-pencil-fallback="true"] {
+  background: transparent;
+  border-color: var(--inkra-accent-strong);
+}
+
+.inkra-pencil-surface--danger[data-pencil-fallback="true"] {
+  background: var(--inkra-danger-soft);
+  border-color: var(--inkra-danger);
+}
+
+.inkra-pencil-surface--ghost[data-pencil-fallback="true"] {
+  background: transparent;
+  border: 0;
+}
+
+.inkra-pencil-surface--selection[data-pencil-fallback="true"] {
+  background: transparent;
+  border: 0;
+}
+
+[data-theme="dark"] .inkra-pencil-surface--selection,
+[data-inkra-theme="dark"] .inkra-pencil-surface--selection {
+  color: var(--inkra-selection-foreground, #e5e2cf);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]):not([data-inkra-theme]) .inkra-pencil-surface--selection,
+  [data-theme="auto"] .inkra-pencil-surface--selection,
+  [data-inkra-theme="auto"] .inkra-pencil-surface--selection {
+    color: var(--inkra-selection-foreground, #e5e2cf);
+  }
+}
+
+.inkra-pencil-text,
+.inkra-pencil-text__source {
+  color: inherit;
+  font: inherit;
+  font-family: "Trip Map Hand", "HanziPen SC", "Hannotate SC", "Kaiti SC", "STKaiti", cursive;
+  font-kerning: none;
+  font-variant-ligatures: none;
+  letter-spacing: 0;
+}
+
+.inkra-pencil-text {
+  display: inline-block;
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  position: relative;
+  vertical-align: baseline;
+}
+
+.inkra-pencil-text canvas {
+  display: none;
+  pointer-events: none;
+  position: absolute;
+}
+
+.inkra-pencil-text[data-pencil-ready="true"] canvas {
+  display: block;
+}
+
+.inkra-pencil-text[data-pencil-ready="true"] > .inkra-pencil-text__source {
+  color: transparent;
+}
+
+.inkra-pencil-text__source::selection {
+  background: var(--inkra-selection);
+  color: var(--inkra-ink);
+}
+
+.inkra-pencil-text--ellipsis {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  overflow-wrap: normal;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.inkra-pencil-text--ellipsis > .inkra-pencil-text__source {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inkra-pencil-icon,
+.inkra-pencil-line {
+  color: currentcolor;
+  display: block;
+  pointer-events: none;
+}
+
+.inkra-pencil-line[data-orientation="horizontal"] {
+  height: 8px;
+  width: 100%;
+}
+
+.inkra-pencil-line[data-orientation="vertical"] {
+  height: 100%;
+  width: 8px;
+}
+
+.inkra-button {
+  --inkra-button-visual-height: var(--inkra-control-md);
+  --inkra-button-visual-padding: var(--inkra-space-5);
+  --inkra-button-font-size: var(--inkra-text-md);
+  --inkra-button-icon-size: var(--inkra-icon-md);
+  --inkra-button-content-gap: var(--inkra-space-2);
+
+  align-items: center;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  box-sizing: border-box;
+  color: var(--inkra-on-accent, var(--inkra-accent-strong));
+  cursor: pointer;
+  display: inline-flex;
+  font-family: "Trip Map Hand", "HanziPen SC", "Hannotate SC", "Kaiti SC", "STKaiti", cursive;
+  font-weight: var(--inkra-weight-regular);
+  justify-content: center;
+  letter-spacing: var(--inkra-letter-spacing);
+  line-height: var(--inkra-line-ui);
+  min-height: var(--inkra-touch-target);
+  min-width: var(--inkra-touch-target);
+  overflow: visible;
+  padding: 0;
+  position: relative;
+  text-decoration: none;
+  user-select: none;
+  vertical-align: middle;
+}
+
+.inkra-button__surface {
+  align-items: center;
+  box-sizing: border-box;
+  color: inherit;
+  display: inline-flex;
+  font-size: var(--inkra-button-font-size);
+  height: var(--inkra-button-visual-height);
+  justify-content: center;
+  line-height: var(--inkra-line-ui);
+  min-width: var(--inkra-button-visual-height);
+  overflow: visible;
+  padding: 0 var(--inkra-button-visual-padding);
+  pointer-events: none;
+  transition:
+    background-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform var(--inkra-motion-fast) var(--inkra-ease);
+  white-space: nowrap;
+}
+
+.inkra-button__surface > .inkra-pencil-surface__ink {
+  transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.inkra-button:hover:not(:disabled):not([aria-disabled="true"])
+  .inkra-button__surface {
+  transform: translateY(-0.5px);
+}
+
+.inkra-button:active:not(:disabled):not([aria-disabled="true"]) .inkra-button__surface {
+  transform: translateY(1px) rotate(-0.15deg);
+}
+
+.inkra-button:focus-visible {
+  outline: 0;
+}
+
+.inkra-button__focus-ring {
+  --inkra-accent-strong: var(--inkra-focus);
+  display: block !important;
+  position: absolute !important;
+  inset-inline: calc(-1 * var(--inkra-focus-offset));
+  top: 50%;
+  height: calc(var(--inkra-button-visual-height) + 2 * var(--inkra-focus-offset));
+  transform: translateY(-50%);
+  pointer-events: none;
+  opacity: 0;
+  z-index: 3;
+}
+
+.inkra-button:focus-visible > .inkra-button__focus-ring {
+  opacity: 1;
+}
+
+.inkra-button-group .inkra-button__focus-ring,
+.inkra-input__end-action .inkra-button__focus-ring {
+  inset-inline: 0;
+  height: var(--inkra-button-visual-height);
+}
+
+@media (forced-colors: active) {
+  .inkra-button:focus-visible {
+    outline: var(--inkra-focus-width) solid Highlight;
+    outline-offset: var(--inkra-focus-offset);
+  }
+
+  .inkra-button__focus-ring {
+    display: none !important;
+  }
+}
+
+.inkra-button:disabled,
+.inkra-button[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.inkra-button[data-size="xs"],
+.inkra-button[data-size="icon-xs"] {
+  --inkra-button-visual-height: var(--inkra-control-xs, 32px);
+  --inkra-button-visual-padding: var(--inkra-space-3);
+  --inkra-button-font-size: var(--inkra-text-xs);
+  --inkra-button-icon-size: var(--inkra-icon-xs, 14px);
+  --inkra-button-content-gap: var(--inkra-space-1);
+}
+
+.inkra-button[data-size="sm"] {
+  --inkra-button-visual-height: var(--inkra-control-sm);
+  --inkra-button-visual-padding: var(--inkra-space-4);
+  --inkra-button-font-size: var(--inkra-text-sm);
+  --inkra-button-icon-size: var(--inkra-icon-sm);
+}
+
+.inkra-button[data-size="lg"] {
+  --inkra-button-visual-height: var(--inkra-control-lg);
+  --inkra-button-visual-padding: var(--inkra-space-6);
+  --inkra-button-font-size: var(--inkra-text-lg);
+  --inkra-button-icon-size: var(--inkra-icon-lg);
+}
+
+.inkra-button[data-size="icon-sm"] {
+  --inkra-button-visual-height: var(--inkra-control-sm);
+  --inkra-button-font-size: var(--inkra-text-sm);
+  --inkra-button-icon-size: var(--inkra-icon-sm);
+}
+
+.inkra-button[data-size="icon-lg"] {
+  --inkra-button-visual-height: var(--inkra-control-lg);
+  --inkra-button-font-size: var(--inkra-text-lg);
+  --inkra-button-icon-size: var(--inkra-icon-lg);
+}
+
+.inkra-button[data-size^="icon"] .inkra-button__surface {
+  padding-inline: 0;
+  width: var(--inkra-button-visual-height);
+}
+
+.inkra-button[data-variant="secondary"] {
+  color: var(--inkra-ink);
+}
+
+.inkra-button[data-variant="ghost"] {
+  color: var(--inkra-ink-muted);
+}
+
+.inkra-button[data-variant="outline"] {
+  color: var(--inkra-accent-strong);
+}
+
+.inkra-button[data-variant="destructive"] {
+  color: var(--inkra-on-danger, var(--inkra-danger));
+}
+
+.inkra-button[data-variant="link"] {
+  color: var(--inkra-accent-strong);
+}
+
+.inkra-button[data-variant="ghost"]
+  .inkra-button__surface > .inkra-pencil-surface__ink {
+  opacity: 0;
+}
+
+.inkra-button[data-variant="ghost"]:hover:not(:disabled):not([aria-disabled="true"])
+  .inkra-button__surface > .inkra-pencil-surface__ink,
+.inkra-button[data-variant="ghost"]:focus-visible
+  .inkra-button__surface > .inkra-pencil-surface__ink {
+  opacity: 1;
+}
+
+.inkra-button[data-variant="ghost"]
+  .inkra-button__surface[data-pencil-fallback="true"] {
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+.inkra-button[data-variant="ghost"]:hover:not(:disabled):not([aria-disabled="true"])
+  .inkra-button__surface[data-pencil-fallback="true"],
+.inkra-button[data-variant="ghost"]:focus-visible
+  .inkra-button__surface[data-pencil-fallback="true"] {
+  background: var(--inkra-surface-muted);
+  border-color: var(--inkra-border);
+}
+
+.inkra-button[data-variant="link"] .inkra-button__label {
+  position: relative;
+}
+
+.inkra-button .inkra-button__underline {
+  position: absolute;
+  inset-inline: 0;
+  bottom: -5px;
+  width: 100%;
+  height: 6px;
+  color: inherit;
+}
+
+@media (forced-colors: active), print {
+  .inkra-button[data-variant="link"] .inkra-button__label {
+    text-decoration-line: underline;
+    text-underline-offset: 0.2em;
+  }
+}
+
+.inkra-button__content {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--inkra-button-content-gap);
+  justify-content: center;
+  min-width: 0;
+  position: relative;
+  white-space: nowrap;
+}
+
+.inkra-button__icon {
+  position: relative;
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 var(--inkra-button-icon-size);
+  height: var(--inkra-button-icon-size);
+  justify-content: center;
+  width: var(--inkra-button-icon-size);
+}
+
+.inkra-button__icon-content { display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+.inkra-button__icon-content > :is(svg, canvas),
+.inkra-button__loading-indicator > :is(svg, canvas) {
+  height: 100% !important;
+  max-height: 100%;
+  max-width: 100%;
+  width: 100% !important;
+}
+
+.inkra-button__label,
+.inkra-button__label > span {
+  align-items: center;
+  display: inline-flex;
+  min-width: 0;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+.inkra-button__spinner {
+  animation: inkra-button-spin 800ms steps(8, end) infinite;
+  border: 1.5px dashed currentcolor;
+  border-radius: 50%;
+  box-sizing: border-box;
+  height: var(--inkra-icon-sm);
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--inkra-icon-sm);
+}
+
+.inkra-button[data-loading="true"][data-loading-position="center"] .inkra-button__label {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.inkra-button[data-loading="true"][data-loading-position="center"] .inkra-button__icon,
+.inkra-button[data-loading="true"] [data-loading-slot="true"] > .inkra-button__icon-content {
+  opacity: 0;
+}
+
+.inkra-button__loading-indicator { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: grid; place-items: center; width: var(--inkra-button-icon-size); height: var(--inkra-button-icon-size); }
+.inkra-button[data-full-width="true"], .inkra-button[data-full-width="true"] .inkra-button__surface { width: 100%; }
+.inkra-button[data-align="start"] .inkra-button__surface { justify-content: flex-start; }
+.inkra-button[data-align="end"] .inkra-button__surface { justify-content: flex-end; }
+.inkra-button[data-size^="icon"] .inkra-button__surface { justify-content: center; }
+
+.inkra-button-group {
+  align-items: stretch;
+  display: inline-flex;
+  gap: 0;
+  max-width: 100%;
+}
+
+.inkra-button-group > .inkra-button {
+  flex: 0 0 auto;
+}
+.inkra-button-group[data-full-width="true"] { display: flex; width: 100%; }
+.inkra-button-group[data-equal-width="true"][data-orientation="horizontal"] { display: inline-grid; grid-auto-flow: column; grid-auto-columns: minmax(max-content, 1fr); }
+.inkra-button-group[data-equal-width="true"][data-orientation="vertical"] > .inkra-button { width: 100%; }
+
+.inkra-button-group > .inkra-pencil-surface__ink {
+  z-index: 3;
+}
+
+.inkra-button-group > .inkra-button .inkra-button__surface {
+  width: 100%;
+  transform: none;
+}
+
+.inkra-button-group > .inkra-button .inkra-pencil-surface__content {
+  clip-path: none;
+}
+
+.inkra-button-group > .inkra-button .inkra-pencil-surface__border {
+  display: none;
+}
+
+.inkra-button-group > .inkra-button .inkra-button__surface[data-pencil-fallback="true"] {
+  border: 0;
+}
+
+.inkra-button-group__divider {
+  color: var(--inkra-border-strong);
+  display: none;
+  pointer-events: none;
+  position: absolute;
+  z-index: 3;
+}
+
+.inkra-button-group > .inkra-button + .inkra-button > .inkra-button-group__divider {
+  display: block;
+}
+
+.inkra-button-group__divider[data-orientation="vertical"] {
+  height: 100%;
+  inset-block-start: 0;
+  inset-inline-start: -4px;
+  width: 8px;
+}
+
+.inkra-button-group__divider[data-orientation="horizontal"] {
+  height: 8px;
+  inset-block-start: -4px;
+  inset-inline-start: 0;
+  width: 100%;
+}
+
+.inkra-button-group > .inkra-button:focus-visible {
+  outline-offset: calc(-1 * var(--inkra-focus-width));
+  z-index: 4;
+}
+
+.inkra-button-group[data-orientation="vertical"] {
+  flex-direction: column;
+}
+
+.inkra-button-group[data-orientation="horizontal"] {
+  flex-direction: row;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+@keyframes inkra-button-spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inkra-button__surface {
+    transition-duration: 0ms;
+  }
+
+  .inkra-button__surface > .inkra-pencil-surface__ink {
+    transition-duration: 0ms;
+  }
+
+  .inkra-button__spinner {
+    animation: none;
+  }
+}
+
+@media (forced-colors: active), print {
+  .inkra-pencil-surface > canvas,
+  .inkra-pencil-icon,
+  .inkra-pencil-text canvas {
+    display: none !important;
+  }
+
+  .inkra-pencil-line {
+    background: CanvasText;
+    display: block !important;
+  }
+
+  .inkra-pencil-line[data-orientation="horizontal"] {
+    height: 1px;
+  }
+
+  .inkra-pencil-line[data-orientation="vertical"] {
+    width: 1px;
+  }
+
+  .inkra-button .inkra-button__underline {
+    display: none !important;
+  }
+
+  .inkra-pencil-surface {
+    border: 1px solid CanvasText;
+  }
+
+  .inkra-button-group > .inkra-button .inkra-button__surface {
+    border: 0;
+  }
+
+  .inkra-button-group > .inkra-button:not(.inkra-button + .inkra-button) > .inkra-button-group__divider {
+    display: none !important;
+  }
+
+  .inkra-button-group__divider[data-orientation="vertical"] {
+    inset-inline-start: 0;
+  }
+
+  .inkra-button-group__divider[data-orientation="horizontal"] {
+    inset-block-start: 0;
+  }
+
+  .inkra-button[data-variant="link"] .inkra-button__surface,
+  .inkra-button[data-variant="ghost"] .inkra-button__surface {
+    border: 0;
+  }
+
+  .inkra-pencil-text[data-pencil-ready="true"] > .inkra-pencil-text__source {
+    color: inherit;
+  }
+}

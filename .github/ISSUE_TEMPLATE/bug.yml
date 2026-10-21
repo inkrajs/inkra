@@ -1,0 +1,28 @@
+name: Bug report / 问题反馈
+description: Report reproducible component, rendering or documentation problems.
+body:
+  - type: input
+    id: versions
+    attributes:
+      label: Versions / 版本
+      description: Inkra, React, framework and browser versions.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction / 复现步骤
+      description: Minimal code or a public reproduction. Do not include secrets or private data.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior / 预期与实际表现
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context / 补充信息
+      description: Theme, viewport, keyboard or touch interaction, and screenshots when relevant.

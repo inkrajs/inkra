@@ -1,0 +1,30 @@
+.inkra-agenda { display: flex; flex-direction: column; gap: 12px; min-width: 0; height: 100%; color: var(--inkra-ink); }
+.inkra-agenda__heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; flex: none; }
+.inkra-agenda__heading h3 { margin: 0; font-size: 20px; font-weight: 400; }
+.inkra-agenda__heading > span { color: var(--inkra-ink-muted); font-size: 13px; }
+.inkra-agenda__timeline { min-height: 180px; overflow: auto; flex: 1; padding-inline-end: 4px; }
+.inkra-agenda__scale { position: relative; min-width: 220px; }
+.inkra-agenda__tick { position: absolute; inset-inline: 0; display: flex; align-items: center; gap: 8px; transform: translateY(-50%); pointer-events: none; font-size: 12px; color: var(--inkra-ink-muted); }
+.inkra-agenda__tick > span { width: 66px; flex: none; text-align: end; }
+.inkra-agenda[data-hour-cycle="h12"] .inkra-agenda__tick > span { width: 92px; }
+.inkra-agenda__tick > .inkra-pencil-line { flex: 1; opacity: .45; }
+.inkra-agenda__timeline[data-overview="false"] .inkra-agenda__tick > .inkra-pencil-line { visibility: hidden; }
+.inkra-agenda__lanes { position: absolute; inset-block: 0; inset-inline: 78px 0; padding: 0; margin: 0; list-style: none; }
+.inkra-agenda[data-hour-cycle="h12"] .inkra-agenda__lanes { inset-inline-start: 104px; }
+.inkra-agenda__lanes > li { position: absolute; padding-inline: 3px; box-sizing: border-box; min-width: 0; }
+.inkra-agenda__card { position: relative; height: 100%; min-height: 44px; padding: 8px; box-sizing: border-box; overflow: hidden; }
+.inkra-agenda__card[data-selected="true"] { outline: 2px solid var(--inkra-focus); outline-offset: -3px; border-radius: 6px; }
+.inkra-agenda__card-copy { position: relative; pointer-events: none; display: grid; gap: 4px; min-width: 0; overflow-wrap: anywhere; }
+.inkra-agenda__card-title { display: flex; gap: 6px; align-items: center; font-size: 15px; }
+.inkra-agenda__card-title > span[aria-hidden] { display: inline-flex; flex: none; }
+.inkra-agenda__card-title > .inkra-pencil-text { min-width: 0; }
+.inkra-agenda__description { font-size: 13px; color: var(--inkra-ink-muted); }
+.inkra-agenda__hit { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: transparent; cursor: pointer; }
+.inkra-agenda__hit:disabled { cursor: not-allowed; }
+.inkra-agenda__card:has(.inkra-agenda__hit:disabled) { opacity: .5; }
+.inkra-agenda__hit:focus-visible { outline: 2px solid var(--inkra-focus); outline-offset: -3px; }
+.inkra-agenda__accessible-time { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.inkra-agenda__pending { display: grid; gap: 6px; flex: none; }
+.inkra-agenda__pending > span { font-size: 13px; color: var(--inkra-ink-muted); }
+.inkra-agenda__navigation { position: relative; display: flex; justify-content: space-between; padding-top: 8px; flex: none; }
+.inkra-agenda__navigation > .inkra-pencil-line { position: absolute; inset: 0 0 auto; }

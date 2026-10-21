@@ -1,0 +1,151 @@
+.inkra-badge {
+  align-items: center;
+  display: inline-flex;
+  font-size: var(--inkra-text-sm);
+  line-height: var(--inkra-line-ui);
+  min-height: 28px;
+  padding: var(--inkra-space-1) var(--inkra-space-2);
+  white-space: nowrap;
+  gap: var(--inkra-space-1);
+}
+.inkra-badge[data-size="sm"] { min-height: 24px; font-size: 12px; }
+.inkra-badge[data-size="lg"] { min-height: 32px; font-size: var(--inkra-text-md); padding-inline: var(--inkra-space-3); }
+.inkra-badge__icon { display: inline-flex; width: 16px; height: 16px; flex: none; }
+.inkra-badge__icon > * { width: 100%; height: 100%; }
+
+.inkra-separator {
+  color: var(--inkra-border-strong);
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+
+.inkra-separator[data-orientation="horizontal"] {
+  block-size: 8px;
+  inline-size: 100%;
+}
+
+.inkra-separator[data-orientation="vertical"] {
+  align-self: stretch;
+  block-size: auto;
+  inline-size: 8px;
+  min-block-size: 24px;
+}
+
+.inkra-separator__line {
+  block-size: 100%;
+  display: block;
+  inline-size: 100%;
+}
+
+.inkra-skeleton {
+  block-size: 16px;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 8px;
+}
+
+.inkra-progress {
+  display: grid;
+  gap: var(--inkra-space-2);
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+
+.inkra-progress__label {
+  color: var(--inkra-ink);
+  font-size: var(--inkra-text-sm);
+  line-height: var(--inkra-line-ui);
+}
+
+.inkra-progress__track {
+  block-size: 16px;
+  display: block;
+  inline-size: 100%;
+  min-inline-size: 0;
+  overflow: hidden;
+  position: relative;
+}
+.inkra-progress[data-size="sm"] .inkra-progress__track { block-size: 12px; }
+.inkra-progress[data-size="lg"] .inkra-progress__track { block-size: 24px; }
+
+.inkra-progress__outline,
+.inkra-progress__fill,
+.inkra-progress__fill-clip {
+  block-size: 100%;
+  display: block;
+}
+
+.inkra-progress__outline {
+  inset: 0;
+  position: absolute;
+}
+
+.inkra-progress__fill-clip {
+  clip-path: inset(0 calc(100% - var(--inkra-progress-value)) 0 0);
+  inline-size: 100%;
+  inset-block: 0;
+  inset-inline-start: 0;
+  overflow: hidden;
+  position: absolute;
+  transition: clip-path var(--inkra-motion-normal) var(--inkra-ease);
+}
+
+.inkra-progress__fill {
+  inline-size: 100%;
+  inset-block: 0;
+  inset-inline-start: 0;
+  position: absolute;
+}
+
+.inkra-progress[data-state="indeterminate"] .inkra-progress__fill-clip {
+  animation: inkra-progress-indeterminate var(--inkra-motion-slow) var(--inkra-ease) infinite alternate;
+}
+
+.inkra-progress:dir(rtl) .inkra-progress__fill-clip {
+  clip-path: inset(0 0 0 calc(100% - var(--inkra-progress-value)));
+}
+
+.inkra-progress:dir(rtl)[data-state="indeterminate"] .inkra-progress__fill-clip {
+  animation-name: inkra-progress-indeterminate-rtl;
+}
+
+@keyframes inkra-progress-indeterminate {
+  from {
+    clip-path: inset(0 64% 0 0);
+  }
+
+  to {
+    clip-path: inset(0 0 0 64%);
+  }
+}
+
+@keyframes inkra-progress-indeterminate-rtl {
+  from {
+    clip-path: inset(0 0 0 64%);
+  }
+
+  to {
+    clip-path: inset(0 64% 0 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inkra-progress__fill-clip {
+    transition: none;
+  }
+
+  .inkra-progress[data-state="indeterminate"] .inkra-progress__fill-clip {
+    animation: none;
+    clip-path: inset(0 32%);
+  }
+}
+
+@media (forced-colors: active) {
+  .inkra-progress__fill-clip {
+    background: Highlight;
+  }
+
+  .inkra-skeleton {
+    outline: 1px solid CanvasText;
+  }
+}

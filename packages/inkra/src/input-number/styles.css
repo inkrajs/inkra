@@ -1,0 +1,17 @@
+.inkra-input-number .inkra-input {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.inkra-input-number .inkra-input::-webkit-inner-spin-button,
+.inkra-input-number .inkra-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.inkra-input-number__controls {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 0;
+}

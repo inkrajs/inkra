@@ -1,0 +1,19 @@
+.inkra-journey-map { min-width: 0; width: 100%; color: var(--inkra-ink); }
+.inkra-journey-map__viewport { position: relative; overflow: hidden; isolation: isolate; background: var(--inkra-paper); }
+.inkra-journey-map__host { position: absolute; inset: 0; background: transparent; font: inherit; }
+.inkra-journey-map__ink { position: absolute; inset: 0; pointer-events: none; z-index: 350; }
+.inkra-journey-map__tools { position: absolute; z-index: 600; inset-block-end: 9px; inset-inline-start: 9px; display: grid; gap: 4px; }
+.inkra-journey-map__marker { display: grid; place-items: center; }
+.inkra-journey-map__pin { position: absolute; top: 37px; left: 50%; transform: translateX(-50%); width: max-content; max-width: 140px; text-align: center; color: var(--inkra-ink); font: 14px/1.4 var(--inkra-font-hand); }
+.inkra-journey-map__marker[aria-pressed="true"] .inkra-journey-map__pin { color: var(--inkra-accent-strong); }
+.inkra-journey-map__orientation { position: absolute; bottom: 18px; right: 18px; z-index: 600; display: flex; align-items: end; gap: 12px; pointer-events: none; }
+.inkra-journey-map__scale { display: grid; justify-items: center; gap: 1px; font-size: 13px; line-height: 22px; }
+.inkra-journey-map__scale canvas { display: block; height: 12px; }
+.inkra-journey-map__compass { display: grid; justify-items: center; width: 34px; height: 50px; font-size: 14px; line-height: 20px; }
+.inkra-journey-map__attribution { margin: 8px 0; color: var(--inkra-ink-muted); font-size: 12px; }
+.inkra-journey-map__credits { position: absolute; inset-block-start: 8px; inset-inline-end: 8px; z-index: 600; }
+.inkra-journey-map__credits-content { width: min(340px, calc(100vw - 40px)); }
+.inkra-journey-map__places { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.inkra-journey-map__places button { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px; border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.inkra-journey-map__places button[aria-pressed="true"] { text-decoration: underline; text-underline-offset: 4px; }
+.inkra-journey-map button:focus-visible, .inkra-journey-map__marker:focus-visible { outline: 2px solid var(--inkra-focus); outline-offset: -2px; }

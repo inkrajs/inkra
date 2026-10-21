@@ -1,0 +1,18 @@
+name: Feature request / 功能建议
+description: Propose a component, API or interaction improvement.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Use case / 使用场景
+      description: Describe the workflow and what is missing today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed API or behavior / 建议接口或交互
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and references / 替代方案与参考

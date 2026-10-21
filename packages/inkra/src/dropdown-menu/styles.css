@@ -1,0 +1,15 @@
+.inkra-menu { min-width: 180px; max-width: min(320px, calc(100vw - 16px)); outline: 0; z-index: calc(40 + var(--inkra-floating-layer-offset, 0)); }
+.inkra-menu__paper { padding: 4px; max-height: var(--radix-dropdown-menu-content-available-height); overflow-y: auto; }
+.inkra-menu__item { position: relative; display: flex; align-items: center; gap: 8px; padding: 8px 12px; min-height: 44px; box-sizing: border-box; color: var(--inkra-ink); outline: 0; cursor: default; font-family: var(--inkra-font-body); font-size: var(--inkra-text-md); line-height: var(--inkra-line-ui); }
+.inkra-menu__item[data-destructive] { color: var(--inkra-danger-foreground); }
+.inkra-menu__item[data-disabled] { opacity: 0.5; pointer-events: none; }
+.inkra-menu__highlight { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+.inkra-menu__item[data-highlighted] > .inkra-menu__highlight { opacity: 1; }
+.inkra-menu__icon { display: inline-flex; width: 16px; height: 16px; flex: none; position: relative; }
+.inkra-menu__label { position: relative; min-width: 0; overflow-wrap: anywhere; }
+.inkra-menu__group-label { padding: 8px 12px; color: var(--inkra-ink-muted); font-size: var(--inkra-text-sm); }
+.inkra-menu__separator { height: 8px; }
+@media (forced-colors: active) {
+  .inkra-menu { border: 1px solid CanvasText; background: Canvas; }
+  .inkra-menu__item[data-highlighted] { outline: 2px solid Highlight; outline-offset: -2px; }
+}

@@ -1,0 +1,7 @@
+.inkra-breadcrumb { min-width: 0; color: var(--inkra-ink); }
+.inkra-breadcrumb__list { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.inkra-breadcrumb__item { display: inline-flex; align-items: center; min-width: 0; max-width: 100%; }
+.inkra-breadcrumb__link { max-width: 100%; color: var(--inkra-ink-muted); }
+.inkra-breadcrumb__link .inkra-button__label { white-space: normal; overflow-wrap: anywhere; }
+.inkra-breadcrumb__page { min-height: 44px; display: inline-flex; align-items: center; padding-inline: 12px; overflow-wrap: anywhere; }
+.inkra-breadcrumb__separator { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; min-width: 16px; color: var(--inkra-ink-subtle); pointer-events: none; }
