@@ -99,6 +99,23 @@ GitHub secret after successful migration; prefer disallowing token publishing.
 
 ## Registry Verification And Recovery
 
+### Initial Staging Service Failure
+
+On 2026-10-22, staging run 39656403601 and its retry failed with npm HTTP 400
+"Version uniqueness check failed unexpectedly". The authenticated staged list
+was empty and the public package returned 404. This is not a completed release.
+
+The temporary Bootstrap first npm publication workflow recovers only the exact
+v0.1.0 source and validated artifact 12372033672 from that run. It never rebuilds
+the package or moves the tag. A separate npm-bootstrap environment retains
+maintainer review, disallows administrator bypass and permits main only.
+The official npm CLI runs inside Actions with a terminal for browser 2FA; its
+approval URL is exposed in a one-day npm-approval artifact. No OTP or credential
+is put into that artifact. The original pipeline remains the verification and
+GitHub Release path. Provenance records the recovery workflow's real identity;
+the checked manifest records the original tagged product source.
+Remove bootstrap secrets from both environments after configuring OIDC.
+
 After publish, or when running verify, the workflow reads the public registry,
 downloads its archive and compares SHA-256 and SHA-512 with the approved
 candidate. It installs inkra@X.Y.Z from npm in clean React 18/19 consumers,
