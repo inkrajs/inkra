@@ -13,6 +13,10 @@ Use a local candidate until the release is announced. Website publication is
 owned by [inkrajs.github.io](https://github.com/inkrajs/inkrajs.github.io),
 separately from npm releases.
 
+The npm package is **`@inkra/react`**. The earlier unscoped name `inkra` was
+rejected by npm's name-similarity policy. Releases use `react-vX.Y.Z` Git tags;
+the unsuccessful `v0.1.0` tag is retained as history, not a published release.
+
 ## Components
 
 | Area | Components |
@@ -54,14 +58,14 @@ is an optional launcher from this checkout; it does not refresh the candidate.
 npm run build
 npm run check:package
 # In a separate React project, install the archive named in .release/manifest.json.
-npm install /absolute/path/to/inkra/.release/inkra-0.1.0.tgz
+npm install /absolute/path/to/inkra/.release/inkra-react-0.1.0.tgz
 ```
 
 Import styles once at the application entry point:
 
 ```tsx
-import 'inkra/styles.css';
-import { Button, Field, Input } from 'inkra';
+import '@inkra/react/styles.css';
+import { Button, Field, Input } from '@inkra/react';
 
 export function NoteForm() {
   return (

@@ -33,7 +33,7 @@ export async function checkHydration(directory) {
     import { createElement, StrictMode } from 'react';
     import { hydrateRoot } from 'react-dom/client';
     import { App } from './app.mjs';
-    import 'inkra/styles.css';
+    import '@inkra/react/styles.css';
     hydrateRoot(document.getElementById('root'), createElement(StrictMode, null, createElement(App)), {
       onRecoverableError: error => { console.error('Hydration failed:', error.message); }
     });

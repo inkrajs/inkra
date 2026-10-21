@@ -3,10 +3,12 @@ import { createHash } from 'node:crypto';
 
 export const registry = 'https://registry.npmjs.org/';
 export const releaseActions = ['validate', 'publish', 'bootstrap-stage', 'verify'];
+export const archiveName = pkg => 'inkra-react-' + pkg.version + '.tgz';
+export const releaseTag = pkg => 'react-v' + pkg.version;
 
 export function checkSource({ pkg, lock, action, ref, commit }) {
   assert(releaseActions.includes(action), 'Unknown release action');
-  assert.equal(pkg.name, 'inkra');
+  assert.equal(pkg.name, '@inkra/react');
   assert.equal(pkg.repository.url, 'git+https://github.com/inkrajs/inkra.git');
   assert.equal(pkg.publishConfig.registry, registry);
   assert.equal(pkg.publishConfig.access, 'public');
@@ -14,7 +16,7 @@ export function checkSource({ pkg, lock, action, ref, commit }) {
   assert(/^[0-9a-f]{40}$/.test(commit), 'An exact source commit is required');
   if (action !== 'validate') {
     assert(/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(pkg.version), 'Only stable versions can be released');
-    assert.equal(ref, 'refs/tags/v' + pkg.version, 'Select the exact version tag, not a branch');
+    assert.equal(ref, 'refs/tags/' + releaseTag(pkg), 'Select the exact version tag, not a branch');
     assert.equal(pkg.publishConfig.tag, 'latest', 'Stable releases require the latest dist-tag');
   }
 }
@@ -22,7 +24,7 @@ export function checkSource({ pkg, lock, action, ref, commit }) {
 export function checkArchive(manifest, bytes, pkg, commit) {
   assert.equal(manifest.name, pkg.name);
   assert.equal(manifest.version, pkg.version);
-  assert.equal(manifest.filename, pkg.name + '-' + pkg.version + '.tgz');
+  assert.equal(manifest.filename, archiveName(pkg));
   assert.equal(manifest.commit, commit, 'Candidate belongs to another commit');
   assert.equal(createHash('sha256').update(bytes).digest('hex'), manifest.sha256, 'Candidate SHA-256 mismatch');
   assert.equal('sha512-' + createHash('sha512').update(bytes).digest('base64'), manifest.integrity, 'Candidate integrity mismatch');

@@ -8,6 +8,8 @@
 
 **发布状态：`0.1.0` 候选包已进入发布准备。** 版本号不代表 npm 已发布，正式发布前通过本地候选包试用。网站发布由 inkrajs.github.io 仓库负责，与 npm 发版独立。
 
+npm 包名为 **`@inkra/react`**。原来的 `inkra` 被 npm 相似名称规则拒绝；新的发布标签使用 `react-vX.Y.Z`，旧的 `v0.1.0` 仅保留历史记录，不代表已发布。
+
 ## 组件范围
 
 | 类别 | 组件 |
@@ -40,14 +42,14 @@ npm run check:package
 npm run build
 npm run check:package
 # 在另一个 React 项目中安装 .release/manifest.json 对应的 tgz 文件。
-npm install /absolute/path/to/inkra/.release/inkra-0.1.0.tgz
+npm install /absolute/path/to/inkra/.release/inkra-react-0.1.0.tgz
 ```
 
 在应用入口引入一次样式：
 
 ```tsx
-import 'inkra/styles.css';
-import { Button, Field, Input } from 'inkra';
+import '@inkra/react/styles.css';
+import { Button, Field, Input } from '@inkra/react';
 
 export function NoteForm() {
   return (

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { createElement as h } from 'react';
 import { renderToString } from 'react-dom/server';
-import * as Inkra from 'inkra';
+import * as Inkra from '@inkra/react';
 
 console.error = (...args) => { throw new Error(args.join(' ')); };
 console.warn = console.error;
@@ -18,7 +18,7 @@ assert.match(markup, /Save/);
 assert.match(markup, /Language/);
 assert.match(markup, /value="Inkra"/);
 assert.match(markup, /role="tabpanel"/);
-const cssUrl = import.meta.resolve('inkra/styles.css');
+const cssUrl = import.meta.resolve('@inkra/react/styles.css');
 const css = readFileSync(new URL(cssUrl), 'utf8');
 assert.match(css, /inkra-select__trigger/);
 assert.match(css, /@font-face/);
@@ -26,5 +26,5 @@ for (const match of css.matchAll(/url\(['"]?([^'"\s)]+)['"]?\)/g)) {
   if (/^(data:|https?:|#)/.test(match[1])) continue;
   assert(existsSync(new URL(match[1], cssUrl)), `Missing stylesheet asset ${match[1]}`);
 }
-assert(existsSync(new URL(import.meta.resolve('inkra/tokens.css'))));
+assert(existsSync(new URL(import.meta.resolve('@inkra/react/tokens.css'))));
 console.log('Public exports, SSR markup and stylesheet assets verified from installed package.');

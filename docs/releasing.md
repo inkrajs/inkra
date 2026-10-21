@@ -1,159 +1,109 @@
 # React Package Releases
 
-Repository: inkrajs/inkra. Package: inkra. Intended first release: 0.1.0.
-The package and lockfile declare the 0.1.0 candidate, with latest as its
-publication tag. Website deployment does not publish an npm package.
+Repository: inkrajs/inkra. Package: @inkra/react. First release: 0.1.0.
+The version in source is a candidate until registry verification passes.
+Website deployment does not publish an npm package.
 
 ## Pipeline
 
-Use the **Release npm package** GitHub Actions workflow (publish.yml). It is
-manually dispatched; neither pushing main nor creating a tag publishes a package.
-Local npm login is not a prerequisite. Never put credentials in chat or source.
-
-The action input has four explicit modes:
+Use the manually dispatched **Release npm package** workflow, publish.yml.
+Select an exact inkrajs/docs commit in docs_ref; the docs consumer must import
+the scoped package. Pushing main or a tag does not publish automatically.
 
 | Action | Ref | Effect |
 | --- | --- | --- |
-| validate | main or a candidate tag | Build and test an archive; never publish |
-| bootstrap-stage | exact stable version tag | Submit the first package for npm approval using the environment secret |
-| publish | exact stable version tag | Publish with npm Trusted Publishing (OIDC), without a stored npm token |
-| verify | same stable version tag | Verify an approved staged version or resume after an interrupted publish |
+| validate | main or candidate tag | Build and test; never publish |
+| bootstrap-stage | react-vX.Y.Z | Submit the first package for npm approval |
+| publish | react-vX.Y.Z | Publish using Trusted Publishing (OIDC) |
+| verify | same release tag | Verify an approved stage and create GitHub Release |
 
-Select the exact inkrajs/docs commit in docs_ref. It defaults to the tested
-documentation checkpoint, not a moving branch.
+Every mode checks clean source, package/lockfile version agreement, the exact
+release tag, source ancestry on origin/main, repository and public registry.
+Stable releases require latest; alpha candidates can only be validated.
+Node 24 and npm 11.21.0 build and test the candidate, including package contents,
+exports, license/font assets, React 18/19 installed SSR/types/hydration checks,
+and the exact docs consumer's build, browser smoke and homepage tests.
 
-Every mode starts with a clean source checkout and npm 11.21.0. The workflow
-checks repository portability, release-policy tests, components, package
-contents, exports, styles/fonts and installed-package SSR/types with React
-18 and 19. It also hydrates server-rendered fixtures in Chromium with both
-React versions, checking controls, portals, lazy maps and canvas recovery.
-The independent docs checkout installs that exact archive, then
-builds and runs its browser smoke and homepage suites.
+Only that validated archive and manifest reach the publishing job; no product
+rebuild occurs there. The scoped tarball is inkra-react-X.Y.Z.tgz. Actions
+retains the candidate artifact for 90 days. Calendar's React 18 SSR warning and
+the unverified Next.js/RSC boundary remain documented in rendering.md.
 
-Only the resulting tarball and manifest are passed to the publishing job.
-They are retained as an Actions artifact for 90 days. The publishing job has
-no product build or dependency install and rechecks commit, version and both
-archive digests before npm receives anything.
+## Package Identity And Tags
 
-For a real release, all of the following must match: the selected vX.Y.Z tag,
-package.json version, lockfile version, latest dist-tag and candidate commit.
-The tag commit must be reachable from origin/main. Alpha candidates can be
-validated but cannot pass the stable publication gate.
+On 2026-10-22 npm rejected the old unscoped name inkra as too similar to ink and
+inert (recovery run 39659366235). Its staging endpoint had hidden that reason
+behind a generic HTTP 400. No unscoped version was published.
 
-## GitHub Authorization
+The user approved @inkra/react. Product source remains in packages/inkra and
+the GitHub repository remains inkrajs/inkra. New tags are react-vX.Y.Z; retain
+the unsuccessful v0.1.0 tag without moving or deleting it. The one-off unscoped
+recovery workflow has been retired and its temporary GitHub secrets removed.
 
-The publishing job uses the npm-release environment. Configure it with:
+## Approval Gates
 
-- Maintainer approval by NWYLZW.
-- Only version tags matching v* may deploy.
-- No administrator bypass of the environment gate.
+The npm-release environment requires review by NWYLZW, disallows administrator
+bypass, and must permit the version-tag pattern react-v*. Immutable-tag protection
+must cover both historical v* and current react-v* tags.
+Only the final GitHub Release job gets contents:write; the publishing job has
+contents:read and id-token:write. Do not disable or bypass approval gates.
 
-The OIDC job has contents:read and id-token:write. Only the separate final
-GitHub Release job gets contents:write, after public-registry checks pass.
-Keep v* tags immutable with repository update/deletion rules.
-The npm-release reviewer/tag policies and immutable-tag rules have been
-configured and read back on GitHub. Private vulnerability reporting is enabled.
+## First Scoped Publication
 
-## First Package Bootstrap
+The existing npm organization is inkra, separate from the inkrajs GitHub
+organization. On 2026-10-22 the official npm registry confirmed yijie4188 as
+its owner. Recheck ownership before first publication; do not create another
+organization or infer npm permissions from GitHub membership.
 
-The inkra package was not found in the public registry at the last check.
-Absence is not a reservation or proof of publishing permissions.
+Store a short-lived authorized credential as NPM_BOOTSTRAP_TOKEN in the
+npm-release environment using gh secret set with standard input. Never put
+credentials in chat, command arguments or repository files. A session token
+supports staging; staging defers rather than bypasses npm's required 2FA.
 
-npm configures Trusted Publishers through an existing package's settings.
-For the first package, an authorized npm owner can create a short-lived,
-minimally scoped granular access token and store it directly as the
-NPM_BOOTSTRAP_TOKEN secret in GitHub's npm-release environment.
-The token needs package creation/write permission; no bypass-2FA option is
-needed for staging. The npm account must have 2FA enabled.
+Dispatch bootstrap-stage for the reviewed react-v0.1.0 tag. Approve the protected
+GitHub deployment, then approve the staged package on npm with 2FA. A staged
+placeholder is not the usable release. Never submit a duplicate while a stage
+is awaiting approval. Afterwards dispatch verify for the same tag and docs_ref.
 
-The CLI can store the secret using `gh secret set NPM_BOOTSTRAP_TOKEN
---repo inkrajs/inkra --env npm-release`. Supply the credential through its
-interactive prompt or standard input, never a command argument or log.
-GitHub authentication cannot create an npm credential. An optional npm web
-login can establish an authorized npm session; it never publishes locally.
+Once the package exists, configure npm trust github for @inkra/react with:
 
-Run bootstrap-stage for the reviewed stable tag and approve the GitHub
-environment deployment. This uses npm stage publish, not a local publish.
-For a new package, npm creates a public 0.0.0-stage placeholder; the candidate
-contents do not become public until the npm maintainer approves them.
-
-Review the candidate under npm's Staged Packages tab and approve with 2FA.
-This human npm authorization cannot be replaced by GitHub credentials or an
-OIDC token. Then run verify for the exact same tag.
-
-Once the package exists, configure its Trusted Publisher:
-
-| Field | Value |
+| Setting | Value |
 | --- | --- |
-| Provider | GitHub Actions |
-| Organization | inkrajs |
-| Repository | inkra |
-| Workflow filename | publish.yml |
+| GitHub repository | inkrajs/inkra |
+| Workflow file | publish.yml |
 | Environment | npm-release |
-| Allowed action | npm publish |
+| Allowed command | npm publish |
 
-New npm configurations may default to staging-only; explicitly allow direct
-publishing for the publish mode. Complete the first trusted publish within
-the validity period shown by npm. Revoke the bootstrap token and remove the
-GitHub secret after successful migration; prefer disallowing token publishing.
+Do not claim OIDC is configured until npm reads back that relationship. Complete
+the first trusted publish within npm's displayed validity window. Revoke the
+bootstrap credential and remove its GitHub secret after successful migration.
+Future publish runs use short-lived OIDC, not a manually renewed access token.
 
-## Registry Verification And Recovery
+## Verification And Consumer Deployment
 
-### Initial Staging Service Failure
+The verify job downloads the public archive and checks both SHA-256 and SHA-512
+against the approved manifest. It installs @inkra/react@X.Y.Z in clean React
+18/19 projects, verifies lockfile integrity, exports, types, styles and assets,
+then creates the GitHub Release with the matching archive and manifest.
 
-On 2026-10-22, staging run 39656403601 and its retry failed with npm HTTP 400
-"Version uniqueness check failed unexpectedly". The authenticated staged list
-was empty and the public package returned 404. This is not a completed release.
+Retries skip publication only if the existing version has identical integrity.
+Auth, rate-limit, network and server errors fail closed; only HTTP 404 means
+absent. Do not overwrite a tag, package version or release asset.
 
-The temporary Bootstrap first npm publication workflow recovers only the exact
-v0.1.0 source and validated artifact 12372033672 from that run. It never rebuilds
-the package or moves the tag. A separate npm-bootstrap environment retains
-maintainer review, disallows administrator bypass and permits main only.
-The official npm CLI runs inside Actions with a terminal for browser 2FA; its
-approval URL is exposed in a one-day npm-approval artifact. No OTP or credential
-is put into that artifact. The original pipeline remains the verification and
-GitHub Release path. Provenance records the recovery workflow's real identity;
-the checked manifest records the original tagged product source.
-Remove bootstrap secrets from both environments after configuring OIDC.
-
-After publish, or when running verify, the workflow reads the public registry,
-downloads its archive and compares SHA-256 and SHA-512 with the approved
-candidate. It installs inkra@X.Y.Z from npm in clean React 18/19 consumers,
-checks the installed lockfile integrity, imports, types, styles and fonts,
-then creates the GitHub Release with that same archive and manifest.
-
-A retry skips npm publication only if the existing public version has the
-same integrity. Different bytes stop the workflow. HTTP authorization,
-rate-limit and server errors are not interpreted as an available version.
-Never overwrite a tag, package version or release asset. A staged version
-that is waiting for approval must be approved or rejected on npm before a
-retry; do not submit another version merely to bypass the approval.
-
-## 0.1.0 Release Checklist
-
-- Package and lockfile versions agree on 0.1.0 and latest; the changelog
-  describes candidate scope without claiming a public release.
-- Run all candidate checks on the exact commit, including the independent
-  docs_ref consumer. Existing alpha artifacts are not release evidence.
-- Rendering coverage and explicit Calendar/Next.js limits are documented in
-  [rendering.md](rendering.md). Do not claim warning-free Calendar SSR or RSC
-  certification from the browser tests.
-- Record compatible source revisions in the organization integration inventory.
-- Configure and verify npm package ownership and publishing authorization;
-  only then dispatch bootstrap-stage or publish for the immutable v0.1.0 tag.
-- After approval/publication, run registry verification and create the GitHub
-  Release. Update the docs to the released registry version and verify the
-  deployed consumer; do not relabel the existing alpha site as 0.1.0.
-
-Do not claim a completed release while registry verification or authorization
-is unresolved. Required maintainer approvals must not be bypassed.
+After registry verification, update inkrajs/docs to the released package,
+pin that docs revision in inkrajs/inkrajs.github.io, run its deployment checks,
+and verify the live version.json and actual routes. Record compatible revisions
+in the organization inventory. Validation, staging, npm publication and website
+deployment are separate outcomes and must be reported separately.
 
 ## References
 
+- https://docs.npmjs.com/creating-an-organization/
 - https://docs.npmjs.com/trusted-publishers/
 - https://docs.npmjs.com/staged-publishing/
 - https://docs.npmjs.com/cli/v11/commands/npm-stage/
 
-Discovery: gh does not expose --llms-txt. npm publication behavior was checked
-against the reachable official npm/documentation and npm/cli sources, including
-trusted-publishers.mdx, staged-publishing.mdx and npm-stage.md on 2026-10-22.
+Discovery: gh has no --llms-txt surface. Official npm/documentation and npm/cli
+sources were used on 2026-10-22. npm org supports membership operations, not
+organization creation. Current browser runtime bootstrap fails because its
+configured browser-service.mjs is unavailable; no browser workaround was used.

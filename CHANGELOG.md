@@ -3,6 +3,11 @@
 ## 0.1.0 - Release Candidate
 
 No `0.1.0` npm package or GitHub Release has been published from this workspace.
+
+- The approved npm package name is `@inkra/react`; npm rejected the earlier
+  unscoped `inkra` name as too similar to existing packages. Public imports,
+  installed-package checks and the documentation consumer use the scoped name.
+- Release tags now use `react-vX.Y.Z`, preserving the unsuccessful `v0.1.0` tag.
 This is candidate scope, not a completed release.
 
 ### Components

@@ -1,5 +1,5 @@
-import { Button, Field, Input, InputNumber, PencilIcon, Select, Slider, Tabs } from 'inkra';
-import type { SelectTriggerProps } from 'inkra';
+import { Button, Field, Input, InputNumber, PencilIcon, Select, Slider, Tabs } from '@inkra/react';
+import type { SelectTriggerProps } from '@inkra/react';
 
 const trigger: SelectTriggerProps = {
   startIcon: <PencilIcon paths={[{ d: 'M4 12h16' }]} size={22} />,

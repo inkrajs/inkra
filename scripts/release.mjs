@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { appendFile, readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { checkArchive, checkPublished, checkSource, readPublished, registry } from './release-policy.mjs';
+import { archiveName, checkArchive, checkPublished, checkSource, readPublished, registry } from './release-policy.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const json = async path => JSON.parse(await readFile(new URL('../' + path, import.meta.url), 'utf8'));
@@ -27,7 +27,7 @@ if (operation === 'source') {
 } else {
   const manifest = await json('.release/manifest.json');
   // Check the filename before constructing a filesystem path from the artifact.
-  assert.equal(manifest.filename, pkg.name + '-' + pkg.version + '.tgz');
+  assert.equal(manifest.filename, archiveName(pkg));
   const archive = new URL('../.release/' + manifest.filename, import.meta.url);
   checkArchive(manifest, await readFile(archive), pkg, commit);
   const summary = text => process.env.GITHUB_STEP_SUMMARY

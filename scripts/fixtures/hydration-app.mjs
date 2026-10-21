@@ -1,5 +1,5 @@
 import { createElement as h, useEffect, useState } from 'react';
-import { Button, Calendar, Checkbox, Field, Input, InputNumber, JourneyMap, Overlay, PencilText, Select, Tabs } from 'inkra';
+import { Button, Calendar, Checkbox, Field, Input, InputNumber, JourneyMap, Overlay, PencilText, Select, Tabs } from '@inkra/react';
 
 const places = [{ id: 'auckland', label: 'Auckland', latitude: -36.85, longitude: 174.76 }];
 

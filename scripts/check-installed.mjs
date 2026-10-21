@@ -16,15 +16,15 @@ assert([18, 19].includes(major), 'Only React 18 and 19 are in this validation ma
 const directory = await mkdtemp(join(tmpdir(), 'inkra-installed-'));
 const fromRegistry = process.argv.includes('--registry');
 const browserChecks = process.argv.includes('--browser');
-assert.equal(candidate.name, 'inkra');
+assert.equal(candidate.name, '@inkra/react');
 assert(/^\d+\.\d+\.\d+(?:-[\w.-]+)?$/.test(candidate.version), 'Invalid candidate version');
 try {
   await writeFile(join(directory, 'package.json'), JSON.stringify({ private: true, type: 'module' }));
   const installSource = fromRegistry ? candidate.name + '@' + candidate.version : tarball;
   execFileSync('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--registry=https://registry.npmjs.org', installSource, `react@${reactVersion}`, `react-dom@${reactVersion}`, 'typescript@5.9.3', `@types/react@${major}`, `@types/react-dom@${major}`, ...(browserChecks ? ['vite@8.3.4'] : [])], { cwd: directory, stdio: 'inherit', timeout: 180000 });
   const installedLock = JSON.parse(await readFile(join(directory, 'package-lock.json'), 'utf8'));
-  assert.equal(installedLock.packages['node_modules/inkra'].integrity, candidate.integrity, 'Installed bytes differ from candidate');
-  assert(!(await lstat(join(directory, 'node_modules/inkra'))).isSymbolicLink(), 'Must test the installed tarball, not a workspace link');
+  assert.equal(installedLock.packages['node_modules/@inkra/react'].integrity, candidate.integrity, 'Installed bytes differ from candidate');
+  assert(!(await lstat(join(directory, 'node_modules/@inkra/react'))).isSymbolicLink(), 'Must test the installed tarball, not a workspace link');
   await cp(new URL('./fixtures/installed-smoke.mjs', import.meta.url), join(directory, 'smoke.mjs'));
   await cp(new URL('./fixtures/installed-types.tsx', import.meta.url), join(directory, 'types.tsx'));
   execFileSync(process.execPath, ['smoke.mjs'], { cwd: directory, stdio: 'inherit' });

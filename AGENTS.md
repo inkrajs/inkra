@@ -6,7 +6,7 @@ This is the inkrajs/inkra React component library. Documentation is owned by the
 
 - Preserve existing changes and respect concurrent file ownership.
 - Use npm workspaces. Root scripts: `npm run dev`, `npm run build`, `npm test`.
-- The package is `packages/inkra`. Local `apps/docs` is a separate ignored Git checkout, not an npm workspace. Other checkouts use INKRA_DOCS_DIR.
+- The npm package is `@inkra/react`, in `packages/inkra`. Local `apps/docs` is a separate ignored Git checkout, not an npm workspace. Other checkouts use INKRA_DOCS_DIR.
 - After library changes, build and pack, then run the docs checkout's `npm run prepare:library -- <library-checkout>`. Never restore source aliases to hide packaging failures.
 - Read `docs/design-standard.md` before changing visual behavior.
 - Keep semantic HTML and selectable text. Decorative drawing must not determine layout or intercept input.

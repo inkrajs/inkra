@@ -3,12 +3,13 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
+import { archiveName } from './release-policy.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const directory = new URL('../.release/', import.meta.url);
 await mkdir(directory, { recursive: true });
 const packageJson = JSON.parse(await readFile(new URL('../packages/inkra/package.json', import.meta.url), 'utf8'));
-const [pack] = JSON.parse(execFileSync('npm', ['pack', '--workspace=inkra', '--ignore-scripts', '--json', '--pack-destination', fileURLToPath(directory)], { cwd: root, encoding: 'utf8' }));
+const [pack] = JSON.parse(execFileSync('npm', ['pack', '--workspace=@inkra/react', '--ignore-scripts', '--json', '--pack-destination', fileURLToPath(directory)], { cwd: root, encoding: 'utf8' }));
 const paths = new Set(pack.files.map(file => file.path));
 for (const file of paths) {
   assert(/^(dist\/|README\.md$|LICENSE$|THIRD_PARTY_NOTICES\.md$|Yozai-OFL\.txt$|package\.json$)/.test(file), `Unexpected package entry: ${file}`);
@@ -18,6 +19,8 @@ const targets = value => typeof value === 'string' ? [value] : Object.values(val
 for (const entry of targets(packageJson.exports)) assert(paths.has(entry.replace(/^\.\//, '')), `Missing exported file: ${entry}`);
 for (const path of ['LICENSE', 'THIRD_PARTY_NOTICES.md', 'Yozai-OFL.txt', 'dist/assets/ui-hand-yozai.woff2']) assert(paths.has(path), `Missing required asset: ${path}`);
 assert.equal(pack.version, packageJson.version);
+assert.equal(pack.name, '@inkra/react');
+assert.equal(pack.filename, archiveName(packageJson));
 assert.equal(packageJson.repository.url, 'git+https://github.com/inkrajs/inkra.git');
 assert(!packageJson.dependencies.react && !packageJson.dependencies['react-dom'], 'React must stay a peer dependency');
 const sha256 = createHash('sha256').update(await readFile(new URL(pack.filename, directory))).digest('hex');

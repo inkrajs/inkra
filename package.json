@@ -8,8 +8,8 @@
   ],
   "scripts": {
     "dev": "node scripts/dev-docs.mjs",
-    "build": "npm run build --workspace=inkra",
-    "test": "npm test --workspace=inkra",
+    "build": "npm run build --workspace=@inkra/react",
+    "test": "npm test --workspace=@inkra/react",
     "test:release": "node --test scripts/test/*.test.mjs",
     "check:repository": "node scripts/check-repository.mjs",
     "check:package": "node scripts/check-package.mjs",

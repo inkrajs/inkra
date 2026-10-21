@@ -1,5 +1,5 @@
 {
-  "name": "inkra",
+  "name": "@inkra/react",
   "version": "0.1.0",
   "description": "Hand-drawn React controls with native semantics and deterministic decoration.",
   "type": "module",

@@ -4,6 +4,9 @@ Inkra is a pencil-styled React component library. It includes action, form, over
 
 Source and maintenance: [inkrajs/inkra](https://github.com/inkrajs/inkra).
 
+Package name: `@inkra/react`. Import the scoped package and its stylesheet;
+the unscoped `inkra` name is not this library's published package.
+
 ## Installation
 
 The package is prepared for npm-compatible installation, but this repository does not assume that a release has been published. In a workspace, depend on the local package according to the workspace package manager's conventions.
@@ -17,9 +20,9 @@ Inkra components require a React client boundary. Next.js and React Server Compo
 Import the component styles once near the application entry point:
 
 ```tsx
-import 'inkra/styles.css';
+import '@inkra/react/styles.css';
 
-import { Button, ButtonGroup, ButtonLink, PencilLine, PencilSurface, PencilText } from 'inkra';
+import { Button, ButtonGroup, ButtonLink, PencilLine, PencilSurface, PencilText } from '@inkra/react';
 
 export function Actions() {
   return (
@@ -43,7 +46,7 @@ export function Actions() {
 }
 ```
 
-To use only the design tokens, import `inkra/tokens.css` instead.
+To use only the design tokens, import `@inkra/react/tokens.css` instead.
 
 ## Button
 
@@ -179,7 +182,7 @@ Content layout options preserve existing defaults:
 
 `DayAgenda` takes a local `date` (`YYYY-MM-DD`) and `AgendaEvent[]` with `id`, `title`, optional `description`, `startMinute` and `endMinute`. Minutes are relative to that day's midnight. Cross-day intervals show continuation; missing times remain pending and missing ends remain points. Its vertical timeline uses a piecewise scale for readable short events and separate lanes for overlaps. `selectedEvent`, `onEventSelect`, `onPreviousDay` and `onNextDay` provide interaction. Supply localized labels, `locale` and optional `timeZoneLabel`; no time zones or flight durations are inferred.
 
-`JourneyMap` accepts `places`, optional GeoJSON `geography`, `routes`, `selectedPlace`, `onPlaceSelect` and required `attribution`. Place/route coordinates use latitude then longitude; GeoJSON retains longitude then latitude. Leaflet is loaded only in the browser. The map supports pan, zoom and reset, with an equivalent place-button list. It does not request location permissions, fetch map tiles, calculate routes or infer travel times. Demo geography is illustrative, not navigation data. Use `labels` to localize controls and failure feedback, and import `inkra/styles.css` for all required map styles.
+`JourneyMap` accepts `places`, optional GeoJSON `geography`, `routes`, `selectedPlace`, `onPlaceSelect` and required `attribution`. Place/route coordinates use latitude then longitude; GeoJSON retains longitude then latitude. Leaflet is loaded only in the browser. The map supports pan, zoom and reset, with an equivalent place-button list. It does not request location permissions, fetch map tiles, calculate routes or infer travel times. Demo geography is illustrative, not navigation data. Use `labels` to localize controls and failure feedback, and import `@inkra/react/styles.css` for all required map styles.
 
 ## Pencil Primitives
 

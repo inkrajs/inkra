@@ -4,17 +4,17 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { checkArchive } from './release-policy.mjs';
+import { archiveName, checkArchive, releaseTag } from './release-policy.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const pkg = JSON.parse(await readFile(new URL('../packages/inkra/package.json', import.meta.url)));
 const manifest = JSON.parse(await readFile(new URL('../.release/manifest.json', import.meta.url)));
-assert.equal(manifest.filename, 'inkra-' + pkg.version + '.tgz');
+assert.equal(manifest.filename, archiveName(pkg));
 const archive = new URL('../.release/' + manifest.filename, import.meta.url);
 checkArchive(manifest, await readFile(archive), pkg, process.env.GITHUB_SHA);
-assert.equal(process.env.GITHUB_REF, 'refs/tags/v' + pkg.version);
+assert.equal(process.env.GITHUB_REF, 'refs/tags/' + releaseTag(pkg));
 assert.equal(process.env.GITHUB_REPOSITORY, 'inkrajs/inkra');
-const tag = 'v' + pkg.version;
+const tag = releaseTag(pkg);
 const gh = args => execFileSync('gh', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
 let release;
 try {
