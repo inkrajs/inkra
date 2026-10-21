@@ -13,7 +13,7 @@ on:
         description: Exact inkrajs/docs commit used to test this candidate
         required: true
         type: string
-        default: 388f2d59513b3ae0bfaf5f33522912476ca1f3f9
+        default: e1e794de38333dd05ce2aed185cdf9ad81b8423b
 
 permissions:
   contents: read
@@ -24,7 +24,7 @@ concurrency:
 
 env:
   RELEASE_ACTION: ${{ inputs.action || 'validate' }}
-  DOCS_REF: ${{ inputs.docs_ref || '388f2d59513b3ae0bfaf5f33522912476ca1f3f9' }}
+  DOCS_REF: ${{ inputs.docs_ref || 'e1e794de38333dd05ce2aed185cdf9ad81b8423b' }}
 
 jobs:
   validate:
