@@ -7,11 +7,12 @@
 A pencil-styled React component library with semantic controls, deterministic
 hand-drawn materials, and an interactive documentation playground.
 
-**Release status:** the `0.1.0` candidate is prepared for the publishing pipeline;
-the presence of this repository does not mean `0.1.0` is on npm.
-Use a local candidate until the release is announced. Website publication is
-owned by [inkrajs.github.io](https://github.com/inkrajs/inkrajs.github.io),
-separately from npm releases.
+**Release status:** [`@inkra/react@0.1.0`](https://www.npmjs.com/package/@inkra/react)
+is published. The release pipeline verified the public archive and clean
+React 18/19 installations before creating the
+[GitHub Release](https://github.com/inkrajs/inkra/releases/tag/react-v0.1.0).
+Website publication is owned by
+[inkrajs.github.io](https://github.com/inkrajs/inkrajs.github.io), separately from npm releases.
 
 The npm package is **`@inkra/react`**. The earlier unscoped name `inkra` was
 rejected by npm's name-similarity policy. Releases use `react-vX.Y.Z` Git tags;
@@ -52,14 +53,14 @@ generated example code, API tables and accessibility notes. Rebuild, repack and
 prepare again after library changes. `INKRA_DOCS_DIR=/path/to/docs npm run dev`
 is an optional launcher from this checkout; it does not refresh the candidate.
 
-## Candidate Installation
+## Installation
 
 ```sh
-npm run build
-npm run check:package
-# In a separate React project, install the archive named in .release/manifest.json.
-npm install /absolute/path/to/inkra/.release/inkra-react-0.1.0.tgz
+npm install @inkra/react
 ```
+
+For unpublished local changes, build and run `npm run check:package`, then
+install the archive named in `.release/manifest.json` in a separate React project.
 
 Import styles once at the application entry point:
 
@@ -78,7 +79,7 @@ export function NoteForm() {
 ```
 
 The package is ESM with TypeScript declarations and React/React DOM peers.
-React 18/19 form the candidate matrix. The release pipeline checks browser hydration
+React 18/19 form the tested release matrix. The release pipeline checks browser hydration
 from server markup, controls, portals, canvas recovery and the lazy-loaded map
 using the installed archive. See [rendering support and limits](docs/rendering.md)
 for the known React 18 Calendar warning and the unverified Next.js/RSC boundary.

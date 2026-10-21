@@ -6,7 +6,7 @@
 
 保留原生语义的彩铅风格 React 组件库，提供稳定笔迹、纸面材质和可交互的文档示例。
 
-**发布状态：`0.1.0` 候选包已进入发布准备。** 版本号不代表 npm 已发布，正式发布前通过本地候选包试用。网站发布由 inkrajs.github.io 仓库负责，与 npm 发版独立。
+**发布状态：[`@inkra/react@0.1.0`](https://www.npmjs.com/package/@inkra/react) 已正式发布。** 流水线已核对公开包的完整性，并在 React 18/19 独立项目中验证安装，随后生成了 [GitHub Release](https://github.com/inkrajs/inkra/releases/tag/react-v0.1.0)。网站发布由 inkrajs.github.io 仓库负责，与 npm 发版独立。
 
 npm 包名为 **`@inkra/react`**。原来的 `inkra` 被 npm 相似名称规则拒绝；新的发布标签使用 `react-vX.Y.Z`，旧的 `v0.1.0` 仅保留历史记录，不代表已发布。
 
@@ -36,14 +36,13 @@ npm run check:package
 
 文档站由独立的 [inkrajs/docs](https://github.com/inkrajs/docs) 维护。在该仓库运行 `npm run prepare:library -- /absolute/path/to/inkra`，然后 `npm run dev -- --port 4180`。访问 `http://127.0.0.1:4180`，查看交互参数、动态源码、API 和无障碍说明。组件改动后重新构建、打包并准备候选包。本仓的 `INKRA_DOCS_DIR=/path/to/docs npm run dev` 仅作为启动入口，不自动刷新候选包。
 
-## 安装候选包
+## 安装
 
 ```sh
-npm run build
-npm run check:package
-# 在另一个 React 项目中安装 .release/manifest.json 对应的 tgz 文件。
-npm install /absolute/path/to/inkra/.release/inkra-react-0.1.0.tgz
+npm install @inkra/react
 ```
+
+验证未发布的本地修改时，先构建并运行 `npm run check:package`，再在另一个 React 项目中安装 `.release/manifest.json` 对应的 tgz 文件。
 
 在应用入口引入一次样式：
 
@@ -61,7 +60,7 @@ export function NoteForm() {
 }
 ```
 
-提供 ESM 和 TypeScript 声明，React 与 React DOM 为 peer dependencies。候选验证矩阵为 React 18/19；发布流水线使用真实安装包验证服务端输出后的浏览器水合、控件、弹层、画布恢复及地图懒加载。React 18 日历的上游警告和未经验证的 Next.js/RSC 边界见[渲染支持说明](docs/rendering.md)。
+提供 ESM 和 TypeScript 声明，React 与 React DOM 为 peer dependencies。正式版验证矩阵为 React 18/19；发布流水线使用真实安装包验证服务端输出后的浏览器水合、控件、弹层、画布恢复及地图懒加载。React 18 日历的上游警告和未经验证的 Next.js/RSC 边界见[渲染支持说明](docs/rendering.md)。
 
 ## 开发与维护
 
@@ -75,7 +74,7 @@ export function NoteForm() {
 - `scripts`：仓库与安装包检查。
 - `.github/workflows`：PR 检查和手动候选包准备，不自动发布。
 
-运行 `npm run check`，检查可移植性、包测试、打包内容，以及在独立临时项目中安装同一 tarball 后的 SSR、类型和资源路径。文档构建和浏览器交互检查归独立 docs 仓库负责；现有本地 `apps/docs` 仅是被主仓忽略的独立 Git 目录，不再是 npm workspace。目前没有启用 npm 自动发布和文档自动部署。
+运行 `npm run check`，检查可移植性、包测试、打包内容，以及在独立临时项目中安装同一 tarball 后的 SSR、类型和资源路径。文档构建和浏览器交互检查归独立 docs 仓库负责；现有本地 `apps/docs` 仅是被主仓忽略的独立 Git 目录，不再是 npm workspace。npm 发布使用手动触发、需审批的流水线；网站由独立仓库的 Pages 流水线部署，详见[发版说明](docs/releasing.md)。
 
 修改公共接口前阅读[贡献指南](CONTRIBUTING.md)。普通问题使用 Issue 模板，安全问题遵循[安全说明](SECURITY.md)，版本变化记录在 [CHANGELOG](CHANGELOG.md)。
 

@@ -1,14 +1,15 @@
 # Changelog
 
-## 0.1.0 - Release Candidate
+## 0.1.0 - 2026-10-22
 
-No `0.1.0` npm package or GitHub Release has been published from this workspace.
+Published as `@inkra/react@0.1.0` with the `latest` npm dist-tag and
+the `react-v0.1.0` GitHub Release. The public archive matches the approved
+Actions candidate; clean registry installations passed with React 18 and 19.
 
 - The approved npm package name is `@inkra/react`; npm rejected the earlier
   unscoped `inkra` name as too similar to existing packages. Public imports,
   installed-package checks and the documentation consumer use the scoped name.
 - Release tags now use `react-vX.Y.Z`, preserving the unsuccessful `v0.1.0` tag.
-This is candidate scope, not a completed release.
 
 ### Components
 
@@ -35,11 +36,8 @@ This is candidate scope, not a completed release.
 - Installed-package StrictMode hydration checks for React 18/19, including
   controls, portals, lazy maps, canvas recovery and unavailable-canvas fallback.
 
-### Known Limits And Publication Status
+### Known Limits
 
 - Calendar's upstream DayPicker animation hook emits a React 18 development
   SSR layout-effect warning. Browser hydration is tested separately.
 - Next.js/RSC integration is not certified; components require a client boundary.
-- npm ownership and publishing authorization; the public source and website are live.
-- The candidate is not published. Registry verification and the GitHub Release
-  must complete before announcing availability.

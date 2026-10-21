@@ -1,8 +1,24 @@
 # React Package Releases
 
 Repository: inkrajs/inkra. Package: @inkra/react. First release: 0.1.0.
-The version in source is a candidate until registry verification passes.
+Version 0.1.0 is published and registry-verified. Future source versions remain
+candidates until their own registry verification passes.
 Website deployment does not publish an npm package.
+
+## First Release Record
+
+- Source/tag: 25e2e29bf3c001096440ebcff9c51c372c5a587f / react-v0.1.0.
+- Staging run: 39671918917, followed by the maintainer's npm approval.
+- Registry verification and GitHub Release run: 39677233690, successful.
+- Public archive SHA-256:
+  f86161cf33223628c64451ec87e39488f4b0f1ebc28db31e8ab7a8a595291a67.
+- Temporary GitHub bootstrap secrets removed from npm-release and npm-bootstrap.
+
+The first version used staging, not OIDC publishing. The maintainer has saved
+the trusted publisher in npm package settings; it still shows Pending validation.
+Do not describe OIDC as verified until a new version is successfully published
+through that trusted workflow. Re-running 0.1.0 only verifies its existing bytes
+and skips publishing, so it cannot validate the new trust relationship.
 
 ## Pipeline
 
@@ -48,7 +64,7 @@ must cover both historical v* and current react-v* tags.
 Only the final GitHub Release job gets contents:write; the publishing job has
 contents:read and id-token:write. Do not disable or bypass approval gates.
 
-## First Scoped Publication
+## Bootstrap Procedure
 
 The existing npm organization is inkra, separate from the inkrajs GitHub
 organization. On 2026-10-22 the official npm registry confirmed yijie4188 as
@@ -78,6 +94,12 @@ Do not claim OIDC is configured until npm reads back that relationship. Complete
 the first trusted publish within npm's displayed validity window. Revoke the
 bootstrap credential and remove its GitHub secret after successful migration.
 Future publish runs use short-lived OIDC, not a manually renewed access token.
+
+If a CLI web-auth link expires, use the fixed npm package page: Settings,
+Trusted publishing, GitHub Actions. A saved configuration is not an end-to-end
+publish test. Newly created configurations must complete their first successful
+publish within two days; use the deadline shown by npm. Never create an unapproved
+version or overwrite a published version just to test authentication.
 
 ## Verification And Consumer Deployment
 
