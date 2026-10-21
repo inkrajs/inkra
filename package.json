@@ -10,10 +10,11 @@
     "dev": "node scripts/dev-docs.mjs",
     "build": "npm run build --workspace=inkra",
     "test": "npm test --workspace=inkra",
+    "test:release": "node --test scripts/test/*.test.mjs",
     "check:repository": "node scripts/check-repository.mjs",
     "check:package": "node scripts/check-package.mjs",
     "check:installed": "node scripts/check-installed.mjs",
-    "check": "npm run check:repository && npm test && npm run check:package && npm run check:installed"
+    "check": "npm run check:repository && npm run test:release && npm test && npm run check:package && npm run check:installed"
   },
   "engines": {
     "node": ">=22.12.0"

@@ -1,0 +1,184 @@
+name: Release npm package
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Validate only, publish with OIDC, stage the first package, or verify an approved stage
+        required: true
+        type: choice
+        default: validate
+        options: [validate, publish, bootstrap-stage, verify]
+      docs_ref:
+        description: Exact inkrajs/docs commit used to test this candidate
+        required: true
+        type: string
+        default: 388f2d59513b3ae0bfaf5f33522912476ca1f3f9
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-release
+  cancel-in-progress: false
+
+env:
+  RELEASE_ACTION: ${{ inputs.action || 'validate' }}
+  DOCS_REF: ${{ inputs.docs_ref || '388f2d59513b3ae0bfaf5f33522912476ca1f3f9' }}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    outputs:
+      version: ${{ steps.source.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Pin the npm CLI used to create and publish the archive
+        run: npm install --global npm@11.21.0 --ignore-scripts
+      - name: Check release source and version policy
+        id: source
+        run: node scripts/release.mjs source
+      - run: npm ci --ignore-scripts
+      - run: npm run check
+      - name: Verify the same archive with React 18
+        run: npm run check:installed
+        env:
+          REACT_VERSION: 18.3.1
+      - name: Verify candidate identity
+        run: node scripts/release.mjs candidate
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: inkrajs/docs
+          ref: ${{ env.DOCS_REF }}
+          path: .consumer
+          persist-credentials: false
+      - name: Install this exact archive in the docs consumer
+        run: npm run prepare:library -- ..
+        working-directory: .consumer
+      - run: npm ci --ignore-scripts
+        working-directory: .consumer
+      - run: npm run build
+        working-directory: .consumer
+      - run: npx playwright install --with-deps chromium
+        working-directory: .consumer
+      - name: Validate installed-package browser interactions
+        working-directory: .consumer
+        run: |
+          npm run dev -- --port 4180 --strictPort > /tmp/inkra-release-browser.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..60}; do
+            curl --fail --silent http://127.0.0.1:4180/ > /dev/null && break
+            kill -0 "$server_pid" || { cat /tmp/inkra-release-browser.log; exit 1; }
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4180/ > /dev/null
+          npm run test:browser
+          node scripts/verify-homepage.mjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: npm-candidate
+          path: |
+            .release/*.tgz
+            .release/manifest.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 90
+
+  publish:
+    needs: validate
+    if: inputs.action != 'validate' && inputs.action != 'verify'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: npm-release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org/
+          package-manager-cache: false
+      - run: npm install --global npm@11.21.0 --ignore-scripts
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: npm-candidate
+          path: .release
+      - name: Publish the verified tarball with OIDC
+        if: env.RELEASE_ACTION == 'publish'
+        run: node scripts/release.mjs publish
+      - name: Stage the first package for npm approval
+        if: env.RELEASE_ACTION == 'bootstrap-stage'
+        run: node scripts/release.mjs bootstrap-stage
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}
+
+  verify:
+    needs: [validate, publish]
+    if: >-
+      always() && needs.validate.result == 'success' &&
+      (inputs.action == 'verify' ||
+      (needs.publish.result == 'success' && inputs.action != 'bootstrap-stage'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        react: ['18.3.1', '19.3.1']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - run: npm install --global npm@11.21.0 --ignore-scripts
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: npm-candidate
+          path: .release
+      - name: Compare the public archive with the approved candidate
+        run: node scripts/release.mjs verify
+      - name: Install from the public registry and verify exports, types and assets
+        run: node scripts/check-installed.mjs --registry
+        env:
+          REACT_VERSION: ${{ matrix.react }}
+
+  github-release:
+    needs: [validate, verify]
+    if: always() && needs.verify.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: npm-candidate
+          path: .release
+      - name: Create a release only after registry verification succeeds
+        run: node scripts/github-release.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}

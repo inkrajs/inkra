@@ -92,13 +92,16 @@ publication have separate verification gates.
 | `assets` | Repository branding assets |
 | `docs/design-standard.md` | Visual and interaction rules |
 | `scripts` | Repository and installed-package checks |
-| `.github/workflows` | PR checks and manual, non-publishing candidate preparation |
+| `.github/workflows` | PR checks, candidate preparation and approval-gated npm releases |
 
 Run `npm run check` for portability checks, package tests, tarball
 contents and SSR/types/assets after installing that exact tarball in a temporary
 project. The independent docs repository owns its build and browser checks.
 The existing local `apps/docs` path is an ignored independent Git checkout, not
 a library workspace. There is no automatic npm publication or deployment.
+The manual `Release npm package` workflow defaults to validation only. Its
+OIDC, first-package bootstrap and registry verification modes are documented
+in [the release guide](docs/releasing.md).
 
 ## Contribute and Report
 

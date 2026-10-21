@@ -20,11 +20,12 @@ This is candidate scope, not a completed release.
 - Public-registry lockfile and portable browser-test imports.
 - Repository and tarball checks, candidate digest, installed-package SSR/types/
   assets, read-only CI and manual candidate artifacts.
+- A manually triggered, approval-gated npm pipeline: candidate validation,
+  OIDC publishing, first-package staging and registry installation verification.
 
 ### Outstanding Gates
 
 - Final API/documentation parity and installed-browser/RSC validation.
 - React 18 server-rendering layout-effect warnings in drawing components.
-- npm ownership/authentication, initial source push and public visibility approval.
-- Documentation hosting and direct-route behavior.
+- npm ownership and publishing authorization; the public source and website are live.
 - Approval of the exact `0.1.0` candidate before publication.
