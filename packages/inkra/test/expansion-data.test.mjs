@@ -6,8 +6,6 @@ const dataTable = readFileSync(new URL('../src/data-table/index.tsx', import.met
 const dataTableStyles = readFileSync(new URL('../src/data-table/styles.css', import.meta.url), 'utf8');
 const tree = readFileSync(new URL('../src/tree/index.tsx', import.meta.url), 'utf8');
 const treeStyles = readFileSync(new URL('../src/tree/styles.css', import.meta.url), 'utf8');
-const docs = readFileSync(new URL('../../../apps/docs/src/components/expansion/DataExamples.tsx', import.meta.url), 'utf8');
-const browser = readFileSync(new URL('../../../apps/docs/scripts/verify-expansion-data.mjs', import.meta.url), 'utf8');
 
 test('DataTable composes TanStack v8 with the existing semantic Table and Checkbox', () => {
   assert.match(dataTable, /from '@tanstack\/react-table'/);
@@ -62,26 +60,4 @@ test('Tree styling supports logical indentation, RTL, reduced motion and forced 
   assert.match(treeStyles, /prefers-reduced-motion: reduce/);
   assert.match(treeStyles, /forced-colors: active/);
   assert.match(treeStyles, /min-height: var\(--inkra-touch-target\)/);
-});
-
-test('Data documentation exports the route contract and honest interaction scope', () => {
-  assert.match(docs, /export const dataDocs: Record<string, ExpansionDoc>/);
-  assert.match(docs, /'data-table':/);
-  assert.match(docs, /tree:/);
-  assert.match(docs, /useLocale\(\)/);
-  assert.match(docs, /locale === 'zh-CN'/);
-  assert.match(docs, /ComponentExample/);
-  assert.match(docs, /ComponentPlayground/);
-  assert.match(docs, /PropertyTabs/);
-  assert.match(docs, /onPaginationChange=\{updater =>/);
-  assert.match(docs, /density="\$\{density\}"/);
-  assert.match(docs, /getRowCanSelect=\{\(\) => \$\{!disableRows\}\}/);
-  assert.match(docs, /onExpandedChange=\{setExpandedKeys\}/);
-  assert.match(docs, /onSelectionChange=\{setSelectedKeys\}/);
-  assert.doesNotMatch(docs, /<Tree\.Item[^>]*>\.\.\.<\/Tree\.Item>|<Tree\.Root[^>]*>\.\.\.<\/Tree\.Root>/);
-  assert.match(docs, /数据再多，也能排得明明白白。翻页、筛选、挑几行，都交给它。/);
-  assert.match(docs, /文件夹里还有文件夹？展开看看，每一层都有自己的位置。/);
-  assert.match(docs, /Virtualization, inline editing and server transport are not included/);
-  assert.match(docs, /Drag and drop is not included/);
-  assert.match(browser, /process\.env\.BASE_URL/);
 });

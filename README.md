@@ -105,7 +105,8 @@ npm run check
 ```
 
 Checks cover the repository, component tests and a separately installed
-package's types, SSR, assets and browser hydration.
+package's types, SSR and assets. Run `npm run check:installed -- --browser`
+for the additional browser hydration checks.
 
 The playground lives in [inkrajs/docs](https://github.com/inkrajs/docs).
 To preview local library changes, follow its candidate preparation instructions;

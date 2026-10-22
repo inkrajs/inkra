@@ -96,7 +96,8 @@ npm run build
 npm run check
 ```
 
-检查覆盖仓库、组件测试，以及独立安装包的类型、SSR、资源和浏览器水合。
+检查覆盖仓库、组件测试，以及独立安装包的类型、SSR 和资源。
+运行 `npm run check:installed -- --browser` 可追加浏览器水合检查。
 
 文档站在独立的 [inkrajs/docs](https://github.com/inkrajs/docs) 仓库维护。
 预览组件库的本地修改时，按该仓库的说明准备候选包；文档站安装经过校验的归档，
