@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="./assets/inkra.png" alt="Inkra pencil mark" width="96">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/inkra-dark.png">
+    <img src="./assets/inkra.png" alt="Inkra pencil mark" width="96" height="96">
+  </picture>
 </p>
 
 <p align="center">English | <a href="./README.zh-CN.md">简体中文</a></p>

@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="./assets/inkra.png" alt="Inkra 铅笔标志" width="96">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/inkra-dark.png">
+    <img src="./assets/inkra.png" alt="Inkra 铅笔标志" width="96" height="96">
+  </picture>
 </p>
 
 <p align="center"><a href="./README.md">English</a> | 简体中文</p>
