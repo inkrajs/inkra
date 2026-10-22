@@ -1,0 +1,116 @@
+.inkra-alert-dialog__backdrop {
+  animation: inkra-alert-dialog-backdrop-in var(--inkra-motion-normal) var(--inkra-ease);
+  background: var(--inkra-overlay);
+  inset: 0;
+  position: fixed;
+  z-index: calc(var(--inkra-z-modal, 30) + var(--inkra-floating-layer-offset, 0));
+}
+
+.inkra-alert-dialog__backdrop[data-state="closed"] {
+  animation: inkra-alert-dialog-backdrop-out var(--inkra-motion-normal) var(--inkra-ease);
+}
+
+.inkra-alert-dialog__content {
+  animation: inkra-alert-dialog-content-in var(--inkra-motion-normal) var(--inkra-ease);
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  max-height: min(80vh, calc(100dvh - var(--inkra-space-8)));
+  outline: 0;
+  position: fixed;
+  transform: translate(-50%, -50%);
+  width: min(32rem, calc(100vw - var(--inkra-space-8)));
+  z-index: calc(var(--inkra-z-modal, 30) + var(--inkra-floating-layer-offset, 0) + 1);
+}
+
+.inkra-alert-dialog__content[data-state="closed"] {
+  animation: inkra-alert-dialog-content-out var(--inkra-motion-normal) var(--inkra-ease);
+}
+
+.inkra-alert-dialog__content:focus-visible {
+  outline: var(--inkra-focus-width) solid var(--inkra-focus);
+  outline-offset: var(--inkra-focus-offset);
+}
+
+.inkra-alert-dialog__surface,
+.inkra-alert-dialog__layout {
+  display: flex;
+  flex-direction: column;
+  max-height: inherit;
+  min-height: 0;
+  width: 100%;
+}
+
+.inkra-alert-dialog__surface { color: var(--inkra-ink); }
+.inkra-alert-dialog__layout { overflow: hidden; }
+
+.inkra-alert-dialog__header,
+.inkra-alert-dialog__body,
+.inkra-alert-dialog__footer {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: var(--inkra-space-5);
+  position: relative;
+}
+
+.inkra-alert-dialog__header,
+.inkra-alert-dialog__footer { flex: none; }
+.inkra-alert-dialog__heading { display: grid; gap: var(--inkra-space-2); min-width: 0; overflow-wrap: anywhere; }
+.inkra-alert-dialog__body { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
+.inkra-alert-dialog__footer { display: flex; flex-wrap: wrap; align-items: center; gap: var(--inkra-space-3); justify-content: flex-end; }
+.inkra-alert-dialog__footer[data-align="start"] { justify-content: flex-start; }
+.inkra-alert-dialog__footer[data-align="center"] { justify-content: center; }
+.inkra-alert-dialog__footer > .inkra-button { max-width: 100%; }
+
+.inkra-alert-dialog__title {
+  color: var(--inkra-ink);
+  font-family: var(--inkra-font-display);
+  font-size: var(--inkra-text-xl);
+  font-weight: var(--inkra-weight-regular);
+  line-height: var(--inkra-line-ui);
+  margin: 0;
+}
+
+.inkra-alert-dialog__description {
+  color: var(--inkra-ink-muted);
+  font-family: var(--inkra-font-body);
+  font-size: var(--inkra-text-md);
+  line-height: var(--inkra-line-body);
+  margin: 0;
+}
+
+.inkra-alert-dialog__divider { height: 8px; inset-inline: 0; pointer-events: none; position: absolute; width: 100%; }
+.inkra-alert-dialog__header > .inkra-alert-dialog__divider { bottom: -4px; }
+.inkra-alert-dialog__footer > .inkra-alert-dialog__divider { top: -4px; }
+
+@keyframes inkra-alert-dialog-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes inkra-alert-dialog-backdrop-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes inkra-alert-dialog-content-in {
+  from { opacity: 0; transform: translate(-50%, calc(-50% + var(--inkra-space-2))) scale(.98); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes inkra-alert-dialog-content-out {
+  from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  to { opacity: 0; transform: translate(-50%, calc(-50% + var(--inkra-space-2))) scale(.98); }
+}
+
+@media (max-width: 30rem) {
+  .inkra-alert-dialog__content {
+    max-height: calc(100dvh - var(--inkra-space-4));
+    width: calc(100vw - var(--inkra-space-4));
+  }
+  .inkra-alert-dialog__header,
+  .inkra-alert-dialog__body,
+  .inkra-alert-dialog__footer { padding: var(--inkra-space-4); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inkra-alert-dialog__backdrop,
+  .inkra-alert-dialog__content { animation: none; }
+}
+
+@media (forced-colors: active) {
+  .inkra-alert-dialog__backdrop { background: CanvasText; opacity: .25; }
+  .inkra-alert-dialog__surface { background: Canvas; border: 1px solid CanvasText; }
+  .inkra-alert-dialog__header[data-divided] { border-bottom: 1px solid CanvasText; }
+  .inkra-alert-dialog__footer[data-divided] { border-top: 1px solid CanvasText; }
+}

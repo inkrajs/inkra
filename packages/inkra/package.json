@@ -10,7 +10,9 @@
     "directory": "packages/inkra"
   },
   "homepage": "https://inkrajs.github.io/",
-  "bugs": { "url": "https://github.com/inkrajs/inkra/issues" },
+  "bugs": {
+    "url": "https://github.com/inkrajs/inkra/issues"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -94,9 +96,12 @@
     "@radix-ui/react-slider": "^1.6.1",
     "@radix-ui/react-tabs": "^1.2.1",
     "@radix-ui/react-tooltip": "^1.4.1",
+    "@tanstack/react-table": "^8.21.3",
     "@types/geojson": "^7946.0.16",
+    "cmdk": "^1.1.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.60.0",
+    "react-aria-components": "^1.22.1",
     "react-day-picker": "^9.14.0"
   }
 }

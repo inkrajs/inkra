@@ -1,0 +1,68 @@
+.inkra-empty {
+  align-content: center;
+  align-items: var(--inkra-empty-align, center);
+  box-sizing: border-box;
+  color: var(--inkra-ink);
+  display: grid;
+  gap: var(--inkra-space-2);
+  justify-items: var(--inkra-empty-align, center);
+  min-width: 0;
+  padding: var(--inkra-empty-padding, var(--inkra-space-6));
+  text-align: var(--inkra-empty-text-align, center);
+}
+
+.inkra-empty[data-align="start"] {
+  --inkra-empty-align: start;
+  --inkra-empty-text-align: start;
+}
+.inkra-empty[data-size="sm"] { --inkra-empty-padding: var(--inkra-space-4); }
+.inkra-empty[data-size="lg"] { --inkra-empty-padding: var(--inkra-space-8); gap: var(--inkra-space-3); }
+
+.inkra-empty__icon {
+  align-items: center;
+  color: var(--inkra-ink-muted);
+  display: inline-flex;
+  justify-content: center;
+  margin-block-end: var(--inkra-space-1);
+  min-height: 2rem;
+  min-width: 2rem;
+}
+.inkra-empty[data-size="sm"] .inkra-empty__icon { min-height: 1.5rem; min-width: 1.5rem; }
+.inkra-empty[data-size="lg"] .inkra-empty__icon { min-height: 2.5rem; min-width: 2.5rem; }
+
+.inkra-empty__title {
+  font-size: var(--inkra-text-xl);
+  font-weight: var(--inkra-weight-regular);
+  line-height: var(--inkra-line-ui);
+  margin: 0;
+  max-width: 32rem;
+  overflow-wrap: anywhere;
+}
+.inkra-empty[data-size="sm"] .inkra-empty__title { font-size: var(--inkra-text-lg); }
+.inkra-empty[data-size="lg"] .inkra-empty__title { font-size: var(--inkra-text-2xl); }
+
+.inkra-empty__description {
+  color: var(--inkra-ink-muted);
+  font-size: var(--inkra-text-md);
+  line-height: var(--inkra-line-body);
+  margin: 0;
+  max-width: 38rem;
+  overflow-wrap: anywhere;
+}
+.inkra-empty[data-size="sm"] .inkra-empty__description { font-size: var(--inkra-text-sm); }
+
+.inkra-empty__actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--inkra-space-2);
+  justify-content: center;
+  margin-block-start: var(--inkra-space-2);
+  min-width: 0;
+}
+.inkra-empty[data-align="start"] .inkra-empty__actions { justify-content: flex-start; }
+
+@media (forced-colors: active) {
+  .inkra-empty__icon,
+  .inkra-empty__description { color: CanvasText; }
+}

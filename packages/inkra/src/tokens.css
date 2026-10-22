@@ -183,7 +183,8 @@
   --inkra-wash-opacity: 0.48;
   --inkra-wash-strength: 0.48;
   --inkra-wash-spacing: 1.8px;
-  --inkra-wash-roughness: 3;
+  --inkra-wash-roughness: 3.5;
+  --inkra-wash-angle: -35deg;
   --inkra-wash-inset: 2px;
   --inkra-wash-edge-reach: 0px;
   --inkra-quiet-wash-strength: 0.18;

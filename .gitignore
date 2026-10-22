@@ -14,5 +14,8 @@ test-results/
 **/HANDOFF.md
 docs/*handoff.md
 docs/*coordination.md
+# Local component development handoffs contain checkout and task identities.
+docs/development/component-expansion.md
+docs/development/expansion-*.md
 # Independent inkrajs/docs checkout, retained here for local preview continuity.
 apps/docs/

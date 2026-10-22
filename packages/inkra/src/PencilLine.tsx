@@ -13,6 +13,7 @@ import { seedToNumber } from './internal/random.js';
 import { createPencilLinePoints, pencilLineHasDrawableSize } from './internal/line.js';
 import type { PencilLineOrientation } from './internal/line.js';
 import { pencilStroke } from './internal/stroke.js';
+import { readRenderToken } from './internal/renderTokens.js';
 
 export interface PencilLineProps extends Omit<CanvasHTMLAttributes<HTMLCanvasElement>, 'children'> {
   seed?: string | number;
@@ -57,9 +58,9 @@ export const PencilLine = forwardRef<HTMLCanvasElement, PencilLineProps>(functio
   {
     className = '',
     orientation = 'horizontal',
-    roughness = 0.6,
+    roughness,
     seed = 'inkra-pencil-line',
-    weight = 1.2,
+    weight,
     ...props
   },
   forwardedRef,
@@ -72,6 +73,7 @@ export const PencilLine = forwardRef<HTMLCanvasElement, PencilLineProps>(functio
     if (!canvas) return undefined;
     let frame = 0;
     let disposed = false;
+    let lastPaint = '';
     const paint = () => {
       frame = 0;
       if (disposed) return;
@@ -79,18 +81,22 @@ export const PencilLine = forwardRef<HTMLCanvasElement, PencilLineProps>(functio
       const height = canvas.clientHeight;
       if (!pencilLineHasDrawableSize(width, height, orientation)) return;
       const dpr = effectiveDpr(2);
-      const color = getComputedStyle(canvas).color;
+      const style = getComputedStyle(canvas);
+      const color = style.color;
+      const resolvedWeight = weight ?? readRenderToken(style, '--inkra-stroke-width', 1.2, 0.3, 3);
+      const resolvedRoughness = roughness ?? readRenderToken(style, '--inkra-stroke-amplitude', 0.6, 0, 2);
       const numericSeed = seedToNumber(seed);
       const key = JSON.stringify([
-        PENCIL_RENDERER_VERSION, orientation, width, height, color, numericSeed, weight, roughness, dpr,
+        PENCIL_RENDERER_VERSION, orientation, width, height, color, numericSeed, resolvedWeight, resolvedRoughness, dpr,
       ]);
+      if (key === lastPaint && canvasIsUsable(canvas)) return;
       let image = lineCache.get(key);
       if (image && !canvasIsUsable(image)) {
         lineCache.delete(key);
         image = undefined;
       }
       if (!image) {
-        image = renderLine(width, height, color, numericSeed, weight, roughness, orientation, dpr);
+        image = renderLine(width, height, color, numericSeed, resolvedWeight, resolvedRoughness, orientation, dpr);
         lineCache.set(key, image, canvasByteCost(image));
       }
       canvas.width = image.width;
@@ -98,27 +104,26 @@ export const PencilLine = forwardRef<HTMLCanvasElement, PencilLineProps>(functio
       const context = canvas.getContext('2d');
       if (!context || context.isContextLost?.()) return;
       context.drawImage(image, 0, 0);
+      lastPaint = key;
     };
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(paint);
     };
     const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(schedule);
     resize?.observe(canvas);
-    const appearance = new MutationObserver(schedule);
-    appearance.observe(document.documentElement, {
-      attributes: true,
-      subtree: true,
-      attributeFilter: ['data-theme', 'data-inkra-theme'],
-    });
     const colorScheme = window.matchMedia('(prefers-color-scheme: dark)');
+    const inheritedStyle = new MutationObserver(schedule);
+    for (let element: HTMLElement | null = canvas; element; element = element.parentElement) {
+      inheritedStyle.observe(element, { attributes: true, attributeFilter: ['style', 'class', 'data-theme', 'data-inkra-theme'] });
+    }
     colorScheme.addEventListener('change', schedule);
-    const stopRecovery = observeCanvasRecovery(schedule);
+    const stopRecovery = observeCanvasRecovery(() => { lastPaint = ''; schedule(); });
     paint();
     return () => {
       disposed = true;
       stopRecovery();
       resize?.disconnect();
-      appearance.disconnect();
+      inheritedStyle.disconnect();
       colorScheme.removeEventListener('change', schedule);
       cancelAnimationFrame(frame);
     };

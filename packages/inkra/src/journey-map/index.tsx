@@ -157,7 +157,9 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
       const observer = new ResizeObserver(() => { map.invalidateSize(); if (!fitted) fit(); schedule(); });
       observer.observe(host.current);
       const appearance = new MutationObserver(schedule);
-      appearance.observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ['data-theme', 'data-inkra-theme'] });
+      for (let element: HTMLElement | null = host.current; element; element = element.parentElement) {
+        appearance.observe(element, { attributes: true, attributeFilter: ['data-theme', 'data-inkra-theme'] });
+      }
       const scheme = matchMedia('(prefers-color-scheme: dark)');
       scheme.addEventListener('change', schedule);
       fit(); schedule(); setReady(true);

@@ -1,10 +1,11 @@
 import { useRef, type RefObject } from 'react';
 import { useBrowserLayoutEffect } from './useBrowserLayoutEffect.js';
 import { PENCIL_SELECTION_WASH } from './surfaceRenderer.js';
+import { readRenderToken } from './renderTokens.js';
 
 // Reveal the cached pigment in alternating diagonal strokes, without repainting it.
-function drawingFrames(width: number, height: number): Keyframe[] {
-  const angle = PENCIL_SELECTION_WASH.angle * Math.PI / 180;
+function drawingFrames(width: number, height: number, degrees: number): Keyframe[] {
+  const angle = degrees * Math.PI / 180;
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
   const u = (Math.abs(cos) * width + Math.abs(sin) * height) / 2 + 2;
@@ -17,14 +18,15 @@ function drawingFrames(width: number, height: number): Keyframe[] {
     const bottom = -v + (index + 1) * 2 * v / strokes;
     // Limit travel to the visible section of this stripe, not its rotated bounds.
     const middle = (top + bottom) / 2;
-    const ends = [
-      (-width / 2 + sin * middle) / cos,
-      (width / 2 + sin * middle) / cos,
-      (-height / 2 - cos * middle) / sin,
-      (height / 2 - cos * middle) / sin,
-    ];
-    const left = Math.max(Math.min(ends[0], ends[1]), Math.min(ends[2], ends[3]));
-    const right = Math.min(Math.max(ends[0], ends[1]), Math.max(ends[2], ends[3]));
+    let left = -u;
+    let right = u;
+    for (const [direction, offset, halfExtent] of [[cos, -sin * middle, width / 2], [sin, cos * middle, height / 2]]) {
+      if (Math.abs(direction) < 1e-8) continue;
+      const a = (-halfExtent - offset) / direction;
+      const b = (halfExtent - offset) / direction;
+      left = Math.max(left, Math.min(a, b));
+      right = Math.min(right, Math.max(a, b));
+    }
     for (const progress of [0, 0.5, 1]) {
       const x = progress === 0 ? (index % 2 ? u : -u) : progress === 1 ? (index % 2 ? -u : u) : (left + right) / 2;
       const outline = index % 2
@@ -56,8 +58,9 @@ export function useSelectionDrawing(ref: RefObject<HTMLElement | null>, selected
       return;
     }
     const duration = selected ? 480 : 320;
+    const angle = readRenderToken(getComputedStyle(node), '--inkra-wash-angle', PENCIL_SELECTION_WASH.angle, -85, 85);
     const animation = node.animate(
-      drawingFrames(node.clientWidth, node.clientHeight).map(frame => ({ ...frame, opacity: 1 })),
+      drawingFrames(node.clientWidth, node.clientHeight, angle).map(frame => ({ ...frame, opacity: 1 })),
       { duration, direction: selected ? 'normal' : 'reverse', easing: 'linear' },
     );
     animation.currentTime = (selected ? progress.current : 1 - progress.current) * duration;

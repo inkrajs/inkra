@@ -19,6 +19,9 @@ export interface PencilSurfaceTheme {
   dark: boolean;
   ink: string;
   wash: string;
+  strokeWidth?: number;
+  strokeRoughness?: number;
+  washSettings?: { strength: number; spacing: number; roughness: number; angle: number };
 }
 
 interface SurfaceStyle {
@@ -146,9 +149,10 @@ export function drawPencilSurface(
     }
     context.translate(bleed, bleed);
     drawPencilWash(context, { x: 0, y: 0, width, height }, theme.wash, seed, {
-      strength: 1,
-      spacing: 1.8,
-      roughness: 3.5,
+      strength: theme.washSettings?.strength ?? 1,
+      spacing: theme.washSettings?.spacing ?? 1.8,
+      roughness: theme.washSettings?.roughness ?? 3.5,
+      angle: theme.washSettings ? theme.washSettings.angle - PENCIL_FILL_WASH.angle : 0,
       inset: 2,
       radius: 8,
       edgeReach: 8,
@@ -163,13 +167,13 @@ export function drawPencilSurface(
       borderCanvas.height = canvas.height;
     }
     drawPencilWash(context, { x: 0, y: 0, width, height }, theme.wash, seed, {
-      strength: theme.dark ? PENCIL_SELECTION_WASH.darkStrength : PENCIL_SELECTION_WASH.lightStrength,
-      spacing: PENCIL_SELECTION_WASH.spacing,
-      roughness: PENCIL_SELECTION_WASH.roughness,
+      strength: (theme.dark ? PENCIL_SELECTION_WASH.darkStrength : PENCIL_SELECTION_WASH.lightStrength) * (theme.washSettings?.strength ?? 1),
+      spacing: theme.washSettings?.spacing ?? PENCIL_SELECTION_WASH.spacing,
+      roughness: theme.washSettings?.roughness ?? PENCIL_SELECTION_WASH.roughness,
       inset: PENCIL_SELECTION_WASH.inset,
       radius: PENCIL_SELECTION_WASH.radius,
       edgeReach: PENCIL_SELECTION_WASH.edgeReach,
-      angle: PENCIL_SELECTION_WASH.angle,
+      angle: theme.washSettings?.angle ?? PENCIL_SELECTION_WASH.angle,
       dpr,
     });
     return undefined;
@@ -212,7 +216,8 @@ export function drawPencilSurface(
     if (strength) {
       drawPencilWash(context, { x: 0, y: 0, width, height }, theme.wash, seed, {
         ...PENCIL_FILL_WASH,
-        strength,
+        ...theme.washSettings,
+        strength: strength * (theme.washSettings?.strength ?? 1),
         radius: resolvedRadius,
         dpr,
       });
@@ -230,7 +235,7 @@ export function drawPencilSurface(
       borderContext = separateContext;
     }
   }
-  pencilStroke(borderContext, points, theme.ink, style.width, seed, 0.6, style.passes, true, {
+  pencilStroke(borderContext, points, theme.ink, style.width * ((theme.strokeWidth ?? 1.2) / 1.2), seed, theme.strokeRoughness ?? 0.6, style.passes, true, {
     variation: 0.82,
     breaks: variant === 'paper' ? 0.2 : 0.25,
     grain: 0.7,

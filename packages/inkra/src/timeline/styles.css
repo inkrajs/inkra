@@ -1,0 +1,21 @@
+.inkra-timeline { display: flex; min-width: 0; margin: 0; padding: 0; list-style: none; color: var(--inkra-ink); }
+.inkra-timeline__item { display: grid; min-width: 0; }
+.inkra-timeline__rail { position: relative; display: flex; align-items: center; justify-content: flex-start; }
+.inkra-timeline__marker { position: relative; z-index: 1; display: grid; flex: none; place-items: center; width: 36px; height: 36px; color: var(--inkra-accent-strong); }
+.inkra-timeline__connector { position: absolute; color: var(--inkra-border-strong); }
+.inkra-timeline__body { min-width: 0; }
+.inkra-timeline__date { display: block; color: var(--inkra-ink-muted); font-size: var(--inkra-text-sm); line-height: var(--inkra-line-ui); }
+.inkra-timeline__title { margin-block-start: var(--inkra-space-1); font-size: var(--inkra-text-lg); line-height: var(--inkra-line-ui); overflow-wrap: anywhere; }
+.inkra-timeline__description { margin-block-start: var(--inkra-space-1); color: var(--inkra-ink-muted); line-height: var(--inkra-line-body); overflow-wrap: anywhere; }
+.inkra-timeline__content { margin-block-start: var(--inkra-space-3); min-width: 0; }
+.inkra-timeline[data-orientation="vertical"] { flex-direction: column; }
+.inkra-timeline[data-orientation="vertical"] .inkra-timeline__item { grid-template-columns: 44px minmax(0, 1fr); gap: var(--inkra-space-3); padding-block-end: var(--inkra-space-6); }
+.inkra-timeline[data-orientation="vertical"] .inkra-timeline__rail { align-items: flex-start; }
+.inkra-timeline[data-orientation="vertical"] .inkra-timeline__connector { top: 40px; bottom: calc(-1 * var(--inkra-space-6)); inset-inline-start: 14px; width: 8px; height: auto; }
+.inkra-timeline[data-orientation="horizontal"] { gap: 0; overflow-x: auto; padding-block-end: var(--inkra-space-3); }
+.inkra-timeline[data-orientation="horizontal"] .inkra-timeline__item { grid-template-rows: 44px auto; flex: 1 0 min(280px, 78vw); padding-inline-end: var(--inkra-space-6); }
+.inkra-timeline[data-orientation="horizontal"] .inkra-timeline__connector { inset-inline-start: 40px; inset-inline-end: calc(-1 * var(--inkra-space-2)); top: 14px; width: auto; height: 8px; }
+@media (forced-colors: active) {
+  .inkra-timeline__marker { border: 1px solid CanvasText; }
+  .inkra-timeline__connector { color: CanvasText; }
+}

@@ -1,0 +1,108 @@
+.inkra-toast__theme-anchor { display: none; }
+
+.inkra-toast__viewport {
+  display: flex;
+  flex-direction: column;
+  gap: var(--inkra-space-3);
+  inset-block: auto var(--inkra-space-5);
+  inset-inline: auto var(--inkra-space-5);
+  margin: 0;
+  max-height: calc(100dvh - var(--inkra-space-10));
+  max-width: calc(100vw - var(--inkra-space-10));
+  outline: 0;
+  padding: 0;
+  position: fixed;
+  width: min(24rem, calc(100vw - var(--inkra-space-10)));
+  z-index: calc(var(--inkra-z-toast, 50) + var(--inkra-floating-layer-offset, 0));
+}
+
+.inkra-toast__viewport[data-placement^="top"] { inset-block: var(--inkra-space-5) auto; }
+.inkra-toast__viewport[data-placement$="start"] { inset-inline: var(--inkra-space-5) auto; }
+
+.inkra-toast__root {
+  --inkra-toast-translate-x: var(--toast-swipe-movement-x, 0px);
+  --inkra-toast-translate-y: var(--toast-swipe-movement-y, 0px);
+  box-sizing: border-box;
+  color: var(--inkra-toast-foreground, var(--inkra-ink));
+  max-width: 100%;
+  min-width: 0;
+  position: relative;
+  transform: translate(var(--inkra-toast-translate-x), var(--inkra-toast-translate-y));
+  transition: opacity var(--inkra-motion-normal) var(--inkra-ease), transform var(--inkra-motion-normal) var(--inkra-ease);
+}
+
+.inkra-toast__root[data-starting-style],
+.inkra-toast__root[data-ending-style],
+.inkra-toast__root[data-limited] { opacity: 0; }
+
+.inkra-toast__root[data-starting-style] { transform: translateY(8px); }
+.inkra-toast__root[data-ending-style][data-swipe-direction="left"] { transform: translateX(-110%); }
+.inkra-toast__root[data-ending-style][data-swipe-direction="right"] { transform: translateX(110%); }
+.inkra-toast__root[data-ending-style][data-swipe-direction="up"] { transform: translateY(-110%); }
+.inkra-toast__root[data-ending-style][data-swipe-direction="down"] { transform: translateY(110%); }
+
+.inkra-toast__root[data-tone="success"] {
+  --inkra-accent-soft: var(--inkra-success-pigment);
+  --inkra-border-strong: var(--inkra-success-foreground);
+  --inkra-toast-foreground: var(--inkra-success-foreground);
+}
+.inkra-toast__root[data-tone="warning"] {
+  --inkra-accent-soft: var(--inkra-warning-pigment);
+  --inkra-border-strong: var(--inkra-warning-foreground);
+  --inkra-toast-foreground: var(--inkra-warning-foreground);
+}
+.inkra-toast__root[data-tone="danger"] {
+  --inkra-accent-soft: var(--inkra-danger-pigment);
+  --inkra-border-strong: var(--inkra-danger-foreground);
+  --inkra-toast-foreground: var(--inkra-danger-foreground);
+}
+.inkra-toast__root[data-tone="info"] {
+  --inkra-accent-soft: var(--inkra-info-pigment);
+  --inkra-border-strong: var(--inkra-info-foreground);
+  --inkra-toast-foreground: var(--inkra-info-foreground);
+}
+
+.inkra-toast__surface {
+  inset: 0;
+  position: absolute;
+  z-index: 0;
+}
+
+.inkra-toast__content {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--inkra-space-3);
+  justify-content: space-between;
+  min-height: var(--inkra-control-md);
+  min-width: 0;
+  padding: var(--inkra-space-4);
+  position: relative;
+  z-index: 1;
+}
+
+.inkra-toast__copy { display: grid; flex: 1; gap: var(--inkra-space-1); min-width: 0; }
+.inkra-toast__title { font-size: var(--inkra-text-lg); line-height: var(--inkra-line-ui); margin: 0; overflow-wrap: anywhere; }
+.inkra-toast__description { color: var(--inkra-toast-foreground, var(--inkra-ink-muted)); font-size: var(--inkra-text-sm); line-height: var(--inkra-line-body); margin: 0; overflow-wrap: anywhere; }
+.inkra-toast__actions { align-items: center; display: flex; flex: none; gap: var(--inkra-space-1); }
+.inkra-toast__action,
+.inkra-toast__close { position: relative; z-index: 1; }
+
+@media (max-width: 30rem) {
+  .inkra-toast__viewport {
+    inset-inline: var(--inkra-space-4);
+    max-width: none;
+    width: auto;
+  }
+  .inkra-toast__content { align-items: stretch; flex-direction: column; }
+  .inkra-toast__actions { justify-content: flex-end; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inkra-toast__root { transition: none; }
+}
+
+@media (forced-colors: active) {
+  .inkra-toast__surface { display: none; }
+  .inkra-toast__root { border: 1px solid CanvasText; background: Canvas; color: CanvasText; forced-color-adjust: none; }
+  .inkra-toast__description { color: CanvasText; }
+}

@@ -10,7 +10,8 @@ import type {
 import { effectiveDpr } from './internal/cache.js';
 import { observeCanvasRecovery } from './internal/recovery.js';
 import { seedToNumber } from './internal/random.js';
-import { renderPencilText } from './internal/textRenderer.js';
+import { pencilLettering, renderPencilText } from './internal/textRenderer.js';
+import { readRenderToken } from './internal/renderTokens.js';
 import { queueTextPaint } from './internal/textQueue.js';
 
 interface PencilTextBaseProps {
@@ -93,6 +94,13 @@ function paintText(
       color: style.color,
       family: style.fontFamily,
       dpr,
+      settings: {
+        variation: readRenderToken(style, '--inkra-letter-variation', pencilLettering.variation, 0, 1),
+        breaks: readRenderToken(style, '--inkra-letter-breaks', pencilLettering.breaks, 0, 1),
+        outline: readRenderToken(style, '--inkra-letter-outline', pencilLettering.outline, 0, 1),
+        fill: readRenderToken(style, '--inkra-letter-fill', pencilLettering.fill, 0, 1),
+        grain: readRenderToken(style, '--inkra-letter-grain', pencilLettering.grain, 0, 1),
+      },
     });
     if (sprite.ink.getContext('2d')?.isContextLost?.()) return false;
     context.drawImage(
@@ -176,13 +184,26 @@ const PencilTextImplementation = forwardRef<HTMLElement, PencilTextImplementatio
       let visible = typeof IntersectionObserver === 'undefined';
       let pending: (() => void) | null = null;
       let dirty = true;
+      let lastAppearance = '';
+      const appearanceKey = () => {
+        const style = getComputedStyle(node);
+        const box = node.getBoundingClientRect();
+        return JSON.stringify([
+          box.width, box.height, effectiveDpr(2),
+          ...['color', 'font-family', 'font-size', 'line-height', 'text-align', 'text-indent',
+            'letter-spacing', 'white-space', 'word-break', 'overflow-wrap', 'direction',
+            'padding-top', 'padding-left', 'padding-right', 'padding-bottom',
+            '--inkra-letter-variation', '--inkra-letter-breaks', '--inkra-letter-outline',
+            '--inkra-letter-fill', '--inkra-letter-grain'].map(name => style.getPropertyValue(name)),
+        ]);
+      };
       const schedule = () => {
         if (!visible || !dirty || pending || disposed) return;
         pending = queueTextPaint(() => {
           pending = null;
           if (!disposed && visible && dirty) {
             try {
-              paintText(node, source, canvas, text, resolvedSeed);
+              if (paintText(node, source, canvas, text, resolvedSeed)) lastAppearance = appearanceKey();
             } catch {
               delete node.dataset.pencilReady;
             }
@@ -195,16 +216,18 @@ const PencilTextImplementation = forwardRef<HTMLElement, PencilTextImplementatio
         delete node.dataset.pencilReady;
         schedule();
       };
-      const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(markDirty);
+      // Scroll locks and pointer-event changes must not hide already-painted text.
+      const refreshAppearance = () => {
+        if (appearanceKey() !== lastAppearance) markDirty();
+      };
+      const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(refreshAppearance);
       resize?.observe(node);
-      const appearance = new MutationObserver(markDirty);
-      appearance.observe(document.documentElement, {
-        attributes: true,
-        subtree: true,
-        attributeFilter: ['data-theme', 'data-inkra-theme'],
-      });
       const colorScheme = window.matchMedia('(prefers-color-scheme: dark)');
-      colorScheme.addEventListener('change', markDirty);
+      const inheritedStyle = new MutationObserver(refreshAppearance);
+      for (let element: HTMLElement | null = node; element; element = element.parentElement) {
+        inheritedStyle.observe(element, { attributes: true, attributeFilter: ['style', 'class', 'dir', 'data-theme', 'data-inkra-theme'] });
+      }
+      colorScheme.addEventListener('change', refreshAppearance);
       const intersection = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(entries => {
         visible = entries[entries.length - 1]?.isIntersecting ?? false;
         schedule();
@@ -228,8 +251,8 @@ const PencilTextImplementation = forwardRef<HTMLElement, PencilTextImplementatio
         pending?.();
         resize?.disconnect();
         intersection?.disconnect();
-        appearance.disconnect();
-        colorScheme.removeEventListener('change', markDirty);
+        inheritedStyle.disconnect();
+        colorScheme.removeEventListener('change', refreshAppearance);
         fonts?.removeEventListener('loading', markDirty);
         fonts?.removeEventListener('loadingdone', markDirty);
         fonts?.removeEventListener('loadingerror', markDirty);

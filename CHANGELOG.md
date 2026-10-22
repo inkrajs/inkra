@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+- Add Toast, AlertDialog, Drawer, DatePicker, TimePicker, Pagination, Empty,
+  ToggleGroup, Command, Upload, DataTable, Tree, Steps and Timeline.
+- Reuse Base UI for notification/toggle interactions, Radix Dialog for modal
+  focus management, DayPicker for dates, cmdk for commands, TanStack Table v8
+  for tabular state and React Aria for tree interaction.
+- Add bilingual examples, categorized property controls, API/accessibility
+  documentation and component/installed-package/browser regression coverage.
+- Upload accepts an application-supplied transport; it does not upload to an
+  Inkra service. Drawer swipe gestures, Tree drag/drop and DataTable
+  virtualization/server transport are outside this increment.
+
+These are local development changes, not a published version or deployment.
+
 ## 0.1.0 - 2026-10-22
 
 Published as `@inkra/react@0.1.0` with the `latest` npm dist-tag and

@@ -38,7 +38,9 @@ export function MapScale({ map }: { map: Map | null }) {
     draw();
     map.on('moveend zoomend resize', draw);
     const observer = new MutationObserver(draw);
-    observer.observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ['data-theme', 'data-inkra-theme'] });
+    for (let element: HTMLElement | null = bar.current; element; element = element.parentElement) {
+      observer.observe(element, { attributes: true, attributeFilter: ['data-theme', 'data-inkra-theme'] });
+    }
     const scheme = matchMedia('(prefers-color-scheme: dark)');
     scheme.addEventListener('change', draw);
     return () => { map.off('moveend zoomend resize', draw); observer.disconnect(); scheme.removeEventListener('change', draw); };

@@ -274,6 +274,25 @@ test('Surface radius changes pencil geometry without leaking a DOM attribute', (
   assert.doesNotMatch(markup, / radius=/);
 });
 
+test('Surface stroke settings preserve default outlines and customize weight and roughness', () => {
+  const renderOutline = settings => {
+    const commands = [];
+    const context = new Proxy({ globalAlpha: 1 }, {
+      get: (target, key) => key in target ? target[key] : (...args) => commands.push([key, ...args]),
+      set: (target, key, value) => { target[key] = value; commands.push([key, value]); return true; },
+    });
+    const canvas = { width: 0, height: 0, getContext: () => context };
+    drawPencilSurface(canvas, null, 100, 44, 'outline', 23, 1, {
+      paper: '#ffffff', dark: false, ink: '#293d33', wash: '#4b96aa', ...settings,
+    });
+    return commands;
+  };
+  const original = renderOutline({});
+  assert.deepEqual(renderOutline({ strokeWidth: 1.2, strokeRoughness: 0.6 }), original);
+  assert.notDeepEqual(renderOutline({ strokeWidth: 3 }), original);
+  assert.notDeepEqual(renderOutline({ strokeRoughness: 2 }), original);
+});
+
 test('Pencil primitives render readable SSR markup before browser enhancement', () => {
   const surface = renderToStaticMarkup(
     createElement(PencilSurface, { as: 'section', seed: 'surface', variant: 'action' }, 'Content'),

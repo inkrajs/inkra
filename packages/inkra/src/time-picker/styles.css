@@ -1,0 +1,24 @@
+.inkra-time-picker {
+  min-width: 8rem;
+}
+
+.inkra-time-picker::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.72;
+}
+
+.inkra-input-root[data-disabled] .inkra-time-picker::-webkit-calendar-picker-indicator,
+.inkra-input-root[data-readonly] .inkra-time-picker::-webkit-calendar-picker-indicator {
+  cursor: default;
+  opacity: 0.4;
+}
+
+.inkra-time-picker__clear[aria-hidden="true"] {
+  visibility: hidden;
+}
+
+@media (forced-colors: active) {
+  .inkra-time-picker::-webkit-calendar-picker-indicator {
+    opacity: 1;
+  }
+}

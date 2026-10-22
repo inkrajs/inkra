@@ -5,6 +5,7 @@ import { PENCIL_RENDERER_VERSION, effectiveDpr } from './cache.js';
 import { observeCanvasRecovery } from './recovery.js';
 import { seedToNumber } from './random.js';
 import { drawPencilSurface } from './surfaceRenderer.js';
+import { readRenderToken } from './renderTokens.js';
 import type { PencilSurfaceVariant } from './surfaceRenderer.js';
 
 function token(style: CSSStyleDeclaration, name: string, fallback: string): string {
@@ -43,6 +44,14 @@ export function usePencilSurface(
           ? token(style, '--inkra-danger', '#873e36')
           : token(style, '--inkra-border-strong', '#778575');
       const dark = style.colorScheme.includes('dark');
+      const strokeWidth = readRenderToken(style, '--inkra-stroke-width', 1.2, 0.3, 3);
+      const strokeRoughness = readRenderToken(style, '--inkra-stroke-amplitude', 0.6, 0, 2);
+      const washSettings = {
+        strength: readRenderToken(style, '--inkra-wash-strength', 0.48, 0, 1) / 0.48,
+        spacing: readRenderToken(style, '--inkra-wash-spacing', 1.8, 1, 6),
+        roughness: readRenderToken(style, '--inkra-wash-roughness', 3.5, 0, 6),
+        angle: readRenderToken(style, '--inkra-wash-angle', -35, -85, 85),
+      };
       const wash = variant === 'selection'
         ? token(style, '--inkra-selection-pigment', dark ? '#c6b873' : '#769566')
         : variant === 'danger'
@@ -66,6 +75,7 @@ export function usePencilSurface(
         dark,
         clipContent,
         radius,
+        strokeWidth, strokeRoughness, washSettings,
       ]);
       if (paintKey === lastPaint && !canvas.getContext('2d')?.isContextLost?.()) return;
       try {
@@ -77,7 +87,7 @@ export function usePencilSurface(
           variant,
           numericSeed,
           dpr,
-          { paper, dark, ink, wash },
+          { paper, dark, ink, wash, strokeWidth, strokeRoughness, washSettings },
           radius,
         );
         if (clipContent && points) {
@@ -103,13 +113,11 @@ export function usePencilSurface(
     const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(schedule);
     resize?.observe(root);
     window.addEventListener('resize', schedule, { passive: true });
-    const appearance = new MutationObserver(schedule);
-    appearance.observe(document.documentElement, {
-      attributes: true,
-      subtree: true,
-      attributeFilter: ['data-theme', 'data-inkra-theme'],
-    });
     const colorScheme = window.matchMedia('(prefers-color-scheme: dark)');
+    const inheritedStyle = new MutationObserver(schedule);
+    for (let element: HTMLElement | null = root; element; element = element.parentElement) {
+      inheritedStyle.observe(element, { attributes: true, attributeFilter: ['style', 'class', 'data-theme', 'data-inkra-theme'] });
+    }
     colorScheme.addEventListener('change', schedule);
     const stopRecovery = observeCanvasRecovery(() => {
       lastPaint = '';
@@ -121,7 +129,7 @@ export function usePencilSurface(
       disposed = true;
       stopRecovery();
       resize?.disconnect();
-      appearance.disconnect();
+      inheritedStyle.disconnect();
       colorScheme.removeEventListener('change', schedule);
       window.removeEventListener('resize', schedule);
       cancelAnimationFrame(frame);

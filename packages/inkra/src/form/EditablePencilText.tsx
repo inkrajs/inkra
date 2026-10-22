@@ -259,13 +259,28 @@ export function EditablePencilText({
     let frame = 0;
     let pending: (() => void) | null = null;
     let disposed = false;
+    let lastAppearance = '';
+    const appearanceKey = () => {
+      const style = getComputedStyle(control);
+      return JSON.stringify([
+        control.clientWidth, control.clientHeight, control.offsetLeft, control.offsetTop,
+        control.scrollLeft, control.scrollTop, control.value, control.placeholder, effectiveDpr(2),
+        ...['font-family', 'font-size', 'line-height', 'text-align', 'text-indent',
+          'letter-spacing', 'white-space', 'word-break', 'overflow-wrap', 'direction',
+          'padding-top', 'padding-left', 'padding-right', 'padding-bottom',
+          '--inkra-editable-text-color', '--inkra-editable-placeholder-color'].map(name => style.getPropertyValue(name)),
+      ]);
+    };
 
     const paint = () => {
       pending = null;
       if (disposed || composingRef.current) return;
       try {
         const ready = paintEditableText(canvas, control, seed, multiline);
-        if (ready) root?.setAttribute('data-pencil-editable-ready', 'true');
+        if (ready) {
+          root?.setAttribute('data-pencil-editable-ready', 'true');
+          lastAppearance = appearanceKey();
+        }
         else root?.removeAttribute('data-pencil-editable-ready');
       } catch {
         root?.removeAttribute('data-pencil-editable-ready');
@@ -297,16 +312,17 @@ export function EditablePencilText({
     };
     const reset = () => window.setTimeout(invalidate, 0);
     const form = control.form;
-    const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(invalidate);
+    const refreshAppearance = () => {
+      if (appearanceKey() !== lastAppearance) invalidate();
+    };
+    const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(refreshAppearance);
     resize?.observe(control);
-    const appearance = new MutationObserver(invalidate);
-    appearance.observe(document.documentElement, {
-      attributes: true,
-      subtree: true,
-      attributeFilter: ['data-theme', 'data-inkra-theme'],
-    });
+    const appearance = new MutationObserver(refreshAppearance);
+    for (let element: HTMLElement | null = control; element; element = element.parentElement) {
+      appearance.observe(element, { attributes: true, attributeFilter: ['style', 'class', 'dir', 'data-theme', 'data-inkra-theme'] });
+    }
     const colorScheme = window.matchMedia('(prefers-color-scheme: dark)');
-    colorScheme.addEventListener('change', invalidate);
+    colorScheme.addEventListener('change', refreshAppearance);
     control.addEventListener('input', invalidate);
     control.addEventListener('scroll', invalidate, { passive: true });
     control.addEventListener('compositionstart', showNativeComposition);
@@ -324,7 +340,7 @@ export function EditablePencilText({
       pending?.();
       resize?.disconnect();
       appearance.disconnect();
-      colorScheme.removeEventListener('change', invalidate);
+      colorScheme.removeEventListener('change', refreshAppearance);
       control.removeEventListener('input', invalidate);
       control.removeEventListener('scroll', invalidate);
       control.removeEventListener('compositionstart', showNativeComposition);

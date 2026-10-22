@@ -11,6 +11,7 @@ import {
 import { observeCanvasRecovery } from './internal/recovery.js';
 import { seedToNumber } from './internal/random.js';
 import { pencilStroke } from './internal/stroke.js';
+import { readRenderToken } from './internal/renderTokens.js';
 import type { PencilPoint } from './internal/stroke.js';
 
 export interface PencilIconPath {
@@ -84,10 +85,11 @@ function drawFallbackPath(
 
 function renderIcon(
   paths: readonly PencilIconPath[],
-  options: { seed: number; size: number; sourceSize: number; active: boolean; color: string; dpr: number; badge?: PencilIconBadge; rtl?: boolean; weightScale?: number },
+  options: { seed: number; size: number; sourceSize: number; active: boolean; color: string; dpr: number; badge?: PencilIconBadge; rtl?: boolean; weightScale?: number; roughnessScale?: number },
 ): HTMLCanvasElement {
   const { seed, size, sourceSize, active, color, dpr } = options;
   const weightScale = options.weightScale ?? 1;
+  const roughnessScale = options.roughnessScale ?? 1;
   const canvas = document.createElement('canvas');
   canvas.width = Math.round(size * dpr);
   canvas.height = Math.round(size * dpr);
@@ -135,7 +137,7 @@ function renderIcon(
           color,
           (mode === 'scuff' ? 0.55 : 1.65) * weightScale,
           pathSeed,
-          0.3,
+          0.3 * roughnessScale,
           mode === 'scuff' ? 1 : 3,
           false,
           {
@@ -158,9 +160,9 @@ function renderIcon(
       context,
       [[sourceSize * 0.2, sourceSize - 2], [sourceSize * 0.5, sourceSize - 1.5], [sourceSize * 0.8, sourceSize - 2.2]],
       color,
-      1.1,
+      1.1 * weightScale,
       seed + 977,
-      0.25,
+      0.25 * roughnessScale,
       3,
       false,
       { variation: 0.8, breaks: 0.25, grain: 0.7, gain: 2.8, step: 0.35 },
@@ -177,7 +179,7 @@ function renderIcon(
     const y = position.startsWith('top') ? 0 : 40 - extent;
     const badgeImage = renderIcon(badge.paths, {
       seed: seed + 1543, size: size * scale, sourceSize: badgeSourceSize, active: false, color, dpr,
-      weightScale: 1 / scale,
+      weightScale: weightScale / scale, roughnessScale,
     });
     const mask = document.createElement('canvas');
     mask.width = badgeImage.width;
@@ -222,6 +224,7 @@ export const PencilIcon = forwardRef<HTMLCanvasElement, PencilIconProps>(functio
   forwardedRef,
 ) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const lastPaintRef = useRef('');
   useImperativeHandle(forwardedRef, () => canvasRef.current as HTMLCanvasElement);
   const geometryKey = useMemo(() => JSON.stringify(paths), [paths]);
   const badgeKey = useMemo(() => badge ? JSON.stringify(badge) : '', [badge]);
@@ -231,13 +234,14 @@ export const PencilIcon = forwardRef<HTMLCanvasElement, PencilIconProps>(functio
     const canvas = canvasRef.current;
     if (!canvas) return undefined;
     let disposed = false;
-    let lastPaint = '';
     const paint = () => {
       if (disposed) return;
       const dpr = effectiveDpr(3);
       const computed = getComputedStyle(canvas);
       const color = computed.color;
       const rtl = computed.direction === 'rtl';
+      const weightScale = readRenderToken(computed, '--inkra-stroke-width', 1.2, 0.3, 3) / 1.2;
+      const roughnessScale = readRenderToken(computed, '--inkra-stroke-amplitude', 0.6, 0, 2) / 0.6;
       const key = JSON.stringify([
         PENCIL_RENDERER_VERSION,
         geometryKey,
@@ -249,15 +253,16 @@ export const PencilIcon = forwardRef<HTMLCanvasElement, PencilIconProps>(functio
         active,
         color,
         dpr,
+        weightScale, roughnessScale,
       ]);
-      if (key === lastPaint && canvasIsUsable(canvas)) return;
+      if (key === lastPaintRef.current && canvasIsUsable(canvas)) return;
       let image = imageCache.get(key);
       if (image && !canvasIsUsable(image)) {
         imageCache.delete(key);
         image = undefined;
       }
       if (!image) {
-        image = renderIcon(paths, { seed: resolvedSeed, size, sourceSize, active, color, dpr, badge, rtl });
+        image = renderIcon(paths, { seed: resolvedSeed, size, sourceSize, active, color, dpr, badge, rtl, weightScale, roughnessScale });
         imageCache.set(key, image, canvasByteCost(image));
       }
       canvas.width = image.width;
@@ -265,26 +270,19 @@ export const PencilIcon = forwardRef<HTMLCanvasElement, PencilIconProps>(functio
       const context = canvas.getContext('2d');
       if (!context || context.isContextLost?.()) return;
       context.drawImage(image, 0, 0);
-      lastPaint = key;
+      lastPaintRef.current = key;
     };
-    const appearance = new MutationObserver(paint);
-    appearance.observe(document.documentElement, {
-      attributes: true,
-      subtree: true,
-      attributeFilter: ['data-theme', 'data-inkra-theme'],
-    });
     const inheritedColor = new MutationObserver(paint);
     for (let element: HTMLElement | null = canvas; element; element = element.parentElement) {
-      inheritedColor.observe(element, { attributes: true, attributeFilter: ['style', 'class', 'dir'] });
+      inheritedColor.observe(element, { attributes: true, attributeFilter: ['style', 'class', 'dir', 'data-theme', 'data-inkra-theme'] });
     }
     const colorScheme = window.matchMedia('(prefers-color-scheme: dark)');
     colorScheme.addEventListener('change', paint);
-    const stopRecovery = observeCanvasRecovery(() => { lastPaint = ''; paint(); });
+    const stopRecovery = observeCanvasRecovery(() => { lastPaintRef.current = ''; paint(); });
     paint();
     return () => {
       disposed = true;
       stopRecovery();
-      appearance.disconnect();
       inheritedColor.disconnect();
       colorScheme.removeEventListener('change', paint);
     };

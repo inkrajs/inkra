@@ -4,6 +4,16 @@
 
 ## 当前修订：清晰暗色与文档语言
 
+- 主题定制采用草稿与已保存值分离：抽屉内调整仅作用于独立预览 Card，预览与下方 Tabs 用 PencilLine 分隔；保存后才全局应用并持久化。恢复默认只修改草稿，取消、Escape 或关闭均丢弃未保存调整，重新打开载入已保存值。不能在调整时写入全局 tokens 或本机设置。
+
+- 主题定制入口位于 GitHub 左侧，复用 Drawer 的 Header/Body/Footer、关闭按钮与焦点返回；主题、文字、线条、涂色分为带图标 Tabs，参数通过 Slider 调整。stroke-width/amplitude 同时作用于分割线、按钮/卡片等表面描边及图标笔触，保留各组件默认笔宽比例；PencilLine 的显式 weight/roughness 优先。wash strength/spacing/roughness/angle 调节背景涂色，默认保持原材质效果。文字使用独立的 letter tokens。只监听自身与祖先外观，局部主题不能触发整页失效；关闭抽屉引起的滚动锁或 pointer-events 改动在绘制参数不变时不重画。预览卡片不叠加额外纯色 CSS 底层。
+- Drawer 的纸纹使用 full 表面铺满，仅在靠页面一侧绘制一道 PencilLine，贴视口的其余三边无描边、留白或圆角；Header 标题与操作区垂直居中，关闭按钮默认 outline。主题抽屉的取消按钮同样默认带描边。内部 Header/Footer 分割线保留，强制颜色模式只对靠页面侧提供系统边线。
+- 使用指南的任务列表使用真实 Card、Badge、Checkbox、ToggleGroup、Progress、Empty，不继续用 PencilSurface 和原生 checkbox 仿制；浅深两栏共享状态。主题分区为无外框区域，单条任务使用 Card.Content，避免卡片套卡片或每项强制 Header/Footer。
+
+- 文档分割线下方的 20px 只由一层提供：PageHeading 负责标题分割线后的留白，独立 section-divider 负责自身后的留白。content-section 不再默认添加顶部 padding，首个直接子元素清除顶部 margin；standard-tabs 只保留底部间距，不叠加页头留白。页面不再在 PageHeading 后重复插入分割线。新增文档布局须通过 verify-docs-spacing 浏览器实测，按元素边界验证 20px，分割线画布的 8px 和控件内距单独计算。
+
+- 2026-10-22 目录与示例顺序：侧栏采用“组件 / 用途分类 / 具体组件”三级目录，前两级独立折叠；下一级图标与上一级文字起点对齐，缩进为固定 26px 图标列加 8px 间距，覆盖历史 16px 缩进规则。保留整行选中铺色、搜索和当前路径自动展开。所有组件页以带“预览 / 代码”和属性控制的主 Playground 为第一个示例；后续补充示例再按简单到复杂排序，覆盖此前基础示例放在 Playground 之前的约定。
+
 ### 后续规范完善
 
 - Calendar 月份与星期文字使用 PencilText，翻月按钮复用 Button 与 Lucide 几何的 PencilIcon，保留 DayPicker 的原生导航、禁用及本地化名称。首页日期格为正方形且移除重复选中日期输出。JourneyMap.attributionDisplay 默认 inline，可用 popover 把完整来源折叠到具名信息按钮；不能因精简示例删除完整署名。首页不展示额外地点列表，地图未就绪或失败时仍保留组件原有后备列表。

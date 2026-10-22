@@ -1,6 +1,6 @@
 # Inkra
 
-Inkra is a pencil-styled React component library. It includes action, form, overlay, navigation, content and feedback components, plus Calendar, DayAgenda, JourneyMap and deterministic drawing primitives. The first `0.1.0` release is being prepared; this package is still an unpublished candidate unless a corresponding registry release has been announced.
+Inkra is a pencil-styled React component library. It includes action, form, overlay, navigation, content and feedback components, plus Calendar, DayAgenda, JourneyMap and deterministic drawing primitives. Version `0.1.0` is published; the component expansion described below is available only in the current, unpublished source candidate.
 
 Source and maintenance: [inkrajs/inkra](https://github.com/inkrajs/inkra).
 
@@ -176,6 +176,36 @@ Content layout options preserve existing defaults:
 - `Avatar.Root.radius` clamps to 0-8px, including pencil and image corners; `bordered={false}` removes the outline. `Avatar.Image.fit` accepts `cover | contain` (default cover).
 - `Table.Root.striped`, `hoverable` and `stickyHeader` default to false. Constrain `Table.Container` with `style={{ maxHeight: 240 }}` for sticky scrolling. `captionSide` accepts `top | bottom`. `Head.align` and `Cell.align` accept logical `start | center | end`, retaining native alignment values for compatibility. Hover feedback does not imply row actions.
 
+## Component Expansion (Unreleased)
+
+These exports are not present in the published 0.1.0 archive. Build, pack and
+install the local candidate to use them. The documentation playground includes
+working examples, live property tabs and per-component API/accessibility notes.
+
+| Component | Contract |
+| --- | --- |
+| Toast | `Provider`, `useToastManager`, `createToastManager`; add/update/close/promise notifications, named actions and timer pause managed by Base UI |
+| AlertDialog | Always-modal confirmation; `Root`, `Trigger`, `Portal`, `Backdrop`, `Content`, `Header`, `Body`, `Footer`, `Title`, `Description`, `Cancel`, `Action`; pending blocks user dismissal, async actions use `closeOnAction={false}` |
+| Drawer | Dialog parts plus section layout, four `Content.direction` values and token/custom `size`; focus trap, Escape and return focus, no swipe gesture API |
+| DatePicker | Calendar/Popover composition; single/range local dates, controlled/default values, clear, form fields and localized labels; no UTC conversion |
+| TimePicker | Native time input with clear, disabled/readOnly, min/max/step and optional seconds; browser/OS controls the native presentation |
+| Pagination | Page count/current page, boundary actions and ellipses; buttons change local state rather than pretending to navigate URLs |
+| Empty | Optional `Root`, `Icon`, `Title`, `Description`, `Actions`; no mandatory card or live-region role |
+| ToggleGroup | `Root` and `Item`; array values for single/multiple toggles, roving focus and `aria-pressed`, not tabs |
+| Command | cmdk-backed search, grouped commands, empty/disabled states and optional modal composition |
+| Upload | File selection/drop, type/size/count rejection, removal, progress, cancel and retry; application transport receives `AbortSignal` and `reportProgress` |
+| DataTable | Typed columns, required stable `getRowId`, sorting, filtering, pagination, selection, empty/loading state; native table semantics |
+| Tree | `Root`, `Item`, `ItemContent`, `ItemTitle`, `ItemDescription`; stable keys, expansion and selection via React Aria; no drag/drop |
+| Steps | Ordered `items`, `current`, orientation and optional `onStepChange`; status and disabled steps |
+| Timeline | Ordered `items` with date/title/description/content, semantic `dateTime` and horizontal/vertical orientation |
+
+Upload does not send files anywhere unless the application supplies `onUpload`.
+Without a transport, files remain selected, not successfully uploaded. Client
+validation is a convenience; the receiving server must validate files itself.
+DataTable does not replace `Table` and does not promise virtualization, cell
+editing or server-side transport. Tree is not a file-system permission boundary.
+All examples use public sample data.
+
 ## Travel Components
 
 `Calendar` wraps React DayPicker with default `appearance="itinerary"` day cards and optional `appearance="picker"`. It retains single/multiple/range selection, month control, disabled matchers, locale and keyboard navigation. Supply `selected` and `onSelect` for controlled selection. Events have independent `onEventSelect` handling; `displayRange` and `renderDayAccessory` customize the itinerary. Narrow itinerary grids retain seven columns and hide event text while preserving accessible names; picker targets remain at least 44px.
@@ -198,6 +228,33 @@ Content layout options preserve existing defaults:
 <PencilLine seed="notes-divider" className="notes-divider" />
 <PencilLine orientation="vertical" seed="sidebar-divider" className="sidebar-divider" />
 ```
+
+### Rendering tokens
+
+`PencilText` reads `--inkra-letter-variation`, `--inkra-letter-breaks`,
+`--inkra-letter-outline`, `--inkra-letter-fill`, and `--inkra-letter-grain` from
+its computed style. Values are clamped to 0-1; missing or invalid values use the
+original lettering preset. Apply these tokens to an ancestor to customize all
+text within that scope without changing layout, selectable text, or labels.
+
+`PencilLine` reads `--inkra-stroke-width` (0.3-3) and
+`--inkra-stroke-amplitude` (0-2) when `weight` or `roughness` is omitted.
+Explicit props take precedence. These tokens also scale surface outlines and icon
+strokes relative to their original presets, including button/card/input borders.
+The default values remain 1.2 and 0.6. They do not change layout or text lettering.
+
+Surface fills read `--inkra-wash-strength` (0-1, default 0.48),
+`--inkra-wash-spacing` (1-6, default 1.8), `--inkra-wash-roughness` (0-6,
+default 3.5), and `--inkra-wash-angle` (-85 to 85 degrees, default -35).
+Strength scales each variant's original light/dark pigment intensity; defaults
+preserve the previous rendering. These settings affect button fills, selections
+and swatches, not paper or lettering. Selection reveals follow the chosen angle.
+
+Only self/ancestor appearance changes invalidate decoration, not unrelated theme
+subtrees. Unchanged computed paint settings are reused, including when a dialog
+changes body pointer events or scroll locks. Rendering settings are part of the
+bounded texture cache keys. No page remount is needed. Forced-color, print, and
+unavailable-canvas fallbacks remain intact.
 
 ## Font license
 
