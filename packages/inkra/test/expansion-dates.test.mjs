@@ -70,7 +70,7 @@ test('DatePicker required fields use native constraint controls and keep visible
   assert.doesNotMatch(html, /aria-label="Open date picker"/);
 });
 
-test('TimePicker keeps native time semantics and optional second precision', () => {
+test('TimePicker uses a pencil button while retaining native validation and optional seconds', () => {
   const html = renderToStaticMarkup(createElement(TimePicker, {
     name: 'meeting',
     defaultValue: '09:30:15',
@@ -88,6 +88,22 @@ test('TimePicker keeps native time semantics and optional second precision', () 
   assert.match(time, /step="1"/);
   assert.match(time, /lang="en-US"/);
   assert.match(time, /data-hour-cycle="h12"/);
+  assert.match(time, /class="inkra-time-picker__native"/);
+  assert.match(time, /aria-hidden="true"/);
+  assert.match(html, /inkra-time-picker__trigger/);
+  assert.match(html, /inkra-pencil-text__source">09:30:15/);
+  assert.match(html, /AM/);
+});
+
+test('TimePicker associates its Field label with the visible trigger and describes the chosen value', () => {
+  const html = renderToStaticMarkup(createElement(Field, { label: 'Meeting', id: 'meeting' },
+    createElement(TimePicker, { defaultValue: '21:30', hourCycle: 'h24', locale: 'en-GB' })));
+  assert.match(html, /<label[^>]*for="meeting"/);
+  assert.match(html, /<button[^>]*id="meeting"/);
+  assert.match(html, /aria-describedby="meeting-value"/);
+  assert.match(html, /id="meeting-native"/);
+  assert.match(html, /inkra-pencil-text__source">21:30/);
+  assert.doesNotMatch(html, /type="text"/);
 });
 
 test('TimePicker preserves explicit step and empty controlled values', () => {

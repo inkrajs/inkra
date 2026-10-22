@@ -53,10 +53,18 @@ const TreeItem = forwardRef<HTMLDivElement, TreeItemProps>(function TreeItem({ c
   return <AriaTreeItem {...props} ref={ref} className={['inkra-tree__item', className].filter(Boolean).join(' ')} />;
 });
 
+export interface TreeItemContentState {
+  isExpanded: boolean;
+  hasChildItems: boolean;
+  isSelected: boolean;
+  isDisabled: boolean;
+}
+
 export interface TreeItemContentProps {
   children: ReactNode;
   className?: string;
-  icon?: ReactNode;
+  icon?: ReactNode | ((state: TreeItemContentState) => ReactNode);
+  disclosureIcon?: ReactNode | ((state: TreeItemContentState) => ReactNode);
   expandLabel?: string;
   collapseLabel?: string;
 }
@@ -65,6 +73,7 @@ const TreeItemContent = forwardRef<Element, TreeItemContentProps>(function TreeI
   children,
   className,
   icon,
+  disclosureIcon,
   expandLabel = 'Expand item',
   collapseLabel = 'Collapse item',
 }, ref) {
@@ -76,24 +85,32 @@ const TreeItemContent = forwardRef<Element, TreeItemContentProps>(function TreeI
     isDisabled,
     level,
     id,
-  }) => <div
-    className={['inkra-tree__item-content', className].filter(Boolean).join(' ')}
-    data-expanded={isExpanded || undefined}
-    data-selected={isSelected || undefined}
-    data-disabled={isDisabled || undefined}
-    data-has-icon={icon != null || undefined}
-    style={{ '--inkra-tree-level': level } as CSSProperties}
-  >
-    {isSelected && <PencilSurface aria-hidden="true" as="span" className="inkra-tree__selection" variant="selection" seed={`tree-${String(id)}-selection`} />}
-    {isFocusVisible && <PencilSurface aria-hidden="true" as="span" className="inkra-tree__focus" variant="outline" seed={`tree-${String(id)}-focus`} />}
-    {hasChildItems ? <AriaButton slot="chevron" className="inkra-tree__disclosure" aria-label={isExpanded ? collapseLabel : expandLabel}>
-      <PencilSurface as="span" aria-hidden="true" className="inkra-tree__disclosure-surface" variant="quiet" radius={6}>
-        <PencilIcon className="inkra-tree__chevron" paths={chevronIcon} size={18} sourceSize={24} />
-      </PencilSurface>
-    </AriaButton> : <span className="inkra-tree__disclosure-spacer" aria-hidden="true" />}
-    {icon != null && <span className="inkra-tree__icon" aria-hidden="true">{icon}</span>}
-    <span className="inkra-tree__copy">{children}</span>
-  </div>}</AriaTreeItemContent>;
+  }) => {
+    const state = { isExpanded, hasChildItems, isSelected, isDisabled };
+    const resolvedIcon = typeof icon === 'function' ? icon(state) : icon;
+    const resolvedDisclosure = typeof disclosureIcon === 'function' ? disclosureIcon(state) : disclosureIcon;
+    return <div
+      className={['inkra-tree__item-content', className].filter(Boolean).join(' ')}
+      data-expanded={isExpanded || undefined}
+      data-selected={isSelected || undefined}
+      data-disabled={isDisabled || undefined}
+      data-has-icon={resolvedIcon != null || undefined}
+      style={{ '--inkra-tree-level': level } as CSSProperties}
+    >
+      {isSelected && <PencilSurface aria-hidden="true" as="span" className="inkra-tree__selection" variant="selection" seed={`tree-${String(id)}-selection`} />}
+      {isFocusVisible && <PencilSurface aria-hidden="true" as="span" className="inkra-tree__focus" variant="outline" seed={`tree-${String(id)}-focus`} />}
+      {hasChildItems ? <AriaButton slot="chevron" className="inkra-tree__disclosure" aria-label={isExpanded ? collapseLabel : expandLabel}>
+        {({ isFocusVisible: disclosureFocused }) => <>
+          {disclosureFocused && <PencilSurface as="span" aria-hidden="true" className="inkra-tree__disclosure-focus" variant="outline" />}
+          <span className="inkra-tree__disclosure-icon" aria-hidden="true">
+            {disclosureIcon === undefined ? <PencilIcon className="inkra-tree__chevron" paths={chevronIcon} size={18} sourceSize={24} /> : resolvedDisclosure}
+          </span>
+        </>}
+      </AriaButton> : <span className="inkra-tree__disclosure-spacer" aria-hidden="true" />}
+      {resolvedIcon != null && <span className="inkra-tree__icon" aria-hidden="true">{resolvedIcon}</span>}
+      <span className="inkra-tree__copy">{children}</span>
+    </div>;
+  }}</AriaTreeItemContent>;
 });
 
 export interface TreeItemTitleProps extends HTMLAttributes<HTMLSpanElement> {}

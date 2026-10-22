@@ -143,7 +143,7 @@ test('Form styles keep native controls borderless and reserve solid borders for 
   }
   assert.match(normal, /\.inkra-input__clear:focus-visible\s*\{[^}]*outline:\s*var\(--inkra-focus-width\)/);
   assert.match(normal, /data-pencil-editable-ready="true"[\s\S]*color: transparent/);
-  assert.match(normal, /data-composing="true"[\s\S]*color: var\(--inkra-editable-text-color, var\(--inkra-ink\)\) !important/);
+  assert.doesNotMatch(normal, /data-composing="true"/);
   assert.match(styles, /@media \(forced-colors: active\)[\s\S]*border: 1px solid CanvasText/);
   assert.match(styles, /@media \(forced-colors: active\)[\s\S]*display: none !important/);
   assert.match(styles, /@media \(forced-colors: active\)[\s\S]*::placeholder[\s\S]*color: GrayText !important/);
@@ -168,6 +168,9 @@ test('Editable lettering preserves native controls and password privacy contract
   assert.match(source, /compositionstart/);
   assert.match(source, /compositionend/);
   assert.match(source, /composingRef/);
+  assert.doesNotMatch(source, /queueTextPaint|requestAnimationFrame/);
+  assert.match(source, /new BoundedCache<PencilTextSprite>\(128, 4 \* 1024 \* 1024\)/);
+  assert.match(source, /target\.drawImage\(buffer, 0, 0\)/);
   assert.match(source, /scheduleRef\.current\(\)/);
   assert.match(source, /control\.addEventListener\('scroll'/);
   assert.match(source, /form\?\.addEventListener\('reset'/);

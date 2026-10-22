@@ -29,6 +29,7 @@ export * from './tree/index.js';
 export * from './upload/index.js';
 export * from './steps/index.js';
 export * from './timeline/index.js';
+export * from './layout/index.js';
 export type {
   ButtonGroupOrientation,
   ButtonAlign,

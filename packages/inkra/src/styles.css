@@ -163,6 +163,11 @@
   color: var(--inkra-ink);
 }
 
+/* Keep selection behind the painted glyphs without revealing a second text layer. */
+.inkra-pencil-text[data-pencil-ready="true"] > .inkra-pencil-text__source::selection {
+  color: transparent;
+}
+
 .inkra-pencil-text--ellipsis {
   display: block;
   max-width: 100%;
@@ -624,5 +629,10 @@
 
   .inkra-pencil-text[data-pencil-ready="true"] > .inkra-pencil-text__source {
     color: inherit;
+  }
+
+  .inkra-pencil-text[data-pencil-ready="true"] > .inkra-pencil-text__source::selection {
+    background: Highlight;
+    color: HighlightText;
   }
 }

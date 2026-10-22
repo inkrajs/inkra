@@ -1,24 +1,49 @@
 .inkra-time-picker {
-  min-width: 8rem;
+  display: flex;
+  align-items: center;
+  gap: var(--inkra-space-2);
+  position: relative;
+  min-width: 0;
+  width: fit-content;
+  max-width: 100%;
 }
-
-.inkra-time-picker::-webkit-calendar-picker-indicator {
-  cursor: pointer;
-  opacity: 0.72;
+.inkra-time-picker[data-full-width="true"] { width: 100%; }
+.inkra-time-picker__trigger { flex: 1; min-width: 0; }
+.inkra-time-picker__clear { flex: none; }
+.inkra-time-picker__clear[aria-hidden="true"] { visibility: hidden; }
+.inkra-time-picker[data-invalid="true"] { color: var(--inkra-danger); }
+.inkra-time-picker__native,
+.inkra-time-picker__accessible-value {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  opacity: 0;
+  clip-path: inset(50%);
+  pointer-events: none;
 }
-
-.inkra-input-root[data-disabled] .inkra-time-picker::-webkit-calendar-picker-indicator,
-.inkra-input-root[data-readonly] .inkra-time-picker::-webkit-calendar-picker-indicator {
-  cursor: default;
-  opacity: 0.4;
+.inkra-time-picker__popover {
+  width: min(360px, calc(100vw - 24px));
+  background: var(--inkra-paper);
+  border-radius: var(--inkra-radius-lg);
 }
-
-.inkra-time-picker__clear[aria-hidden="true"] {
-  visibility: hidden;
+.inkra-time-picker__popover .inkra-popover__content-body { display: grid; gap: var(--inkra-space-3); }
+.inkra-time-picker__columns { display: flex; gap: var(--inkra-space-2); min-width: 0; }
+.inkra-time-picker__column { flex: 1; min-width: 0; }
+.inkra-time-picker__column .inkra-radio-group__frame { width: 100%; min-width: 0; }
+.inkra-time-picker__column .inkra-radio-group__items {
+  min-width: 0;
+  max-height: min(264px, 35dvh);
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
 }
-
-@media (forced-colors: active) {
-  .inkra-time-picker::-webkit-calendar-picker-indicator {
-    opacity: 1;
-  }
-}
+.inkra-time-picker__column .inkra-radio-group__label { text-align: center; width: 100%; }
+.inkra-time-picker__column .inkra-radio-group__segment { min-width: 44px; padding-inline: 4px; }
+.inkra-time-picker__column.inkra-radio-group .inkra-radio-group__item { min-width: 0; }
+.inkra-time-picker__footer { display: flex; justify-content: flex-end; gap: var(--inkra-space-2); }
+.inkra-time-picker__error { margin: 0; color: var(--inkra-danger); font-size: var(--inkra-text-sm); }

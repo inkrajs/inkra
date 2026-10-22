@@ -15,7 +15,7 @@ const travelStyles = await Promise.all(['breadcrumb/styles.css', 'calendar/style
 const leafletStyles = await readFile(new URL('../../../node_modules/leaflet/dist/leaflet.css', import.meta.url), 'utf8');
 const expansionStyles = await Promise.all([
   'toast', 'empty', 'toggle-group', 'alert-dialog', 'drawer', 'date-picker',
-  'time-picker', 'pagination', 'command', 'data-table', 'tree', 'upload', 'steps', 'timeline',
+  'time-picker', 'pagination', 'command', 'data-table', 'tree', 'upload', 'steps', 'timeline', 'layout',
 ].map(name => readFile(new URL(`../src/${name}/styles.css`, import.meta.url), 'utf8')));
 await writeFile(new URL('../dist/styles.css', import.meta.url), [...styles, leafletStyles, ...travelStyles, ...expansionStyles].join('\n'));
 await mkdir(new URL('../dist/images', import.meta.url), { recursive: true });
