@@ -1,68 +1,33 @@
-<p align="center"><img src="assets/inkra.png" alt="Inkra pencil mark" width="80"></p>
+<p align="center">
+  <img src="./assets/inkra.png" alt="Inkra pencil mark" width="96">
+</p>
 
-# Inkra
+<p align="center">English | <a href="./README.zh-CN.md">简体中文</a></p>
 
-[中文](README.zh-CN.md) · [Package API](packages/inkra/README.md) · [Contributing](CONTRIBUTING.md)
+<h1 align="center">Inkra</h1>
 
-A pencil-styled React component library with semantic controls, deterministic
-hand-drawn materials, and an interactive documentation playground.
+<p align="center">Build your interface like you draw.</p>
 
-**Release status:** [`@inkra/react@0.1.0`](https://www.npmjs.com/package/@inkra/react)
-is published. The release pipeline verified the public archive and clean
-React 18/19 installations before creating the
-[GitHub Release](https://github.com/inkrajs/inkra/releases/tag/react-v0.1.0).
-Website publication is owned by
-[inkrajs.github.io](https://github.com/inkrajs/inkrajs.github.io), separately from npm releases.
+<p align="center">
+  <a href="https://inkrajs.github.io/">Playground</a> ·
+  <a href="https://inkrajs.github.io/docs/getting-started">Documentation</a> ·
+  <a href="https://www.npmjs.com/package/@inkra/react">npm</a> ·
+  <a href="https://github.com/inkrajs/inkra/releases">Releases</a>
+</p>
 
-The npm package is **`@inkra/react`**. The earlier unscoped name `inkra` was
-rejected by npm's name-similarity policy. Releases use `react-vX.Y.Z` Git tags;
-the unsuccessful `v0.1.0` tag is retained as history, not a published release.
+A pencil-styled React component library. Compose familiar controls with paper
+texture, soft color and hand-drawn strokes, while real HTML handles input,
+selection and keyboard interaction.
 
-## Components
+## Get Started
 
-| Area | Components |
-| --- | --- |
-| Actions and overlays | Button, ButtonLink, ButtonGroup, Popover, Overlay, Tooltip, DropdownMenu |
-| Forms | Field, Input, InputNumber, Textarea, Checkbox, RadioGroup, Switch, Select, Slider |
-| Structure and feedback | Tabs, Breadcrumb, Accordion, Badge, Separator, Skeleton, Progress, Alert, Avatar, Card, Table |
-| Travel and schedules | Calendar, DayAgenda, JourneyMap |
-| Drawing | PencilIcon, PencilText, PencilSurface, PencilLine, shared tokens |
-
-Select includes single/multiple selection and a separate searchable combobox.
-PencilIcon renders supplied paths; the searchable Lucide catalog in the docs is
-an example application, not another exported icon package.
-
-Real DOM elements own form values, selectable text and keyboard interaction.
-Canvas supplies pressure, grain and paper texture. Themes, RTL, reduced motion
-and forced-color fallbacks are design requirements, not an accessibility certification.
-
-## Try Locally
-
-Use Node.js 22.12+ and npm. No private registry credentials are required.
-
-```sh
-npm ci
-npm run build
-npm run check:package
-```
-
-The playground belongs to [inkrajs/docs](https://github.com/inkrajs/docs).
-In that checkout, run `npm run prepare:library -- /absolute/path/to/inkra`, then
-`npm run dev -- --port 4180`. Open `http://127.0.0.1:4180` for live properties,
-generated example code, API tables and accessibility notes. Rebuild, repack and
-prepare again after library changes. `INKRA_DOCS_DIR=/path/to/docs npm run dev`
-is an optional launcher from this checkout; it does not refresh the candidate.
-
-## Installation
+Install Inkra in your React project:
 
 ```sh
 npm install @inkra/react
 ```
 
-For unpublished local changes, build and run `npm run check:package`, then
-install the archive named in `.release/manifest.json` in a separate React project.
-
-Import styles once at the application entry point:
+Import the styles once, then use the components:
 
 ```tsx
 import '@inkra/react/styles.css';
@@ -70,52 +35,96 @@ import { Button, Field, Input } from '@inkra/react';
 
 export function NoteForm() {
   return (
-    <form>
-      <Field label="Note title"><Input name="title" clearable /></Field>
-      <Button type="submit">Save</Button>
+    <form onSubmit={event => event.preventDefault()}>
+      <Field label="A name for your idea">
+        <Input name="title" placeholder="Something worth keeping" clearable />
+      </Field>
+      <Button type="submit">Save a little inspiration</Button>
     </form>
   );
 }
 ```
 
-The package is ESM with TypeScript declarations and React/React DOM peers.
-React 18/19 form the tested release matrix. The release pipeline checks browser hydration
-from server markup, controls, portals, canvas recovery and the lazy-loaded map
-using the installed archive. See [rendering support and limits](docs/rendering.md)
-for the known React 18 Calendar warning and the unverified Next.js/RSC boundary.
+Inkra ships ESM, TypeScript declarations and CSS, with React and React DOM as
+peer dependencies. React 18 and 19 are the tested release targets. See
+[rendering support](./docs/rendering.md) for SSR and framework-specific limits.
 
-## Repository
+## A Little Pencil, Real Components
 
-Source and maintenance: [inkrajs/inkra](https://github.com/inkrajs/inkra).
+<p align="center">
+  <a href="https://inkrajs.github.io/">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="./assets/preview-dark.png">
+      <img src="./assets/preview-light.png" alt="Inkra playground with a project form, calendar and journey map" width="1100">
+    </picture>
+  </a>
+</p>
 
-See the [organization structure](docs/organization-structure.md) for the six
-approved repository boundaries. Source, remote CI, website deployment and npm
-publication have separate verification gates.
+*Real playground screenshots from the development version. The published npm
+package and the main branch may contain different features.*
 
-| Path | Purpose |
+- **Familiar interactions.** Forms, menus, dialogs and navigation use semantic
+  HTML and established interaction primitives.
+- **A consistent hand.** The same drawing seed produces stable pencil marks;
+  decorative canvases do not own layout or intercept input.
+- **Room for your palette.** CSS tokens control color, paper, lettering,
+  outlines and shading. Light and dark themes share the same components.
+- **Examples you can touch.** Adjust properties in the bilingual playground,
+  inspect the code and explore combinations such as forms, calendars and maps.
+
+## Find Your Components
+
+The published **0.1.0** package includes:
+
+| Use | Components |
 | --- | --- |
-| `packages/inkra` | Publishable library, CSS, font and notices |
-| `assets` | Repository branding assets |
-| `docs/design-standard.md` | Visual and interaction rules |
-| `scripts` | Repository and installed-package checks |
-| `.github/workflows` | PR checks, candidate preparation and approval-gated npm releases |
+| Actions | Button, ButtonLink, ButtonGroup |
+| Forms | Field, Input, InputNumber, Textarea, Select, Checkbox, RadioGroup, Switch, Slider |
+| Navigation | Tabs, Breadcrumb, DropdownMenu |
+| Content and feedback | Card, Table, Accordion, Avatar, Badge, Alert, Progress, Skeleton, Separator |
+| Overlays | Popover, Overlay, Tooltip |
+| Dates and maps | Calendar, DayAgenda, JourneyMap |
+| Drawing | PencilIcon, PencilText, PencilSurface, PencilLine |
 
-Run `npm run check` for portability checks, package tests, tarball
-contents and SSR/types/assets after installing that exact tarball in a temporary
-project. The independent docs repository owns its build and browser checks.
-The existing local `apps/docs` path is an ignored independent Git checkout, not
-a library workspace. There is no automatic npm publication or deployment.
-The manual `Release npm package` workflow defaults to validation only. Its
-OIDC, first-package bootstrap and registry verification modes are documented
-in [the release guide](docs/releasing.md).
+**Next release, available in source:** Toast, AlertDialog, Drawer, DatePicker,
+TimePicker, Pagination, Empty, ToggleGroup, Command, Upload, DataTable, Tree,
+Steps and Timeline. These additions and the expanded render-token controls are
+not in npm 0.1.0. See the [changelog](./CHANGELOG.md) and
+[package API](./packages/inkra/README.md) for scope and limitations.
 
-## Contribute and Report
+## Work on Inkra
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md), use the non-sensitive issue templates,
-and follow [SECURITY.md](SECURITY.md) for security concerns. Release changes
-belong in [CHANGELOG.md](CHANGELOG.md).
+Use Node.js 22.12+ and npm:
+
+```sh
+git clone https://github.com/inkrajs/inkra.git
+cd inkra
+npm ci
+npm run build
+npm run check
+```
+
+Checks cover the repository, component tests and a separately installed
+package's types, SSR, assets and browser hydration.
+
+The playground lives in [inkrajs/docs](https://github.com/inkrajs/docs).
+To preview local library changes, follow its candidate preparation instructions;
+it installs a verified package archive, never a source alias.
+Website deployment and npm releases are separate workflows.
+
+## Documentation and Feedback
+
+- [Getting started](https://inkrajs.github.io/docs/getting-started)
+- [Component API](./packages/inkra/README.md)
+- [Design standards](./docs/design-standard.md)
+- [Contributing](./CONTRIBUTING.md)
+- [Issues and feature requests](https://github.com/inkrajs/inkra/issues)
+- [Release guide](./docs/releasing.md) and [repository organization](./docs/organization-structure.md)
+
+For security reports, follow [SECURITY.md](./SECURITY.md) instead of a public issue.
 
 ## License
 
-Inkra code uses [MIT](LICENSE). The handwriting font uses SIL OFL 1.1 and Leaflet
-assets retain their own license; see [third-party notices](packages/inkra/THIRD_PARTY_NOTICES.md).
+Inkra is [MIT licensed](./LICENSE). The bundled font uses SIL OFL 1.1;
+other bundled assets retain their own terms. See the
+[third-party notices](./packages/inkra/THIRD_PARTY_NOTICES.md).

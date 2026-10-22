@@ -1,50 +1,32 @@
-<p align="center"><img src="assets/inkra.png" alt="Inkra 铅笔标志" width="80"></p>
+<p align="center">
+  <img src="./assets/inkra.png" alt="Inkra 铅笔标志" width="96">
+</p>
 
-# Inkra
+<p align="center"><a href="./README.md">English</a> | 简体中文</p>
 
-[English](README.md) · [组件 API](packages/inkra/README.md) · [贡献指南](CONTRIBUTING.md)
+<h1 align="center">Inkra</h1>
 
-保留原生语义的彩铅风格 React 组件库，提供稳定笔迹、纸面材质和可交互的文档示例。
+<p align="center">像画画一样搭建你的界面。</p>
 
-**发布状态：[`@inkra/react@0.1.0`](https://www.npmjs.com/package/@inkra/react) 已正式发布。** 流水线已核对公开包的完整性，并在 React 18/19 独立项目中验证安装，随后生成了 [GitHub Release](https://github.com/inkrajs/inkra/releases/tag/react-v0.1.0)。网站发布由 inkrajs.github.io 仓库负责，与 npm 发版独立。
+<p align="center">
+  <a href="https://inkrajs.github.io/">在线体验</a> ·
+  <a href="https://inkrajs.github.io/docs/getting-started">使用文档</a> ·
+  <a href="https://www.npmjs.com/package/@inkra/react">npm</a> ·
+  <a href="https://github.com/inkrajs/inkra/releases">版本发布</a>
+</p>
 
-npm 包名为 **`@inkra/react`**。原来的 `inkra` 被 npm 相似名称规则拒绝；新的发布标签使用 `react-vX.Y.Z`，旧的 `v0.1.0` 仅保留历史记录，不代表已发布。
+一个彩铅风格的 React 组件库。把熟悉的控件搭在一起，添上纸面、轻轻的铺色和手绘线条。
+输入、文字选择与键盘交互，仍然交给真实的 HTML。
 
-## 组件范围
+## 开始使用
 
-| 类别 | 组件 |
-| --- | --- |
-| 操作与浮层 | Button、ButtonLink、ButtonGroup、Popover、Overlay、Tooltip、DropdownMenu |
-| 表单 | Field、Input、InputNumber、Textarea、Checkbox、RadioGroup、Switch、Select、Slider |
-| 内容与反馈 | Tabs、Accordion、Badge、Separator、Skeleton、Progress、Alert、Avatar、Card、Table |
-| 旅行与日程 | Calendar、DayAgenda、JourneyMap |
-| 绘制原语 | PencilIcon、PencilText、PencilSurface、PencilLine 和公共 tokens |
-
-Select 支持单选、多选以及独立的搜索选择接口。PencilIcon 接收图形路径；文档里的可搜索 Lucide 图标目录是示例应用，不是另一套已导出的图标包。
-
-真实 DOM 负责文字选择、输入、表单和键盘行为，canvas 只增强笔压、颗粒与纸面。浅深色、RTL、减少动态效果和强制颜色模式属于设计约定，不将这些约定表述为无障碍认证。
-
-## 本地运行
-
-需要 Node.js 22.12+ 和 npm，不需要内部 npm 镜像权限。
-
-```sh
-npm ci
-npm run build
-npm run check:package
-```
-
-文档站由独立的 [inkrajs/docs](https://github.com/inkrajs/docs) 维护。在该仓库运行 `npm run prepare:library -- /absolute/path/to/inkra`，然后 `npm run dev -- --port 4180`。访问 `http://127.0.0.1:4180`，查看交互参数、动态源码、API 和无障碍说明。组件改动后重新构建、打包并准备候选包。本仓的 `INKRA_DOCS_DIR=/path/to/docs npm run dev` 仅作为启动入口，不自动刷新候选包。
-
-## 安装
+在你的 React 项目中安装：
 
 ```sh
 npm install @inkra/react
 ```
 
-验证未发布的本地修改时，先构建并运行 `npm run check:package`，再在另一个 React 项目中安装 `.release/manifest.json` 对应的 tgz 文件。
-
-在应用入口引入一次样式：
+引入一次样式，就可以开始搭建：
 
 ```tsx
 import '@inkra/react/styles.css';
@@ -52,32 +34,86 @@ import { Button, Field, Input } from '@inkra/react';
 
 export function NoteForm() {
   return (
-    <form>
-      <Field label="笔记名称"><Input name="title" clearable /></Field>
-      <Button type="submit">保存</Button>
+    <form onSubmit={event => event.preventDefault()}>
+      <Field label="给灵感起个名字">
+        <Input name="title" placeholder="记下一点值得留下的事" clearable />
+      </Field>
+      <Button type="submit">存下一点灵感</Button>
     </form>
   );
 }
 ```
 
-提供 ESM 和 TypeScript 声明，React 与 React DOM 为 peer dependencies。正式版验证矩阵为 React 18/19；发布流水线使用真实安装包验证服务端输出后的浏览器水合、控件、弹层、画布恢复及地图懒加载。React 18 日历的上游警告和未经验证的 Next.js/RSC 边界见[渲染支持说明](docs/rendering.md)。
+Inkra 提供 ESM、TypeScript 声明和 CSS，React 与 React DOM 作为 peer dependencies。
+发布验证覆盖 React 18 和 19；SSR 与特定框架的支持边界见[渲染说明](./docs/rendering.md)。
 
-## 开发与维护
+## 一点手绘感，真正的组件
 
-源码与维护：[inkrajs/inkra](https://github.com/inkrajs/inkra)。
+<p align="center">
+  <a href="https://inkrajs.github.io/">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="./assets/preview-dark.png">
+      <img src="./assets/preview-light.png" alt="Inkra 实际运行界面，展示项目表单、日历和行程地图" width="1100">
+    </picture>
+  </a>
+</p>
 
-六个已批准仓库的职责见[组织结构说明](docs/organization-structure.md)。源码、远端 CI、网站部署和 npm 发版分别验证。
+*截图来自开发中的真实文档站。npm 已发布版本与 main 分支的功能可能不同。*
 
-- `packages/inkra`：组件、样式、字体与许可证。
-- `assets`：仓库品牌资源。
-- `docs/design-standard.md`：设计与交互规范。
-- `scripts`：仓库与安装包检查。
-- `.github/workflows`：PR 检查和手动候选包准备，不自动发布。
+- **操作还是熟悉的操作。** 表单、菜单、弹层与导航保留原生语义，交互建立在成熟组件基础上。
+- **笔迹有性格，也有分寸。** 相同 seed 保持稳定的笔迹，装饰画布不控制布局，也不拦截输入。
+- **留点空间给你的配色。** 用 CSS tokens 调整颜色、纸面、文字、描边和涂色，浅色与深色共用同一套组件。
+- **示例不只用来看。** 在中英文文档站调参数、看代码，试试表单、日历与地图怎样搭配。
 
-运行 `npm run check`，检查可移植性、包测试、打包内容，以及在独立临时项目中安装同一 tarball 后的 SSR、类型和资源路径。文档构建和浏览器交互检查归独立 docs 仓库负责；现有本地 `apps/docs` 仅是被主仓忽略的独立 Git 目录，不再是 npm workspace。npm 发布使用手动触发、需审批的流水线；网站由独立仓库的 Pages 流水线部署，详见[发版说明](docs/releasing.md)。
+## 找到你需要的组件
 
-修改公共接口前阅读[贡献指南](CONTRIBUTING.md)。普通问题使用 Issue 模板，安全问题遵循[安全说明](SECURITY.md)，版本变化记录在 [CHANGELOG](CHANGELOG.md)。
+已发布的 **0.1.0** 包包含：
+
+| 用途 | 组件 |
+| --- | --- |
+| 操作 | Button、ButtonLink、ButtonGroup |
+| 表单输入 | Field、Input、InputNumber、Textarea、Select、Checkbox、RadioGroup、Switch、Slider |
+| 导航 | Tabs、Breadcrumb、DropdownMenu |
+| 内容与反馈 | Card、Table、Accordion、Avatar、Badge、Alert、Progress、Skeleton、Separator |
+| 弹层 | Popover、Overlay、Tooltip |
+| 日期与地图 | Calendar、DayAgenda、JourneyMap |
+| 绘制原语 | PencilIcon、PencilText、PencilSurface、PencilLine |
+
+**下一版，已在源码中提供：** Toast、AlertDialog、Drawer、DatePicker、TimePicker、
+Pagination、Empty、ToggleGroup、Command、Upload、DataTable、Tree、Steps 和 Timeline。
+这批组件及扩展后的渲染参数尚未包含在 npm 0.1.0 中。
+具体范围与限制见[更新日志](./CHANGELOG.md)和[组件 API](./packages/inkra/README.md)。
+
+## 一起开发 Inkra
+
+需要 Node.js 22.12+ 和 npm：
+
+```sh
+git clone https://github.com/inkrajs/inkra.git
+cd inkra
+npm ci
+npm run build
+npm run check
+```
+
+检查覆盖仓库、组件测试，以及独立安装包的类型、SSR、资源和浏览器水合。
+
+文档站在独立的 [inkrajs/docs](https://github.com/inkrajs/docs) 仓库维护。
+预览组件库的本地修改时，按该仓库的说明准备候选包；文档站安装经过校验的归档，
+不直接引用源码。网站部署与 npm 发版是两条独立流程。
+
+## 文档与反馈
+
+- [快速开始](https://inkrajs.github.io/docs/getting-started)
+- [组件 API](./packages/inkra/README.md)
+- [设计规范](./docs/design-standard.md)
+- [贡献指南](./CONTRIBUTING.md)
+- [问题与功能建议](https://github.com/inkrajs/inkra/issues)
+- [发版说明](./docs/releasing.md)与[仓库分工](./docs/organization-structure.md)
+
+安全问题请按 [SECURITY.md](./SECURITY.md) 私下报告，不要提交公开 Issue。
 
 ## 许可
 
-Inkra 代码沿用 [MIT](LICENSE)。附带字体使用 SIL OFL 1.1，Leaflet 资源保留各自许可，详见[第三方声明](packages/inkra/THIRD_PARTY_NOTICES.md)。
+Inkra 使用 [MIT 许可](./LICENSE)。附带字体使用 SIL OFL 1.1，其他资源保留各自许可，
+详见[第三方声明](./packages/inkra/THIRD_PARTY_NOTICES.md)。
