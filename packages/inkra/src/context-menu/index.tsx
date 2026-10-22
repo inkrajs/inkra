@@ -247,11 +247,13 @@ export const ContextMenuTrigger = forwardRef<HTMLElement, ContextMenuTriggerProp
     const startPoint = useRef<Point | null>(null);
     const pointerType = useRef('');
     const suppressContextMenuUntil = useRef(0);
-    const targetRef = usePortalTriggerRef<HTMLElement>(node => {
-      context.setTarget(node);
+    const { setTarget } = context;
+    const captureTarget = useCallback((node: HTMLElement | null) => {
+      setTarget(node);
       if (typeof forwardedRef === 'function') forwardedRef(node);
       else if (forwardedRef) forwardedRef.current = node;
-    });
+    }, [forwardedRef, setTarget]);
+    const targetRef = usePortalTriggerRef<HTMLElement>(captureTarget);
     const longPressOptions = typeof longPress === 'object' ? longPress : {};
     const longPressEnabled = Boolean(longPress);
     const delay = Math.max(300, longPressOptions.delay ?? DEFAULT_LONG_PRESS_DELAY);
