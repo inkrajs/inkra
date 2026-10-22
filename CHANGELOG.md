@@ -1,6 +1,31 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 - Release Candidate
+
+- Add AudioPlayer, Carousel, ImageCropper and ImageViewer for media interfaces.
+- Add NodeGraph, Sortable, PanZoom, Resizable, DockablePanel, ScrollArea and
+  VirtualList using established interaction engines where appropriate.
+- Add ChoiceGrid, ColorPicker, Editable, Keypad, RangeSlider, Rating,
+  TagInput, Transfer and TreeSelect for richer input workflows.
+- Add ContextMenu, HoverCard, OverflowList, Flip, Hotkey, Log, NumberTicker,
+  Slot, Typewriter, Heatmap, Radar, Sparkline and SegmentedProgress.
+- Extend Progress with a pencil-rendered ring and customizable content placement.
+- Preserve PencilText layout under canvas zoom and CSS transforms; align new
+  component controls, separators, surfaces and scrolling with Inkra primitives.
+- Expand bilingual documentation, interactive examples, navigation icons and
+  focused desktop/mobile regression checks.
+
+### Known Validation Limits
+
+- The full expanded component matrix is not certified visually on real devices.
+  Typewriter pause/show-all and Sortable desktop cross-container browser
+  scenarios still need follow-up; passing unit tests does not certify them.
+- Calendar's React 18 development SSR warning and the uncertified Next.js/RSC
+  boundary described below continue to apply.
+
+Publication is confirmed only by the matching npm version and GitHub Release.
+
+## Earlier Source Additions
 
 - Add Toast, AlertDialog, Drawer, DatePicker, TimePicker, Pagination, Empty,
   ToggleGroup, Command, Upload, DataTable, Tree, Steps and Timeline.
@@ -13,7 +38,7 @@
   Inkra service. Drawer swipe gestures, Tree drag/drop and DataTable
   virtualization/server transport are outside this increment.
 
-These are local development changes, not a published version or deployment.
+These additions are included in the 0.2.0 candidate alongside the new components.
 
 ## 0.1.0 - 2026-10-22
 

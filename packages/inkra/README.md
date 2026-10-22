@@ -150,11 +150,30 @@ outside interaction, modal focus trapping and focus return.
 <Skeleton style={{ width: 200, height: 20 }} />
 <Progress label="Uploading" value={60} />
 <Progress aria-label="Loading" value={null} />
+<Progress shape="circular" value={72} diameter={128} thickness={6} aria-label="Download">
+  {({ percent }) => `${Math.round(percent ?? 0)}%`}
+</Progress>
+<Progress shape="circular" value={3} max={5} contentPosition="end" label="Files">
+  <span>3 / 5 files</span>
+</Progress>
 ```
 
 `Badge` variants are `neutral`, `accent`, `success`, `warning`, `danger` and `info`. `Separator` has horizontal/vertical orientation and a decorative opt-out. `Skeleton` is a static, aria-hidden placeholder; mark its loading container `aria-busy`. `Progress` clamps numeric values to `0..max` (default 100); `null` is indeterminate without a fabricated percentage. Always provide a progress label.
 
 `Badge.size` accepts `sm | md | lg` with optional `startIcon` and `endIcon`. `Separator.weight` clamps to 0.3–2 (default 0.9). `Skeleton.radius` uses the existing 0–8px pencil corner contract. `Progress.size` selects a 12/16/24px track (`sm/md/lg`); `dir`, `aria-valuetext`, refs and native DOM attributes remain available. Tooltip exposes the underlying delay, alignment, collision and hoverable-content controls alongside `Content.surfaceRadius`.
+
+Circular Progress uses a grainy pencil arc with naturally tapered ends and an
+empty gap for the remaining progress.
+`size` selects a 64/96/128px diameter; `diameter` overrides it (32-512px), and
+`thickness` sets the base stroke width (1-diameter/8px, affected by global stroke
+settings). `children` accepts non-interactive icons/text or a render function
+receiving normalized `{ value, max, percent }`; unknown value/percent are null.
+`contentPosition` supports `center`, `top`, `bottom`, `start`, and `end`; logical
+sides follow RTL. Circular defaults to center, linear to end (including explicit
+center). Keep center content short; longer descriptions belong outside the ring.
+Always supply a label or ARIA name, even for icon content. Progress updates reveal
+the existing texture; only unknown progress rotates, respecting reduced motion.
+Canvas failures, forced colors and printing retain an SVG progress fallback.
 
 ## Menus And Content
 
@@ -198,6 +217,33 @@ working examples, live property tabs and per-component API/accessibility notes.
 | Tree | `Root`, `Item`, `ItemContent`, `ItemTitle`, `ItemDescription`; stable keys, expansion and selection via React Aria; no drag/drop |
 | Steps | Ordered `items`, `current`, orientation and optional `onStepChange`; status and disabled steps |
 | Timeline | Ordered `items` with date/title/description/content, semantic `dateTime` and horizontal/vertical orientation |
+
+## Utility Components (Unreleased)
+
+`Slot` is a fixed square visual container for arbitrary icons or content. Static
+slots render a `div`; `interactive` slots render one native button with
+`aria-pressed` selection and native Enter/Space behavior. `empty` preserves
+geometry, `count` reuses Badge, and `renderCount` keeps custom rendering at the
+logical corner. Keep nested controls out of interactive slots. Slot does not
+implement equipment rules, rarity, sorting or drag and drop.
+
+`Hotkey` formats shortcut values for Mac or Windows. `HotkeyInput` records only
+while its native input is focused, supports controlled/uncontrolled values,
+clear, Escape cancellation, read-only/disabled states, IME safeguards and
+caller-owned conflict validation. It does not register global shortcut listeners
+or suppress browser shortcuts.
+
+`NumberTicker` formats values with `Intl.NumberFormat`, optionally animates from
+the currently displayed frame, and can show a temporary signed delta. Reduced
+motion and SSR show deterministic final values. Intermediate frames are visual;
+the polite announcement updates only at the final value. Use `getValueLabel`
+when units or custom rendering need a complete accessible phrase.
+
+`Log` renders caller-ordered records with stable ids, optional level filters and
+pause/follow controls. It follows only append updates while the viewport remains
+near the bottom. The named scroll region supports Home/End and intentionally is
+not a live region, so a long stream is not repeatedly announced. Log does not
+provide persistence, virtualization or transport.
 
 Upload does not send files anywhere unless the application supplies `onUpload`.
 Without a transport, files remain selected, not successfully uploaded. Client

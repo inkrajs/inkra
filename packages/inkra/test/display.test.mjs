@@ -124,6 +124,54 @@ test('Progress null value is indeterminate without a fabricated aria-valuenow', 
   assert.doesNotMatch(markup, /aria-valuenow=|data-value=/);
 });
 
+test('Circular Progress shares normalization and exposes custom content positions', () => {
+  for (const contentPosition of ['center', 'top', 'bottom', 'start', 'end']) {
+    const markup = renderToStaticMarkup(createElement(Progress, {
+      shape: 'circular', value: 30, max: 40, diameter: 128, thickness: 6,
+      contentPosition, label: 'Files', dir: 'rtl',
+    }, state => {
+      assert.deepEqual(state, { value: 30, max: 40, percent: 75 });
+      return createElement('span', { 'data-custom-content': true }, '3 / 4');
+    }));
+    assert.match(markup, /role="progressbar"/);
+    assert.match(markup, /aria-valuenow="30"/);
+    assert.match(markup, /aria-valuemax="40"/);
+    assert.match(markup, /--inkra-progress-angle:270deg/);
+    assert.match(markup, /--inkra-progress-diameter:128px/);
+    assert.match(markup, /stroke-dashoffset="25"/);
+    assert.match(markup, /aria-labelledby="[^"]+-label"/);
+    assert.match(markup, new RegExp(`data-content-position="${contentPosition}"`));
+    assert.match(markup, /data-custom-content="true"/);
+    assert.doesNotMatch(markup, /inkra-progress__track| diameter=| thickness=| contentPosition=/);
+  }
+});
+
+test('Circular Progress handles empty, complete, unknown and invalid geometry in SSR', () => {
+  for (const [value, expected, offset] of [[-10, 0, 100], [1000, 100, 0], [null, null, 72], [NaN, 0, 100]]) {
+    const markup = renderToStaticMarkup(createElement(Progress, {
+      shape: 'circular', value, max: -1, diameter: Infinity, thickness: -1, 'aria-label': 'Loading',
+    }, state => {
+      assert.equal(state.value, expected);
+      assert.equal(state.percent, expected);
+      assert.equal(state.max, 100);
+      return expected === null ? '...' : `${expected}%`;
+    }));
+    assert.match(markup, /--inkra-progress-diameter:96px/);
+    assert.match(markup, /stroke-width="1"/);
+    assert.match(markup, new RegExp(`stroke-dashoffset="${offset}"`));
+    if (expected === null) assert.doesNotMatch(markup, /aria-valuenow=/);
+    else assert.match(markup, new RegExp(`aria-valuenow="${expected}"`));
+  }
+  const small = renderToStaticMarkup(createElement(Progress, { shape: 'circular', value: 50, diameter: 1, thickness: 100 }));
+  assert.match(small, /--inkra-progress-diameter:32px/);
+  assert.match(small, /stroke-width="4"/);
+  const linear = renderToStaticMarkup(createElement(Progress, { value: 20, contentPosition: 'center' }, '20%'));
+  assert.match(linear, /data-shape="linear"/);
+  assert.match(linear, /data-content-position="end"/);
+  assert.match(linear, /inkra-progress__track/);
+  assert.doesNotMatch(linear, /inkra-progress__ring/);
+});
+
 test('Display CSS retains fixed geometry, pencil fills and reduced motion fallback', () => {
   const css = readFileSync(new URL('../src/display/styles.css', import.meta.url), 'utf8');
   const source = readFileSync(new URL('../src/display/index.tsx', import.meta.url), 'utf8');
@@ -137,7 +185,7 @@ test('Display CSS retains fixed geometry, pencil fills and reduced motion fallba
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]*animation:\s*none/);
   assert.match(css, /\.inkra-skeleton[\s\S]*max-inline-size:\s*100%/);
   assert.match(css, /@media \(forced-colors: active\)/);
-  assert.doesNotMatch(css, /border:\s*1px\s+solid/);
+  assert.doesNotMatch(css.split('@media (forced-colors: active)')[0], /border:\s*1px\s+solid/);
   assert.match(source, /PencilSurface/);
   assert.match(source, /PencilLine/);
   assert.match(source, /role="progressbar"/);

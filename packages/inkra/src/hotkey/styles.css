@@ -1,0 +1,150 @@
+.inkra-hotkey {
+  display: inline-flex;
+  min-inline-size: 0;
+  align-items: center;
+  gap: var(--inkra-space-1);
+  color: var(--inkra-ink);
+  font: inherit;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.inkra-hotkey__part {
+  display: inline-flex;
+  min-inline-size: 0;
+  align-items: center;
+  gap: var(--inkra-space-1);
+}
+
+.inkra-hotkey__key {
+  display: inline-flex;
+  box-sizing: border-box;
+  min-inline-size: 1.75rem;
+  block-size: 1.75rem;
+  align-items: center;
+  justify-content: center;
+  padding-inline: var(--inkra-space-2);
+  color: var(--inkra-ink);
+  font-family: var(--inkra-font-body);
+  font-size: var(--inkra-text-sm);
+}
+
+.inkra-hotkey[data-size="sm"] .inkra-hotkey__key {
+  min-inline-size: 1.5rem;
+  block-size: 1.5rem;
+  padding-inline: var(--inkra-space-1);
+  font-size: var(--inkra-text-xs);
+}
+
+.inkra-hotkey[data-size="lg"] .inkra-hotkey__key {
+  min-inline-size: 2rem;
+  block-size: 2rem;
+  font-size: var(--inkra-text-md);
+}
+
+.inkra-hotkey__separator {
+  color: var(--inkra-ink-muted);
+  font-family: var(--inkra-font-body);
+  font-size: var(--inkra-text-sm);
+}
+
+.inkra-hotkey-input {
+  --inkra-hotkey-input-height: var(--inkra-control-md);
+
+  display: grid;
+  inline-size: 20rem;
+  max-inline-size: 100%;
+  gap: var(--inkra-space-2);
+  color: var(--inkra-ink);
+  font-family: var(--inkra-font-body);
+  font-size: var(--inkra-text-md);
+  line-height: var(--inkra-line-ui);
+}
+
+.inkra-hotkey-input[data-size="sm"] { --inkra-hotkey-input-height: var(--inkra-control-sm); }
+.inkra-hotkey-input[data-size="lg"] { --inkra-hotkey-input-height: var(--inkra-control-lg); }
+
+.inkra-hotkey-input__control {
+  position: relative;
+  display: flex !important;
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: max(var(--inkra-hotkey-input-height), var(--inkra-touch-target));
+  align-items: center;
+}
+
+.inkra-hotkey-input__native {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  box-sizing: border-box;
+  inline-size: 100%;
+  block-size: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: transparent;
+  caret-color: transparent;
+  font: inherit;
+  cursor: text;
+}
+
+.inkra-hotkey-input__native::selection { background: transparent; color: transparent; }
+
+.inkra-hotkey-input__value {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-inline-size: 0;
+  flex: 1;
+  align-items: center;
+  padding: var(--inkra-space-2) var(--inkra-space-3);
+  pointer-events: none;
+}
+
+.inkra-hotkey-input:has(.inkra-hotkey-input__clear) .inkra-hotkey-input__value {
+  padding-inline-end: calc(var(--inkra-touch-target) + var(--inkra-space-2));
+}
+
+.inkra-hotkey-input__placeholder { color: var(--inkra-ink-subtle); }
+
+.inkra-hotkey-input__clear {
+  position: absolute;
+  z-index: 3;
+  inset-block: 0;
+  inset-inline-end: 0;
+  display: inline-flex;
+  inline-size: var(--inkra-touch-target);
+  block-size: 100%;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--inkra-ink-muted);
+  cursor: pointer;
+}
+
+.inkra-hotkey-input__clear:disabled { cursor: not-allowed; }
+
+.inkra-hotkey-input[data-focus-within="true"] .inkra-hotkey-input__control > .inkra-pencil-surface__ink,
+.inkra-hotkey-input[data-focus-within="true"] .inkra-hotkey-input__control > .inkra-pencil-surface__border {
+  filter: contrast(1.28) saturate(1.08);
+}
+
+.inkra-hotkey-input[data-disabled="true"] { cursor: not-allowed; opacity: .55; }
+.inkra-hotkey-input[data-readonly="true"] .inkra-hotkey-input__value { color: var(--inkra-ink-muted); }
+.inkra-hotkey-input__message { color: var(--inkra-danger-foreground, var(--inkra-danger)); font-size: var(--inkra-text-sm); }
+
+@media (forced-colors: active) {
+  .inkra-hotkey__key,
+  .inkra-hotkey-input__control { border: 1px solid CanvasText; }
+  .inkra-hotkey-input[data-focus-within="true"] .inkra-hotkey-input__control { outline: 2px solid Highlight; outline-offset: 2px; }
+  .inkra-hotkey-input[data-invalid="true"] .inkra-hotkey-input__control { border-color: Mark; }
+  .inkra-hotkey-input__message { color: Mark; }
+}
+
+@media print {
+  .inkra-hotkey__key,
+  .inkra-hotkey-input__control { border: 1px solid currentColor; }
+}

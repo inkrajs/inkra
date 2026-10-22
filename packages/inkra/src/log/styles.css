@@ -1,0 +1,147 @@
+.inkra-log {
+  color: var(--inkra-ink);
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  min-block-size: 12rem;
+  min-inline-size: 0;
+  overflow: hidden;
+}
+
+.inkra-log[data-toolbar="true"] { grid-template-rows: auto minmax(0, 1fr); }
+
+.inkra-log__toolbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--inkra-space-2);
+  justify-content: space-between;
+  padding: var(--inkra-space-2) var(--inkra-space-3);
+  position: relative;
+}
+
+.inkra-log__toolbar-divider,
+.inkra-log__item-divider {
+  color: color-mix(in srgb, var(--inkra-border) 60%, transparent);
+  inset-inline: 0;
+  position: absolute;
+}
+
+.inkra-log__toolbar-divider { inset-block-end: -4px; }
+.inkra-log__item-divider { inset-block-start: -4px; }
+
+.inkra-log__filters {
+  align-items: center;
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: var(--inkra-space-1);
+  min-inline-size: 0;
+}
+
+.inkra-log__filters .inkra-button[data-tone="info"] { color: var(--inkra-info-foreground); }
+.inkra-log__filters .inkra-button[data-tone="success"] { color: var(--inkra-success-foreground); }
+.inkra-log__filters .inkra-button[data-tone="warning"] { color: var(--inkra-warning-foreground); }
+.inkra-log__filters .inkra-button[data-tone="danger"] { color: var(--inkra-danger-foreground); }
+.inkra-log__follow-control { flex: none; }
+
+.inkra-log__viewport {
+  min-block-size: 0;
+  outline: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: var(--inkra-space-2) var(--inkra-space-3) var(--inkra-space-4);
+  scrollbar-gutter: stable;
+}
+
+.inkra-log__viewport:focus-visible {
+  outline: var(--inkra-focus-width) solid var(--inkra-focus);
+  outline-offset: calc(-1 * var(--inkra-focus-width));
+}
+
+.inkra-log__list {
+  display: grid;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.inkra-log__item {
+  align-items: start;
+  display: block;
+  gap: var(--inkra-space-2);
+  grid-template-columns: auto minmax(0, 1fr);
+  min-block-size: var(--inkra-touch-target);
+  padding-block: var(--inkra-space-2);
+  position: relative;
+}
+
+.inkra-log__item[data-has-icon="true"] { display: grid; }
+
+.inkra-log__item[data-tone="info"] { --inkra-log-level: var(--inkra-info-foreground); }
+.inkra-log__item[data-tone="success"] { --inkra-log-level: var(--inkra-success-foreground); }
+.inkra-log__item[data-tone="warning"] { --inkra-log-level: var(--inkra-warning-foreground); }
+.inkra-log__item[data-tone="danger"] { --inkra-log-level: var(--inkra-danger-foreground); }
+.inkra-log__item[data-tone="neutral"] { --inkra-log-level: var(--inkra-ink-muted); }
+
+.inkra-log__icon {
+  align-items: center;
+  color: var(--inkra-log-level);
+  display: inline-flex;
+  inline-size: 24px;
+  justify-content: center;
+  min-block-size: 24px;
+}
+
+.inkra-log__record { min-inline-size: 0; }
+.inkra-log__meta {
+  align-items: baseline;
+  color: var(--inkra-ink-muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--inkra-text-sm);
+  gap: var(--inkra-space-2);
+  line-height: var(--inkra-line-ui);
+}
+
+.inkra-log__level { color: var(--inkra-log-level); }
+.inkra-log__content {
+  line-height: var(--inkra-line-body);
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+.inkra-log__content > .inkra-pencil-text,
+.inkra-log__empty > .inkra-pencil-text {
+  display: block;
+  inline-size: 100%;
+}
+.inkra-log__meta + .inkra-log__content { margin-block-start: var(--inkra-space-1); }
+
+.inkra-log__empty {
+  color: var(--inkra-ink-muted);
+  display: grid;
+  min-block-size: 8rem;
+  padding: var(--inkra-space-6);
+  place-items: center;
+  text-align: center;
+}
+
+.inkra-log__latest {
+  align-items: center;
+  display: flex;
+  inset-block-end: var(--inkra-space-3);
+  inset-inline-end: var(--inkra-space-3);
+  position: absolute;
+  z-index: 2;
+}
+
+@media (max-width: 36rem) {
+  .inkra-log__toolbar { align-items: stretch; }
+  .inkra-log__filters { flex-basis: 100%; overflow-x: auto; flex-wrap: nowrap; padding-block-end: var(--inkra-space-1); }
+  .inkra-log__follow-control { margin-inline-start: auto; }
+}
+
+@media (forced-colors: active) {
+  .inkra-log__viewport:focus-visible { outline-color: Highlight; }
+  .inkra-log__icon,
+  .inkra-log__level { color: CanvasText; }
+}

@@ -1,0 +1,93 @@
+.inkra-virtual-list {
+  block-size: 20rem;
+  color: var(--inkra-ink);
+  min-block-size: 8rem;
+  min-inline-size: 0;
+  outline: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  position: relative;
+  scrollbar-gutter: stable;
+}
+
+.inkra-virtual-list[data-external-scroll="true"] {
+  block-size: auto;
+  min-block-size: 0;
+  overflow: visible;
+  scrollbar-gutter: auto;
+}
+
+.inkra-virtual-list:focus-visible {
+  outline: var(--inkra-focus-width) solid var(--inkra-focus);
+  outline-offset: calc(-1 * var(--inkra-focus-width));
+}
+
+.inkra-virtual-list__items {
+  inline-size: 100%;
+  list-style: none;
+  margin: 0;
+  min-inline-size: 0;
+  padding: 0;
+  position: relative;
+}
+
+.inkra-virtual-list[data-virtualized="true"] .inkra-virtual-list__item {
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  position: absolute;
+}
+
+.inkra-virtual-list__item {
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-block-size: var(--inkra-touch-target);
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+  padding: var(--inkra-space-2) var(--inkra-space-3);
+  position: relative;
+  will-change: transform;
+}
+
+.inkra-virtual-list:not([data-virtualized="true"]) .inkra-virtual-list__item {
+  will-change: auto;
+}
+
+.inkra-virtual-list__item > .inkra-virtual-list__separator {
+  color: var(--inkra-border);
+  inset-block-start: -4px;
+  inset-inline: var(--inkra-space-3);
+  inline-size: auto;
+  opacity: .58;
+  position: absolute;
+  width: auto;
+}
+
+.inkra-virtual-list__empty {
+  color: var(--inkra-ink-muted);
+  display: grid;
+  min-block-size: 8rem;
+  padding: var(--inkra-space-6);
+  place-items: center;
+  text-align: center;
+}
+
+@media (forced-colors: active) {
+  .inkra-virtual-list { border: 1px solid CanvasText; }
+  .inkra-virtual-list:focus-visible { outline-color: Highlight; }
+  .inkra-virtual-list__item > .inkra-virtual-list__separator {
+    inset-block-start: 0;
+    opacity: 1;
+  }
+}
+
+@media print {
+  .inkra-virtual-list {
+    block-size: auto !important;
+    overflow: visible;
+  }
+
+  .inkra-virtual-list__item > .inkra-virtual-list__separator {
+    inset-block-start: 0;
+    opacity: 1;
+  }
+}

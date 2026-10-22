@@ -1,0 +1,205 @@
+.inkra-image-cropper {
+  display: grid;
+  gap: var(--inkra-space-4);
+  min-inline-size: 0;
+  width: 100%;
+}
+
+.inkra-image-cropper__stage {
+  position: relative;
+  min-block-size: 18rem;
+  block-size: clamp(18rem, 52vw, 30rem);
+  min-inline-size: 0;
+  overflow: hidden;
+  border-radius: var(--inkra-radius-lg);
+  background: color-mix(in srgb, var(--inkra-ink) 8%, var(--inkra-paper));
+  contain: layout paint;
+}
+
+.inkra-image-cropper__stage-surface {
+  position: absolute !important;
+  z-index: 5;
+  inset: 0;
+  pointer-events: none;
+}
+
+.inkra-image-cropper__engine {
+  position: absolute !important;
+  inset: var(--inkra-space-1) !important;
+  overflow: hidden;
+  border-radius: var(--inkra-radius-md);
+  background: transparent !important;
+}
+
+.inkra-image-cropper__media {
+  user-select: none;
+}
+
+.inkra-image-cropper__area {
+  color: var(--inkra-paper);
+  border: 2px solid currentColor !important;
+  box-shadow: 0 0 0 9999em color-mix(in srgb, var(--inkra-ink) 58%, transparent) !important;
+}
+
+.inkra-image-cropper__area::before,
+.inkra-image-cropper__area::after {
+  border-color: color-mix(in srgb, var(--inkra-paper) 72%, transparent) !important;
+}
+
+.inkra-image-cropper[data-disabled] .inkra-image-cropper__engine,
+.inkra-image-cropper[data-read-only] .inkra-image-cropper__engine {
+  pointer-events: none;
+}
+
+.inkra-image-cropper[data-disabled] {
+  opacity: 0.58;
+}
+
+.inkra-image-cropper__state {
+  position: absolute;
+  z-index: 4;
+  inset: var(--inkra-space-1);
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: var(--inkra-space-3);
+  padding: var(--inkra-space-5);
+  overflow-wrap: anywhere;
+  text-align: center;
+  background: var(--inkra-paper);
+}
+
+.inkra-image-cropper__state h3,
+.inkra-image-cropper__state p {
+  margin: 0;
+}
+
+.inkra-image-cropper__state p {
+  max-inline-size: 34rem;
+  color: var(--inkra-ink-muted);
+}
+
+.inkra-image-cropper__spinner {
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  color: var(--inkra-ink-muted);
+  animation: inkra-image-cropper-spin var(--inkra-motion-slow) linear infinite;
+}
+
+@keyframes inkra-image-cropper-spin {
+  to { transform: rotate(360deg); }
+}
+
+.inkra-image-cropper__load-probe,
+.inkra-image-cropper__instructions {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.inkra-image-cropper__controls {
+  display: grid;
+  grid-template-columns: minmax(12rem, 1fr) auto;
+  gap: var(--inkra-space-4);
+  align-items: end;
+  min-inline-size: 0;
+}
+
+.inkra-image-cropper__control,
+.inkra-image-cropper__free-controls {
+  display: grid;
+  gap: var(--inkra-space-2);
+  min-inline-size: 0;
+}
+
+.inkra-image-cropper__free-controls {
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--inkra-space-4);
+}
+
+.inkra-image-cropper__control-label {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--inkra-space-3);
+  color: var(--inkra-ink-muted);
+  font-size: var(--inkra-text-sm);
+  line-height: var(--inkra-line-ui);
+}
+
+.inkra-image-cropper__control-label output {
+  min-inline-size: 4rem;
+  color: var(--inkra-ink);
+  text-align: end;
+}
+
+.inkra-image-cropper__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--inkra-space-2);
+  justify-content: flex-end;
+  align-items: center;
+}
+
+@media (max-width: 36rem) {
+  .inkra-image-cropper {
+    gap: var(--inkra-space-3);
+  }
+
+  .inkra-image-cropper__stage {
+    min-block-size: 15rem;
+    block-size: min(72vw, 24rem);
+  }
+
+  .inkra-image-cropper__controls,
+  .inkra-image-cropper__free-controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .inkra-image-cropper__actions {
+    justify-content: stretch;
+  }
+
+  .inkra-image-cropper__actions .inkra-button:not([data-size^="icon"]) {
+    flex: 1 1 auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inkra-image-cropper__spinner {
+    animation: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .inkra-image-cropper__stage {
+    border: 1px solid CanvasText;
+    background: Canvas;
+  }
+
+  .inkra-image-cropper__area {
+    color: HighlightText;
+    border-color: Highlight !important;
+    box-shadow: 0 0 0 9999em Canvas !important;
+  }
+
+  .inkra-image-cropper__state {
+    background: Canvas;
+  }
+
+  .inkra-image-cropper__spinner {
+    forced-color-adjust: none;
+  }
+}
+
+@media print {
+  .inkra-image-cropper__controls,
+  .inkra-image-cropper__state[role="status"] {
+    display: none;
+  }
+}

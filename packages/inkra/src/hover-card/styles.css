@@ -1,0 +1,27 @@
+.inkra-hover-card__content {
+  max-height: min(70vh, var(--radix-popover-content-available-height, 70vh));
+  max-width: min(22rem, calc(100vw - var(--inkra-space-4)));
+  width: max-content;
+}
+
+.inkra-hover-card__content > .inkra-popover__surface {
+  min-width: min(18rem, calc(100vw - var(--inkra-space-4)));
+}
+
+.inkra-hover-card__content .inkra-popover__content-body {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 30rem) {
+  .inkra-hover-card__content,
+  .inkra-hover-card__content > .inkra-popover__surface {
+    min-width: 0;
+    width: min(22rem, calc(100vw - var(--inkra-space-4)));
+  }
+}
+
+@media print {
+  .inkra-hover-card__content {
+    display: none;
+  }
+}

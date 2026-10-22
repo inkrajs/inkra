@@ -46,6 +46,7 @@
 
 .inkra-progress {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--inkra-space-2);
   inline-size: 100%;
   min-inline-size: 0;
@@ -55,6 +56,122 @@
   color: var(--inkra-ink);
   font-size: var(--inkra-text-sm);
   line-height: var(--inkra-line-ui);
+}
+
+.inkra-progress__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: var(--inkra-space-2);
+  min-inline-size: 0;
+}
+.inkra-progress__body[data-content-position="start"] { grid-template-columns: auto minmax(0, 1fr); }
+.inkra-progress__body[data-content-position="end"] { grid-template-columns: minmax(0, 1fr) auto; }
+.inkra-progress__body[data-content-position="top"] > .inkra-progress__content,
+.inkra-progress__body[data-content-position="start"] > .inkra-progress__content { order: -1; }
+.inkra-progress__content { min-inline-size: 0; overflow-wrap: anywhere; }
+.inkra-progress[data-shape="circular"] { inline-size: fit-content; max-inline-size: 100%; }
+.inkra-progress[data-shape="circular"] > .inkra-progress__label { text-align: center; }
+.inkra-progress[data-shape="circular"] .inkra-progress__body { justify-items: center; }
+.inkra-progress[data-shape="circular"] .inkra-progress__body:is([data-content-position="start"], [data-content-position="end"]) { display: flex; }
+.inkra-progress[data-shape="circular"] .inkra-progress__body:is([data-content-position="start"], [data-content-position="end"]) > .inkra-progress__ring {
+  flex: 0 1 auto;
+  min-inline-size: min(32px, 100%);
+}
+.inkra-progress[data-shape="circular"] .inkra-progress__body[data-content-position="center"] {
+  position: relative;
+  inline-size: min(100%, var(--inkra-progress-diameter));
+  justify-self: center;
+}
+.inkra-progress[data-shape="circular"] .inkra-progress__body[data-content-position="center"] > .inkra-progress__content {
+  position: absolute;
+  inset: var(--inkra-progress-content-inset);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: auto;
+}
+.inkra-progress__ring {
+  display: block;
+  inline-size: var(--inkra-progress-diameter);
+  max-inline-size: 100%;
+  aspect-ratio: 1;
+  position: relative;
+  color: var(--inkra-accent-strong);
+  pointer-events: none;
+}
+.inkra-progress__ring-rotation,
+.inkra-progress__ring-direction,
+.inkra-progress__ring-ink,
+.inkra-progress__ring-fallback { display: block; position: absolute; inset: 0; inline-size: 100%; block-size: 100%; }
+.inkra-progress__ring-ink {
+  visibility: hidden;
+}
+.inkra-progress__ring-ink[data-ready="true"] { visibility: visible; }
+.inkra-progress__ring-ink[data-ready="true"] + .inkra-progress__ring-fallback { visibility: hidden; }
+.inkra-progress:dir(rtl) .inkra-progress__ring-direction { transform: scaleX(-1); }
+.inkra-progress[data-state="indeterminate"] .inkra-progress__ring-rotation { animation: inkra-progress-spin calc(var(--inkra-motion-slow) * 3) linear infinite; }
+@keyframes inkra-progress-spin { to { transform: rotate(360deg); } }
+
+.inkra-progress__segments {
+  display: grid;
+  grid-template-columns: repeat(var(--inkra-progress-segment-count), minmax(0, 1fr));
+  gap: var(--inkra-progress-segment-gap);
+  block-size: 16px;
+  inline-size: 100%;
+  min-inline-size: 0;
+  overflow: hidden;
+}
+.inkra-progress[data-size="sm"] .inkra-progress__segments { block-size: 12px; }
+.inkra-progress[data-size="lg"] .inkra-progress__segments { block-size: 24px; }
+.inkra-progress__segment {
+  display: block;
+  min-inline-size: 0;
+  overflow: hidden;
+  position: relative;
+}
+.inkra-progress__segment-outline,
+.inkra-progress__segment-fill-clip,
+.inkra-progress__segment-fill {
+  block-size: 100%;
+  display: block;
+  inline-size: 100%;
+}
+.inkra-progress__segment-outline,
+.inkra-progress__segment-fill-clip {
+  inset: 0;
+  position: absolute;
+}
+.inkra-progress__segment-fill-clip {
+  clip-path: inset(0 calc(100% - var(--inkra-progress-segment-fill)) 0 0);
+  overflow: hidden;
+  transition: clip-path var(--inkra-motion-normal) var(--inkra-ease);
+}
+.inkra-progress__segment-fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+}
+.inkra-progress__segment-fill[data-pencil-fallback="true"] {
+  background: color-mix(in srgb, var(--inkra-selection-pigment) 28%, transparent);
+}
+.inkra-progress:dir(rtl) .inkra-progress__segments { direction: rtl; }
+.inkra-progress:dir(rtl) .inkra-progress__segment-fill-clip {
+  clip-path: inset(0 0 0 calc(100% - var(--inkra-progress-segment-fill)));
+}
+.inkra-progress[data-shape="segmented"][data-state="indeterminate"] .inkra-progress__segment-fill-clip {
+  animation: inkra-progress-segment-pulse calc(var(--inkra-motion-slow) * 1.4) var(--inkra-ease) infinite;
+  clip-path: inset(0);
+}
+.inkra-progress[data-shape="segmented"][data-state="indeterminate"] .inkra-progress__segment-fill {
+  opacity: 0.16;
+}
+.inkra-progress[data-shape="segmented"][data-state="indeterminate"] .inkra-progress__segment:nth-child(3n + 2) .inkra-progress__segment-fill-clip { animation-delay: calc(var(--inkra-motion-fast) * -1); }
+.inkra-progress[data-shape="segmented"][data-state="indeterminate"] .inkra-progress__segment:nth-child(3n) .inkra-progress__segment-fill-clip { animation-delay: calc(var(--inkra-motion-fast) * -2); }
+@keyframes inkra-progress-segment-pulse {
+  0%, 100% { opacity: 0.18; }
+  50% { opacity: 1; }
 }
 
 .inkra-progress__track {
@@ -130,6 +247,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .inkra-progress[data-state="indeterminate"] .inkra-progress__ring-rotation { animation: none; }
+  .inkra-progress__segment-fill-clip { transition: none; }
+  .inkra-progress[data-shape="segmented"][data-state="indeterminate"] .inkra-progress__segment-fill-clip { animation: none; }
   .inkra-progress__fill-clip {
     transition: none;
   }
@@ -141,11 +261,24 @@
 }
 
 @media (forced-colors: active) {
+  .inkra-progress__ring { color: CanvasText; }
+  .inkra-progress__ring-ink[data-ready="true"] { visibility: hidden; }
+  .inkra-progress__ring-ink[data-ready="true"] + .inkra-progress__ring-fallback { visibility: visible; }
   .inkra-progress__fill-clip {
     background: Highlight;
   }
+  .inkra-progress__segment-outline { border: 1px solid CanvasText; }
+  .inkra-progress__segment-fill { background: Highlight; border: 0; }
 
   .inkra-skeleton {
     outline: 1px solid CanvasText;
   }
+}
+
+@media print {
+  .inkra-progress__ring-ink[data-ready="true"] { visibility: hidden; }
+  .inkra-progress__ring-ink[data-ready="true"] + .inkra-progress__ring-fallback { visibility: visible; }
+  .inkra-progress[data-state="indeterminate"] .inkra-progress__ring-rotation { animation: none; }
+  .inkra-progress[data-shape="segmented"][data-state="indeterminate"] .inkra-progress__segment-fill-clip { animation: none; }
+  .inkra-progress__segment-fill { background: currentColor; border: 0; opacity: 0.22; }
 }

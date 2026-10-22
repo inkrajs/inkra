@@ -1,0 +1,101 @@
+.inkra-tilt {
+  --inkra-tilt-response: 120ms;
+  --inkra-tilt-reset-duration: 180ms;
+  --inkra-tilt-rotate-x: 0deg;
+  --inkra-tilt-rotate-y: 0deg;
+
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  transform: perspective(900px) rotateX(var(--inkra-tilt-rotate-x)) rotateY(var(--inkra-tilt-rotate-y));
+  transform-style: preserve-3d;
+  transition: transform var(--inkra-tilt-reset-duration) var(--inkra-ease);
+  will-change: transform;
+}
+
+.inkra-tilt[data-tilting="true"] {
+  transition-duration: var(--inkra-tilt-response);
+}
+
+.inkra-tilt[data-disabled="true"] {
+  transform: perspective(900px) rotateX(0deg) rotateY(0deg);
+  will-change: auto;
+}
+
+.inkra-flip {
+  --inkra-flip-duration: 420ms;
+
+  display: grid;
+  inline-size: max-content;
+  max-inline-size: 100%;
+}
+
+.inkra-flip__scene {
+  display: grid;
+  max-inline-size: 100%;
+  transform-style: preserve-3d;
+  transition: transform var(--inkra-flip-duration) var(--inkra-ease);
+}
+
+.inkra-flip[data-flipped="true"] > .inkra-flip__scene {
+  transform: rotateY(180deg);
+}
+
+.inkra-flip__face {
+  backface-visibility: hidden;
+  box-sizing: border-box;
+  grid-area: 1 / 1;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  pointer-events: none;
+  transform-style: preserve-3d;
+}
+
+.inkra-flip__face--back {
+  transform: rotateY(180deg);
+}
+
+.inkra-flip__face[data-active="true"] {
+  pointer-events: auto;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .inkra-tilt {
+    transform: perspective(900px) rotateX(0deg) rotateY(0deg);
+    transition: none;
+    will-change: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inkra-tilt,
+  .inkra-tilt[data-tilting="true"],
+  .inkra-flip__scene {
+    transition: none;
+  }
+
+  .inkra-tilt {
+    transform: perspective(900px) rotateX(0deg) rotateY(0deg);
+    will-change: auto;
+  }
+}
+
+@media (forced-colors: active) {
+  .inkra-flip__face[data-active="true"] {
+    outline: 1px solid CanvasText;
+  }
+}
+
+@media print {
+  .inkra-tilt,
+  .inkra-flip__scene {
+    transform: none !important;
+  }
+
+  .inkra-flip__face {
+    display: none;
+  }
+
+  .inkra-flip__face[data-active="true"] {
+    display: block;
+  }
+}

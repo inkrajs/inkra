@@ -1,0 +1,109 @@
+.inkra-slot {
+  --inkra-slot-size: 64px;
+
+  align-items: center;
+  appearance: none;
+  background: transparent;
+  block-size: var(--inkra-slot-size);
+  border: 0;
+  box-sizing: border-box;
+  color: var(--inkra-ink);
+  display: inline-grid;
+  flex: 0 0 auto;
+  inline-size: var(--inkra-slot-size);
+  justify-items: center;
+  min-block-size: var(--inkra-slot-size);
+  min-inline-size: var(--inkra-slot-size);
+  padding: var(--inkra-space-2);
+  position: relative;
+  vertical-align: middle;
+}
+
+.inkra-slot[data-size="sm"] { --inkra-slot-size: 48px; }
+.inkra-slot[data-size="lg"] { --inkra-slot-size: 80px; }
+
+.inkra-slot[data-interactive="true"] {
+  cursor: pointer;
+  font: inherit;
+}
+
+.inkra-slot[data-interactive="true"]:focus-visible {
+  outline: var(--inkra-focus-width) solid var(--inkra-focus);
+  outline-offset: var(--inkra-focus-offset);
+}
+
+.inkra-slot[data-interactive="true"]:not(:disabled):hover {
+  transform: translateY(-0.5px);
+}
+
+.inkra-slot[data-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.inkra-slot__content {
+  align-items: center;
+  block-size: 100%;
+  display: flex;
+  inline-size: 100%;
+  justify-content: center;
+  min-block-size: 0;
+  min-inline-size: 0;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.inkra-slot__content > :where(img, svg, canvas) {
+  block-size: 100%;
+  inline-size: 100%;
+  max-block-size: 100%;
+  max-inline-size: 100%;
+  object-fit: contain;
+}
+
+.inkra-slot__empty-mark {
+  color: var(--inkra-ink-muted);
+  font-family: "Trip Map Hand", "HanziPen SC", "Hannotate SC", "Kaiti SC", "STKaiti", cursive;
+  font-size: calc(var(--inkra-slot-size) * 0.4);
+  line-height: 1;
+}
+
+.inkra-slot__selected-wash,
+.inkra-slot__selected-outline {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.inkra-slot__selected-wash { z-index: 0; }
+.inkra-slot__selected-outline { z-index: 2; }
+
+.inkra-slot__count {
+  inset-block-start: -8px;
+  inset-inline-end: -8px;
+  line-height: 1;
+  max-inline-size: calc(var(--inkra-slot-size) * 0.85);
+  pointer-events: none;
+  position: absolute;
+  z-index: 3;
+}
+
+.inkra-slot__count > .inkra-badge {
+  max-inline-size: 100%;
+  min-block-size: 24px;
+  min-inline-size: 24px;
+  overflow: hidden;
+  padding-inline: var(--inkra-space-1);
+  text-overflow: ellipsis;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inkra-slot { transition: none; }
+  .inkra-slot[data-interactive="true"]:not(:disabled):hover { transform: none; }
+}
+
+@media (forced-colors: active) {
+  .inkra-slot[data-selected="true"] { outline: 2px solid Highlight; }
+  .inkra-slot__empty-mark { color: GrayText; }
+}

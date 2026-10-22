@@ -1,0 +1,157 @@
+.inkra-sortable {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--inkra-space-4);
+  min-width: 0;
+  color: var(--inkra-ink);
+}
+
+.inkra-sortable__container {
+  position: relative;
+  flex: 1 1 240px;
+  min-width: min(100%, 220px);
+  padding: var(--inkra-space-3);
+  border-radius: var(--inkra-radius-md);
+}
+
+.inkra-sortable__container-target {
+  position: absolute;
+  inset: 3px;
+  z-index: 0;
+  border-radius: var(--inkra-radius-md);
+  pointer-events: none;
+}
+
+.inkra-sortable__container-header {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  padding: var(--inkra-space-1) var(--inkra-space-1) var(--inkra-space-2);
+}
+
+.inkra-sortable__container-title { min-width: 0; padding-inline: var(--inkra-space-1); }
+.inkra-sortable__container-divider { display: block; width: 100%; height: 8px; margin-top: var(--inkra-space-2); }
+
+.inkra-sortable__items {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: var(--inkra-space-2);
+  min-height: var(--inkra-touch-target);
+}
+
+.inkra-sortable__container[data-layout="grid"] .inkra-sortable__items {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 120px), 1fr));
+}
+
+.inkra-sortable__item,
+.inkra-sortable__overlay {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  min-height: var(--inkra-touch-target);
+  border-radius: var(--inkra-radius-md);
+  color: var(--inkra-ink);
+  touch-action: manipulation;
+}
+
+.inkra-sortable__item:not([data-disabled]) { cursor: grab; }
+.inkra-sortable__item[data-dragging] { cursor: grabbing; z-index: 1; }
+.inkra-sortable__item:focus { outline: none; }
+
+.inkra-sortable__item-surface,
+.inkra-sortable__overlay-surface,
+.inkra-sortable__placeholder,
+.inkra-sortable__focus {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.inkra-sortable__placeholder { z-index: 0; }
+.inkra-sortable__focus { z-index: 2; inset: -2px; opacity: 0; }
+.inkra-sortable__item:focus-visible > .inkra-sortable__focus,
+.inkra-sortable__item:has(.inkra-sortable__handle:focus-visible) > .inkra-sortable__focus { opacity: 1; }
+.inkra-sortable__item[data-dragging] > .inkra-sortable__item-surface,
+.inkra-sortable__item[data-dragging] > .inkra-sortable__item-content,
+.inkra-sortable__item[data-dragging] > .inkra-sortable__handle-slot { opacity: 0; }
+
+.inkra-sortable__item-content {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: var(--inkra-space-3);
+}
+
+.inkra-sortable__handle-slot {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 var(--inkra-touch-target);
+  display: grid;
+  place-items: center;
+}
+
+.inkra-sortable__handle {
+  appearance: none;
+  display: inline-grid;
+  place-items: center;
+  width: var(--inkra-touch-target);
+  height: var(--inkra-touch-target);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--inkra-ink-muted);
+  cursor: grab;
+  touch-action: none;
+}
+
+.inkra-sortable__handle:focus { outline: none; }
+
+.inkra-sortable__overlay {
+  width: var(--inkra-sortable-overlay-width, auto);
+  min-width: 180px;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--inkra-ink) 18%, transparent);
+  cursor: grabbing;
+}
+
+.inkra-sortable__empty {
+  min-height: var(--inkra-touch-target);
+}
+
+.inkra-sortable__item[data-disabled],
+.inkra-sortable__container[data-disabled] {
+  opacity: .55;
+}
+
+.inkra-sortable__container[data-disabled] .inkra-sortable__item { cursor: not-allowed; }
+
+@media (max-width: 640px) {
+  .inkra-sortable { flex-direction: column; }
+  .inkra-sortable__container { flex-basis: auto; width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inkra-sortable__item { transition: none !important; }
+}
+
+@media (forced-colors: active) {
+  .inkra-sortable__container,
+  .inkra-sortable__item,
+  .inkra-sortable__overlay { border: 1px solid CanvasText; }
+  .inkra-sortable__container[data-over] { outline: 2px solid Highlight; outline-offset: -3px; }
+  .inkra-sortable__handle:focus-visible,
+  .inkra-sortable__item:focus-visible { outline-color: Highlight; }
+  .inkra-sortable__item:focus-visible,
+  .inkra-sortable__item:has(.inkra-sortable__handle:focus-visible) { outline: 2px solid Highlight; outline-offset: 2px; }
+}
+
+@media print {
+  .inkra-sortable__container,
+  .inkra-sortable__item { border: 1px solid currentColor; }
+  .inkra-sortable__handle { display: none; }
+}

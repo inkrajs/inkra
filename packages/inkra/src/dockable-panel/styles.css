@@ -1,0 +1,110 @@
+.inkra-dockable-panel-workspace {
+  contain: layout paint;
+  isolation: isolate;
+  min-block-size: 20rem;
+  min-inline-size: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.inkra-dockable-panel {
+  --inkra-dockable-panel-x: 0px;
+  --inkra-dockable-panel-y: 0px;
+  block-size: auto;
+  color: var(--inkra-ink);
+  display: grid;
+  grid-template-rows: auto 8px minmax(0, 1fr);
+  inline-size: min(22rem, calc(100% - var(--inkra-space-4)));
+  left: 0;
+  max-block-size: calc(100% - var(--inkra-space-4));
+  min-inline-size: min(16rem, calc(100% - var(--inkra-space-4)));
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  transform: translate3d(var(--inkra-dockable-panel-x), var(--inkra-dockable-panel-y), 0);
+}
+
+.inkra-dockable-panel[data-collapsed="true"] { grid-template-rows: auto; }
+
+.inkra-dockable-panel[data-active="true"] {
+  filter: drop-shadow(0 8px 14px color-mix(in srgb, var(--inkra-ink) 16%, transparent));
+}
+
+.inkra-dockable-panel__header {
+  align-items: stretch;
+  display: flex;
+  min-block-size: var(--inkra-touch-target);
+  min-inline-size: 0;
+}
+
+.inkra-dockable-panel__handle {
+  align-items: center;
+  cursor: grab;
+  display: flex;
+  flex: 1 1 auto;
+  min-block-size: var(--inkra-touch-target);
+  min-inline-size: 0;
+  outline: none;
+  padding: var(--inkra-space-2) var(--inkra-space-3);
+  touch-action: none;
+  user-select: none;
+}
+
+.inkra-dockable-panel__handle:active,
+.inkra-dockable-panel[data-dragging="true"] .inkra-dockable-panel__handle { cursor: grabbing; }
+
+.inkra-dockable-panel__handle:focus-visible {
+  outline: var(--inkra-focus-width) solid var(--inkra-focus);
+  outline-offset: calc(-1 * var(--inkra-focus-width));
+}
+
+.inkra-dockable-panel__title {
+  font-weight: 400;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.inkra-dockable-panel__actions {
+  align-items: center;
+  display: flex;
+  flex: none;
+  gap: var(--inkra-space-1);
+  padding: var(--inkra-space-1);
+}
+
+.inkra-dockable-panel__divider {
+  block-size: 8px;
+  inline-size: 100%;
+}
+
+.inkra-dockable-panel[data-collapsed="true"] .inkra-dockable-panel__divider { display: none; }
+
+.inkra-dockable-panel__body {
+  min-block-size: 0;
+  min-inline-size: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: var(--inkra-space-3);
+}
+
+.inkra-dockable-panel .inkra-visually-hidden {
+  block-size: 1px !important;
+  border: 0 !important;
+  clip: rect(0, 0, 0, 0) !important;
+  inline-size: 1px !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  position: absolute !important;
+  white-space: nowrap !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inkra-dockable-panel { transition: none !important; }
+}
+
+@media (forced-colors: active) {
+  .inkra-dockable-panel { border: 1px solid CanvasText; }
+  .inkra-dockable-panel[data-active="true"] { outline: 2px solid Highlight; filter: none; }
+  .inkra-dockable-panel__handle:focus-visible { outline-color: Highlight; }
+}

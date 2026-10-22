@@ -82,10 +82,11 @@ Inkra 提供 ESM、TypeScript 声明和 CSS，React 与 React DOM 作为 peer de
 | 日期与地图 | Calendar、DayAgenda、JourneyMap |
 | 绘制原语 | PencilIcon、PencilText、PencilSurface、PencilLine |
 
-**下一版，已在源码中提供：** Toast、AlertDialog、Drawer、DatePicker、TimePicker、
-Pagination、Empty、ToggleGroup、Command、Upload、DataTable、Tree、Steps 和 Timeline。
-这批组件及扩展后的渲染参数尚未包含在 npm 0.1.0 中。
-具体范围与限制见[更新日志](./CHANGELOG.md)和[组件 API](./packages/inkra/README.md)。
+**0.2.0 源码：** 扩展表单、弹层和布局组件，新增 AudioPlayer、Carousel、ImageViewer、
+ImageCropper 等媒体组件，NodeGraph、Sortable、PanZoom 等交互组件，以及 Log、Radar、
+Heatmap、Sparkline、VirtualList 等数据展示组件，并支持环形 Progress。
+这些能力不包含在 npm 0.1.0 中，实际发布状态以[版本发布](https://github.com/inkrajs/inkra/releases)为准。
+完整范围与已知限制见[更新日志](./CHANGELOG.md)和[组件 API](./packages/inkra/README.md)。
 
 ## 一起开发 Inkra
 

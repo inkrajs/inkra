@@ -1,0 +1,24 @@
+.inkra-sparkline { position: relative; display: inline-grid; gap: var(--inkra-space-1, 4px); max-inline-size: 100%; color: var(--inkra-ink); font-size: var(--inkra-text-sm); }
+.inkra-sparkline__svg { display: block; inline-size: min(100%, 100%); block-size: auto; overflow: visible; outline: none; position: relative; z-index: 1; }
+.inkra-sparkline__pencil { position: absolute; inset: 0 auto auto 0; inline-size: 100%; block-size: auto; aspect-ratio: 180 / 56; pointer-events: none; z-index: 2; opacity: 0; }
+.inkra-sparkline__pencil--interaction { z-index: 3; }
+.inkra-sparkline__pencil--interaction + .inkra-sparkline__tooltip { z-index: 4; }
+.inkra-sparkline--pencil-ready .inkra-sparkline__pencil { opacity: .9; }
+.inkra-sparkline--pencil-ready .inkra-sparkline__svg { opacity: 1; }
+.inkra-sparkline--pencil-ready .inkra-sparkline__area,
+.inkra-sparkline--pencil-ready .inkra-sparkline__line,
+.inkra-sparkline--pencil-ready .inkra-sparkline__bar { opacity: 0; }
+.inkra-sparkline--interaction-ready .inkra-sparkline__guide { opacity: 0; }
+.inkra-sparkline--interaction-ready[data-show-points] .inkra-sparkline__point { opacity: 0; }
+.inkra-sparkline__svg:focus-visible { outline: 2px solid var(--inkra-focus); outline-offset: 4px; }
+.inkra-sparkline__line { fill: none; stroke: var(--inkra-accent-strong); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.inkra-sparkline__area { fill: color-mix(in srgb, var(--inkra-accent) 18%, transparent); }
+.inkra-sparkline__bar { fill: var(--inkra-accent); opacity: .78; }
+.inkra-sparkline__point { fill: var(--inkra-paper); stroke: var(--inkra-accent-strong); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.inkra-sparkline__point[data-active] { fill: var(--inkra-selection-pigment); stroke-width: 2; }
+.inkra-sparkline__guide { stroke: var(--inkra-ink-muted); stroke-dasharray: 2 3; stroke-width: 1; opacity: .65; vector-effect: non-scaling-stroke; }
+.inkra-sparkline__tooltip { position: absolute; inset-block-start: 0; inset-inline-end: 0; padding: 2px 6px; color: var(--inkra-ink); background: color-mix(in srgb, var(--inkra-paper) 86%, transparent); pointer-events: none; }
+.inkra-sparkline__summary { margin: 0; color: var(--inkra-ink-muted); line-height: var(--inkra-line-ui, 1.45); }
+.inkra-sparkline__data { position: absolute !important; inline-size: 1px !important; block-size: 1px !important; overflow: hidden !important; clip-path: inset(50%) !important; }
+@media (prefers-reduced-motion: reduce) { .inkra-sparkline * { transition: none !important; animation: none !important; } }
+@media (forced-colors: active), print { .inkra-sparkline__pencil { display: none; } .inkra-sparkline--pencil-ready .inkra-sparkline__svg, .inkra-sparkline--pencil-ready .inkra-sparkline__area, .inkra-sparkline--pencil-ready .inkra-sparkline__line, .inkra-sparkline--pencil-ready .inkra-sparkline__bar, .inkra-sparkline--interaction-ready[data-show-points] .inkra-sparkline__point, .inkra-sparkline--interaction-ready .inkra-sparkline__guide { opacity: 1; } .inkra-sparkline__line, .inkra-sparkline__bar, .inkra-sparkline__point, .inkra-sparkline__guide { stroke: CanvasText; fill: Canvas; opacity: 1; } .inkra-sparkline__line { fill: none; } }

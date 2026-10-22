@@ -1,0 +1,89 @@
+.inkra-rating {
+  align-items: center;
+  color: var(--inkra-ink-muted);
+  display: inline-flex;
+  max-inline-size: 100%;
+  outline: none;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  touch-action: manipulation;
+}
+
+.inkra-rating__symbols {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.inkra-rating__symbol-target {
+  block-size: var(--inkra-touch-target);
+  cursor: pointer;
+  flex: 0 0 var(--inkra-touch-target);
+  inline-size: var(--inkra-touch-target);
+  position: relative;
+}
+
+.inkra-rating__symbol,
+.inkra-rating__fill {
+  inset-block: 0;
+  inset-inline-start: 0;
+  position: absolute;
+}
+
+.inkra-rating__symbol {
+  align-items: center;
+  block-size: var(--inkra-touch-target);
+  display: flex;
+  inline-size: var(--inkra-touch-target);
+  justify-content: center;
+}
+
+.inkra-rating__symbol--empty {
+  opacity: 0.38;
+}
+
+.inkra-rating__fill {
+  block-size: var(--inkra-touch-target);
+  color: var(--inkra-selection-foreground);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.inkra-rating__symbol--filled {
+  color: var(--inkra-selection-foreground);
+}
+
+.inkra-rating:focus-visible {
+  outline: var(--inkra-focus-width) solid var(--inkra-focus);
+  outline-offset: var(--inkra-focus-offset);
+}
+
+.inkra-rating[data-readonly] .inkra-rating__symbol-target,
+.inkra-rating[data-disabled] .inkra-rating__symbol-target {
+  cursor: default;
+}
+
+.inkra-rating[data-disabled] {
+  opacity: 0.5;
+}
+
+@media (forced-colors: active) {
+  .inkra-rating {
+    color: GrayText;
+  }
+
+  .inkra-rating__fill,
+  .inkra-rating__symbol--filled {
+    color: Highlight;
+  }
+
+  .inkra-rating:focus-visible {
+    outline: 2px solid Highlight;
+  }
+}
+
+@media print {
+  .inkra-rating {
+    color: CanvasText;
+    overflow: visible;
+  }
+}

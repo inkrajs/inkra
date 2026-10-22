@@ -1,0 +1,155 @@
+.inkra-carousel {
+  --inkra-carousel-gap: 16px;
+  --inkra-carousel-visible: var(--inkra-carousel-visible-base, 1);
+
+  container-type: inline-size;
+  display: grid;
+  gap: var(--inkra-space-3);
+  inline-size: 100%;
+  min-inline-size: 0;
+  position: relative;
+}
+
+.inkra-carousel__viewport {
+  cursor: grab;
+  min-inline-size: 0;
+  overflow: hidden;
+  touch-action: pan-y pinch-zoom;
+}
+
+.inkra-carousel__viewport:active { cursor: grabbing; }
+.inkra-carousel[data-disabled] .inkra-carousel__viewport { cursor: default; }
+
+.inkra-carousel__container {
+  display: flex;
+  margin-inline-end: calc(-1 * var(--inkra-carousel-gap));
+  min-inline-size: 0;
+}
+
+.inkra-carousel__slide {
+  box-sizing: border-box;
+  flex: 0 0 calc((100% - (var(--inkra-carousel-visible) - 1) * var(--inkra-carousel-gap)) / var(--inkra-carousel-visible));
+  min-inline-size: 0;
+  padding-inline-end: var(--inkra-carousel-gap);
+  position: relative;
+}
+
+.inkra-carousel__slide > * { max-inline-size: 100%; }
+
+.inkra-carousel__toolbar {
+  align-items: center;
+  display: flex;
+  gap: var(--inkra-space-2);
+  justify-content: space-between;
+  min-block-size: var(--inkra-touch-target);
+  min-inline-size: 0;
+}
+
+.inkra-carousel__navigation {
+  display: flex;
+  flex: none;
+  gap: var(--inkra-space-2);
+}
+
+.inkra-carousel__pagination {
+  align-items: center;
+  display: flex;
+  flex: 1 1 auto;
+  gap: var(--inkra-space-1);
+  justify-content: center;
+  min-inline-size: 0;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: thin;
+}
+
+.inkra-carousel__page {
+  align-items: center;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--inkra-ink-muted);
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 var(--inkra-touch-target);
+  block-size: var(--inkra-touch-target);
+  justify-content: center;
+  padding: 0;
+  position: relative;
+}
+
+.inkra-carousel__page:disabled { cursor: not-allowed; opacity: 0.55; }
+.inkra-carousel__page:focus-visible { outline: 0; }
+
+.inkra-carousel__page-mark {
+  block-size: 10px;
+  display: block !important;
+  inline-size: 10px;
+  pointer-events: none;
+}
+
+.inkra-carousel__page[aria-current="true"] .inkra-carousel__page-mark {
+  block-size: 14px;
+  inline-size: 14px;
+}
+
+.inkra-carousel__page:focus-visible .inkra-carousel__page-mark {
+  --inkra-border: var(--inkra-focus);
+  --inkra-border-strong: var(--inkra-focus);
+}
+
+.inkra-carousel__empty {
+  align-items: center;
+  color: var(--inkra-ink-muted);
+  display: flex;
+  justify-content: center;
+  min-block-size: 8rem;
+  min-inline-size: 0;
+  text-align: center;
+}
+
+.inkra-carousel__status {
+  block-size: 1px;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  inline-size: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+}
+
+@container (min-width: 30rem) {
+  .inkra-carousel { --inkra-carousel-visible: var(--inkra-carousel-visible-sm, var(--inkra-carousel-visible-base, 1)); }
+}
+
+@container (min-width: 48rem) {
+  .inkra-carousel { --inkra-carousel-visible: var(--inkra-carousel-visible-md, var(--inkra-carousel-visible-sm, var(--inkra-carousel-visible-base, 1))); }
+}
+
+@container (min-width: 64rem) {
+  .inkra-carousel { --inkra-carousel-visible: var(--inkra-carousel-visible-lg, var(--inkra-carousel-visible-md, var(--inkra-carousel-visible-sm, var(--inkra-carousel-visible-base, 1)))); }
+}
+
+@media (max-width: 390px) {
+  .inkra-carousel__toolbar { align-items: flex-start; flex-wrap: wrap; }
+  .inkra-carousel__pagination { order: 3; flex-basis: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inkra-carousel__container { scroll-behavior: auto; }
+}
+
+@media (forced-colors: active) {
+  .inkra-carousel__page-mark { background: Canvas; border: 1px solid ButtonText; }
+  .inkra-carousel__page[aria-current="true"] .inkra-carousel__page-mark { background: Highlight; border-color: Highlight; forced-color-adjust: none; }
+  .inkra-carousel__page:focus-visible { outline: var(--inkra-focus-width) solid Highlight; outline-offset: var(--inkra-focus-offset); }
+}
+
+@media print {
+  .inkra-carousel__toolbar { display: none; }
+  .inkra-carousel__viewport { overflow: visible; }
+  .inkra-carousel__container { flex-wrap: wrap; gap: var(--inkra-carousel-gap); margin: 0; }
+  .inkra-carousel__slide { flex-basis: auto; padding: 0; }
+}

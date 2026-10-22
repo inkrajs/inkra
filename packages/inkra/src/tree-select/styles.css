@@ -1,0 +1,101 @@
+.inkra-tree-select {
+  display: block;
+  min-width: 0;
+  width: 100%;
+  color: var(--inkra-ink);
+}
+
+.inkra-tree-select__control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--inkra-space-2);
+  min-width: 0;
+}
+
+.inkra-tree-select__trigger,
+.inkra-tree-select__trigger > .inkra-button__surface {
+  min-width: 0;
+}
+
+.inkra-tree-select__trigger .inkra-button__content,
+.inkra-tree-select__trigger .inkra-button__label,
+.inkra-tree-select__trigger .inkra-button__label > span,
+.inkra-tree-select__value {
+  min-width: 0;
+  width: 100%;
+}
+
+.inkra-tree-select__value {
+  display: block;
+  overflow: hidden;
+  text-align: start;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inkra-tree-select__value[data-placeholder] {
+  color: var(--inkra-ink-subtle);
+}
+
+.inkra-tree-select__clear[data-visible="false"] {
+  visibility: hidden;
+}
+
+.inkra-tree-select__popover {
+  width: max(var(--radix-popover-trigger-width, 18rem), 18rem);
+  max-width: min(32rem, calc(100vw - var(--inkra-space-4)));
+}
+
+.inkra-tree-select__popover .inkra-popover__content-body {
+  display: grid;
+  gap: var(--inkra-space-2);
+  overflow: hidden;
+  padding: var(--inkra-space-3);
+}
+
+.inkra-tree-select__search {
+  min-width: 0;
+}
+
+.inkra-tree-select__tree {
+  max-height: min(22rem, calc(var(--radix-popover-content-available-height, 70vh) - 5rem));
+  min-height: var(--inkra-touch-target);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 2px;
+  scrollbar-gutter: stable;
+}
+
+.inkra-tree-select__item .inkra-tree__item-content {
+  cursor: default;
+}
+
+.inkra-tree-select__form-anchor {
+  display: none;
+}
+
+.inkra-tree-select[data-disabled] {
+  opacity: .6;
+}
+
+@media (max-width: 30rem) {
+  .inkra-tree-select__popover {
+    width: calc(100vw - var(--inkra-space-4));
+  }
+}
+
+@media (forced-colors: active) {
+  .inkra-tree-select__popover {
+    border: 1px solid CanvasText;
+  }
+
+  .inkra-tree-select__value[data-placeholder] {
+    color: GrayText;
+  }
+}
+
+@media print {
+  .inkra-tree-select__clear {
+    display: none;
+  }
+}

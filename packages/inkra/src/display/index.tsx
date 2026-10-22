@@ -8,6 +8,13 @@ import type {
 import { PencilLine } from '../PencilLine.js';
 import { PencilSurface } from '../PencilSurface.js';
 import { PencilText } from '../PencilText.js';
+import {
+  SegmentedProgress,
+  type ProgressPartialSegment,
+  type ProgressThreshold,
+} from '../segmented-progress/SegmentedProgress.js';
+import { ProgressRing } from './ProgressRing.js';
+export type { ProgressPartialSegment, ProgressThreshold } from '../segmented-progress/SegmentedProgress.js';
 
 export type BadgeVariant = 'neutral' | 'accent' | 'success' | 'warning' | 'danger' | 'info';
 
@@ -139,15 +146,42 @@ export const Skeleton = forwardRef<HTMLDivElement, SkeletonProps>(function Skele
   );
 });
 
+export interface ProgressRenderState {
+  value: number | null;
+  max: number;
+  percent: number | null;
+}
+
+export type ProgressContentPosition = 'center' | 'top' | 'bottom' | 'start' | 'end';
+
 export interface ProgressProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
   value: number | null;
   max?: number;
   label?: ReactNode;
   seed?: string | number;
   size?: 'sm' | 'md' | 'lg';
+  shape?: 'linear' | 'circular' | 'segmented';
+  /** Circular diameter in CSS pixels, clamped to 32-512. */
+  diameter?: number;
+  /** Circular stroke width, clamped to 1-diameter/8. */
+  thickness?: number;
+  /** Segmented cell count, clamped to 1-64. */
+  segmentCount?: number;
+  /** Segmented gap in CSS pixels, clamped to 0-24. */
+  segmentGap?: number;
+  /** How the active partial cell is represented. */
+  partialSegment?: ProgressPartialSegment;
+  /** Pigment ranges expressed in the same value units as max. */
+  thresholds?: readonly ProgressThreshold[];
+  /** Per-cell pigment overrides by zero-based segment index. */
+  segmentColors?: readonly string[];
+  /** Defaults to center for circular, end otherwise. Center maps to end for non-circular shapes. */
+  contentPosition?: ProgressContentPosition;
+  /** Non-interactive content; render state contains normalized values. */
+  children?: ReactNode | ((state: ProgressRenderState) => ReactNode);
 }
 
-type ProgressStyle = CSSProperties & { '--inkra-progress-value'?: string };
+type ProgressStyle = CSSProperties & Record<`--inkra-progress-${string}`, string>;
 
 function normalizeMax(max: number | undefined): number {
   return typeof max === 'number' && Number.isFinite(max) && max > 0 ? max : 100;
@@ -170,6 +204,16 @@ export const Progress = forwardRef<HTMLDivElement, ProgressProps>(function Progr
     style,
     value,
     size = 'md',
+    shape = 'linear',
+    diameter,
+    thickness,
+    segmentCount,
+    segmentGap,
+    partialSegment = 'fractional',
+    thresholds,
+    segmentColors,
+    contentPosition,
+    children,
     ...props
   },
   ref,
@@ -183,9 +227,24 @@ export const Progress = forwardRef<HTMLDivElement, ProgressProps>(function Progr
     ? labelId
     : ariaLabelledBy;
   const resolvedSeed = seed ?? `inkra-progress-${generatedId}`;
+  const resolvedDiameter = typeof diameter === 'number' && Number.isFinite(diameter)
+    ? Math.max(32, Math.min(512, diameter)) : { sm: 64, md: 96, lg: 128 }[size];
+  const resolvedThickness = Math.min(resolvedDiameter / 8, Math.max(1,
+    typeof thickness === 'number' && Number.isFinite(thickness) ? thickness : { sm: 4, md: 6, lg: 8 }[size]));
+  const resolvedSegmentCount = typeof segmentCount === 'number' && Number.isFinite(segmentCount)
+    ? Math.max(1, Math.min(64, Math.round(segmentCount))) : 10;
+  const resolvedSegmentGap = typeof segmentGap === 'number' && Number.isFinite(segmentGap)
+    ? Math.max(0, Math.min(24, segmentGap)) : { sm: 2, md: 3, lg: 4 }[size];
+  const position = contentPosition ?? (shape === 'circular' ? 'center' : 'end');
+  const content = typeof children === 'function' ? children({ value: resolvedValue, max: resolvedMax, percent }) : children;
   const resolvedStyle: ProgressStyle = {
     ...style,
     '--inkra-progress-value': `${percent ?? 36}%`,
+    ...(shape === 'circular' ? {
+      '--inkra-progress-angle': `${(percent ?? 28) * 3.6}deg`,
+      '--inkra-progress-diameter': `${resolvedDiameter}px`,
+      '--inkra-progress-content-inset': `${(resolvedThickness * 2 + 8) / resolvedDiameter * 100}%`,
+    } : {}),
   };
 
   return (
@@ -200,6 +259,7 @@ export const Progress = forwardRef<HTMLDivElement, ProgressProps>(function Progr
       data-state={resolvedValue === null ? 'indeterminate' : 'determinate'}
       data-value={resolvedValue ?? undefined}
       data-size={size}
+      data-shape={shape}
       ref={ref}
       role="progressbar"
       style={resolvedStyle}
@@ -211,26 +271,44 @@ export const Progress = forwardRef<HTMLDivElement, ProgressProps>(function Progr
           </PencilText>
         ) : <span className="inkra-progress__label" id={labelId}>{label}</span>
       )}
-      <span aria-hidden="true" className="inkra-progress__track">
-        <PencilSurface
-          as="span"
-          className="inkra-progress__outline"
-          radius={6}
-          seed={`${resolvedSeed}-outline`}
-          variant="outline"
-        />
-        <span
-          className="inkra-progress__fill-clip"
-        >
-          <PencilSurface
-            as="span"
-            className="inkra-progress__fill"
-            radius={6}
-            seed={`${resolvedSeed}-fill`}
-            variant="selection"
+      <div className="inkra-progress__body" data-content-position={content == null ? undefined : shape !== 'circular' && position === 'center' ? 'end' : position}>
+        {shape === 'circular' ? (
+          <ProgressRing diameter={resolvedDiameter} thickness={resolvedThickness} percent={percent} seed={`${resolvedSeed}-ring`} />
+        ) : shape === 'segmented' ? (
+          <SegmentedProgress
+            count={resolvedSegmentCount}
+            gap={resolvedSegmentGap}
+            max={resolvedMax}
+            partialSegment={partialSegment}
+            percent={percent}
+            seed={`${resolvedSeed}-segments`}
+            segmentColors={segmentColors}
+            thresholds={thresholds}
           />
-        </span>
-      </span>
+        ) : (
+          <span aria-hidden="true" className="inkra-progress__track">
+            <PencilSurface
+              as="span"
+              className="inkra-progress__outline"
+              radius={6}
+              seed={`${resolvedSeed}-outline`}
+              variant="outline"
+            />
+            <span className="inkra-progress__fill-clip">
+              <PencilSurface
+                as="span"
+                className="inkra-progress__fill"
+                radius={6}
+                seed={`${resolvedSeed}-fill`}
+                variant="selection"
+              />
+            </span>
+          </span>
+        )}
+        {content != null && <div className="inkra-progress__content">
+          {typeof content === 'string' || typeof content === 'number' ? <PencilText>{String(content)}</PencilText> : content}
+        </div>}
+      </div>
     </div>
   );
 });

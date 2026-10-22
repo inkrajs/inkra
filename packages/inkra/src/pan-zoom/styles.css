@@ -1,0 +1,136 @@
+.inkra-pan-zoom {
+  --inkra-pan-zoom-min-block-size: 18rem;
+  position: relative;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  block-size: 100%;
+  min-block-size: var(--inkra-pan-zoom-min-block-size);
+  min-inline-size: 0;
+  overflow: hidden;
+  color: var(--inkra-ink);
+  font-family: var(--inkra-font-body);
+  isolation: isolate;
+}
+
+.inkra-pan-zoom__surface {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.inkra-pan-zoom__clip {
+  position: relative;
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  block-size: 100%;
+  min-block-size: var(--inkra-pan-zoom-min-block-size);
+  overflow: hidden;
+  border-radius: var(--inkra-radius-lg);
+}
+
+.inkra-pan-zoom__clip > .react-transform-wrapper,
+.inkra-pan-zoom__viewport {
+  box-sizing: border-box;
+  inline-size: 100% !important;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  block-size: 100% !important;
+  max-block-size: 100%;
+  min-block-size: 0;
+  overflow: hidden;
+  background: transparent;
+  border: 0;
+  border-radius: inherit;
+  color: inherit;
+  outline: none;
+  touch-action: none;
+}
+
+.inkra-pan-zoom__clip > .react-transform-wrapper:focus-visible,
+.inkra-pan-zoom__viewport:focus-visible {
+  outline: 0;
+}
+
+.inkra-pan-zoom__focus-ring {
+  --inkra-accent-strong: var(--inkra-focus);
+  position: absolute;
+  inset: var(--inkra-space-1);
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.inkra-pan-zoom:has(.react-transform-wrapper:focus-visible) > .inkra-pan-zoom__focus-ring {
+  opacity: 1;
+}
+
+.inkra-pan-zoom__content {
+  box-sizing: border-box;
+  align-items: flex-start;
+  justify-content: flex-start;
+  max-inline-size: none;
+  color: inherit;
+}
+
+.inkra-pan-zoom__content :where(button, a, input, select, textarea, [contenteditable="true"], [data-pan-zoom-no-drag]) {
+  touch-action: manipulation;
+}
+
+.inkra-pan-zoom__instructions {
+  position: absolute;
+  overflow: hidden;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.inkra-pan-zoom[data-read-only],
+.inkra-pan-zoom[data-disabled] {
+  cursor: default;
+}
+
+.inkra-pan-zoom:not([data-gestures]) .inkra-pan-zoom__clip > .react-transform-wrapper,
+.inkra-pan-zoom:not([data-gestures]) .inkra-pan-zoom__viewport {
+  touch-action: auto;
+}
+
+.inkra-pan-zoom[data-disabled] {
+  color: var(--inkra-ink-subtle);
+  opacity: 0.62;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inkra-pan-zoom *,
+  .inkra-pan-zoom *::before,
+  .inkra-pan-zoom *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+@media print, (forced-colors: active) {
+  .inkra-pan-zoom__surface,
+  .inkra-pan-zoom__focus-ring {
+    display: none;
+  }
+
+  .inkra-pan-zoom__viewport {
+    background: Canvas;
+    border: 1px solid CanvasText;
+    color: CanvasText;
+    forced-color-adjust: auto;
+  }
+
+  .inkra-pan-zoom__clip > .react-transform-wrapper:focus-visible,
+  .inkra-pan-zoom__viewport:focus-visible {
+    outline: 2px solid Highlight;
+  }
+}

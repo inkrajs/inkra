@@ -30,6 +30,38 @@ export * from './upload/index.js';
 export * from './steps/index.js';
 export * from './timeline/index.js';
 export * from './layout/index.js';
+export * from './slot/index.js';
+export * from './log/index.js';
+export * from './hotkey/index.js';
+export * from './number-ticker/index.js';
+export * from './audio-player/index.js';
+export * from './carousel/index.js';
+export * from './choice-grid/index.js';
+export * from './color-picker/index.js';
+export * from './context-menu/index.js';
+export * from './dockable-panel/index.js';
+export * from './editable/index.js';
+export * from './flip/index.js';
+export * from './heatmap/index.js';
+export * from './hover-card/index.js';
+export * from './image-cropper/index.js';
+export * from './image-viewer/index.js';
+export * from './keypad/index.js';
+export * from './node-graph/index.js';
+export * from './overflow-list/index.js';
+export * from './pan-zoom/index.js';
+export * from './radar/index.js';
+export * from './range-slider/index.js';
+export * from './rating/index.js';
+export * from './resizable/index.js';
+export * from './scroll-area/index.js';
+export * from './sortable/index.js';
+export * from './sparkline/index.js';
+export * from './tag-input/index.js';
+export * from './transfer/index.js';
+export * from './tree-select/index.js';
+export * from './typewriter/index.js';
+export * from './virtual-list/index.js';
 export type {
   ButtonGroupOrientation,
   ButtonAlign,

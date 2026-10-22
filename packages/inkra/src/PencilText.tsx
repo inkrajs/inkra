@@ -37,6 +37,105 @@ function textSeed(text: string): number {
   ) >>> 0;
 }
 
+interface LocalTextLine {
+  text: string;
+  left: number;
+  top: number;
+}
+
+function pixelValue(value: string): number {
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function localBorderBox(element: HTMLElement, style = getComputedStyle(element)): { width: number; height: number } {
+  const horizontalExtras = pixelValue(style.paddingLeft) + pixelValue(style.paddingRight)
+    + pixelValue(style.borderLeftWidth) + pixelValue(style.borderRightWidth);
+  const verticalExtras = pixelValue(style.paddingTop) + pixelValue(style.paddingBottom)
+    + pixelValue(style.borderTopWidth) + pixelValue(style.borderBottomWidth);
+  const computedWidth = pixelValue(style.width);
+  const computedHeight = pixelValue(style.height);
+  return {
+    width: computedWidth > 0
+      ? computedWidth + (style.boxSizing === 'border-box' ? 0 : horizontalExtras)
+      : element.offsetWidth,
+    height: computedHeight > 0
+      ? computedHeight + (style.boxSizing === 'border-box' ? 0 : verticalExtras)
+      : element.offsetHeight,
+  };
+}
+
+function copyComputedStyle(source: CSSStyleDeclaration, target: CSSStyleDeclaration) {
+  for (const property of source) {
+    target.setProperty(property, source.getPropertyValue(property), source.getPropertyPriority(property));
+  }
+}
+
+function measureLocalTextLines(
+  element: HTMLElement,
+  liveSource: HTMLSpanElement,
+  text: string,
+  width: number,
+  height: number,
+): LocalTextLine[] {
+  if (!width || !height || !text) return [];
+  const computed = getComputedStyle(element);
+  const sourceComputed = getComputedStyle(liveSource);
+  const probe = document.createElement(element.tagName.toLowerCase());
+  const source = document.createElement('span');
+  copyComputedStyle(computed, probe.style);
+  copyComputedStyle(sourceComputed, source.style);
+  probe.setAttribute('aria-hidden', 'true');
+  probe.inert = true;
+  Object.assign(probe.style, {
+    boxSizing: 'border-box',
+    contain: 'layout style paint',
+    height: `${height}px`,
+    left: '-100000px',
+    margin: '0',
+    maxHeight: `${height}px`,
+    maxWidth: `${width}px`,
+    minHeight: `${height}px`,
+    minWidth: `${width}px`,
+    overflow: 'visible',
+    pointerEvents: 'none',
+    position: 'fixed',
+    rotate: 'none',
+    scale: 'none',
+    top: '0',
+    transform: 'none',
+    translate: 'none',
+    visibility: 'hidden',
+    width: `${width}px`,
+  });
+  source.textContent = text;
+  probe.append(source);
+  document.body.append(probe);
+  try {
+    const box = probe.getBoundingClientRect();
+    const range = document.createRange();
+    const lines: LocalTextLine[] = [];
+    let offset = 0;
+    for (const character of text) {
+      range.setStart(source.firstChild!, offset);
+      offset += character.length;
+      range.setEnd(source.firstChild!, offset);
+      const rectangle = range.getBoundingClientRect();
+      const left = rectangle.left - box.left;
+      const top = rectangle.top - box.top;
+      let line = lines[lines.length - 1];
+      if (!line || Math.abs(line.top - top) > 1) {
+        line = { text: '', left, top };
+        lines.push(line);
+      }
+      line.text += character;
+    }
+    return lines;
+  } finally {
+    probe.remove();
+  }
+}
+
 function paintText(
   element: HTMLElement,
   source: HTMLSpanElement,
@@ -45,14 +144,14 @@ function paintText(
   seed: string | number,
   glyphSeed: number,
 ): boolean {
-  const box = element.getBoundingClientRect();
-  if (!box.width || !box.height || text.length > 4096 || !source.firstChild) return false;
   const style = getComputedStyle(element);
+  const { width: localWidth, height: localHeight } = localBorderBox(element, style);
+  if (!localWidth || !localHeight || text.length > 4096 || !source.firstChild) return false;
   const size = Number.parseFloat(style.fontSize);
   const context = canvas.getContext('2d');
   const padding = 5;
-  const width = box.width + padding * 2;
-  const height = box.height + padding * 2;
+  const width = localWidth + padding * 2;
+  const height = localHeight + padding * 2;
   const dpr = effectiveDpr(2);
   if (width * height * dpr ** 2 > 2 * 1024 * 1024 || !context || context.isContextLost?.()) return false;
   canvas.width = Math.ceil(width * dpr);
@@ -69,22 +168,7 @@ function paintText(
   context.font = `400 ${size}px ${style.fontFamily}`;
   context.fontKerning = 'none';
   const ascent = context.measureText(text).fontBoundingBoxAscent ?? size;
-  const range = document.createRange();
-  const lines: Array<{ text: string; left: number; top: number }> = [];
-  let offset = 0;
-
-  for (const character of text) {
-    range.setStart(source.firstChild, offset);
-    offset += character.length;
-    range.setEnd(source.firstChild, offset);
-    const rectangle = range.getBoundingClientRect();
-    let line = lines[lines.length - 1];
-    if (!line || Math.abs(line.top - rectangle.top) > 1) {
-      line = { text: '', left: rectangle.left, top: rectangle.top };
-      lines.push(line);
-    }
-    line.text += character;
-  }
+  const lines = measureLocalTextLines(element, source, text, localWidth, localHeight);
 
   for (const line of lines) {
     const lineText = line.text.trimEnd();
@@ -107,8 +191,8 @@ function paintText(
     if (sprite.ink.getContext('2d')?.isContextLost?.()) return false;
     context.drawImage(
       sprite.ink,
-      padding + line.left - box.left - sprite.padding,
-      padding + line.top - box.top + ascent - sprite.ascent - sprite.padding,
+      padding + line.left - sprite.padding,
+      padding + line.top + ascent - sprite.ascent - sprite.padding,
       sprite.width,
       sprite.height,
     );
@@ -212,9 +296,9 @@ const PencilTextImplementation = forwardRef<HTMLElement, PencilTextImplementatio
       let lastAppearance = '';
       const appearanceKey = () => {
         const style = getComputedStyle(node);
-        const box = node.getBoundingClientRect();
+        const localBox = localBorderBox(node, style);
         return JSON.stringify([
-          box.width, box.height, effectiveDpr(2),
+          localBox.width, localBox.height, effectiveDpr(2),
           style.fontSize && style.fontFamily
             ? document.fonts?.check(`400 ${style.fontSize} ${style.fontFamily}`, text) : false,
           ...['color', 'font-family', 'font-size', 'line-height', 'text-align', 'text-indent',

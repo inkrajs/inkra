@@ -89,11 +89,13 @@ The published **0.1.0** package includes:
 | Dates and maps | Calendar, DayAgenda, JourneyMap |
 | Drawing | PencilIcon, PencilText, PencilSurface, PencilLine |
 
-**Next release, available in source:** Toast, AlertDialog, Drawer, DatePicker,
-TimePicker, Pagination, Empty, ToggleGroup, Command, Upload, DataTable, Tree,
-Steps and Timeline. These additions and the expanded render-token controls are
-not in npm 0.1.0. See the [changelog](./CHANGELOG.md) and
-[package API](./packages/inkra/README.md) for scope and limitations.
+**0.2.0 source:** adds richer forms and overlays, layout primitives, media
+controls (AudioPlayer, Carousel, ImageViewer, ImageCropper), graph and canvas
+interactions (NodeGraph, Sortable, PanZoom), data views (Log, Radar, Heatmap,
+Sparkline, VirtualList) and circular Progress. These additions are not in
+npm 0.1.0. Check [Releases](https://github.com/inkrajs/inkra/releases) for
+publication status, and the [changelog](./CHANGELOG.md) and
+[package API](./packages/inkra/README.md) for the full scope and known limits.
 
 ## Work on Inkra
 

@@ -1,0 +1,92 @@
+.inkra-keypad {
+  --inkra-keypad-columns: 3;
+  display: grid;
+  gap: var(--inkra-space-2);
+  inline-size: min(100%, 24rem);
+  min-inline-size: 0;
+}
+
+.inkra-keypad__row {
+  display: grid;
+  grid-template-columns: repeat(var(--inkra-keypad-columns), minmax(0, 1fr));
+  gap: var(--inkra-space-2);
+  min-inline-size: 0;
+}
+
+.inkra-keypad__key {
+  --inkra-keypad-span: 1;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--inkra-ink);
+  cursor: pointer;
+  display: block;
+  font: inherit;
+  grid-column: span var(--inkra-keypad-span);
+  min-block-size: var(--inkra-control-lg);
+  min-inline-size: 0;
+  padding: 0;
+  position: relative;
+}
+
+.inkra-keypad__key-surface {
+  align-items: center;
+  display: flex;
+  inline-size: 100%;
+  justify-content: center;
+  min-block-size: var(--inkra-control-lg);
+  min-inline-size: 0;
+  padding: var(--inkra-space-2) var(--inkra-space-3);
+}
+
+.inkra-keypad__key-label {
+  display: block;
+  inline-size: 100%;
+  line-height: var(--inkra-line-tight);
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.inkra-keypad__key[data-variant="confirm"] { color: var(--inkra-on-accent); }
+.inkra-keypad__key[data-variant="danger"] { color: var(--inkra-danger-foreground); }
+
+.inkra-keypad__key:hover:not(:disabled) .inkra-keypad__key-surface { transform: translateY(-1px); }
+.inkra-keypad__key:active:not(:disabled) .inkra-keypad__key-surface { transform: translateY(1px); }
+
+.inkra-keypad__focus {
+  display: none;
+  inset: calc(-1 * var(--inkra-focus-offset));
+  pointer-events: none;
+  position: absolute;
+}
+
+.inkra-keypad__key:focus-visible { outline: 0; }
+.inkra-keypad__key:focus-visible .inkra-keypad__focus { display: block; }
+
+.inkra-keypad__key:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+@media (max-width: 420px) {
+  .inkra-keypad { gap: var(--inkra-space-1); }
+  .inkra-keypad__row { gap: var(--inkra-space-1); }
+  .inkra-keypad__key-surface { padding-inline: var(--inkra-space-2); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inkra-keypad__key-surface { transform: none !important; }
+}
+
+@media (forced-colors: active) {
+  .inkra-keypad__key-surface { border: 1px solid ButtonText; }
+  .inkra-keypad__key[data-variant="confirm"] .inkra-keypad__key-surface { background: Highlight; color: HighlightText; }
+  .inkra-keypad__key:focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
+  .inkra-keypad__focus { display: none !important; }
+  .inkra-keypad__key:disabled { color: GrayText; opacity: 1; }
+}
+
+@media print {
+  .inkra-keypad__key-surface { border: 1px solid currentColor; }
+}

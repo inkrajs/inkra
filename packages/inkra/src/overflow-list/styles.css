@@ -1,0 +1,51 @@
+.inkra-overflow-list {
+  --inkra-overflow-list-gap: var(--inkra-space-2);
+
+  align-items: center;
+  box-sizing: border-box;
+  display: flex;
+  gap: var(--inkra-overflow-list-gap);
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  overflow: clip;
+  overflow-clip-margin: calc(var(--inkra-focus-offset) + var(--inkra-focus-width));
+}
+
+.inkra-overflow-list__item,
+.inkra-overflow-list__trigger {
+  flex: 0 0 auto;
+}
+
+.inkra-overflow-list__item {
+  align-items: center;
+  display: inline-flex;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}
+
+.inkra-overflow-list__default-item {
+  color: var(--inkra-ink);
+  font-family: var(--inkra-font-body);
+  font-size: var(--inkra-text-md);
+  line-height: var(--inkra-line-ui);
+  overflow-wrap: anywhere;
+}
+
+.inkra-overflow-list__trigger .inkra-button__content {
+  gap: var(--inkra-space-1);
+}
+
+@media (forced-colors: active) {
+  .inkra-overflow-list__trigger:focus-visible {
+    outline: var(--inkra-focus-width) solid Highlight;
+    outline-offset: var(--inkra-focus-offset);
+  }
+}
+
+@media print {
+  .inkra-overflow-list {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+}

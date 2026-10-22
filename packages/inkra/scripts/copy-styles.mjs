@@ -10,7 +10,22 @@ await Promise.all([
   ),
 ]);
 
-const styles = await Promise.all(['styles.css', 'form/styles.css', 'input-number/styles.css', 'slider/styles.css', 'selection/selection.css', 'overlay/styles.css', 'select/styles.css', 'tabs/styles.css', 'tooltip/styles.css', 'accordion/styles.css', 'display/styles.css', 'content/styles.css', 'dropdown-menu/styles.css'].map(path => readFile(new URL(`../src/${path}`, import.meta.url), 'utf8')));
+const styles = await Promise.all([
+  'styles.css', 'form/styles.css', 'input-number/styles.css', 'slider/styles.css',
+  'selection/selection.css', 'overlay/styles.css', 'select/styles.css', 'tabs/styles.css',
+  'tooltip/styles.css', 'accordion/styles.css', 'display/styles.css', 'content/styles.css',
+  'dropdown-menu/styles.css', 'slot/styles.css', 'log/styles.css', 'hotkey/styles.css',
+  'number-ticker/styles.css', 'audio-player/styles.css', 'carousel/styles.css',
+  'choice-grid/styles.css', 'color-picker/styles.css', 'context-menu/styles.css',
+  'dockable-panel/styles.css', 'editable/styles.css', 'flip/styles.css',
+  'heatmap/styles.css', 'hover-card/styles.css', 'image-cropper/styles.css',
+  'image-viewer/styles.css', 'keypad/styles.css', 'node-graph/styles.css',
+  'overflow-list/styles.css', 'pan-zoom/styles.css', 'radar/styles.css',
+  'rating/styles.css', 'resizable/styles.css',
+  'scroll-area/styles.css', 'sortable/styles.css',
+  'sparkline/styles.css', 'tag-input/styles.css', 'transfer/styles.css',
+  'tree-select/styles.css', 'typewriter/styles.css', 'virtual-list/styles.css',
+].map(path => readFile(new URL(`../src/${path}`, import.meta.url), 'utf8')));
 const travelStyles = await Promise.all(['breadcrumb/styles.css', 'calendar/styles.css', 'day-agenda/styles.css', 'journey-map/styles.css'].map(path => readFile(new URL(`../src/${path}`, import.meta.url), 'utf8')));
 const leafletStyles = await readFile(new URL('../../../node_modules/leaflet/dist/leaflet.css', import.meta.url), 'utf8');
 const expansionStyles = await Promise.all([

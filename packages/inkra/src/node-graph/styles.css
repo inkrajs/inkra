@@ -1,0 +1,142 @@
+.inkra-node-graph {
+  position: relative;
+  isolation: isolate;
+  inline-size: 100%;
+  min-inline-size: 0;
+  block-size: min(68vh, 620px);
+  min-block-size: 320px;
+  overflow: hidden;
+  color: var(--inkra-ink);
+  background: color-mix(in srgb, var(--inkra-paper) 92%, transparent);
+  border-radius: var(--inkra-radius-lg);
+}
+
+.inkra-node-graph .react-flow {
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
+  direction: inherit;
+  inline-size: 100%;
+  block-size: 100%;
+  background: transparent;
+  --xy-edge-stroke: var(--inkra-ink-muted);
+  --xy-edge-stroke-selected: var(--inkra-accent-strong);
+  --xy-connectionline-stroke: var(--inkra-accent-strong);
+  --xy-selection-background-color: color-mix(in srgb, var(--inkra-selection-pigment) 13%, transparent);
+  --xy-selection-border: 0;
+}
+
+.inkra-node-graph .react-flow__container { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; }
+.inkra-node-graph .react-flow__pane { z-index: 1; touch-action: none; }
+.inkra-node-graph .react-flow__pane.draggable { cursor: grab; }
+.inkra-node-graph .react-flow__pane.dragging { cursor: grabbing; }
+.inkra-node-graph .react-flow__pane.selection { cursor: pointer; }
+.inkra-node-graph .react-flow__viewport { position: absolute; inset: 0; z-index: 2; transform-origin: 0 0; pointer-events: none; }
+.inkra-node-graph .react-flow__renderer { z-index: 4; }
+.inkra-node-graph .react-flow__edges { position: absolute; }
+.inkra-node-graph .react-flow__edges svg { position: absolute; overflow: visible; pointer-events: none; }
+.inkra-node-graph .react-flow__edge { pointer-events: visibleStroke; }
+.inkra-node-graph .react-flow__edge.selectable { cursor: pointer; }
+.inkra-node-graph .react-flow__edge.inactive { pointer-events: none; }
+.inkra-node-graph .react-flow__edge:focus,
+.inkra-node-graph .react-flow__edge:focus-visible { outline: none; }
+.inkra-node-graph svg.react-flow__connectionline { position: absolute; z-index: 8; overflow: visible; pointer-events: none; }
+.inkra-node-graph .react-flow__nodes { pointer-events: none; transform-origin: 0 0; }
+.inkra-node-graph .react-flow__node { position: absolute; box-sizing: border-box; transform-origin: 0 0; pointer-events: all; user-select: none; }
+.inkra-node-graph .react-flow__node.selectable { cursor: pointer; }
+.inkra-node-graph .react-flow__node.draggable { cursor: grab; }
+.inkra-node-graph .react-flow__node.draggable.dragging { cursor: grabbing; }
+.inkra-node-graph .react-flow__node:focus { outline: none; }
+.inkra-node-graph .react-flow__nodesselection { z-index: 3; transform-origin: left top; pointer-events: none; }
+.inkra-node-graph .react-flow__nodesselection-rect { position: absolute; pointer-events: all; cursor: grab; }
+.inkra-node-graph .react-flow__nodesselection-rect:focus,
+.inkra-node-graph .react-flow__nodesselection-rect:focus-visible { outline: none; }
+.inkra-node-graph .react-flow__selection { z-index: 6; }
+.inkra-node-graph .react-flow__panel { position: absolute; z-index: 7; margin: var(--inkra-space-3); }
+.inkra-node-graph .react-flow__panel.top { inset-block-start: 0; }
+.inkra-node-graph .react-flow__panel.bottom { inset-block-end: 0; }
+.inkra-node-graph .react-flow__panel.left { inset-inline-start: 0; }
+.inkra-node-graph .react-flow__panel.right { inset-inline-end: 0; }
+.inkra-node-graph .react-flow__pane.selection .react-flow__panel { pointer-events: none; }
+.inkra-node-graph .react-flow__selection-rect,
+.inkra-node-graph .react-flow__nodesselection-rect { border: 0; background: color-mix(in srgb, var(--inkra-selection-pigment) 13%, transparent); }
+.inkra-node-graph .react-flow__viewport-portal { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; pointer-events: none; user-select: none; }
+.inkra-node-graph .react-flow__attribution { color: var(--inkra-ink-muted); font-size: 10px; line-height: 1.2; }
+.inkra-node-graph .react-flow__attribution a { color: inherit; }
+
+.inkra-node-graph__node-shell { position: relative; min-inline-size: 168px; max-inline-size: min(280px, 72vw); }
+.inkra-node-graph__node-paper { position: relative; min-inline-size: inherit; color: var(--inkra-ink); }
+.inkra-node-graph__node-selection { position: absolute; z-index: -1; inset: 2px; pointer-events: none; }
+.inkra-node-graph__node-content { position: relative; z-index: 1; display: grid; gap: var(--inkra-space-2); padding: var(--inkra-space-4); min-inline-size: 0; }
+.inkra-node-graph__node-label { color: var(--inkra-ink); font-size: var(--inkra-text-md); line-height: var(--inkra-line-ui); overflow-wrap: anywhere; }
+.inkra-node-graph__node-description { color: var(--inkra-ink-muted); font-size: var(--inkra-text-sm); line-height: var(--inkra-line-body); overflow-wrap: anywhere; }
+.inkra-node-graph__node-body { min-inline-size: 0; }
+.inkra-node-graph__node-focus { position: absolute; z-index: 3; inset: -4px; opacity: 0; pointer-events: none; }
+.inkra-node-graph .react-flow__node:focus-visible .inkra-node-graph__node-focus { opacity: 1; }
+
+.inkra-node-graph__port.react-flow__handle {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  inline-size: var(--inkra-touch-target);
+  block-size: var(--inkra-touch-target);
+  border: 0;
+  background: transparent;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(var(--inkra-node-graph-port-scale, 1));
+  z-index: 4;
+}
+.inkra-node-graph__port.react-flow__handle.connectionindicator { pointer-events: all; cursor: crosshair; }
+.inkra-node-graph__port.react-flow__handle-left { inset-inline-start: 0; inset-block-start: 50%; }
+.inkra-node-graph__port.react-flow__handle-right { inset-inline-start: 100%; inset-block-start: 50%; }
+.inkra-node-graph__port.react-flow__handle-top { inset-inline-start: 50%; inset-block-start: 0; }
+.inkra-node-graph__port.react-flow__handle-bottom { inset-inline-start: 50%; inset-block-start: 100%; }
+.inkra-node-graph__port-visual { position: relative; display: grid; place-items: center; inline-size: 18px; block-size: 18px; pointer-events: none; }
+.inkra-node-graph__port-mark,
+.inkra-node-graph__port-feedback { position: absolute; inset: 0; pointer-events: none; }
+.inkra-node-graph__port-feedback { opacity: 0; }
+.inkra-node-graph__port:hover .inkra-node-graph__port-feedback,
+.inkra-node-graph__port.connectingfrom .inkra-node-graph__port-feedback,
+.inkra-node-graph__port.valid .inkra-node-graph__port-feedback { opacity: 1; }
+
+.inkra-node-graph__edge-hit { pointer-events: stroke; }
+.inkra-node-graph__edge-pencil { color: var(--inkra-ink-muted); pointer-events: none; }
+.inkra-node-graph__edge-pencil[data-selected] { color: var(--inkra-accent-strong); }
+.inkra-node-graph__edge-measure { stroke: transparent; stroke-width: 1; pointer-events: none; }
+.inkra-node-graph__edge-fallback { stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; vector-effect: non-scaling-stroke; pointer-events: none; }
+.inkra-node-graph__edge-pencil[data-pencil-ready] .inkra-node-graph__edge-fallback { visibility: hidden; }
+.inkra-node-graph__edge-foreign-object { overflow: visible; pointer-events: none; }
+.inkra-node-graph__edge-canvas { display: block; color: inherit; overflow: visible; pointer-events: none; }
+.inkra-node-graph__edge-label { position: absolute; z-index: 5; max-inline-size: 180px; padding: 4px 8px; color: var(--inkra-ink); font-size: var(--inkra-text-sm); line-height: var(--inkra-line-ui); pointer-events: all; overflow-wrap: anywhere; }
+.inkra-node-graph .react-flow__edgelabel-renderer { position: absolute; inset: 0; z-index: 5; inline-size: 100%; block-size: 100%; pointer-events: none; user-select: none; }
+
+.inkra-node-graph__controls { display: flex; gap: var(--inkra-space-1); }
+.inkra-node-graph__control { appearance: none; position: relative; display: inline-grid; place-items: center; inline-size: var(--inkra-touch-target); block-size: var(--inkra-touch-target); padding: 0; border: 0; color: var(--inkra-ink); cursor: pointer; }
+.inkra-node-graph__control:focus { outline: none; }
+.inkra-node-graph__control-focus { position: absolute; inset: 2px; opacity: 0; pointer-events: none; }
+.inkra-node-graph__control:focus-visible .inkra-node-graph__control-focus { opacity: 1; }
+
+.inkra-node-graph__empty { position: absolute; inset: 0; z-index: 6; display: grid; place-items: center; padding: var(--inkra-space-6); color: var(--inkra-ink-muted); text-align: center; pointer-events: none; }
+.inkra-node-graph__ssr { position: absolute; inset: 0; display: grid; place-items: center; padding: var(--inkra-space-5); color: var(--inkra-ink); }
+.inkra-node-graph__ssr ul { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--inkra-space-3); margin: 0; padding: 0; list-style: none; }
+.inkra-node-graph__ssr li { padding: var(--inkra-space-3) var(--inkra-space-4); }
+
+@media (max-width: 390px) {
+  .inkra-node-graph { block-size: 440px; min-block-size: 360px; }
+  .inkra-node-graph__node-shell { min-inline-size: 144px; max-inline-size: 68vw; }
+  .inkra-node-graph__node-content { padding: var(--inkra-space-3); }
+  .inkra-node-graph .react-flow__panel { margin: var(--inkra-space-2); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inkra-node-graph * { scroll-behavior: auto !important; transition-duration: 0s !important; animation-duration: 0s !important; }
+}
+
+@media print, (forced-colors: active) {
+  .inkra-node-graph { border: 1px solid CanvasText; background: Canvas; color: CanvasText; }
+  .inkra-node-graph__edge-canvas { visibility: hidden; }
+  .inkra-node-graph__edge-fallback { visibility: visible !important; stroke: CanvasText; }
+  .inkra-node-graph__port-mark { outline: 1px solid CanvasText; outline-offset: -6px; }
+  .inkra-node-graph .react-flow__node:focus-visible .inkra-node-graph__node-shell,
+  .inkra-node-graph__control:focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
+}

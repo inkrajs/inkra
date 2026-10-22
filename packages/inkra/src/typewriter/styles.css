@@ -1,0 +1,62 @@
+.inkra-typewriter {
+  color: var(--inkra-ink);
+  display: inline-block;
+  font-family: var(--inkra-font-hand);
+  font-kerning: none;
+  font-variant-ligatures: none;
+  letter-spacing: 0;
+  max-width: 100%;
+  position: relative;
+  white-space: pre-wrap;
+}
+
+.inkra-typewriter__visual {
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+.inkra-typewriter__grapheme,
+.inkra-typewriter__space {
+  visibility: hidden;
+}
+
+.inkra-typewriter__grapheme[data-revealed="true"],
+.inkra-typewriter__space[data-revealed="true"] {
+  visibility: visible;
+}
+
+.inkra-typewriter__space {
+  font: inherit;
+}
+
+.inkra-typewriter__accessible {
+  block-size: 1px !important;
+  border: 0 !important;
+  clip-path: inset(50%) !important;
+  inline-size: 1px !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  position: absolute !important;
+  white-space: pre-wrap !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inkra-typewriter__grapheme,
+  .inkra-typewriter__space {
+    visibility: visible;
+  }
+}
+
+@media (forced-colors: active) {
+  .inkra-typewriter {
+    color: CanvasText;
+  }
+}
+
+@media print {
+  .inkra-typewriter__grapheme,
+  .inkra-typewriter__space {
+    visibility: visible;
+  }
+}

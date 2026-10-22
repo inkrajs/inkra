@@ -105,6 +105,7 @@ export const Slider = forwardRef<HTMLSpanElement, SliderProps>(function Slider(
         aria-describedby={ariaDescribedBy}
         aria-label={label}
         aria-labelledby={labelledBy}
+        aria-valuenow={current}
         aria-valuetext={getValueLabel?.(current, index) ?? ariaValueText}
         className="inkra-slider__thumb"
       >

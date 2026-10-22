@@ -1,0 +1,193 @@
+.inkra-choice-grid {
+  border: 0;
+  color: var(--inkra-ink);
+  margin: 0;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  padding: 0;
+}
+
+div.inkra-choice-grid > .inkra-radio-group {
+  min-inline-size: 0;
+}
+
+.inkra-choice-grid .inkra-radio-group__label,
+.inkra-choice-grid__legend {
+  font-size: var(--inkra-text-md);
+  line-height: var(--inkra-line-ui);
+  margin: 0;
+  padding: 0;
+}
+
+.inkra-choice-grid .inkra-radio-group__items,
+.inkra-choice-grid__items {
+  display: grid;
+  gap: var(--inkra-space-3);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--inkra-choice-grid-min-item, 13rem)), 1fr));
+  margin-block-start: var(--inkra-space-2);
+  min-inline-size: 0;
+}
+
+.inkra-choice-grid[data-columns] .inkra-radio-group__items,
+.inkra-choice-grid[data-columns] .inkra-choice-grid__items {
+  grid-template-columns: repeat(var(--inkra-choice-grid-columns), minmax(0, 1fr));
+}
+
+.inkra-choice-grid__option {
+  box-sizing: border-box;
+  min-block-size: 144px;
+  min-inline-size: 0;
+  position: relative;
+}
+
+.inkra-choice-grid__selection,
+.inkra-choice-grid__outline {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.inkra-choice-grid__selection {
+  opacity: 0;
+  z-index: 0;
+}
+
+.inkra-choice-grid__outline { z-index: 2; }
+
+.inkra-choice-grid__option:has(.inkra-selection-control__input:checked) .inkra-choice-grid__selection {
+  opacity: 1;
+}
+
+.inkra-choice-grid__option:has(.inkra-selection-control__input:checked) .inkra-choice-grid__control {
+  color: var(--inkra-selection-foreground);
+}
+
+.inkra-choice-grid__control {
+  align-content: start;
+  block-size: 100%;
+  box-sizing: border-box;
+  gap: var(--inkra-space-2);
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: var(--inkra-space-3);
+  position: relative;
+  z-index: 1;
+}
+
+.inkra-choice-grid__control > .inkra-selection-control__mark {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  z-index: 1;
+}
+
+.inkra-choice-grid__control > .inkra-selection-control__copy {
+  block-size: 100%;
+  grid-column: 1 / -1;
+  grid-row: 1;
+  padding: 0;
+}
+
+.inkra-choice-grid__control .inkra-selection-control__label {
+  display: grid;
+  gap: var(--inkra-space-2);
+  min-inline-size: 0;
+  padding-inline-end: 32px;
+}
+
+.inkra-choice-grid__media {
+  align-items: center;
+  aspect-ratio: 16 / 7;
+  box-sizing: border-box;
+  display: flex;
+  inline-size: 100%;
+  justify-content: center;
+  min-block-size: 56px;
+  overflow: hidden;
+}
+
+.inkra-choice-grid__media[data-kind="icon"] {
+  color: var(--inkra-accent-strong);
+}
+
+.inkra-choice-grid__media[data-kind="icon"] > :where(svg, canvas) {
+  block-size: 40px;
+  inline-size: 40px;
+  max-block-size: 100%;
+  max-inline-size: 100%;
+}
+
+.inkra-choice-grid__media[data-kind="image"] {
+  border-radius: var(--inkra-radius-md);
+}
+
+.inkra-choice-grid__media > img {
+  block-size: 100%;
+  inline-size: 100%;
+  object-fit: cover;
+}
+
+.inkra-choice-grid__option-label {
+  font-size: var(--inkra-text-md);
+  line-height: var(--inkra-line-ui);
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.inkra-choice-grid__control .inkra-selection-control__description {
+  margin-block-start: auto;
+  overflow-wrap: anywhere;
+}
+
+.inkra-choice-grid__messages {
+  display: grid;
+  gap: var(--inkra-space-1);
+  margin-block-start: var(--inkra-space-2);
+}
+
+.inkra-choice-grid__description,
+.inkra-choice-grid__error {
+  font-size: var(--inkra-text-sm);
+  line-height: var(--inkra-line-ui);
+}
+
+.inkra-choice-grid__description { color: var(--inkra-ink-muted); }
+.inkra-choice-grid__error { color: var(--inkra-danger); }
+
+.inkra-choice-grid[data-disabled="true"] .inkra-choice-grid__option,
+.inkra-choice-grid__option[data-disabled="true"] {
+  cursor: not-allowed;
+}
+
+.inkra-choice-grid__option:has(.inkra-selection-control__input:focus-visible) {
+  outline: var(--inkra-focus-width) solid var(--inkra-focus);
+  outline-offset: var(--inkra-focus-offset);
+}
+
+.inkra-choice-grid__option:has(.inkra-selection-control__input:focus-visible) .inkra-selection-control__mark {
+  outline: 0;
+}
+
+@media (max-width: 640px) {
+  .inkra-choice-grid[data-columns] .inkra-radio-group__items,
+  .inkra-choice-grid[data-columns] .inkra-choice-grid__items {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (forced-colors: active) {
+  .inkra-choice-grid__option {
+    border: 1px solid CanvasText;
+  }
+
+  .inkra-choice-grid__option:has(.inkra-selection-control__input:checked) {
+    border-color: Highlight;
+    outline: 2px solid Highlight;
+    outline-offset: -3px;
+  }
+
+  .inkra-choice-grid__selection,
+  .inkra-choice-grid__outline {
+    display: none;
+  }
+}
+

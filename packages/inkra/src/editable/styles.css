@@ -1,0 +1,46 @@
+.inkra-editable {
+  color: var(--inkra-ink);
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--inkra-space-2);
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  vertical-align: middle;
+}
+
+.inkra-editable__display {
+  align-items: center;
+  border-radius: var(--inkra-radius-sm);
+  cursor: text;
+  display: inline-flex;
+  min-block-size: var(--inkra-touch-target);
+  min-inline-size: 2.75rem;
+  outline: 0;
+  overflow-wrap: anywhere;
+  padding-inline: var(--inkra-space-2);
+  position: relative;
+  text-align: start;
+  transition: background-color var(--inkra-motion-fast) var(--inkra-ease), outline-color var(--inkra-motion-fast) var(--inkra-ease);
+}
+
+.inkra-editable__display:hover { background: color-mix(in srgb, var(--inkra-accent-soft) 12%, transparent); }
+.inkra-editable__display:focus-visible { outline: var(--inkra-focus-width) solid var(--inkra-focus); outline-offset: var(--inkra-focus-offset); }
+.inkra-editable__display[aria-disabled="true"] { cursor: default; opacity: .62; }
+
+.inkra-editable__editor { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--inkra-space-2); min-inline-size: min(100%, 15rem); }
+.inkra-editable__editor > :first-child { flex: 1 1 12rem; min-inline-size: 0; }
+.inkra-editable__actions { display: inline-flex; flex: 0 0 auto; flex-wrap: wrap; gap: var(--inkra-space-2); min-block-size: var(--inkra-touch-target); align-items: center; }
+.inkra-editable__error { color: var(--inkra-danger); font-size: var(--inkra-text-sm); inline-size: 100%; }
+
+@media (max-width: 30rem) {
+  .inkra-editable__editor { align-items: stretch; flex-direction: column; }
+  .inkra-editable__editor > :first-child, .inkra-editable__actions { inline-size: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) { .inkra-editable__display { transition: none; } }
+@media (forced-colors: active) {
+  .inkra-editable__display:hover { background: transparent; }
+  .inkra-editable__display:focus-visible { outline: 2px solid Highlight; }
+  .inkra-editable__error { color: CanvasText; }
+}
+@media print { .inkra-editable__display { background: transparent; } }

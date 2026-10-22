@@ -1,0 +1,78 @@
+.inkra-number-ticker {
+  color: var(--inkra-ink);
+  display: inline-block;
+  font-family: var(--inkra-font-hand);
+  font-kerning: none;
+  font-variant-ligatures: none;
+  letter-spacing: 0;
+  max-width: 100%;
+  position: relative;
+}
+
+.inkra-number-ticker__visual {
+  align-items: baseline;
+  display: inline-flex;
+  gap: var(--inkra-space-1, 4px);
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.inkra-number-ticker__value {
+  display: inline-grid;
+  font-variant-numeric: tabular-nums lining-nums;
+  min-width: 0;
+}
+
+.inkra-number-ticker__native-value {
+  font: inherit;
+  font-family: "Trip Map Hand", "HanziPen SC", "Hannotate SC", "Kaiti SC", "STKaiti", cursive;
+}
+
+.inkra-number-ticker__prefix,
+.inkra-number-ticker__suffix {
+  color: var(--inkra-ink-muted);
+  min-width: 0;
+}
+
+.inkra-number-ticker__delta {
+  color: var(--inkra-success-foreground, var(--inkra-ink-muted));
+  font-size: .72em;
+  line-height: var(--inkra-line-ui, 1.45);
+  margin-inline-start: var(--inkra-space-1, 4px);
+  white-space: nowrap;
+}
+
+.inkra-number-ticker__delta[data-direction="decrease"] {
+  color: var(--inkra-danger-foreground, var(--inkra-danger));
+}
+
+.inkra-number-ticker__announcement {
+  block-size: 1px !important;
+  border: 0 !important;
+  clip-path: inset(50%) !important;
+  inline-size: 1px !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  position: absolute !important;
+  white-space: nowrap !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inkra-number-ticker__delta {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .inkra-number-ticker,
+  .inkra-number-ticker__delta {
+    color: CanvasText;
+  }
+}
+
+@media print {
+  .inkra-number-ticker__delta {
+    color: currentcolor;
+  }
+}

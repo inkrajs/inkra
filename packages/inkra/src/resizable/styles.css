@@ -1,0 +1,108 @@
+.inkra-resizable {
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-block-size: 0;
+  min-inline-size: 0;
+}
+
+.inkra-resizable__panel {
+  box-sizing: border-box;
+  min-block-size: 0;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.inkra-resizable__handle {
+  align-items: center;
+  box-sizing: border-box;
+  display: flex;
+  flex-basis: 12px;
+  justify-content: center;
+  outline: none;
+  position: relative;
+  touch-action: none;
+  z-index: 1;
+}
+
+.inkra-resizable[data-orientation="horizontal"] > .inkra-resizable__handle {
+  block-size: 100%;
+  cursor: col-resize;
+  inline-size: 12px;
+}
+
+.inkra-resizable[data-orientation="vertical"] > .inkra-resizable__handle {
+  block-size: 12px;
+  cursor: row-resize;
+  inline-size: 100%;
+}
+
+.inkra-resizable__handle-mark {
+  align-items: center;
+  color: var(--inkra-ink-muted);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  pointer-events: none;
+  position: absolute;
+}
+
+.inkra-resizable__handle-line {
+  color: currentColor;
+  display: none;
+}
+
+.inkra-resizable[data-orientation="horizontal"] > .inkra-resizable__handle .inkra-resizable__handle-line--vertical {
+  block-size: 100%;
+  display: block;
+  inline-size: 8px;
+}
+
+.inkra-resizable[data-orientation="vertical"] > .inkra-resizable__handle .inkra-resizable__handle-line--horizontal {
+  block-size: 8px;
+  display: block;
+  inline-size: 100%;
+}
+
+.inkra-resizable__handle-focus {
+  inset: 2px;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  transition: opacity var(--inkra-motion-fast) var(--inkra-ease);
+}
+
+.inkra-resizable__handle:is(:hover, [data-separator="active"]) .inkra-resizable__handle-mark {
+  color: var(--inkra-accent-strong);
+}
+
+.inkra-resizable__handle:focus-visible .inkra-resizable__handle-focus {
+  opacity: 1;
+}
+
+.inkra-resizable__handle[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.48;
+  touch-action: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inkra-resizable__handle-focus { transition: none; }
+}
+
+@media print, (forced-colors: active) {
+  .inkra-resizable__handle-line {
+    display: none !important;
+  }
+
+  .inkra-resizable__handle-focus { display: none; }
+
+  .inkra-resizable[data-orientation="horizontal"] > .inkra-resizable__handle {
+    border-inline-start: 1px solid CanvasText;
+  }
+
+  .inkra-resizable[data-orientation="vertical"] > .inkra-resizable__handle {
+    border-block-start: 1px solid CanvasText;
+  }
+
+  .inkra-resizable__handle:focus-visible { outline: 2px solid Highlight; outline-offset: -2px; }
+}
