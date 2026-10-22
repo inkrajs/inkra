@@ -11,7 +11,7 @@ import {
 import { observeCanvasRecovery } from './internal/recovery.js';
 import { seedToNumber } from './internal/random.js';
 import { pencilStroke } from './internal/stroke.js';
-import { readRenderToken } from './internal/renderTokens.js';
+import { maxStrokeRoughness, pencilRenderDefaults, readRenderToken } from './internal/renderTokens.js';
 import type { PencilPoint } from './internal/stroke.js';
 
 export interface PencilIconPath {
@@ -240,8 +240,8 @@ export const PencilIcon = forwardRef<HTMLCanvasElement, PencilIconProps>(functio
       const computed = getComputedStyle(canvas);
       const color = computed.color;
       const rtl = computed.direction === 'rtl';
-      const weightScale = readRenderToken(computed, '--inkra-stroke-width', 1.2, 0.3, 3) / 1.2;
-      const roughnessScale = readRenderToken(computed, '--inkra-stroke-amplitude', 0.6, 0, 2) / 0.6;
+      const weightScale = readRenderToken(computed, '--inkra-stroke-width', pencilRenderDefaults.strokeWidth, 0.3, 3) / 1.2;
+      const roughnessScale = readRenderToken(computed, '--inkra-stroke-amplitude', pencilRenderDefaults.strokeRoughness, 0, maxStrokeRoughness) / 0.6;
       const key = JSON.stringify([
         PENCIL_RENDERER_VERSION,
         geometryKey,

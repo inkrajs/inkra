@@ -234,20 +234,20 @@ All examples use public sample data.
 `PencilText` reads `--inkra-letter-variation`, `--inkra-letter-breaks`,
 `--inkra-letter-outline`, `--inkra-letter-fill`, and `--inkra-letter-grain` from
 its computed style. Values are clamped to 0-1; missing or invalid values use the
-original lettering preset. Apply these tokens to an ancestor to customize all
+default lettering preset (0.20, 0.50, 0.90, 0.90, 0.60 respectively). Apply these tokens to an ancestor to customize all
 text within that scope without changing layout, selectable text, or labels.
 
 `PencilLine` reads `--inkra-stroke-width` (0.3-3) and
-`--inkra-stroke-amplitude` (0-2) when `weight` or `roughness` is omitted.
+`--inkra-stroke-amplitude` (0-4) when `weight` or `roughness` is omitted.
 Explicit props take precedence. These tokens also scale surface outlines and icon
 strokes relative to their original presets, including button/card/input borders.
-The default values remain 1.2 and 0.6. They do not change layout or text lettering.
+The default values are 2 and 1.5. They do not change layout or text lettering.
 
-Surface fills read `--inkra-wash-strength` (0-1, default 0.48),
-`--inkra-wash-spacing` (1-6, default 1.8), `--inkra-wash-roughness` (0-6,
-default 3.5), and `--inkra-wash-angle` (-85 to 85 degrees, default -35).
-Strength scales each variant's original light/dark pigment intensity; defaults
-preserve the previous rendering. These settings affect button fills, selections
+Surface fills read `--inkra-wash-strength` (0-1, default 0.8),
+`--inkra-wash-spacing` (1-6, default 2), `--inkra-wash-roughness` (0-6,
+default 3), and `--inkra-wash-angle` (-85 to 85 degrees, default -45).
+Strength scales each variant's original light/dark pigment intensity relative to
+the original 0.48 reference. These settings affect button fills, selections
 and swatches, not paper or lettering. Selection reveals follow the chosen angle.
 
 Only self/ancestor appearance changes invalidate decoration, not unrelated theme

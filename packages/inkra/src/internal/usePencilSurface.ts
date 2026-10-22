@@ -5,7 +5,7 @@ import { PENCIL_RENDERER_VERSION, effectiveDpr } from './cache.js';
 import { observeCanvasRecovery } from './recovery.js';
 import { seedToNumber } from './random.js';
 import { drawPencilSurface } from './surfaceRenderer.js';
-import { readRenderToken } from './renderTokens.js';
+import { maxStrokeRoughness, pencilRenderDefaults, readRenderToken } from './renderTokens.js';
 import type { PencilSurfaceVariant } from './surfaceRenderer.js';
 
 function token(style: CSSStyleDeclaration, name: string, fallback: string): string {
@@ -44,13 +44,13 @@ export function usePencilSurface(
           ? token(style, '--inkra-danger', '#873e36')
           : token(style, '--inkra-border-strong', '#778575');
       const dark = style.colorScheme.includes('dark');
-      const strokeWidth = readRenderToken(style, '--inkra-stroke-width', 1.2, 0.3, 3);
-      const strokeRoughness = readRenderToken(style, '--inkra-stroke-amplitude', 0.6, 0, 2);
+      const strokeWidth = readRenderToken(style, '--inkra-stroke-width', pencilRenderDefaults.strokeWidth, 0.3, 3);
+      const strokeRoughness = readRenderToken(style, '--inkra-stroke-amplitude', pencilRenderDefaults.strokeRoughness, 0, maxStrokeRoughness);
       const washSettings = {
-        strength: readRenderToken(style, '--inkra-wash-strength', 0.48, 0, 1) / 0.48,
-        spacing: readRenderToken(style, '--inkra-wash-spacing', 1.8, 1, 6),
-        roughness: readRenderToken(style, '--inkra-wash-roughness', 3.5, 0, 6),
-        angle: readRenderToken(style, '--inkra-wash-angle', -35, -85, 85),
+        strength: readRenderToken(style, '--inkra-wash-strength', pencilRenderDefaults.washStrength, 0, 1) / 0.48,
+        spacing: readRenderToken(style, '--inkra-wash-spacing', pencilRenderDefaults.washSpacing, 1, 6),
+        roughness: readRenderToken(style, '--inkra-wash-roughness', pencilRenderDefaults.washRoughness, 0, 6),
+        angle: readRenderToken(style, '--inkra-wash-angle', pencilRenderDefaults.washAngle, -85, 85),
       };
       const wash = variant === 'selection'
         ? token(style, '--inkra-selection-pigment', dark ? '#c6b873' : '#769566')

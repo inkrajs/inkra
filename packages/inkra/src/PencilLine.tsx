@@ -13,7 +13,7 @@ import { seedToNumber } from './internal/random.js';
 import { createPencilLinePoints, pencilLineHasDrawableSize } from './internal/line.js';
 import type { PencilLineOrientation } from './internal/line.js';
 import { pencilStroke } from './internal/stroke.js';
-import { readRenderToken } from './internal/renderTokens.js';
+import { maxStrokeRoughness, pencilRenderDefaults, readRenderToken } from './internal/renderTokens.js';
 
 export interface PencilLineProps extends Omit<CanvasHTMLAttributes<HTMLCanvasElement>, 'children'> {
   seed?: string | number;
@@ -83,8 +83,8 @@ export const PencilLine = forwardRef<HTMLCanvasElement, PencilLineProps>(functio
       const dpr = effectiveDpr(2);
       const style = getComputedStyle(canvas);
       const color = style.color;
-      const resolvedWeight = weight ?? readRenderToken(style, '--inkra-stroke-width', 1.2, 0.3, 3);
-      const resolvedRoughness = roughness ?? readRenderToken(style, '--inkra-stroke-amplitude', 0.6, 0, 2);
+      const resolvedWeight = weight ?? readRenderToken(style, '--inkra-stroke-width', pencilRenderDefaults.strokeWidth, 0.3, 3);
+      const resolvedRoughness = roughness ?? readRenderToken(style, '--inkra-stroke-amplitude', pencilRenderDefaults.strokeRoughness, 0, maxStrokeRoughness);
       const numericSeed = seedToNumber(seed);
       const key = JSON.stringify([
         PENCIL_RENDERER_VERSION, orientation, width, height, color, numericSeed, resolvedWeight, resolvedRoughness, dpr,

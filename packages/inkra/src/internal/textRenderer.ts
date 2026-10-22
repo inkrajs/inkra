@@ -1,4 +1,4 @@
-import { BoundedCache, PENCIL_RENDERER_VERSION, canvasByteCost } from './cache.js';
+import { BoundedCache, PENCIL_RENDERER_VERSION, canvasByteCost, canvasIsUsable } from './cache.js';
 import { seededRandom } from './random.js';
 
 export interface PencilLetteringSettings {
@@ -20,17 +20,18 @@ export interface PencilTextSprite {
 }
 
 export const pencilLettering: PencilLetteringSettings = Object.freeze({
-  variation: 0.52,
-  breaks: 0.18,
-  outline: 0.96,
-  fill: 0.34,
-  grain: 0.45,
+  variation: 0.2,
+  breaks: 0.5,
+  outline: 0.9,
+  fill: 0.9,
+  grain: 0.6,
 });
 
 export const pencilHandwriting = '"Trip Map Hand","HanziPen SC","Hannotate SC","Kaiti SC","STKaiti",cursive';
 
 const TEXT_PIXEL_LIMIT = 524288;
 const textCache = new BoundedCache<PencilTextSprite>(160, 16 * 1024 * 1024);
+const glyphCache = new BoundedCache<PencilTextSprite>(512, 8 * 1024 * 1024);
 const clamp = (value: number): number => Math.max(0, Math.min(1, value));
 
 function hash(x: number, y: number, seed: number): number {
@@ -98,6 +99,7 @@ export function renderPencilText(
     dpr: number;
     settings?: PencilLetteringSettings;
     cache?: boolean;
+    glyphSeed?: number;
   },
 ): PencilTextSprite {
   const { size, color, seed, dpr } = options;
@@ -121,10 +123,11 @@ export function renderPencilText(
     resolution,
     settings,
     fontReady,
+    options.glyphSeed,
   ]) : '';
   if (cache) {
     const cached = textCache.get(key);
-    if (cached) return cached;
+    if (cached && canvasIsUsable(cached.ink)) return cached;
   }
 
   const mask = document.createElement('canvas');
@@ -152,6 +155,30 @@ export function renderPencilText(
   const context = mask.getContext('2d', { willReadFrequently: true });
   if (!context) throw new Error('Canvas 2D is unavailable');
   context.scale(resolution, resolution);
+  // Plain Latin labels can reuse bounded character sprites. Complex scripts and
+  // private editable text retain the original whole-line rendering path.
+  if (cache && options.glyphSeed !== undefined && /^[\x20-\x7e]+$/.test(text)) {
+    let left = 0;
+    characters.forEach((character, index) => {
+      if (character !== ' ') {
+        const characterSeed = (options.glyphSeed! ^ Math.imul(character.charCodeAt(0), 16777619)
+          ^ Math.imul(index % 3, 374761393)) >>> 0;
+        const glyphKey = JSON.stringify([
+          PENCIL_RENDERER_VERSION, character, size, family, color, characterSeed,
+          resolution, settings, document.fonts?.check(font, character),
+        ]);
+        let glyph = glyphCache.get(glyphKey);
+        if (!glyph || !canvasIsUsable(glyph.ink)) {
+          glyph = renderPencilText(character, { ...options, seed: characterSeed, glyphSeed: undefined, cache: false });
+          glyphCache.set(glyphKey, glyph, canvasByteCost(glyph.ink));
+        }
+        context.drawImage(glyph.ink, left, 0, glyph.width, glyph.height);
+      }
+      left += widths[index];
+    });
+    const sprite = { ink: mask, width, height, advance, ascent, descent, padding };
+    return textCache.set(key, sprite, canvasByteCost(mask));
+  }
   context.font = font;
   context.fontKerning = 'none';
   context.fillStyle = color;

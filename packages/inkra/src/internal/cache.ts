@@ -1,4 +1,4 @@
-export const PENCIL_RENDERER_VERSION = 'inkra-pencil-v4';
+export const PENCIL_RENDERER_VERSION = 'inkra-pencil-v5';
 
 interface CacheEntry<Value> {
   value: Value;

@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { useBrowserLayoutEffect } from './internal/useBrowserLayoutEffect.js';
 import type {
   ComponentPropsWithoutRef,
@@ -43,6 +43,7 @@ function paintText(
   canvas: HTMLCanvasElement,
   text: string,
   seed: string | number,
+  glyphSeed: number,
 ): boolean {
   const box = element.getBoundingClientRect();
   if (!box.width || !box.height || text.length > 4096 || !source.firstChild) return false;
@@ -91,6 +92,7 @@ function paintText(
     const sprite = renderPencilText(lineText, {
       size,
       seed: seedToNumber(seed) ^ textSeed(line.text),
+      glyphSeed,
       color: style.color,
       family: style.fontFamily,
       dpr,
@@ -124,16 +126,17 @@ const PencilTextImplementation = forwardRef<HTMLElement, PencilTextImplementatio
     { as: Element = 'span', children, seed, ellipsis = false, className = '', ...props },
     forwardedRef,
   ) {
-    const [text, setText] = useState<string>(children);
+    const [fittedText, setText] = useState<string>(children);
+    const text = ellipsis ? fittedText : children;
     const elementRef = useRef<HTMLElement>(null);
     const sourceRef = useRef<HTMLSpanElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const resolvedSeed = seed ?? children;
+    const glyphSeed = seedToNumber(seed ?? 'inkra-latin-lettering-v1');
     useImperativeHandle(forwardedRef, () => elementRef.current as HTMLElement);
 
     useBrowserLayoutEffect(() => {
       if (!ellipsis) {
-        setText(children);
         return undefined;
       }
       const node = elementRef.current;
@@ -174,14 +177,36 @@ const PencilTextImplementation = forwardRef<HTMLElement, PencilTextImplementatio
       };
     }, [children, ellipsis]);
 
-    useEffect(() => {
+    useBrowserLayoutEffect(() => {
       const node = elementRef.current;
       const source = sourceRef.current;
       const canvas = canvasRef.current;
       if (!node || !source || !canvas) return undefined;
       delete node.dataset.pencilReady;
       let disposed = false;
-      let visible = typeof IntersectionObserver === 'undefined';
+      const inViewport = () => {
+        const box = node.getBoundingClientRect();
+        if (!box.width || !box.height || !node.isConnected) return false;
+        let left = Math.max(0, box.left);
+        let top = Math.max(0, box.top);
+        let right = Math.min(window.innerWidth, box.right);
+        let bottom = Math.min(window.innerHeight, box.bottom);
+        for (let parent = node.parentElement; parent && left < right && top < bottom; parent = parent.parentElement) {
+          const style = getComputedStyle(parent);
+          if (style.overflowX === 'visible' && style.overflowY === 'visible') continue;
+          const clip = parent.getBoundingClientRect();
+          if (style.overflowX !== 'visible') {
+            left = Math.max(left, clip.left);
+            right = Math.min(right, clip.right);
+          }
+          if (style.overflowY !== 'visible') {
+            top = Math.max(top, clip.top);
+            bottom = Math.min(bottom, clip.bottom);
+          }
+        }
+        return left < right && top < bottom;
+      };
+      let visible = inViewport() || typeof IntersectionObserver === 'undefined';
       let pending: (() => void) | null = null;
       let dirty = true;
       let lastAppearance = '';
@@ -190,6 +215,8 @@ const PencilTextImplementation = forwardRef<HTMLElement, PencilTextImplementatio
         const box = node.getBoundingClientRect();
         return JSON.stringify([
           box.width, box.height, effectiveDpr(2),
+          style.fontSize && style.fontFamily
+            ? document.fonts?.check(`400 ${style.fontSize} ${style.fontFamily}`, text) : false,
           ...['color', 'font-family', 'font-size', 'line-height', 'text-align', 'text-indent',
             'letter-spacing', 'white-space', 'word-break', 'overflow-wrap', 'direction',
             'padding-top', 'padding-left', 'padding-right', 'padding-bottom',
@@ -197,19 +224,27 @@ const PencilTextImplementation = forwardRef<HTMLElement, PencilTextImplementatio
             '--inkra-letter-fill', '--inkra-letter-grain'].map(name => style.getPropertyValue(name)),
         ]);
       };
-      const schedule = () => {
-        if (!visible || !dirty || pending || disposed) return;
-        pending = queueTextPaint(() => {
-          pending = null;
-          if (!disposed && visible && dirty) {
-            try {
-              if (paintText(node, source, canvas, text, resolvedSeed)) lastAppearance = appearanceKey();
-            } catch {
-              delete node.dataset.pencilReady;
-            }
-            dirty = false;
+      const paint = () => {
+        pending = null;
+        if (!disposed && visible && dirty) {
+          try {
+            if (paintText(node, source, canvas, text, resolvedSeed, glyphSeed)) lastAppearance = appearanceKey();
+          } catch {
+            delete node.dataset.pencilReady;
           }
-        });
+          dirty = false;
+        }
+      };
+      const schedule = () => {
+        if (!visible || !dirty || disposed) return;
+        // Visible text is enhanced before paint; only nearby text waits for idle time.
+        if (inViewport()) {
+          pending?.();
+          pending = null;
+          paint();
+        } else if (!pending) {
+          pending = queueTextPaint(paint);
+        }
       };
       const markDirty = () => {
         dirty = true;
@@ -218,6 +253,7 @@ const PencilTextImplementation = forwardRef<HTMLElement, PencilTextImplementatio
       };
       // Scroll locks and pointer-event changes must not hide already-painted text.
       const refreshAppearance = () => {
+        if (disposed || !node.isConnected) return;
         if (appearanceKey() !== lastAppearance) markDirty();
       };
       const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(refreshAppearance);
@@ -231,13 +267,12 @@ const PencilTextImplementation = forwardRef<HTMLElement, PencilTextImplementatio
       const intersection = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(entries => {
         visible = entries[entries.length - 1]?.isIntersecting ?? false;
         schedule();
-      }, { rootMargin: '80px' });
+      }, { rootMargin: '240px' });
       intersection?.observe(node);
       const fonts = document.fonts;
-      fonts?.addEventListener('loading', markDirty);
-      fonts?.addEventListener('loadingdone', markDirty);
-      fonts?.addEventListener('loadingerror', markDirty);
-      fonts?.ready.then(() => { if (!disposed) markDirty(); });
+      fonts?.addEventListener('loadingdone', refreshAppearance);
+      fonts?.addEventListener('loadingerror', refreshAppearance);
+      fonts?.ready.then(() => { if (!disposed) refreshAppearance(); });
       const stopRecovery = observeCanvasRecovery(() => {
         pending?.();
         pending = null;
@@ -253,11 +288,10 @@ const PencilTextImplementation = forwardRef<HTMLElement, PencilTextImplementatio
         intersection?.disconnect();
         inheritedStyle.disconnect();
         colorScheme.removeEventListener('change', refreshAppearance);
-        fonts?.removeEventListener('loading', markDirty);
-        fonts?.removeEventListener('loadingdone', markDirty);
-        fonts?.removeEventListener('loadingerror', markDirty);
+        fonts?.removeEventListener('loadingdone', refreshAppearance);
+        fonts?.removeEventListener('loadingerror', refreshAppearance);
       };
-    }, [text, resolvedSeed]);
+    }, [text, resolvedSeed, glyphSeed]);
 
     const classes = ['inkra-pencil-text', ellipsis && 'inkra-pencil-text--ellipsis', className]
       .filter(Boolean).join(' ');

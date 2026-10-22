@@ -165,11 +165,11 @@
   --inkra-z-modal: 30;
   --inkra-z-tooltip: 40;
 
-  --inkra-stroke-width: 1.2px;
+  --inkra-stroke-width: 2px;
   --inkra-stroke-variation: 0.82;
   --inkra-stroke-grain: 0.7;
   --inkra-stroke-breaks: 0.2;
-  --inkra-stroke-amplitude: 0.6px;
+  --inkra-stroke-amplitude: 1.5px;
   --inkra-stroke-step: 0.8px;
   --inkra-stroke-passes: 3;
   --inkra-stroke-gain: 2.1;
@@ -181,20 +181,20 @@
   --inkra-badge-stroke-passes: 2;
 
   --inkra-wash-opacity: 0.48;
-  --inkra-wash-strength: 0.48;
-  --inkra-wash-spacing: 1.8px;
-  --inkra-wash-roughness: 3.5;
-  --inkra-wash-angle: -35deg;
+  --inkra-wash-strength: 0.8;
+  --inkra-wash-spacing: 2px;
+  --inkra-wash-roughness: 3;
+  --inkra-wash-angle: -45deg;
   --inkra-wash-inset: 2px;
   --inkra-wash-edge-reach: 0px;
   --inkra-quiet-wash-strength: 0.18;
   --inkra-badge-wash-strength: 0.25;
 
-  --inkra-letter-variation: 0.52;
-  --inkra-letter-breaks: 0.18;
-  --inkra-letter-outline: 0.96;
-  --inkra-letter-fill: 0.34;
-  --inkra-letter-grain: 0.45;
+  --inkra-letter-variation: 0.2;
+  --inkra-letter-breaks: 0.5;
+  --inkra-letter-outline: 0.9;
+  --inkra-letter-fill: 0.9;
+  --inkra-letter-grain: 0.6;
   --inkra-paper-tile-size: 384px;
   --inkra-render-dpr-cap: 2;
 }

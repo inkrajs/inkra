@@ -288,7 +288,7 @@ test('Surface stroke settings preserve default outlines and customize weight and
     return commands;
   };
   const original = renderOutline({});
-  assert.deepEqual(renderOutline({ strokeWidth: 1.2, strokeRoughness: 0.6 }), original);
+  assert.deepEqual(renderOutline({ strokeWidth: 2, strokeRoughness: 1.5 }), original);
   assert.notDeepEqual(renderOutline({ strokeWidth: 3 }), original);
   assert.notDeepEqual(renderOutline({ strokeRoughness: 2 }), original);
 });
@@ -348,16 +348,16 @@ test('Surface washes preserve pencil geometry with readability-adjusted theme st
     lightStrength: 0.12,
     darkStrength: 0.08,
   });
-  assert.equal(PENCIL_FILL_WASH.angle, -35);
+  assert.equal(PENCIL_FILL_WASH.angle, -45);
   for (const key of Object.keys(PENCIL_FILL_WASH)) {
     assert.equal(PENCIL_FILL_WASH[key], PENCIL_SELECTION_WASH[key]);
   }
   assert.deepEqual(PENCIL_SELECTION_WASH, {
-    angle: -35,
+    angle: -45,
     lightStrength: 0.2,
     darkStrength: 0.12,
-    spacing: 1.8,
-    roughness: 3.5,
+    spacing: 2,
+    roughness: 3,
     inset: 2,
     radius: 8,
     edgeReach: 0,
