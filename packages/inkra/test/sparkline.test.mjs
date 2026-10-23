@@ -30,7 +30,8 @@ test('geometry emits SVG paths for line and area while preserving gaps', () => {
 test('SSR markup contains SVG and a textual data alternative', () => {
   assert.match(source, /<svg className="inkra-sparkline__svg"/);
   assert.match(source, /className="inkra-sparkline__data" aria-label/);
-  assert.match(source, /const summary = values.length === 0 \? 'No data'/);
+  assert.match(source, /const summary = useMemo\(/);
+  assert.match(source, /if \(!values.length\) return 'No data'/);
   assert.match(source, /ArrowLeft/);
   assert.match(source, /onMouseEnter/);
   assert.match(source, /pencilStroke/);

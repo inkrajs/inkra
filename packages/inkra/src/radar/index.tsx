@@ -50,7 +50,9 @@ export interface RadarValueContext {
 }
 
 export interface RadarProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'onChange'> {
+  /** Immutable snapshots: replace the axes array when an axis changes. */
   axes: readonly RadarAxis[];
+  /** Immutable snapshots: replace series and changed records/data when values change. */
   series: readonly RadarSeries[];
   label: ReactNode;
   description?: ReactNode;
@@ -159,10 +161,11 @@ function RadarInk({
         const resolvedColor = resolvedSeriesColors[seriesIndex];
         const valid = points.filter(point => point.value != null).map(point => coordinate(point.angle, point.radius));
         if (valid.length < 2) return;
-        const minX = Math.min(...valid.map(point => point[0]));
-        const maxX = Math.max(...valid.map(point => point[0]));
-        const minY = Math.min(...valid.map(point => point[1]));
-        const maxY = Math.max(...valid.map(point => point[1]));
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        for (const [x, y] of valid) {
+          minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+          minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+        }
         context.save();
         context.beginPath();
         valid.forEach(([x, y], pointIndex) => pointIndex ? context.lineTo(x, y) : context.moveTo(x, y));
@@ -208,6 +211,8 @@ function RadarInk({
   return <canvas aria-hidden="true" className="inkra-radar__ink" data-ready={ready || undefined} ref={canvasRef} />;
 }
 
+const noAxes: readonly RadarAxis[] = [];
+
 const palette = ['#4b96aa', '#994f3f', '#629568', '#8d6b9c', '#c58b47'] as const;
 
 function keyPart(value: RadarKey) { return JSON.stringify([typeof value, value]); }
@@ -225,8 +230,14 @@ function textNode(value: ReactNode, seed: string) {
   return typeof value === 'string' || typeof value === 'number' ? <PencilText seed={seed}>{String(value)}</PencilText> : value;
 }
 function domainForAxis(axis: RadarAxis, values: number[]): [number, number] {
-  let min = finite(axis.min) ? axis.min : values.length ? Math.min(...values) : 0;
-  let max = finite(axis.max) ? axis.max : values.length ? Math.max(...values) : 1;
+  let minimum = values.length ? values[0] : 0;
+  let maximum = values.length ? values[0] : 1;
+  for (let index = 1; index < values.length; index++) {
+    minimum = Math.min(minimum, values[index]);
+    maximum = Math.max(maximum, values[index]);
+  }
+  let min = finite(axis.min) ? axis.min : minimum;
+  let max = finite(axis.max) ? axis.max : maximum;
   if (min > max) [min, max] = [max, min];
   if (min === max) {
     const pad = Math.abs(min) * 0.5 || 1;
@@ -271,7 +282,7 @@ export const Radar = forwardRef<HTMLDivElement, RadarProps>(function Radar({
   const descriptionId = description == null ? undefined : `inkra-radar-${id}-description`;
   const [internalSelected, setInternalSelected] = useState<RadarKey | null>(defaultSelectedSeries);
   const selected = selectedSeries === undefined ? internalSelected : selectedSeries ?? null;
-  const visibleSeries = series.filter(item => !item.hidden);
+  const visibleSeries = useMemo(() => series.filter(item => !item.hidden), [series]);
   const domains = useMemo(() => new Map(axes.map(axis => {
     const values = visibleSeries.flatMap(item => item.data.filter(point => point.axisId === axis.id && finite(point.value)).map(point => point.value as number));
     return [keyPart(axis.id), domainForAxis(axis, values)] as const;
@@ -279,15 +290,25 @@ export const Radar = forwardRef<HTMLDivElement, RadarProps>(function Radar({
   const side = 1000;
   const radius = Math.max(120, Math.min(maxRadius ?? 390, 470));
   const axisCount = axes.length;
-  const angles = axes.map((_, index) => (index * Math.PI * 2) / Math.max(1, axisCount));
+  const angles = useMemo(() => axes.map((_, index) => (index * Math.PI * 2) / Math.max(1, axisCount)), [axes, axisCount]);
   const center = side / 2;
-  const valuePoints = (item: RadarSeries): Point[] => axes.map((axis, index) => {
-    const point = item.data.find(candidate => candidate.axisId === axis.id) ?? { axisId: axis.id, value: null };
-    const domain = domains.get(keyPart(axis.id)) ?? [0, 1];
-    const value = finite(point.value) ? point.value : null;
-    const scale = scaleLinear().domain(domain).range([0, radius]).clamp(true);
-    return { angle: angles[index], radius: value == null ? 0 : scale(value), value, point, axis };
-  });
+  const scales = useMemo(() => axes.map(axis => scaleLinear()
+    .domain(domains.get(keyPart(axis.id)) ?? [0, 1]).range([0, radius]).clamp(true)), [axes, domains, radius]);
+  const seriesPoints = useMemo(() => visibleSeries.map((item, index) => {
+    // Preserve the first point for duplicate axis ids, matching Array.find.
+    const pointsByAxis = new Map<RadarKey, RadarPoint>();
+    for (const point of item.data) {
+      // Map uses SameValueZero, while the prior lookup used strict equality.
+      if (typeof point.axisId === 'number' && Number.isNaN(point.axisId)) continue;
+      if (!pointsByAxis.has(point.axisId)) pointsByAxis.set(point.axisId, point);
+    }
+    const points = axes.map((axis, axisIndex): Point => {
+      const point = pointsByAxis.get(axis.id) ?? { axisId: axis.id, value: null };
+      const value = finite(point.value) ? point.value : null;
+      return { angle: angles[axisIndex], radius: value == null ? 0 : scales[axisIndex](value), value, point, axis };
+    });
+    return { item, points, color: item.color ?? palette[index % palette.length], index };
+  }), [angles, axes, scales, visibleSeries]);
   const line = useMemo(() => lineRadial<Point>().angle(point => point.angle).radius(point => point.radius).curve(curveLinearClosed), []);
   const rootStyle = { ...style, '--inkra-radar-size': cssSize(size, 'min(100%, 34rem)'), '--inkra-radar-levels': Math.max(2, Math.min(8, Math.round(levels))) } as CSSProperties;
   const selectSeries = (item: RadarSeries) => {
@@ -307,10 +328,10 @@ export const Radar = forwardRef<HTMLDivElement, RadarProps>(function Radar({
     </div>
     {axes.length < 3 || visibleSeries.length === 0 ? <div className="inkra-radar__empty">{textNode(emptyMessage, `${id}-empty`)}</div> : <>
       <div className="inkra-radar__viewport">
-        <RadarInk axisAngles={angles} axes={showAxes ? axes : []} center={center} levels={Math.max(2, Math.min(8, Math.round(levels)))} radius={radius} seriesPoints={visibleSeries.map((item, index) => ({ item, points: valuePoints(item), color: item.color ?? palette[index % palette.length], index }))} />
+        <RadarInk axisAngles={angles} axes={showAxes ? axes : noAxes} center={center} levels={Math.max(2, Math.min(8, Math.round(levels)))} radius={radius} seriesPoints={seriesPoints} />
         <svg aria-hidden="true" className="inkra-radar__svg-fallback" viewBox={`0 0 ${side} ${side}`} focusable="false" role="presentation">
           <circle cx={center} cy={center} r={radius} fill="none" stroke="currentColor" strokeWidth="1" />
-          {visibleSeries.map(item => <path d={line(valuePoints(item)) ?? undefined} key={keyPart(item.id)} transform={`translate(${center} ${center})`} />)}
+          {seriesPoints.map(({ item, points }) => <path d={line(points) ?? undefined} key={keyPart(item.id)} transform={`translate(${center} ${center})`} />)}
         </svg>
         {showLabels ? <div aria-hidden="true" className="inkra-radar__labels">{axes.map((axis, index) => {
           const x = 50 + Math.sin(angles[index]) * 48;
@@ -319,9 +340,7 @@ export const Radar = forwardRef<HTMLDivElement, RadarProps>(function Radar({
         })}</div> : null}
       </div>
       <div aria-describedby={descriptionId} aria-labelledby={labelId} className="inkra-radar__summary" role="group">
-        {visibleSeries.map((item, index) => {
-          const points = valuePoints(item);
-          const color = item.color ?? palette[index % palette.length];
+        {seriesPoints.map(({ item, points, color }) => {
           return <div className="inkra-radar__series-summary" key={keyPart(item.id)} data-series-id={item.id}>
             <Button aria-pressed={sameKey(selected, item.id)} className="inkra-radar__legend-button" onClick={() => selectSeries(item)} size="sm" variant="ghost">
               <PencilSurface aria-hidden="true" as="span" className="inkra-radar__legend-mark" radius={4} seed={`radar-${keyPart(item.id)}`} style={paintStyle(color)} variant={sameKey(selected, item.id) ? 'selection' : 'quiet'} />
@@ -335,7 +354,7 @@ export const Radar = forwardRef<HTMLDivElement, RadarProps>(function Radar({
         })}
       </div>
       {showLegend ? <div aria-label={typeof legendLabel === 'string' ? legendLabel : undefined} className="inkra-radar__legend" role="group"><span className="inkra-radar__legend-title">{textNode(legendLabel, `${id}-legend-title`)}</span>{visibleSeries.map((item, index) => <Button aria-pressed={sameKey(selected, item.id)} className="inkra-radar__legend-button" key={keyPart(item.id)} onClick={() => selectSeries(item)} size="sm" variant="ghost"><PencilSurface aria-hidden="true" as="span" className="inkra-radar__legend-mark" radius={4} seed={`radar-legend-${keyPart(item.id)}`} style={paintStyle(item.color ?? palette[index % palette.length])} variant={sameKey(selected, item.id) ? 'selection' : 'quiet'} />{textNode(item.label, `${id}-legend-${String(item.id)}`)}</Button>)}</div> : null}
-      {showTable ? <Table.Container aria-label={typeof label === 'string' ? label : undefined} aria-describedby={descriptionId}><Table.Root className="inkra-radar__table"><Table.Caption>{textNode(tableCaption, `${id}-table-caption`)}</Table.Caption><Table.Header><Table.Row><Table.Head>{textNode(seriesLabel, `${id}-table-series`)}</Table.Head>{axes.map(axis => <Table.Head key={keyPart(axis.id)}>{textNode(axis.label, `${id}-table-axis-${String(axis.id)}`)}</Table.Head>)}</Table.Row></Table.Header><Table.Body>{visibleSeries.map(item => <Table.Row key={keyPart(item.id)}><Table.Head scope="row">{textNode(item.label, `${id}-table-series-${String(item.id)}`)}</Table.Head>{axes.map(axis => { const point = item.data.find(candidate => candidate.axisId === axis.id); const missing = !finite(point?.value); return <Table.Cell data-missing={missing || undefined} key={keyPart(axis.id)}>{textNode(missing ? missingLabel : formatNumber(point?.value as number, axis, getValueLabel), `${id}-table-value-${String(item.id)}-${String(axis.id)}`)}</Table.Cell>; })}</Table.Row>)}</Table.Body></Table.Root></Table.Container> : null}
+      {showTable ? <Table.Container aria-label={typeof label === 'string' ? label : undefined} aria-describedby={descriptionId}><Table.Root className="inkra-radar__table"><Table.Caption>{textNode(tableCaption, `${id}-table-caption`)}</Table.Caption><Table.Header><Table.Row><Table.Head>{textNode(seriesLabel, `${id}-table-series`)}</Table.Head>{axes.map(axis => <Table.Head key={keyPart(axis.id)}>{textNode(axis.label, `${id}-table-axis-${String(axis.id)}`)}</Table.Head>)}</Table.Row></Table.Header><Table.Body>{seriesPoints.map(({ item, points }) => <Table.Row key={keyPart(item.id)}><Table.Head scope="row">{textNode(item.label, `${id}-table-series-${String(item.id)}`)}</Table.Head>{points.map(({ axis, value }) => { const missing = value === null; return <Table.Cell data-missing={missing || undefined} key={keyPart(axis.id)}>{textNode(missing ? missingLabel : formatNumber(value as number, axis, getValueLabel), `${id}-table-value-${String(item.id)}-${String(axis.id)}`)}</Table.Cell>; })}</Table.Row>)}</Table.Body></Table.Root></Table.Container> : null}
     </>}
   </div>;
 });

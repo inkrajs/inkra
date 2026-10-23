@@ -102,35 +102,56 @@ export const AudioPlayer = forwardRef<AudioPlayerControls, AudioPlayerProps>(fun
   const id = useId();
   const audioRef = useRef<HTMLAudioElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const sourceVersionRef = useRef(0);
   const [state, setState] = useState<AudioPlayerState>({ status: src ? 'loading' : 'idle', currentTime: 0, duration: 0, buffered: 0, volume: clamp(volume ?? defaultVolume, 0, 1), muted: muted ?? defaultMuted, playbackRate: clamp(playbackRate ?? defaultPlaybackRate, 0.25, 4), canPlay: false, error: null });
   const stateRef = useRef(state);
   stateRef.current = state;
+  const callbacks = useRef({ onStateChange, onTimeChange, onVolumeChange, onMutedChange, onPlaybackRateChange, onError });
+  callbacks.current = { onStateChange, onTimeChange, onVolumeChange, onMutedChange, onPlaybackRateChange, onError };
   const mergedLabels = { ...DEFAULT_LABELS, ...labels };
   const update = useCallback((patch: Partial<AudioPlayerState>) => {
-    const next = { ...stateRef.current, ...patch };
-    stateRef.current = next;
-    setState(next);
-    onStateChange?.(next);
-  }, [onStateChange]);
+    const current = stateRef.current;
+    const changed = (Object.keys(patch) as (keyof AudioPlayerState)[]).some(key => !Object.is(current[key], patch[key]));
+    const next = changed ? { ...current, ...patch } : current;
+    if (changed) {
+      stateRef.current = next;
+      setState(next);
+    }
+    // Native events remain observable without rendering identical media snapshots.
+    callbacks.current.onStateChange?.(next);
+  }, []);
   const sync = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
     const buffered = audio.duration > 0 && audio.buffered.length ? audio.buffered.end(audio.buffered.length - 1) / audio.duration : 0;
     update({ currentTime: Number.isFinite(audio.currentTime) ? audio.currentTime : 0, duration: Number.isFinite(audio.duration) ? audio.duration : 0, buffered: clamp(buffered, 0, 1), volume: audio.volume, muted: audio.muted, playbackRate: audio.playbackRate, canPlay: audio.readyState >= 3 });
   }, [update]);
-  const play = useCallback(async () => { const audio = audioRef.current; if (!audio) return; try { await audio.play(); } catch (error) { update({ status: 'blocked' }); onError?.(error instanceof DOMException ? error : null); } }, [onError, update]);
+  const play = useCallback(async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const sourceVersion = sourceVersionRef.current;
+    try {
+      await audio.play();
+    } catch (error) {
+      // Loading another source or unmounting can reject an earlier play request.
+      if (audioRef.current !== audio || sourceVersionRef.current !== sourceVersion) return;
+      update({ status: 'blocked' });
+      callbacks.current.onError?.(error instanceof DOMException ? error : null);
+    }
+  }, [update]);
   const pause = useCallback(() => { audioRef.current?.pause(); }, []);
   const togglePlay = useCallback(async () => { const audio = audioRef.current; if (!audio) return; if (audio.paused) await play(); else pause(); }, [pause, play]);
-  const seek = useCallback((time: number) => { const audio = audioRef.current; if (!audio || !Number.isFinite(time)) return; audio.currentTime = clamp(time, 0, Number.isFinite(audio.duration) ? audio.duration : Math.max(0, time)); sync(); onTimeChange?.(audio.currentTime); }, [onTimeChange, sync]);
-  const setVolume = useCallback((next: number) => { const audio = audioRef.current; if (!audio) return; audio.volume = clamp(next, 0, 1); onVolumeChange?.(audio.volume); sync(); }, [onVolumeChange, sync]);
-  const setMuted = useCallback((next: boolean) => { const audio = audioRef.current; if (!audio) return; audio.muted = next; onMutedChange?.(next); sync(); }, [onMutedChange, sync]);
-  const setPlaybackRate = useCallback((next: number) => { const audio = audioRef.current; if (!audio) return; audio.playbackRate = clamp(next, 0.25, 4); onPlaybackRateChange?.(audio.playbackRate); sync(); }, [onPlaybackRateChange, sync]);
+  const seek = useCallback((time: number) => { const audio = audioRef.current; if (!audio || !Number.isFinite(time)) return; audio.currentTime = clamp(time, 0, Number.isFinite(audio.duration) ? audio.duration : Math.max(0, time)); sync(); callbacks.current.onTimeChange?.(audio.currentTime); }, [sync]);
+  const setVolume = useCallback((next: number) => { const audio = audioRef.current; if (!audio) return; audio.volume = clamp(next, 0, 1); callbacks.current.onVolumeChange?.(audio.volume); sync(); }, [sync]);
+  const setMuted = useCallback((next: boolean) => { const audio = audioRef.current; if (!audio) return; audio.muted = next; callbacks.current.onMutedChange?.(next); sync(); }, [sync]);
+  const setPlaybackRate = useCallback((next: number) => { const audio = audioRef.current; if (!audio) return; audio.playbackRate = clamp(next, 0.25, 4); callbacks.current.onPlaybackRateChange?.(audio.playbackRate); sync(); }, [sync]);
   const focus = useCallback(() => { rootRef.current?.querySelector<HTMLElement>('[data-audio-player-control]')?.focus(); }, []);
   const controls: AudioPlayerControls = { audio: audioRef.current, state, play, pause, togglePlay, seek, setVolume, setMuted, setPlaybackRate, focus };
   useImperativeHandle(forwardedRef, () => controls, [state, play, pause, togglePlay, seek, setVolume, setMuted, setPlaybackRate, focus]);
 
   useEffect(() => { const audio = audioRef.current; if (!audio) return; audio.volume = clamp(volume ?? defaultVolume, 0, 1); audio.muted = muted ?? defaultMuted; audio.playbackRate = clamp(playbackRate ?? defaultPlaybackRate, 0.25, 4); sync(); }, [defaultMuted, defaultPlaybackRate, defaultVolume, muted, playbackRate, src, volume, sync]);
   useEffect(() => {
+    sourceVersionRef.current += 1;
     const audio = audioRef.current;
     if (!audio || !src) return;
     audio.pause();
@@ -139,10 +160,10 @@ export const AudioPlayer = forwardRef<AudioPlayerControls, AudioPlayerProps>(fun
     audio.load();
   }, [src, update]);
   useEffect(() => { const audio = audioRef.current; if (!audio) return; const handlers: Partial<Record<keyof HTMLMediaElementEventMap, EventListener>> = {
-    loadstart: () => update({ status: 'loading', error: null, canPlay: false }), loadedmetadata: () => { sync(); update({ status: 'ready' }); }, canplay: () => { sync(); update({ canPlay: true, status: audio.paused ? 'paused' : 'playing' }); }, play: () => update({ status: 'playing' }), pause: () => update({ status: audio.ended ? 'ended' : 'paused' }), playing: () => update({ status: 'playing', canPlay: true }), waiting: () => update({ status: 'buffering' }), progress: sync, timeupdate: () => { sync(); onTimeChange?.(audio.currentTime); }, ratechange: sync, volumechange: () => { sync(); onVolumeChange?.(audio.volume); onMutedChange?.(audio.muted); }, ended: () => update({ status: 'ended', currentTime: audio.duration || audio.currentTime }), error: () => { const error = audio.error; update({ status: 'error', error }); onError?.(error); }, abort: () => update({ status: 'idle' }), };
+    loadstart: () => update({ status: 'loading', error: null, canPlay: false }), loadedmetadata: () => { sync(); update({ status: 'ready' }); }, canplay: () => { sync(); update({ canPlay: true, status: audio.paused ? 'paused' : 'playing' }); }, play: () => update({ status: 'playing' }), pause: () => update({ status: audio.ended ? 'ended' : 'paused' }), playing: () => update({ status: 'playing', canPlay: true }), waiting: () => update({ status: 'buffering' }), progress: sync, timeupdate: () => { sync(); callbacks.current.onTimeChange?.(audio.currentTime); }, ratechange: sync, volumechange: () => { sync(); callbacks.current.onVolumeChange?.(audio.volume); callbacks.current.onMutedChange?.(audio.muted); }, ended: () => update({ status: 'ended', currentTime: audio.duration || audio.currentTime }), error: () => { const error = audio.error; update({ status: 'error', error }); callbacks.current.onError?.(error); }, abort: () => update({ status: 'idle' }), };
     Object.entries(handlers).forEach(([name, handler]) => audio.addEventListener(name, handler!));
     return () => Object.entries(handlers).forEach(([name, handler]) => audio.removeEventListener(name, handler!));
-  }, [onError, onMutedChange, onTimeChange, onVolumeChange, sync, src, update]);
+  }, [sync, update]);
 
   const playLabel = state.status === 'playing' ? mergedLabels.pause : mergedLabels.play;
   const defaultControls = <div className="inkra-audio-player__controls" role="group" aria-label="Audio controls">

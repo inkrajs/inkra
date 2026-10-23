@@ -282,6 +282,14 @@ export const ImageViewerContent = forwardRef<
   const stageRef = useRef<HTMLDivElement>(null);
   const thumbnailRefs = useRef(new Map<string, HTMLButtonElement>());
   const panZoomRef = useRef<PanZoomRef>(null);
+  const focusFrameRef = useRef<number | null>(null);
+  const fitFrameRef = useRef<number | null>(null);
+  const activeIdRef = useRef(activeItem?.id);
+  activeIdRef.current = activeItem?.id;
+  useEffect(() => () => {
+    if (focusFrameRef.current !== null) cancelAnimationFrame(focusFrameRef.current);
+    if (fitFrameRef.current !== null) cancelAnimationFrame(fitFrameRef.current);
+  }, []);
   const [failedIds, setFailedIds] = useState<Set<string>>(() => new Set());
   const [attempts, setAttempts] = useState<Record<string, number>>({});
   const [rotation, setRotation] = useState(0);
@@ -315,7 +323,11 @@ export const ImageViewerContent = forwardRef<
   const selectThumbnail = (index: number, reason: ImageViewerChangeReason = 'thumbnail') => {
     selectIndex(index, reason);
     const item = items[index];
-    if (item) requestAnimationFrame(() => thumbnailRefs.current.get(item.id)?.focus());
+    if (focusFrameRef.current !== null) cancelAnimationFrame(focusFrameRef.current);
+    focusFrameRef.current = item ? requestAnimationFrame(() => {
+      focusFrameRef.current = null;
+      thumbnailRefs.current.get(item.id)?.focus();
+    }) : null;
   };
 
   const renderDefaultImage = (item: ImageViewerItem, { key, ...imageProps }: ImageViewerImageRenderProps) => (
@@ -417,7 +429,12 @@ export const ImageViewerContent = forwardRef<
                 </> : null}
                 {rotatable ? <Button aria-label={labels.rotate} onClick={() => {
                   setRotation(current => (current + 90) % 360);
-                  requestAnimationFrame(() => void panZoomRef.current?.fit({ mode: 'contain' }));
+                  if (fitFrameRef.current !== null) cancelAnimationFrame(fitFrameRef.current);
+                  const imageId = activeItem.id;
+                  fitFrameRef.current = requestAnimationFrame(() => {
+                    fitFrameRef.current = null;
+                    if (activeIdRef.current === imageId) void panZoomRef.current?.fit({ mode: 'contain' });
+                  });
                 }} size="icon-sm" variant="outline">
                   <PencilIcon decorative paths={rotatePaths} size={24} sourceSize={24} />
                 </Button> : null}

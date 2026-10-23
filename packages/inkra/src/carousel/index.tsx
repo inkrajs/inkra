@@ -197,18 +197,25 @@ export const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel
 
   const plugins = useMemo(() => autoplayActive ? [autoplayPlugin] : [], [autoplayActive, autoplayPlugin]);
 
-  const [viewportRef, emblaApi] = useEmblaCarousel({
-    active: !disabled && count > 0,
+  // Ordinary selection changes use scrollTo, not an engine rebuild. When real
+  // options/plugins change, seed their new engine from the latest selection.
+  const activeIndexRef = useRef(activeIndex);
+  activeIndexRef.current = activeIndex;
+  const engineActive = !disabled && count > 0;
+  const engineLoop = loop && count > 1;
+  const engineOptions = useMemo(() => ({
+    active: engineActive,
     align,
-    containScroll: 'trimSnaps',
+    containScroll: 'trimSnaps' as const,
     direction: resolvedDir,
     dragFree,
-    loop: loop && count > 1,
+    loop: engineLoop,
     slidesToScroll: 1,
-    startIndex: initialIndex,
+    startIndex: activeIndexRef.current,
     watchResize: true,
     watchSlides: true,
-  }, plugins);
+  }), [align, dragFree, engineActive, engineLoop, plugins, resolvedDir]);
+  const [viewportRef, emblaApi] = useEmblaCarousel(engineOptions, plugins);
 
   const refresh = useCallback(() => {
     if (!emblaApi) return;
