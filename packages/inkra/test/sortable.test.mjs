@@ -122,12 +122,16 @@ test('Sortable source delegates interaction mechanics to dnd-kit and preserves c
   assert.match(source, /cloneSortableContainers\(initialRef\.current\)/);
   assert.match(source, /const acceptingOver = isOver && !disabled/);
   assert.doesNotMatch(source, /onChange\([^)]*handleDragOver/);
+  assert.match(source, /grip-vertical\.mjs/);
+  assert.match(source, /data-handle=\{hasHandle \|\| undefined\}/);
+  assert.match(source, /aria-label=\{!hasHandle \? handleLabel : undefined\}/);
 });
 
 test('Sortable CSS keeps touch targets, responsive containers and accessible fallbacks', () => {
   const css = readFileSync(new URL('../src/sortable/styles.css', import.meta.url), 'utf8');
   assert.match(css, /height: var\(--inkra-touch-target\)/);
   assert.match(css, /touch-action: none/);
+  assert.match(css, /\.inkra-sortable__item:not\(\[data-disabled\]\):not\(\[data-handle\]\) \{ touch-action: none; \}/);
   assert.match(css, /inkra-sortable__focus/);
   assert.match(css, /grid-template-columns: repeat\(auto-fit/);
   assert.match(css, /@media \(max-width: 640px\)/);

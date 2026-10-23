@@ -26,7 +26,7 @@ import { PencilIcon } from '../PencilIcon.js';
 import { PencilSurface } from '../PencilSurface.js';
 import { PencilText } from '../PencilText.js';
 import {
-  PortalThemeBridge,
+  usePortalThemeProps,
   PortalThemeProvider,
   usePortalTriggerRef,
 } from '../overlay/themeBridge.js';
@@ -410,9 +410,9 @@ export interface ContextMenuSubContentProps extends Omit<ComponentPropsWithoutRe
 export const ContextMenuSubContent = forwardRef<HTMLDivElement, ContextMenuSubContentProps>(
   function ContextMenuSubContent({ children, className, collisionPadding = 8, seed, sideOffset = 4, ...props }, ref) {
     const id = useId();
+    props = usePortalThemeProps(props);
     return (
       <Primitive.Portal>
-        <PortalThemeBridge>
           <Primitive.SubContent
             {...props}
             className={classes('inkra-menu', 'inkra-context-menu__sub-content', className)}
@@ -424,7 +424,6 @@ export const ContextMenuSubContent = forwardRef<HTMLDivElement, ContextMenuSubCo
               {children}
             </PencilSurface>
           </Primitive.SubContent>
-        </PortalThemeBridge>
       </Primitive.Portal>
     );
   },

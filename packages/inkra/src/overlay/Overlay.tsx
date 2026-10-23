@@ -12,8 +12,9 @@ import type { PencilSurfaceVariant } from '../PencilSurface.js';
 import { PencilText } from '../PencilText.js';
 import { Tooltip } from '../tooltip/Tooltip.js';
 import {
-  PortalThemeBridge,
+  mapPortalChildren,
   PortalThemeProvider,
+  usePortalThemeProps,
   usePortalTriggerRef,
 } from './themeBridge.js';
 
@@ -44,11 +45,7 @@ export const OverlayTrigger = forwardRef<
 export type OverlayPortalProps = DialogPrimitive.DialogPortalProps;
 
 export function OverlayPortal({ children, ...props }: OverlayPortalProps) {
-  return (
-    <DialogPrimitive.Portal {...props}>
-      <PortalThemeBridge>{children}</PortalThemeBridge>
-    </DialogPrimitive.Portal>
-  );
+  return mapPortalChildren(children, child => <DialogPrimitive.Portal {...props}>{child}</DialogPrimitive.Portal>);
 }
 
 export type OverlayBackdropProps = DialogPrimitive.DialogOverlayProps;
@@ -57,6 +54,7 @@ export const OverlayBackdrop = forwardRef<
   ComponentRef<typeof DialogPrimitive.Overlay>,
   OverlayBackdropProps
 >(function OverlayBackdrop({ className, ...props }, ref) {
+  props = usePortalThemeProps(props);
   return (
     <DialogPrimitive.Overlay
       {...props}
@@ -92,6 +90,7 @@ export const OverlayContent = forwardRef<
   ref,
 ) {
   const id = useId();
+  props = usePortalThemeProps(props);
   return (
     <DialogPrimitive.Content
       {...props}

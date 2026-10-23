@@ -2,7 +2,7 @@ import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { forwardRef, useId } from 'react';
 import type { ComponentRef } from 'react';
 
-import { PortalThemeBridge, PortalThemeProvider, usePortalTriggerRef } from '../overlay/themeBridge.js';
+import { mapPortalChildren, PortalThemeProvider, usePortalThemeProps, usePortalTriggerRef } from '../overlay/themeBridge.js';
 import { PencilSurface } from '../PencilSurface.js';
 import type { PencilSurfaceVariant } from '../PencilSurface.js';
 import { PencilText } from '../PencilText.js';
@@ -37,11 +37,7 @@ export const TooltipTrigger = forwardRef<
 export type TooltipPortalProps = TooltipPrimitive.TooltipPortalProps;
 
 export function TooltipPortal({ children, ...props }: TooltipPortalProps) {
-  return (
-    <TooltipPrimitive.Portal {...props}>
-      <PortalThemeBridge>{children}</PortalThemeBridge>
-    </TooltipPrimitive.Portal>
-  );
+  return mapPortalChildren(children, child => <TooltipPrimitive.Portal {...props}>{child}</TooltipPrimitive.Portal>);
 }
 
 export interface TooltipContentProps extends TooltipPrimitive.TooltipContentProps {
@@ -68,6 +64,7 @@ export const TooltipContent = forwardRef<
   ref,
 ) {
   const generatedId = useId();
+  props = usePortalThemeProps(props);
   const resolvedSeed = seed ?? `inkra-tooltip-${generatedId}`;
 
   return (

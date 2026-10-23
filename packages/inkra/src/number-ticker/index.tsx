@@ -13,13 +13,17 @@ import { useBrowserLayoutEffect } from '../internal/useBrowserLayoutEffect.js';
 import {
   canAnimateTickerValue,
   createNumberFormatter,
+  createTickerFormatter,
   easeOutCubic,
-  formatTickerDelta,
+  formatDerivedTickerDelta,
   formatTickerValue,
   interpolateTickerValue,
   tickerValueChanged,
+  subtractTickerValues,
+  tickerValueKey,
 } from './model.js';
-import type { NumberTickerLocale } from './model.js';
+import type { NumberTickerCompact, NumberTickerCompactOptions, NumberTickerFormatOptions, NumberTickerLocale, NumberTickerValue } from './model.js';
+import { ExactDecimal } from './precision.js';
 
 export interface NumberTickerRenderDetails {
   animating: boolean;
@@ -32,20 +36,22 @@ export interface NumberTickerDeltaDetails {
 }
 
 export interface NumberTickerProps extends Omit<ComponentPropsWithoutRef<'span'>, 'children' | 'prefix'> {
-  value: number;
+  value: NumberTickerValue;
   locale?: NumberTickerLocale;
-  formatOptions?: Intl.NumberFormatOptions;
+  formatOptions?: NumberTickerFormatOptions;
+  compact?: NumberTickerCompact;
+  compactOptions?: NumberTickerCompactOptions;
   prefix?: ReactNode;
   suffix?: ReactNode;
-  renderValue?: (value: number, details: NumberTickerRenderDetails) => ReactNode;
-  getValueLabel?: (value: number, formattedValue: string) => string;
+  renderValue?: (value: NumberTickerValue, details: NumberTickerRenderDetails) => ReactNode;
+  getValueLabel?: (value: NumberTickerValue, formattedValue: string) => string;
   animate?: boolean;
   duration?: number;
   easing?: (progress: number) => number;
   showDelta?: boolean;
   deltaDuration?: number;
-  deltaFormatOptions?: Intl.NumberFormatOptions;
-  renderDelta?: (delta: number, details: NumberTickerDeltaDetails) => ReactNode;
+  deltaFormatOptions?: NumberTickerFormatOptions;
+  renderDelta?: (delta: NumberTickerValue, details: NumberTickerDeltaDetails) => ReactNode;
 }
 
 function usePrefersReducedMotion(): boolean {
@@ -75,6 +81,8 @@ export const NumberTicker = forwardRef<HTMLSpanElement, NumberTickerProps>(funct
   {
     animate = true,
     className,
+    compact = false,
+    compactOptions,
     deltaDuration = 1600,
     deltaFormatOptions,
     duration = 420,
@@ -100,18 +108,23 @@ export const NumberTicker = forwardRef<HTMLSpanElement, NumberTickerProps>(funct
   const [displayedValue, setDisplayedValue] = useState(value);
   const [announcedValue, setAnnouncedValue] = useState(value);
   const [animating, setAnimating] = useState(false);
-  const [delta, setDelta] = useState<number | null>(null);
+  const [delta, setDelta] = useState<NumberTickerValue | null>(null);
   const reducedMotion = usePrefersReducedMotion();
   const localeKey = Array.isArray(locale) ? locale.join('\u0000') : locale;
   const formatOptionsKey = JSON.stringify(formatOptions ?? {});
+  const compactOptionsKey = tickerValueKey(compactOptions ?? {});
   const deltaFormatOptionsKey = JSON.stringify(deltaFormatOptions ?? formatOptions ?? {});
   const formatter = useMemo(
-    () => createNumberFormatter(locale, formatOptions),
-    [localeKey, formatOptionsKey],
+    () => createTickerFormatter(locale, formatOptions, compact, compactOptions),
+    [localeKey, formatOptionsKey, compact, compactOptionsKey],
   );
   const deltaFormatter = useMemo(
-    () => createNumberFormatter(locale, deltaFormatOptions ?? formatOptions),
-    [localeKey, deltaFormatOptionsKey],
+    () => createTickerFormatter(locale, deltaFormatOptions ?? formatOptions, compact, compactOptions),
+    [localeKey, deltaFormatOptionsKey, compact, compactOptionsKey],
+  );
+  const announcementFormatter = useMemo(
+    () => createNumberFormatter(locale, compact ? { ...formatOptions, notation: 'standard' } : formatOptions),
+    [localeKey, formatOptionsKey, compact],
   );
   useImperativeHandle(forwardedRef, () => rootRef.current as HTMLSpanElement);
 
@@ -119,8 +132,8 @@ export const NumberTicker = forwardRef<HTMLSpanElement, NumberTickerProps>(funct
     const previousTarget = targetRef.current;
     targetRef.current = value;
 
-    if (showDelta && tickerValueChanged(previousTarget, value) && Number.isFinite(previousTarget) && Number.isFinite(value)) {
-      const nextDelta = value - previousTarget;
+    if (showDelta && tickerValueChanged(previousTarget, value)) {
+      const nextDelta = subtractTickerValues(value, previousTarget);
       setDelta(nextDelta);
       if (deltaTimerRef.current !== null) clearTimeout(deltaTimerRef.current);
       if (deltaDuration > 0 && Number.isFinite(deltaDuration)) {
@@ -186,7 +199,7 @@ export const NumberTicker = forwardRef<HTMLSpanElement, NumberTickerProps>(funct
 
   const formattedValue = formatTickerValue(formatter, displayedValue);
   const finalFormattedValue = formatTickerValue(formatter, value);
-  const announcedFormattedValue = formatTickerValue(formatter, announcedValue);
+  const announcedFormattedValue = formatTickerValue(announcementFormatter, announcedValue);
   const defaultAccessibleLabel = [accessibleAffix(prefix), announcedFormattedValue, accessibleAffix(suffix)]
     .filter(Boolean).join(' ');
   const accessibleLabel = getValueLabel?.(announcedValue, announcedFormattedValue) ?? defaultAccessibleLabel;
@@ -195,9 +208,9 @@ export const NumberTicker = forwardRef<HTMLSpanElement, NumberTickerProps>(funct
       ? <span className="inkra-number-ticker__native-value">{formattedValue}</span>
       : <PencilText seed={`number-ticker-${finalFormattedValue}`}>{finalFormattedValue}</PencilText>);
   const deltaContent = delta === null ? null : (() => {
-    const formattedDelta = formatTickerDelta(deltaFormatter, delta);
+    const formattedDelta = formatDerivedTickerDelta(deltaFormatter, delta);
     const details: NumberTickerDeltaDetails = {
-      direction: delta < 0 ? 'decrease' : 'increase',
+      direction: new ExactDecimal(String(delta)).lt(0) ? 'decrease' : 'increase',
       formattedDelta,
     };
     return renderDelta?.(delta, details) ?? <PencilText seed={`number-ticker-delta-${formattedDelta}`}>{formattedDelta}</PencilText>;
@@ -210,7 +223,7 @@ export const NumberTicker = forwardRef<HTMLSpanElement, NumberTickerProps>(funct
       {prefix !== undefined && <span className="inkra-number-ticker__prefix">{lettering(prefix, 'number-ticker-prefix')}</span>}
       <span className="inkra-number-ticker__value">{valueContent}</span>
       {suffix !== undefined && <span className="inkra-number-ticker__suffix">{lettering(suffix, 'number-ticker-suffix')}</span>}
-      {deltaContent !== null && <span className="inkra-number-ticker__delta" data-direction={delta! < 0 ? 'decrease' : 'increase'}>{deltaContent}</span>}
+      {deltaContent !== null && <span className="inkra-number-ticker__delta" data-direction={new ExactDecimal(String(delta)).lt(0) ? 'decrease' : 'increase'}>{deltaContent}</span>}
     </span>
     <span className="inkra-number-ticker__announcement" aria-atomic="true" aria-live="polite">{accessibleLabel}</span>
   </span>;
@@ -222,5 +235,6 @@ export {
   formatTickerDelta,
   formatTickerValue,
   interpolateTickerValue,
+  numberTickerUnits,
 } from './model.js';
-export type { NumberTickerLocale } from './model.js';
+export type { NumberTickerCompact, NumberTickerCompactOptions, NumberTickerFormatOptions, NumberTickerLocale, NumberTickerUnit, NumberTickerValue } from './model.js';

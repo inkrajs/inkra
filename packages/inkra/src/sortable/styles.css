@@ -58,6 +58,8 @@
 }
 
 .inkra-sortable__item:not([data-disabled]) { cursor: grab; }
+.inkra-sortable__item[data-handle] { cursor: auto; }
+.inkra-sortable__item:not([data-disabled]):not([data-handle]) { touch-action: none; }
 .inkra-sortable__item[data-dragging] { cursor: grabbing; z-index: 1; }
 .inkra-sortable__item:focus { outline: none; }
 

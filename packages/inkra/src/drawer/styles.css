@@ -29,6 +29,10 @@
 .inkra-drawer__content[data-state="closed"][data-direction="top"] { animation: inkra-drawer-top-out var(--inkra-motion-slow) var(--inkra-ease); }
 .inkra-drawer__content[data-state="closed"][data-direction="bottom"] { animation: inkra-drawer-bottom-out var(--inkra-motion-slow) var(--inkra-ease); }
 
+.inkra-drawer__backdrop[data-state],
+.inkra-drawer__content[data-state][data-direction] { animation-fill-mode: both; }
+.inkra-drawer__content[data-state="closed"] { pointer-events: none; }
+
 .inkra-drawer__surface,
 .inkra-drawer__layout { block-size: 100%; display: flex; flex-direction: column; min-height: 0; inline-size: 100%; }
 .inkra-drawer__surface { color: var(--inkra-ink); position: relative; }
@@ -78,7 +82,12 @@
 
 @media (prefers-reduced-motion: reduce) {
   .inkra-drawer__backdrop,
-  .inkra-drawer__content { animation: none; }
+  .inkra-drawer__content { animation: none !important; }
+}
+
+@media print {
+  .inkra-drawer__backdrop,
+  .inkra-drawer__content { animation: none !important; }
 }
 
 @media (forced-colors: active) {

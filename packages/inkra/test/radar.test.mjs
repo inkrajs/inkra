@@ -53,6 +53,26 @@ test('Radar distinguishes zero, missing values and equal-value domains', () => {
   assert.doesNotMatch(markup, /linear-gradient|radial-gradient/);
 });
 
+test('Radar table, legend and missing values accept localized labels without changing defaults', () => {
+  const props = { axes, series: [{ id: 'sample', label: '样本', data: [] }], label: '能力画像' };
+  const defaults = renderToStaticMarkup(createElement(Radar, props));
+  assert.match(defaults, /Radar data/);
+  assert.match(defaults, /Series/);
+  const localized = renderToStaticMarkup(createElement(Radar, {
+    ...props,
+    tableCaption: '雷达图数据',
+    seriesLabel: createElement('span', null, '数据系列'),
+    legendLabel: '图例',
+    missingLabel: '未测量',
+  }));
+  assert.match(localized, /雷达图数据/);
+  assert.match(localized, /<span>数据系列<\/span>/);
+  assert.match(localized, /图例/);
+  assert.match(localized, /未测量/);
+  assert.doesNotMatch(localized, /Radar data|Series|Missing/);
+  assert.doesNotMatch(localized, /tableCaption=|seriesLabel=/);
+});
+
 test('Radar source uses the shared d3 scale and shape direction without a chart framework', () => {
   const source = readFileSync(new URL('../src/radar/index.tsx', import.meta.url), 'utf8');
   const styles = readFileSync(new URL('../src/radar/styles.css', import.meta.url), 'utf8');

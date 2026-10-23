@@ -6,8 +6,9 @@ import { PencilSurface } from '../PencilSurface.js';
 import type { PencilSurfaceVariant } from '../PencilSurface.js';
 import { PencilText } from '../PencilText.js';
 import {
-  PortalThemeBridge,
+  mapPortalChildren,
   PortalThemeProvider,
+  usePortalThemeProps,
   usePortalTriggerRef,
 } from './themeBridge.js';
 
@@ -41,11 +42,7 @@ export const PopoverTrigger = forwardRef<
 export type PopoverPortalProps = PopoverPrimitive.PopoverPortalProps;
 
 export function PopoverPortal({ children, ...props }: PopoverPortalProps) {
-  return (
-    <PopoverPrimitive.Portal {...props}>
-      <PortalThemeBridge>{children}</PortalThemeBridge>
-    </PopoverPrimitive.Portal>
-  );
+  return mapPortalChildren(children, child => <PopoverPrimitive.Portal {...props}>{child}</PopoverPrimitive.Portal>);
 }
 
 export interface PopoverContentProps extends PopoverPrimitive.PopoverContentProps {
@@ -75,6 +72,7 @@ export const PopoverContent = forwardRef<
   ref,
 ) {
   const id = useId();
+  props = usePortalThemeProps(props);
   return (
     <PopoverPrimitive.Content
       {...props}

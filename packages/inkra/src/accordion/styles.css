@@ -121,6 +121,25 @@
   padding: var(--inkra-space-2) var(--inkra-space-3) var(--inkra-space-4);
 }
 
+.inkra-accordion__content[data-state="open"] > .inkra-accordion__content-body {
+  animation: inkra-accordion-body-in var(--inkra-motion-normal) var(--inkra-ease);
+}
+
+.inkra-accordion__content[data-state="closed"] > .inkra-accordion__content-body {
+  animation: inkra-accordion-body-out var(--inkra-motion-normal) var(--inkra-ease) both;
+  pointer-events: none;
+}
+
+@keyframes inkra-accordion-body-in {
+  from { opacity: 0; transform: translateY(calc(-1 * var(--inkra-space-1))); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes inkra-accordion-body-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(calc(-1 * var(--inkra-space-1))); }
+}
+
 .inkra-accordion__divider {
   color: var(--inkra-border);
   inset-block-end: -4px;
@@ -164,7 +183,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .inkra-accordion__content {
+  .inkra-accordion__content,
+  .inkra-accordion__content-body {
     animation: none !important;
   }
 
@@ -194,7 +214,8 @@
 }
 
 @media print {
-  .inkra-accordion__content {
-    animation: none;
+  .inkra-accordion__content,
+  .inkra-accordion__content-body {
+    animation: none !important;
   }
 }

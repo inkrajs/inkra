@@ -20,8 +20,9 @@ import { PencilLine } from '../PencilLine.js';
 import { PencilSurface } from '../PencilSurface.js';
 import { PencilText } from '../PencilText.js';
 import {
-  PortalThemeBridge,
+  mapPortalChildren,
   PortalThemeProvider,
+  usePortalThemeProps,
   usePortalTriggerRef,
 } from '../overlay/themeBridge.js';
 
@@ -90,11 +91,7 @@ export const AlertDialogTrigger = forwardRef<
 export type AlertDialogPortalProps = DialogPrimitive.DialogPortalProps;
 
 export function AlertDialogPortal({ children, ...props }: AlertDialogPortalProps) {
-  return (
-    <DialogPrimitive.Portal {...props}>
-      <PortalThemeBridge>{children}</PortalThemeBridge>
-    </DialogPrimitive.Portal>
-  );
+  return mapPortalChildren(children, child => <DialogPrimitive.Portal {...props}>{child}</DialogPrimitive.Portal>);
 }
 
 export type AlertDialogBackdropProps = DialogPrimitive.DialogOverlayProps;
@@ -103,6 +100,7 @@ export const AlertDialogBackdrop = forwardRef<
   ComponentRef<typeof DialogPrimitive.Overlay>,
   AlertDialogBackdropProps
 >(function AlertDialogBackdrop({ className, ...props }, ref) {
+  props = usePortalThemeProps(props);
   return (
     <DialogPrimitive.Overlay
       {...props}
@@ -135,6 +133,7 @@ export const AlertDialogContent = forwardRef<
   const context = useContext(AlertDialogContext);
   const contentRef = useRef<HTMLDivElement>(null);
   const id = useId();
+  props = usePortalThemeProps(props);
 
   return (
     <DialogPrimitive.Content

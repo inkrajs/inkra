@@ -1,5 +1,5 @@
 .inkra-tooltip__content {
-  animation: inkra-tooltip-content-in var(--inkra-motion-fast) var(--inkra-ease);
+  animation: inkra-tooltip-content-in var(--inkra-motion-fast) var(--inkra-ease) both;
   max-width: min(20rem, calc(100vw - var(--inkra-space-4)));
   outline: 0;
   transform-origin: var(--radix-tooltip-content-transform-origin);
@@ -7,7 +7,8 @@
 }
 
 .inkra-tooltip__content[data-state="closed"] {
-  animation: inkra-tooltip-content-out var(--inkra-motion-fast) var(--inkra-ease);
+  animation: inkra-tooltip-content-out var(--inkra-motion-fast) var(--inkra-ease) both;
+  pointer-events: none;
 }
 
 .inkra-tooltip__surface {
@@ -51,7 +52,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .inkra-tooltip__content {
-    animation: none;
+    animation: none !important;
   }
 }
 

@@ -1,6 +1,9 @@
 import {
+  Children,
+  Fragment,
   createContext,
   forwardRef,
+  isValidElement,
   useCallback,
   useContext,
   useEffect,
@@ -10,6 +13,7 @@ import {
 import type {
   CSSProperties,
   ForwardedRef,
+  HTMLAttributes,
   ReactNode,
   Ref,
 } from 'react';
@@ -137,6 +141,34 @@ export function usePortalTriggerRef<Element extends HTMLElement>(forwardedRef: F
     assignRef(forwardedRef, node);
     captureTrigger?.(node);
   }, [captureTrigger, forwardedRef]);
+}
+
+// Presence must receive each animated DOM node, not a display:contents wrapper.
+export function mapPortalChildren(children: ReactNode, render: (child: ReactNode) => ReactNode): ReactNode {
+  return Children.map(children, child => {
+    if (isValidElement<{ children?: ReactNode }>(child) && child.type === Fragment) {
+      return mapPortalChildren(child.props.children, render);
+    }
+    return child == null ? null : render(child);
+  });
+}
+
+export function usePortalThemeProps<Props extends HTMLAttributes<HTMLElement>>(props: Props) {
+  const context = useContext(PortalThemeContext);
+  const depth = context?.depth ?? 0;
+  const snapshot = context?.snapshot ?? emptySnapshot;
+  return {
+    'data-inkra-theme': snapshot.inkraTheme,
+    'data-theme': snapshot.theme,
+    dir: snapshot.direction,
+    lang: snapshot.language,
+    ...props,
+    style: {
+      ...snapshot.style,
+      '--inkra-floating-layer-offset': `${depth * 20}`,
+      ...props.style,
+    } as InkraStyle,
+  };
 }
 
 export const PortalThemeBridge = forwardRef<HTMLDivElement, { children: ReactNode }>(function PortalThemeBridge({ children }, ref) {

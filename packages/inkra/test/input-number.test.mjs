@@ -77,3 +77,17 @@ test('InputNumber can hide step controls and supplies localized accessible label
   assert.match(button(localized, 'Fewer items'), /type="button"/);
   assert.doesNotMatch(localized, /title="(?:More items|Fewer items)"/);
 });
+
+test('InputNumber consumes modifier and hold configuration without leaking native attributes', () => {
+  const html = render({
+    defaultValue: 0.25,
+    step: 0.25,
+    stepModifiers: [{ shiftKey: true, step: 10 }, { altKey: true, step: 0.1 }],
+    pressAndHold: false,
+    repeatDelay: 500,
+    repeatInterval: 120,
+  });
+  assert.match(inputTag(html), /value="0.25"/);
+  assert.match(inputTag(html), /step="0.25"/);
+  assert.doesNotMatch(inputTag(html), /stepModifiers=|pressAndHold=|repeatDelay=|repeatInterval=/i);
+});

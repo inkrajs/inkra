@@ -93,6 +93,14 @@ test('VirtualList CSS provides bounded native scrolling and forced-color focus',
   assert.match(styles, /outline-color: Highlight/);
 });
 
+test('VirtualList keeps the pencil frame outside the native scroll element', () => {
+  assert.match(componentSource, /<PencilSurface as="div" className="inkra-virtual-list__frame"/);
+  assert.match(componentSource, /<div \{\.\.\.rootProps\} ref=\{rootRef\}>\{content\}<\/div>/);
+  assert.doesNotMatch(componentSource, /<PencilSurface \{\.\.\.rootProps\}/);
+  assert.match(componentSource, /empty \?\? <PencilText>\{emptyLabel\}<\/PencilText>/);
+  assert.match(styles, /\.inkra-virtual-list__frame:has\(> \.inkra-virtual-list:focus-visible\)/);
+});
+
 test('VirtualList SSR renders a stable static prefix, custom rows and empty state', { skip: !virtualListModule }, async () => {
   const { VirtualList } = await import(virtualListModule);
   const items = [

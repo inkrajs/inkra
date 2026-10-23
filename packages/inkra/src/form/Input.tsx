@@ -39,7 +39,7 @@ export interface InputProps
   classNames?: InputClassNames;
 }
 
-const editablePencilInputTypes = new Set(['text', 'search', 'email', 'url', 'tel']);
+const editablePencilInputTypes = new Set(['text', 'search', 'email', 'url', 'tel', 'number']);
 const clearableInputTypes = new Set(['text', 'search', 'email', 'url', 'tel', 'password', 'number']);
 // Lucide X / LoaderCircle ISC geometry, rendered by the shared pencil engine.
 const clearPaths = [{ d: 'M18 6 6 18' }, { d: 'm6 6 12 12' }];

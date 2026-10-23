@@ -24,7 +24,11 @@
 
 .inkra-alert-dialog__content[data-state="closed"] {
   animation: inkra-alert-dialog-content-out var(--inkra-motion-normal) var(--inkra-ease);
+  pointer-events: none;
 }
+
+.inkra-alert-dialog__backdrop[data-state],
+.inkra-alert-dialog__content[data-state] { animation-fill-mode: both; }
 
 .inkra-alert-dialog__content:focus-visible {
   outline: var(--inkra-focus-width) solid var(--inkra-focus);
@@ -105,7 +109,12 @@
 
 @media (prefers-reduced-motion: reduce) {
   .inkra-alert-dialog__backdrop,
-  .inkra-alert-dialog__content { animation: none; }
+  .inkra-alert-dialog__content { animation: none !important; }
+}
+
+@media print {
+  .inkra-alert-dialog__backdrop,
+  .inkra-alert-dialog__content { animation: none !important; }
 }
 
 @media (forced-colors: active) {

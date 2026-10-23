@@ -16,8 +16,9 @@ import { PencilSurface } from '../PencilSurface.js';
 import { PencilText } from '../PencilText.js';
 import { Tooltip } from '../tooltip/Tooltip.js';
 import {
-  PortalThemeBridge,
+  mapPortalChildren,
   PortalThemeProvider,
+  usePortalThemeProps,
   usePortalTriggerRef,
 } from '../overlay/themeBridge.js';
 
@@ -55,7 +56,7 @@ export const DrawerTrigger = forwardRef<
 export type DrawerPortalProps = DialogPrimitive.DialogPortalProps;
 
 export function DrawerPortal({ children, ...props }: DrawerPortalProps) {
-  return <DialogPrimitive.Portal {...props}><PortalThemeBridge>{children}</PortalThemeBridge></DialogPrimitive.Portal>;
+  return mapPortalChildren(children, child => <DialogPrimitive.Portal {...props}>{child}</DialogPrimitive.Portal>);
 }
 
 export type DrawerBackdropProps = DialogPrimitive.DialogOverlayProps;
@@ -64,6 +65,7 @@ export const DrawerBackdrop = forwardRef<
   ComponentRef<typeof DialogPrimitive.Overlay>,
   DrawerBackdropProps
 >(function DrawerBackdrop({ className, ...props }, ref) {
+  props = usePortalThemeProps(props);
   return <DialogPrimitive.Overlay {...props} className={classes('inkra-drawer__backdrop', className)} ref={ref} />;
 });
 
@@ -78,11 +80,12 @@ export const DrawerContent = forwardRef<
   DrawerContentProps
 >(function DrawerContent({ children, className, direction = 'right', seed, size = 'md', style, ...props }, ref) {
   const id = useId();
-  const mergedStyle: DrawerStyle = { ...style, '--inkra-drawer-size': drawerSize(size) };
+  const themedProps = usePortalThemeProps({ ...props, style });
+  const mergedStyle: DrawerStyle = { ...themedProps.style, '--inkra-drawer-size': drawerSize(size) };
   const edgeOrientation = direction === 'left' || direction === 'right' ? 'vertical' : 'horizontal';
   return (
     <DialogPrimitive.Content
-      {...props}
+      {...themedProps}
       className={classes('inkra-drawer__content', className)}
       data-direction={direction}
       ref={ref}

@@ -1,3 +1,4 @@
+import { __iconData as gripIconData } from 'lucide-react/dist/esm/icons/grip-vertical.mjs';
 import {
   DndContext,
   DragOverlay,
@@ -59,9 +60,13 @@ export type {
   SortableLocation,
 } from './model.js';
 
-const gripIcon = [
-  { d: 'M 8 7 L 8.01 7 M 16 7 L 16.01 7 M 8 12 L 8.01 12 M 16 12 L 16.01 12 M 8 17 L 8.01 17 M 16 17 L 16.01 17' },
-] as const;
+const gripIcon = gripIconData.node.map(([, attributes]) => {
+  const { cx, cy, r } = attributes;
+  const x = Number(cx);
+  const y = Number(cy);
+  const radius = Number(r);
+  return { d: `M ${x - radius} ${y} A ${radius} ${radius} 0 1 0 ${x + radius} ${y} A ${radius} ${radius} 0 1 0 ${x - radius} ${y}` };
+});
 
 interface SortableEngineData {
   type: 'inkra-sortable-item' | 'inkra-sortable-container';
@@ -344,9 +349,11 @@ function SortableItem<Item>({
   return <div
     {...(!hasHandle ? itemActivatorProps : {})}
     aria-disabled={disabled || undefined}
+    aria-label={!hasHandle ? handleLabel : undefined}
     className={['inkra-sortable__item', itemClassName].filter(Boolean).join(' ')}
     data-disabled={disabled || undefined}
     data-dragging={isDragging || undefined}
+    data-handle={hasHandle || undefined}
     data-sortable-id={String(id)}
     ref={setItemRef}
     style={{ transform: CSS.Transform.toString(transform), transition } as CSSProperties}

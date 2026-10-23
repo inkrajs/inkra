@@ -4,7 +4,7 @@ import { PencilSurface } from '../PencilSurface.js';
 import { PencilText } from '../PencilText.js';
 import { PencilIcon } from '../PencilIcon.js';
 import { PencilLine } from '../PencilLine.js';
-import { PortalThemeBridge, PortalThemeProvider, usePortalTriggerRef } from '../overlay/themeBridge.js';
+import { mapPortalChildren, PortalThemeProvider, usePortalThemeProps, usePortalTriggerRef } from '../overlay/themeBridge.js';
 
 const classes = (...values: (string | undefined)[]) => values.filter(Boolean).join(' ');
 const copy = (children: ReactNode) => typeof children === 'string' ? <PencilText>{children}</PencilText> : children;
@@ -15,12 +15,13 @@ const Trigger = forwardRef<HTMLButtonElement, DropdownMenuTriggerProps>(function
   return <Primitive.Trigger {...props} ref={usePortalTriggerRef(ref)} />;
 });
 export type DropdownMenuPortalProps = Primitive.DropdownMenuPortalProps;
-function Portal({ children, ...props }: DropdownMenuPortalProps) { return <Primitive.Portal {...props}><PortalThemeBridge>{children}</PortalThemeBridge></Primitive.Portal>; }
+function Portal({ children, ...props }: DropdownMenuPortalProps) { return mapPortalChildren(children, child => <Primitive.Portal {...props}>{child}</Primitive.Portal>); }
 export interface DropdownMenuContentProps extends Omit<Primitive.DropdownMenuContentProps, 'asChild'> {
   seed?: string | number;
 }
 const Content = forwardRef<HTMLDivElement, DropdownMenuContentProps>(function Content({ className, children, seed, sideOffset = 6, collisionPadding = 8, ...props }, ref) {
   const id = useId();
+  props = usePortalThemeProps(props);
   return <Primitive.Content {...props} ref={ref} sideOffset={sideOffset} collisionPadding={collisionPadding} className={classes('inkra-menu', className)}>
     <PencilSurface variant="paper" radius={8} seed={seed ?? `menu-${id}`} className="inkra-menu__paper">{children}</PencilSurface>
   </Primitive.Content>;

@@ -72,6 +72,23 @@ test('Command source SSR preserves cmdk combobox/listbox and disabled option sem
   assert.match(html, /Ctrl\+N/);
 });
 
+test('Command can reuse a containing dialog surface without changing search semantics', () => {
+  const content = [
+    createElement(Command.Input, { key: 'search', placeholder: 'Search commands' }),
+    createElement(Command.List, { key: 'list', label: 'Results' },
+      createElement(Command.Item, { value: 'new' }, 'New note')),
+  ];
+  const standalone = renderToStaticMarkup(createElement(Command.Root, { label: 'Commands' }, content));
+  const embedded = renderToStaticMarkup(createElement(Command.Root, { label: 'Commands', surface: false }, content));
+  assert.match(standalone, /inkra-command__paper/);
+  assert.doesNotMatch(embedded, /inkra-command__paper/);
+  assert.doesNotMatch(embedded, /\bsurface=/);
+  assert.match(embedded, /role="combobox"/);
+  assert.match(embedded, /role="listbox"/);
+  assert.match(embedded, /New note/);
+  assert.match(embedded, /inkra-command__highlight/);
+});
+
 test('Pagination normalizes empty, invalid and fractional totals and pages', () => {
   for (const value of [0, -1, NaN, Infinity, -Infinity]) {
     assert.equal(normalizeTotal(value), 0);

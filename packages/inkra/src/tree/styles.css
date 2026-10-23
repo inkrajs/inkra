@@ -21,8 +21,29 @@
 .inkra-tree__description { min-width: 0; color: var(--inkra-ink-muted); font-size: var(--inkra-text-sm); line-height: var(--inkra-line-body); }
 .inkra-tree__item[data-disabled] .inkra-tree__item-content { opacity: .55; }
 .inkra-tree__empty { min-height: 72px; display: grid; place-items: center; padding: var(--inkra-space-4); color: var(--inkra-ink-muted); text-align: center; }
+
+.inkra-tree__item-content { animation: inkra-tree-row-in var(--inkra-motion-normal) var(--inkra-ease); }
+.inkra-tree__selection { animation: inkra-tree-selection-in var(--inkra-motion-fast) var(--inkra-ease); }
+
+@keyframes inkra-tree-row-in {
+  from { opacity: 0; transform: translateY(calc(-1 * var(--inkra-space-1))); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes inkra-tree-selection-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .inkra-tree__chevron { transition: none; }
+  .inkra-tree__item-content,
+  .inkra-tree__selection { animation: none !important; }
+}
+
+@media print {
+  .inkra-tree__item-content,
+  .inkra-tree__selection { animation: none !important; }
 }
 @media (forced-colors: active) {
   .inkra-tree__item[data-selected] .inkra-tree__item-content { outline: 1px solid Highlight; color: HighlightText; background: Highlight; forced-color-adjust: none; }

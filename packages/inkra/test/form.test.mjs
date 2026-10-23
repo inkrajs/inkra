@@ -171,6 +171,7 @@ test('Editable lettering preserves native controls and password privacy contract
   assert.doesNotMatch(source, /queueTextPaint|requestAnimationFrame/);
   assert.match(source, /new BoundedCache<PencilTextSprite>\(128, 4 \* 1024 \* 1024\)/);
   assert.match(source, /target\.drawImage\(buffer, 0, 0\)/);
+  assert.match(source, /canvas\.width = canvas\.height = 0/);
   assert.match(source, /scheduleRef\.current\(\)/);
   assert.match(source, /control\.addEventListener\('scroll'/);
   assert.match(source, /form\?\.addEventListener\('reset'/);
@@ -181,7 +182,7 @@ test('Editable lettering preserves native controls and password privacy contract
   assert.doesNotMatch(source, /dispatchEvent\(new Event\('input'/);
   assert.match(input, /<input[\s\S]*<EditablePencilText/);
   assert.match(input, /editablePencilInputTypes/);
-  assert.match(input, /\['text', 'search', 'email', 'url', 'tel'\]/);
+  assert.match(input, /\['text', 'search', 'email', 'url', 'tel', 'number'\]/);
   assert.match(textarea, /<textarea[\s\S]*<EditablePencilText/);
   assert.match(renderer, /cache\?: boolean/);
   assert.match(renderer, /cache \? textCache\.set/);
@@ -200,13 +201,27 @@ test('Password SSR remains native and never serializes a pencil copy of its valu
   assert.doesNotMatch(markup, /data-pencil-value/);
 });
 
-test('Only text-like input types mount editable pencil enhancement', () => {
-  for (const type of [undefined, 'text', 'search', 'email', 'url', 'tel']) {
+test('Text and numeric inputs mount pencil enhancement without intercepting native semantics', () => {
+  for (const type of [undefined, 'text', 'search', 'email', 'url', 'tel', 'number']) {
     const markup = renderToStaticMarkup(createElement(Input, { type }));
     assert.match(markup, /class="inkra-editable-text"/);
   }
-  for (const type of ['password', 'date', 'number', 'file', 'color', 'range', 'checkbox']) {
+  for (const type of ['password', 'date', 'file', 'color', 'range', 'checkbox']) {
     const markup = renderToStaticMarkup(createElement(Input, { type }));
     assert.doesNotMatch(markup, /class="inkra-editable-text"/);
   }
+});
+
+test('Numeric pencil text preserves native text-entry drafts without disabling focused stepping', () => {
+  const source = readFileSync(new URL('../src/form/EditablePencilText.tsx', import.meta.url), 'utf8');
+  assert.match(source, /control instanceof HTMLInputElement && control\.type === 'number'/);
+  assert.match(source, /numericControl && \(nativeNumberEditing \|\| control\.validity\.badInput \|\| composingRef\.current\)/);
+  assert.match(source, /control\.addEventListener\('beforeinput', beforeInput\)/);
+  assert.match(source, /control\.addEventListener\('blur', finishNumberEditing\)/);
+  assert.match(source, /control\.removeEventListener\('beforeinput', beforeInput\)/);
+  assert.match(source, /control\.removeEventListener\('blur', finishNumberEditing\)/);
+  assert.match(source, /const finishNumberEditing = \(\) => \{[\s\S]*?nativeNumberEditing = false;[\s\S]*?paint\(\)/);
+  assert.doesNotMatch(source, /control\.addEventListener\('focus'/);
+  assert.doesNotMatch(source, /control\.(?:value|type)\s*=(?!=)/);
+  assert.doesNotMatch(source, /setSelectionRange\(/);
 });

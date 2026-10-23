@@ -63,6 +63,8 @@ export interface RadarProps extends Omit<HTMLAttributes<HTMLDivElement>, 'childr
   showValues?: boolean;
   showTable?: boolean;
   legendLabel?: ReactNode;
+  tableCaption?: ReactNode;
+  seriesLabel?: ReactNode;
   missingLabel?: string;
   emptyMessage?: ReactNode;
   selectedSeries?: RadarKey | null;
@@ -250,6 +252,8 @@ export const Radar = forwardRef<HTMLDivElement, RadarProps>(function Radar({
   showValues = true,
   showTable = true,
   legendLabel = 'Series',
+  tableCaption = 'Radar data',
+  seriesLabel = 'Series',
   missingLabel = 'Missing',
   emptyMessage = 'No radar data',
   selectedSeries,
@@ -331,7 +335,7 @@ export const Radar = forwardRef<HTMLDivElement, RadarProps>(function Radar({
         })}
       </div>
       {showLegend ? <div aria-label={typeof legendLabel === 'string' ? legendLabel : undefined} className="inkra-radar__legend" role="group"><span className="inkra-radar__legend-title">{textNode(legendLabel, `${id}-legend-title`)}</span>{visibleSeries.map((item, index) => <Button aria-pressed={sameKey(selected, item.id)} className="inkra-radar__legend-button" key={keyPart(item.id)} onClick={() => selectSeries(item)} size="sm" variant="ghost"><PencilSurface aria-hidden="true" as="span" className="inkra-radar__legend-mark" radius={4} seed={`radar-legend-${keyPart(item.id)}`} style={paintStyle(item.color ?? palette[index % palette.length])} variant={sameKey(selected, item.id) ? 'selection' : 'quiet'} />{textNode(item.label, `${id}-legend-${String(item.id)}`)}</Button>)}</div> : null}
-      {showTable ? <Table.Container aria-label={typeof label === 'string' ? label : undefined} aria-describedby={descriptionId}><Table.Root className="inkra-radar__table"><Table.Caption>{textNode('Radar data', `${id}-table-caption`)}</Table.Caption><Table.Header><Table.Row><Table.Head>{textNode('Series', `${id}-table-series`)}</Table.Head>{axes.map(axis => <Table.Head key={keyPart(axis.id)}>{textNode(axis.label, `${id}-table-axis-${String(axis.id)}`)}</Table.Head>)}</Table.Row></Table.Header><Table.Body>{visibleSeries.map(item => <Table.Row key={keyPart(item.id)}><Table.Head scope="row">{textNode(item.label, `${id}-table-series-${String(item.id)}`)}</Table.Head>{axes.map(axis => { const point = item.data.find(candidate => candidate.axisId === axis.id); const missing = !finite(point?.value); return <Table.Cell data-missing={missing || undefined} key={keyPart(axis.id)}>{textNode(missing ? missingLabel : formatNumber(point?.value as number, axis, getValueLabel), `${id}-table-value-${String(item.id)}-${String(axis.id)}`)}</Table.Cell>; })}</Table.Row>)}</Table.Body></Table.Root></Table.Container> : null}
+      {showTable ? <Table.Container aria-label={typeof label === 'string' ? label : undefined} aria-describedby={descriptionId}><Table.Root className="inkra-radar__table"><Table.Caption>{textNode(tableCaption, `${id}-table-caption`)}</Table.Caption><Table.Header><Table.Row><Table.Head>{textNode(seriesLabel, `${id}-table-series`)}</Table.Head>{axes.map(axis => <Table.Head key={keyPart(axis.id)}>{textNode(axis.label, `${id}-table-axis-${String(axis.id)}`)}</Table.Head>)}</Table.Row></Table.Header><Table.Body>{visibleSeries.map(item => <Table.Row key={keyPart(item.id)}><Table.Head scope="row">{textNode(item.label, `${id}-table-series-${String(item.id)}`)}</Table.Head>{axes.map(axis => { const point = item.data.find(candidate => candidate.axisId === axis.id); const missing = !finite(point?.value); return <Table.Cell data-missing={missing || undefined} key={keyPart(axis.id)}>{textNode(missing ? missingLabel : formatNumber(point?.value as number, axis, getValueLabel), `${id}-table-value-${String(item.id)}-${String(axis.id)}`)}</Table.Cell>; })}</Table.Row>)}</Table.Body></Table.Root></Table.Container> : null}
     </>}
   </div>;
 });

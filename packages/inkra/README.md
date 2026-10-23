@@ -1,6 +1,6 @@
 # Inkra
 
-Inkra is a pencil-styled React component library. It includes action, form, overlay, navigation, content and feedback components, plus Calendar, DayAgenda, JourneyMap and deterministic drawing primitives. Version `0.1.0` is published; the component expansion described below is available only in the current, unpublished source candidate.
+Inkra is a pencil-styled React component library. It includes action, form, overlay, navigation, content and feedback components, plus Calendar, DayAgenda, JourneyMap and deterministic drawing primitives. This document describes the APIs shipped with this package; see the repository changelog and npm registry for release status.
 
 Source and maintenance: [inkrajs/inkra](https://github.com/inkrajs/inkra).
 
@@ -79,6 +79,18 @@ All standard `button` props, including `disabled`, `name`, `value`, `form`, `ari
 `Input` defaults to an underline appearance, with explicit `outline`, `soft` and `ghost` variants. It supports `startIcon`, `endIcon`, `prefix`, `suffix`, `clearable`, `loading`, `startAction`, `endAction`, `fullWidth` and logical `textAlign`. Use `onValueChange` for edits and clearing; native `onChange` does not receive fabricated clear events. `Field` connects labels, descriptions and errors.
 
 `InputNumber` places decrease and increase buttons on either side of a centered numeric input, with no clear button. Keyboard deletion produces `null`; decimal stepping and out-of-range validation remain native. `Slider` supports single/range values, horizontal/vertical layout and `standard` or `inset` appearance.
+
+`InputNumber` supports Shift-click and Shift-arrow increments of 10 by default.
+Use `stepModifiers={[{ shiftKey: true, step: 10 }, { altKey: true, step: 0.1 }]}`
+to configure exact modifier chords with absolute increments, or `[]` to disable
+overrides. The first valid matching rule wins; unspecified modifiers must be
+released. Values remain bounded by `min`/`max`; `step="any"` disables stepping.
+`pressAndHold` defaults to true, with `repeatDelay={400}` and
+`repeatInterval={80}` in milliseconds. Release, cancellation, blur, backgrounding,
+disabling and value boundaries stop repetition. Delay/interval are bounded to
+150-60000/32-60000 ms. Numeric values use pencil lettering at rest and during
+button stepping. Direct text entry deliberately stays native until blur, keeping
+browser-owned incomplete drafts such as `-`, `1.` and `1e` readable.
 
 `Select.Root` uses string values for single selection and string arrays with `multiple`. Multi-select remains open while toggling items and submits repeated values under the same field name. `Select.Clear` is a separate button; never nest it inside the trigger.
 
@@ -195,10 +207,9 @@ Content layout options preserve existing defaults:
 - `Avatar.Root.radius` clamps to 0-8px, including pencil and image corners; `bordered={false}` removes the outline. `Avatar.Image.fit` accepts `cover | contain` (default cover).
 - `Table.Root.striped`, `hoverable` and `stickyHeader` default to false. Constrain `Table.Container` with `style={{ maxHeight: 240 }}` for sticky scrolling. `captionSide` accepts `top | bottom`. `Head.align` and `Cell.align` accept logical `start | center | end`, retaining native alignment values for compatibility. Hover feedback does not imply row actions.
 
-## Component Expansion (Unreleased)
+## Additional Components
 
-These exports are not present in the published 0.1.0 archive. Build, pack and
-install the local candidate to use them. The documentation playground includes
+These exports extend the original core component set. The documentation playground includes
 working examples, live property tabs and per-component API/accessibility notes.
 
 | Component | Contract |
@@ -238,6 +249,77 @@ the currently displayed frame, and can show a temporary signed delta. Reduced
 motion and SSR show deterministic final values. Intermediate frames are visual;
 the polite announcement updates only at the final value. Use `getValueLabel`
 when units or custom rendering need a complete accessible phrase.
+
+Set `compact` to follow `locale` (Chinese units for `zh`, English units otherwise),
+or use `compact="en"` / `compact="zh"` to select a unit table explicitly.
+English uses this library's short-scale suffix convention: K, M, B, T, Qa, Qi,
+Sx, Sp, Oc, No, Dc (10^3 through 10^33, increasing by 10^3).
+Chinese uses 千 (10^3), then 万, 亿, 兆, 京, 垓, 秭, 穰, 沟, 涧, 正, 载, 极,
+恒河沙, 阿僧祇, 那由他, 不可思议, 无量大数 (10^4 through 10^68, increasing by 10^4).
+`numberTickerUnits` exports both tables. A space separates numbers and units by default.
+The default is `false`, preserving existing `formatOptions` behavior. Compact mode
+uses at most one fractional digit by default; customize precision with
+`formatOptions`. Explicit scientific/engineering notation takes priority over compact.
+Currency/percent affixes are preserved. By default rounding can promote the unit
+(999,950 becomes 1 M). Deltas use the same unit
+system with their own precision; announcements and `getValueLabel` receive the
+unabbreviated formatted value. `renderValue` receives the abbreviated value in
+`details.formattedValue`. NumberTicker never changes the supplied numeric value.
+
+`compactOptions` supports:
+
+- `minUnit` / `maxUnit`: allowed unit labels; equal bounds fix the unit. An empty
+  label denotes the unitless base. For example `maxUnit: '万'` keeps 10^8 as `10,000 万`.
+- `separator`: defaults to one space; `''` removes it.
+- `promotionThreshold`: positive multiplier on each unit's factor (default 1).
+  Set 10 to wait until 10,000 before entering K. `promoteAfterRounding: false`
+  compares raw magnitudes instead of rounded current-unit values.
+- `units`: replace the table with `{ factor, label, threshold? }` entries.
+  `threshold` overrides the multiplier with an absolute display-magnitude trigger;
+  e.g. `{ factor: 10000, label: '万', threshold: 100000 }`. Binary factors work too.
+  Entries are sorted without mutation; labels/factors must be unique, factors > 1,
+  and thresholds positive, finite and strictly increasing. Invalid configurations
+  and unknown/reversed bounds throw RangeError. The unitless base is implicit.
+- `overflow`: `unit` keeps the largest permitted unit; `scientific` switches at
+  the next unit's threshold (or extrapolates the last step at the table end).
+  Explicit `maxUnit` defaults to `unit`; otherwise the default is `scientific`.
+
+Use `formatOptions.notation: 'scientific' | 'engineering'` for exponent notation.
+`maximumFractionDigits` controls decimals, `minimumFractionDigits` pads zeros,
+and `roundingMode: 'trunc'` truncates instead of rounding (`halfExpand` is default).
+Other Intl rounding modes are supported when provided by the runtime; unsupported
+nondefault rounding modes throw rather than silently round differently.
+`value`, unit `factor` / `threshold`, and `promotionThreshold` accept
+`number | bigint | string`. Use bigint for exact integers and decimal strings for
+exact fractions or exponents beyond JavaScript's numeric range. Already-rounded
+`number` inputs cannot regain lost digits. Decimal arithmetic uses an isolated
+`decimal.js` context without modifying the application's Decimal settings.
+
+```tsx
+<NumberTicker value={9007199254740993n} showDelta />
+<NumberTicker value="12345678901234567890.123456" formatOptions={{ maximumFractionDigits: 6 }} />
+<NumberTicker value="1.23456789e1000" formatOptions={{ notation: 'scientific' }} />
+```
+
+Strings accept signs, decimal points, e/E exponents and outer whitespace, but
+not grouping separators, hex, empty strings or non-finite spellings. Inputs are
+bounded to 10,000 coefficient digits and written/normalized exponents within
+-10,000..10,000; invalid or oversized exact inputs throw `RangeError`. Decimal
+fractions require exact Intl decimal-string support in the runtime; unsupported
+engines throw rather than silently lose precision. Native number NaN/Infinity
+formatting is unchanged.
+
+`renderValue` and `getValueLabel` retain the input type; prefer the supplied
+formatted text when custom rendering. Deltas between bigints are bigint, between
+numbers are number, and mixed/string deltas are exact decimal strings. Bigint
+animation frames stay integral. Input-type changes or exact arithmetic spanning
+more than 512 digits settle immediately, as do reduced-motion updates.
+`createNumberFormatter` remains a native Intl formatter; use
+`formatTickerValue(formatter, value)` for precise numeric-string formatting.
+
+`prefix` and `suffix` accept icons, text or fragments. Pass `PencilIcon` to keep
+the library material, and `getValueLabel` to describe icon meanings to assistive
+technology; decorative affixes are not announced twice.
 
 `Log` renders caller-ordered records with stable ids, optional level filters and
 pause/follow controls. It follows only append updates while the viewport remains

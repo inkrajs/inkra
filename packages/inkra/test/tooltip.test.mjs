@@ -25,7 +25,8 @@ test('Tooltip exposes the requested Radix-backed compound API', () => {
 test('Tooltip trigger and portal preserve scoped themes and nested layer depth', () => {
   assert.match(tooltip, /<PortalThemeProvider>[\s\S]*?<TooltipPrimitive\.Root/);
   assert.match(tooltip, /usePortalTriggerRef\(forwardedRef\)/);
-  assert.match(tooltip, /<TooltipPrimitive\.Portal[\s\S]*?<PortalThemeBridge>\{children\}<\/PortalThemeBridge>/);
+  assert.match(tooltip, /mapPortalChildren\(children, child => <TooltipPrimitive\.Portal \{\.\.\.props\}>\{child\}<\/TooltipPrimitive\.Portal>\)/);
+  assert.match(tooltip, /props = usePortalThemeProps\(props\)/);
   assert.match(styles, /z-index: calc\(var\(--inkra-z-tooltip, 40\) \+ var\(--inkra-floating-layer-offset, 0\)\)/);
 });
 

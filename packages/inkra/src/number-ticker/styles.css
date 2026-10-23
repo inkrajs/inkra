@@ -30,7 +30,12 @@
 
 .inkra-number-ticker__prefix,
 .inkra-number-ticker__suffix {
+  align-items: center;
+  align-self: center;
   color: var(--inkra-ink-muted);
+  display: inline-flex;
+  flex: none;
+  gap: var(--inkra-space-1, 4px);
   min-width: 0;
 }
 

@@ -1,3 +1,19 @@
+.inkra-virtual-list__frame {
+  min-inline-size: 0;
+  position: relative;
+}
+
+.inkra-virtual-list__focus {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.inkra-virtual-list__frame:has(> .inkra-virtual-list:focus-visible) > .inkra-virtual-list__focus {
+  opacity: 1;
+}
+
 .inkra-virtual-list {
   block-size: 20rem;
   color: var(--inkra-ink);
@@ -18,8 +34,7 @@
 }
 
 .inkra-virtual-list:focus-visible {
-  outline: var(--inkra-focus-width) solid var(--inkra-focus);
-  outline-offset: calc(-1 * var(--inkra-focus-width));
+  outline: none;
 }
 
 .inkra-virtual-list__items {
@@ -72,8 +87,12 @@
 }
 
 @media (forced-colors: active) {
-  .inkra-virtual-list { border: 1px solid CanvasText; }
-  .inkra-virtual-list:focus-visible { outline-color: Highlight; }
+  .inkra-virtual-list__frame { border: 1px solid CanvasText; }
+  .inkra-virtual-list:focus-visible {
+    outline: var(--inkra-focus-width) solid Highlight;
+    outline-color: Highlight;
+    outline-offset: calc(-1 * var(--inkra-focus-width));
+  }
   .inkra-virtual-list__item > .inkra-virtual-list__separator {
     inset-block-start: 0;
     opacity: 1;

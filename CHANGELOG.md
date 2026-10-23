@@ -1,6 +1,27 @@
 # Changelog
 
-## 0.2.0 - Release Candidate
+## 0.3.0 - Release Candidate
+
+- Extend NumberTicker to exact bigint and decimal-string values, configurable
+  compact units and promotion thresholds, scientific/engineering notation,
+  rounding and decimal precision, and icon-capable affixes.
+- Add InputNumber modifier-key steps and configurable press-and-hold repetition;
+  preserve readable incomplete native numeric drafts and pencil-rendered values.
+- Restore portal exit animations without losing scoped themes or nested focus;
+  add menu, accordion and tree feedback with reduced-motion support.
+- Allow Command to reuse its containing dialog surface without a duplicate frame.
+- Improve Sortable drag handles, VirtualList pencil framing and empty text,
+  and Radar table localization.
+- Document native password input and an accessible reveal action; clear detached
+  editable canvases when returning to masked input.
+- Expand localized examples, collapsible playground settings and bounded layout
+  transitions without per-frame pencil texture redraws.
+
+Publication remains a candidate until registry archive verification succeeds.
+Tree collapse remains immediate; real-device and full-catalog visual acceptance
+are not claimed. Existing rendering limits below continue to apply.
+
+## 0.2.0 - 2026-10-23
 
 - Add AudioPlayer, Carousel, ImageCropper and ImageViewer for media interfaces.
 - Add NodeGraph, Sortable, PanZoom, Resizable, DockablePanel, ScrollArea and

@@ -265,6 +265,8 @@ export function EditablePencilText({
     let glyphs = new BoundedCache<PencilTextSprite>(128, 4 * 1024 * 1024);
     let disposed = false;
     let lastAppearance = '';
+    const numericControl = control instanceof HTMLInputElement && control.type === 'number';
+    let nativeNumberEditing = false;
     const appearanceKey = () => {
       const style = getComputedStyle(control);
       return JSON.stringify([
@@ -281,6 +283,12 @@ export function EditablePencilText({
     };
     const paint = () => {
       if (disposed) return;
+      // Number inputs expose a sanitized value, not incomplete drafts such as "-" or "1.".
+      if (numericControl && (nativeNumberEditing || control.validity.badInput || composingRef.current)) {
+        root?.removeAttribute('data-pencil-editable-ready');
+        lastAppearance = '';
+        return;
+      }
       const key = appearanceKey();
       if (key === lastAppearance && root?.hasAttribute('data-pencil-editable-ready')) return;
       try {
@@ -297,7 +305,23 @@ export function EditablePencilText({
       }
     };
     scheduleRef.current = paint;
+    const beforeInput = (event: Event) => {
+      if (!numericControl || event.defaultPrevented) return;
+      nativeNumberEditing = true;
+      root?.setAttribute('data-pencil-number-editing', 'true');
+      paint();
+    };
+    const finishNumberEditing = () => {
+      if (!numericControl) return;
+      nativeNumberEditing = false;
+      root?.removeAttribute('data-pencil-number-editing');
+      paint();
+    };
     const startComposition = () => {
+      if (numericControl) {
+        nativeNumberEditing = true;
+        root?.setAttribute('data-pencil-number-editing', 'true');
+      }
       composingRef.current = {
         value: control.value,
         start: control.selectionStart ?? control.value.length,
@@ -320,6 +344,8 @@ export function EditablePencilText({
       if (disposed) return;
       composingRef.current = null;
       root?.removeAttribute('data-composing');
+      nativeNumberEditing = false;
+      root?.removeAttribute('data-pencil-number-editing');
       refreshFonts();
     });
     const form = control.form;
@@ -331,6 +357,8 @@ export function EditablePencilText({
     }
     const colorScheme = window.matchMedia('(prefers-color-scheme: dark)');
     colorScheme.addEventListener('change', paint);
+    control.addEventListener('beforeinput', beforeInput);
+    control.addEventListener('blur', finishNumberEditing);
     control.addEventListener('input', paint);
     control.addEventListener('scroll', paint, { passive: true });
     control.addEventListener('compositionstart', startComposition);
@@ -348,6 +376,8 @@ export function EditablePencilText({
       resize?.disconnect();
       appearance.disconnect();
       colorScheme.removeEventListener('change', paint);
+      control.removeEventListener('beforeinput', beforeInput);
+      control.removeEventListener('blur', finishNumberEditing);
       control.removeEventListener('input', paint);
       control.removeEventListener('scroll', paint);
       control.removeEventListener('compositionstart', startComposition);
@@ -357,9 +387,11 @@ export function EditablePencilText({
       document.fonts?.removeEventListener('loadingerror', refreshFonts);
       root?.removeAttribute('data-pencil-editable-ready');
       root?.removeAttribute('data-composing');
+      root?.removeAttribute('data-pencil-number-editing');
       composingRef.current = null;
       glyphs = new BoundedCache<PencilTextSprite>(0, 0);
       buffer.width = buffer.height = 0;
+      canvas.width = canvas.height = 0;
       scheduleRef.current = () => {};
     };
   }, [controlRef, multiline, seed]);

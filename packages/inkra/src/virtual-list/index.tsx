@@ -17,6 +17,7 @@ import {
 
 import { PencilSurface } from '../PencilSurface.js';
 import { PencilLine } from '../PencilLine.js';
+import { PencilText } from '../PencilText.js';
 import {
   clampVirtualListIndex,
   getVirtualListSsrIndexes,
@@ -249,7 +250,7 @@ function VirtualListInner<Item>(
       })}
     </ul>
     {items.length === 0 && <div className="inkra-virtual-list__empty" role="status">
-      {empty ?? emptyLabel}
+      {empty ?? <PencilText>{emptyLabel}</PencilText>}
     </div>}
   </>;
   const rootProps = {
@@ -266,8 +267,9 @@ function VirtualListInner<Item>(
 
   return externalScroll
     ? <div {...rootProps} ref={rootRef}>{content}</div>
-    : <PencilSurface {...rootProps} as="div" radius={8} ref={rootRef} seed="virtual-list" variant="paper">
-      {content}
+    : <PencilSurface as="div" className="inkra-virtual-list__frame" radius={8} seed="virtual-list" variant="paper">
+      <div {...rootProps} ref={rootRef}>{content}</div>
+      <PencilSurface aria-hidden="true" as="span" className="inkra-virtual-list__focus" radius={8} seed="virtual-list-focus" variant="outline" />
     </PencilSurface>;
 }
 

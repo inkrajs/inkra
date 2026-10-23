@@ -8,9 +8,12 @@ import { PencilLine } from '../PencilLine.js';
 function classes(base: string, extra?: string) { return [base, extra].filter(Boolean).join(' '); }
 function copy(value: ReactNode) { return typeof value === 'string' ? <PencilText>{value}</PencilText> : value; }
 
-export type CommandRootProps = Omit<ComponentPropsWithoutRef<typeof Primitive>, 'asChild'>;
+export type CommandRootProps = Omit<ComponentPropsWithoutRef<typeof Primitive>, 'asChild'> & {
+  /** Disable when a parent dialog already supplies the paper and outline. */
+  surface?: boolean;
+};
 const Root = forwardRef<HTMLDivElement, CommandRootProps>(function Root({
-  className, children, loop = true, onKeyDown, onCompositionStartCapture, onCompositionEndCapture, ...props
+  className, children, loop = true, surface = true, onKeyDown, onCompositionStartCapture, onCompositionEndCapture, ...props
 }, ref) {
   const composing = useRef(false);
   return <Primitive {...props} ref={ref} loop={loop} className={classes('inkra-command', className)}
@@ -21,7 +24,7 @@ const Root = forwardRef<HTMLDivElement, CommandRootProps>(function Root({
       if (event.key === 'Enter' && (composing.current || event.nativeEvent.isComposing || event.keyCode === 229)) event.preventDefault();
       onKeyDown?.(event);
     }}>
-    <PencilSurface variant="paper" radius={8} className="inkra-command__paper">{children}</PencilSurface>
+    {surface ? <PencilSurface variant="paper" radius={8} className="inkra-command__paper">{children}</PencilSurface> : children}
   </Primitive>;
 });
 

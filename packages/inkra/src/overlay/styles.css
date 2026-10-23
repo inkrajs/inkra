@@ -4,7 +4,7 @@
 }
 
 .inkra-overlay__backdrop {
-  animation: inkra-overlay-backdrop-in var(--inkra-motion-normal) var(--inkra-ease);
+  animation: inkra-overlay-backdrop-in var(--inkra-motion-normal) var(--inkra-ease) both;
   background: var(--inkra-overlay);
   inset: 0;
   position: fixed;
@@ -12,11 +12,11 @@
 }
 
 .inkra-overlay__backdrop[data-state="closed"] {
-  animation: inkra-overlay-backdrop-out var(--inkra-motion-normal) var(--inkra-ease);
+  animation: inkra-overlay-backdrop-out var(--inkra-motion-normal) var(--inkra-ease) both;
 }
 
 .inkra-overlay__content {
-  animation: inkra-overlay-content-in var(--inkra-motion-normal) var(--inkra-ease);
+  animation: inkra-overlay-content-in var(--inkra-motion-normal) var(--inkra-ease) both;
   inset-block-start: 50%;
   inset-inline-start: 50%;
   max-height: min(80vh, calc(100dvh - var(--inkra-space-8)));
@@ -28,7 +28,8 @@
 }
 
 .inkra-overlay__content[data-state="closed"] {
-  animation: inkra-overlay-content-out var(--inkra-motion-normal) var(--inkra-ease);
+  animation: inkra-overlay-content-out var(--inkra-motion-normal) var(--inkra-ease) both;
+  pointer-events: none;
 }
 
 .inkra-overlay__content:focus-visible,
@@ -126,7 +127,7 @@
 }
 
 .inkra-popover__content {
-  animation: inkra-popover-content-in var(--inkra-motion-normal) var(--inkra-ease);
+  animation: inkra-popover-content-in var(--inkra-motion-normal) var(--inkra-ease) both;
   max-height: min(70vh, var(--radix-popover-content-available-height, 70vh));
   max-width: min(24rem, calc(100vw - var(--inkra-space-8)));
   outline: 0;
@@ -136,7 +137,8 @@
 }
 
 .inkra-popover__content[data-state="closed"] {
-  animation: inkra-popover-content-out var(--inkra-motion-normal) var(--inkra-ease);
+  animation: inkra-popover-content-out var(--inkra-motion-normal) var(--inkra-ease) both;
+  pointer-events: none;
 }
 
 .inkra-popover__surface {
@@ -232,7 +234,7 @@
   .inkra-overlay__backdrop,
   .inkra-overlay__content,
   .inkra-popover__content {
-    animation: none;
+    animation: none !important;
   }
 }
 
@@ -264,7 +266,7 @@
 
   .inkra-overlay__content,
   .inkra-popover__content {
-    animation: none;
+    animation: none !important;
     max-height: none;
     max-width: none;
     position: static;
