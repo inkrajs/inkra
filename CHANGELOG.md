@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.0 - Release Candidate
+## 0.3.0 - 2026-10-23
 
 - Extend NumberTicker to exact bigint and decimal-string values, configurable
   compact units and promotion thresholds, scientific/engineering notation,
@@ -17,7 +17,9 @@
 - Expand localized examples, collapsible playground settings and bounded layout
   transitions without per-frame pencil texture redraws.
 
-Publication remains a candidate until registry archive verification succeeds.
+Published as `@inkra/react@0.3.0` with the `latest` npm dist-tag and
+the `react-v0.3.0` GitHub Release. The public archive matches the approved
+candidate; clean registry installations passed with React 18 and 19.
 Tree collapse remains immediate; real-device and full-catalog visual acceptance
 are not claimed. Existing rendering limits below continue to apply.
 
@@ -59,7 +61,7 @@ Publication is confirmed only by the matching npm version and GitHub Release.
   Inkra service. Drawer swipe gestures, Tree drag/drop and DataTable
   virtualization/server transport are outside this increment.
 
-These additions are included in the 0.2.0 candidate alongside the new components.
+These additions are included in the 0.2.0 release alongside the new components.
 
 ## 0.1.0 - 2026-10-22
 

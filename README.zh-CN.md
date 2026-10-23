@@ -70,7 +70,7 @@ Inkra 提供 ESM、TypeScript 声明和 CSS，React 与 React DOM 作为 peer de
 
 ## 找到你需要的组件
 
-已发布的 **0.2.0** 包包含以下基础组件：
+已发布的 **0.3.0** 包包含以下基础组件：
 
 | 用途 | 组件 |
 | --- | --- |
@@ -85,7 +85,10 @@ Inkra 提供 ESM、TypeScript 声明和 CSS，React 与 React DOM 作为 peer de
 **0.2.0 新增：** 扩展表单、弹层和布局组件，新增 AudioPlayer、Carousel、ImageViewer、
 ImageCropper 等媒体组件，NodeGraph、Sortable、PanZoom 等交互组件，以及 Log、Radar、
 Heatmap、Sparkline、VirtualList 等数据展示组件，并支持环形 Progress。
-0.2.0 已发布到 npm，并通过 React 18 和 19 的安装验证，详见[版本发布](https://github.com/inkrajs/inkra/releases)。
+
+**0.3.0 新增：** NumberTicker 精确支持 bigint 与数字字符串，可配置单位换算和舍入；
+InputNumber 支持组合键步进与长按连续调整，并改进弹层动画、密码示例、多语言和可折叠属性面板。
+0.3.0 已发布到 npm，并通过 React 18 和 19 的安装验证，详见[版本发布](https://github.com/inkrajs/inkra/releases)。
 完整范围与已知限制见[更新日志](./CHANGELOG.md)和[组件 API](./packages/inkra/README.md)。
 
 ## 一起开发 Inkra

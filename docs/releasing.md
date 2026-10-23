@@ -1,7 +1,7 @@
 # React Package Releases
 
 Repository: inkrajs/inkra. Package: @inkra/react. First release: 0.1.0.
-Version 0.2.0 is published and registry-verified. Future source versions remain
+Version 0.3.0 is published and registry-verified. Future source versions remain
 candidates until their own registry verification passes.
 Website deployment does not publish an npm package.
 
@@ -28,6 +28,20 @@ validated the trusted publisher through a successful OIDC publication.
 - npm initially reported that the package was still processing. The first registry
   verification exhausted its one-minute availability window; only the failed verification
   jobs were rerun after the public package became available. No duplicate publication occurred.
+
+## Version 0.3.0 Record
+
+- Source/tag: ae2a38f146e657773b00765128c2a1e478582a02 / react-v0.3.0.
+- Release run: 39945191730, successful on 2026-10-23 without manual environment approval.
+- Validation docs: b950d0eb6ee06d135857ae2b55189692948c1102.
+- OIDC publication, public archive comparison and clean React 18/19 installations passed.
+- GitHub Release was created only after registry verification succeeded.
+- Public archive SHA-256:
+  d244164ba3d5317ebbdc43112cd8cf2288a96a421da3417f6b9914ea08fca732.
+- Registry docs consumer: cebdf3ad6581209add9ce1d965e266cf329f84b4.
+- Earlier run 39944246310 stopped at a Tree browser measurement during entrance
+  motion, before publication. The docs test was corrected to measure after the
+  animation; no component assertion was removed and the source tag was unchanged.
 
 ## Pipeline
 

@@ -77,7 +77,7 @@ package and the main branch may contain different features.*
 
 ## Find Your Components
 
-The published **0.2.0** package includes these core components:
+The published **0.3.0** package includes these core components:
 
 | Use | Components |
 | --- | --- |
@@ -92,8 +92,13 @@ The published **0.2.0** package includes these core components:
 **New in 0.2.0:** richer forms and overlays, layout primitives, media
 controls (AudioPlayer, Carousel, ImageViewer, ImageCropper), graph and canvas
 interactions (NodeGraph, Sortable, PanZoom), data views (Log, Radar, Heatmap,
-Sparkline, VirtualList) and circular Progress. Version 0.2.0 is published on npm
-and verified with React 18 and 19. See [Releases](https://github.com/inkrajs/inkra/releases),
+Sparkline, VirtualList) and circular Progress.
+
+**New in 0.3.0:** exact bigint and decimal-string NumberTicker values, configurable
+units and rounding, InputNumber modifier steps and hold repetition, popup motion,
+password examples and localized, collapsible playground settings. Version 0.3.0
+is published on npm and verified with React 18 and 19.
+See [Releases](https://github.com/inkrajs/inkra/releases),
 the [changelog](./CHANGELOG.md) and
 [package API](./packages/inkra/README.md) for the full scope and known limits.
 
