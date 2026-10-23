@@ -5,6 +5,7 @@ import {
   useEffect,
   useId,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -119,7 +120,7 @@ export const RadioGroup = forwardRef<HTMLFieldSetElement, RadioGroupProps>(funct
     return () => ownerForm.removeEventListener('reset', handleReset);
   }, [controlled]);
 
-  const context: RadioGroupContextValue = {
+  const context = useMemo<RadioGroupContextValue>(() => ({
     controlled,
     defaultValue: initialDefaultValueRef.current,
     disabled,
@@ -133,7 +134,7 @@ export const RadioGroup = forwardRef<HTMLFieldSetElement, RadioGroupProps>(funct
     required,
     variant,
     value: currentValue,
-  };
+  }), [controlled, disabled, form, name, onValueChange, required, variant, currentValue]);
 
   return (
     <RadioGroupContext.Provider value={context}>

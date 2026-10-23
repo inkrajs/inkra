@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useId, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, memo, useCallback, useEffect, useId, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import type { MouseEvent, ReactNode } from 'react';
 
 import { Button } from '../Button.js';
@@ -38,6 +38,10 @@ const pad = (value: number) => {
   return `${whole.padStart(2, '0')}${fraction ? `.${fraction}` : ''}`;
 };
 const times = (length: number, start = 0) => Array.from({ length }, (_, index) => index + start);
+const hourOptions24 = times(24);
+const hourOptions12 = times(12, 1);
+const minuteSecondOptions = times(60);
+const periodOptions = [0, 1];
 
 function partsOf(value: string): [number, number, number] | undefined {
   if (!/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d{1,3})?)?$/.test(value)) return undefined;
@@ -45,7 +49,7 @@ function partsOf(value: string): [number, number, number] | undefined {
   return [hour, minute, second];
 }
 
-function TimeColumn({ name, label, value, options, onChange, format = pad }: {
+const TimeColumn = memo(function TimeColumn({ name, label, value, options, onChange, format = pad }: {
   name: string;
   label: string;
   value: number;
@@ -58,7 +62,7 @@ function TimeColumn({ name, label, value, options, onChange, format = pad }: {
     onValueChange={next => onChange(Number(next))}>
     {options.map(option => <RadioGroupItem key={option} value={String(option)} label={format(option)} />)}
   </RadioGroup>;
-}
+});
 
 export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function TimePicker(allProps, forwardedRef) {
   const {
@@ -80,6 +84,8 @@ export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function
   const [internalValue, setInternalValue] = useState(() => String(defaultValue ?? ''));
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState('00:00');
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
   const [draftValid, setDraftValid] = useState(true);
   const [constraintInvalid, setConstraintInvalid] = useState(false);
   useImperativeHandle(forwardedRef, () => inputRef.current as HTMLInputElement);
@@ -99,17 +105,19 @@ export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function
     : { title: 'Choose time', hour: 'Hour', minute: 'Minute', second: 'Second', period: 'Period', am: 'AM', pm: 'PM',
       done: 'Apply', cancel: 'Cancel', clear: 'Clear time', invalid: 'Choose a time within the allowed range and step.' };
   const currentParts = partsOf(currentValue);
-  const displayValue = currentParts
-    ? new Intl.DateTimeFormat(resolvedLocale, {
+  const hasCurrentParts = currentParts !== undefined;
+  const formatter = useMemo(() => hasCurrentParts ? new Intl.DateTimeFormat(resolvedLocale, {
       hour: '2-digit', minute: '2-digit', ...(secondsVisible ? { second: '2-digit' } : {}),
       hourCycle: hourCycle === 'h12' ? 'h12' : 'h23',
-    }).format(new Date(2000, 0, 1, ...currentParts))
+    }) : null, [resolvedLocale, secondsVisible, hourCycle, hasCurrentParts]);
+  const displayValue = currentParts
+    ? formatter!.format(new Date(2000, 0, 1, ...currentParts))
     : placeholder ?? copy.title;
   const canClear = clearable && Boolean(currentValue) && !state.disabled && !state.readOnly;
   const valueId = field ? `${state.id}-value` : undefined;
   const [hour, minute, second] = partsOf(draft) ?? [0, 0, 0];
 
-  const validDraft = (candidate = draft) => {
+  const validDraft = useCallback((candidate = draftRef.current) => {
     // Native validation owns overnight ranges, fractional steps and step bases.
     const input = document.createElement('input');
     input.type = 'time';
@@ -120,7 +128,7 @@ export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function
     input.required = true;
     input.value = candidate;
     return input.validity.valid;
-  };
+  }, [min, max, resolvedStep, stepBase]);
   const updateOpen = (next: boolean) => {
     if (next && (state.disabled || state.readOnly)) return;
     if (next) {
@@ -131,13 +139,22 @@ export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function
     }
     setOpen(next);
   };
-  const updatePart = (part: number, next: number) => {
-    const values = [hour, minute, second];
+  const updatePart = useCallback((part: number, next: number) => {
+    const values = partsOf(draftRef.current) ?? [0, 0, 0];
     values[part] = next;
     const nextDraft = values.slice(0, secondsVisible ? 3 : 2).map(pad).join(':');
+    draftRef.current = nextDraft;
     setDraft(nextDraft);
     setDraftValid(validDraft(nextDraft));
-  };
+  }, [secondsVisible, validDraft]);
+  const period = hour >= 12 ? 1 : 0;
+  const hourWithinPeriod = hour % 12;
+  const changeHour = useCallback((next: number) => updatePart(0, hourCycle === 'h12' ? next % 12 + period * 12 : next),
+    [hourCycle, period, updatePart]);
+  const changeMinute = useCallback((next: number) => updatePart(1, next), [updatePart]);
+  const changeSecond = useCallback((next: number) => updatePart(2, next), [updatePart]);
+  const changePeriod = useCallback((next: number) => updatePart(0, hourWithinPeriod + next * 12), [hourWithinPeriod, updatePart]);
+  const formatPeriod = useCallback((next: number) => next ? copy.pm : copy.am, [copy.pm, copy.am]);
   const commit = (next: string, reason: 'input' | 'clear') => {
     if (!controlled) setInternalValue(next);
     setConstraintInvalid(false);
@@ -145,7 +162,7 @@ export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function
     setOpen(false);
   };
 
-  useEffect(() => { setDraftValid(validDraft()); }, [draft, min, max, resolvedStep, stepBase]);
+  useEffect(() => { setDraftValid(validDraft()); }, [draft, validDraft]);
   useBrowserLayoutEffect(() => {
     // React's controlled value attribute must not move the native step base on each edit.
     if (inputRef.current) inputRef.current.defaultValue = stepBase;
@@ -231,15 +248,15 @@ export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function
         <div className="inkra-time-picker__columns">
           <TimeColumn name={`${generatedId}-hour`} label={copy.hour}
             value={hourCycle === 'h12' ? hour % 12 || 12 : hour}
-            options={hourCycle === 'h12' ? times(12, 1) : times(24)}
-            onChange={next => updatePart(0, hourCycle === 'h12' ? next % 12 + (hour >= 12 ? 12 : 0) : next)} />
+            options={hourCycle === 'h12' ? hourOptions12 : hourOptions24}
+            onChange={changeHour} />
           <TimeColumn name={`${generatedId}-minute`} label={copy.minute} value={minute}
-            options={times(60)} onChange={next => updatePart(1, next)} />
+            options={minuteSecondOptions} onChange={changeMinute} />
           {secondsVisible && <TimeColumn name={`${generatedId}-second`} label={copy.second}
-            value={Math.floor(second)} options={times(60)} onChange={next => updatePart(2, next)} />}
+            value={Math.floor(second)} options={minuteSecondOptions} onChange={changeSecond} />}
           {hourCycle === 'h12' && <TimeColumn name={`${generatedId}-period`} label={copy.period}
-            value={hour >= 12 ? 1 : 0} options={[0, 1]} format={next => next ? copy.pm : copy.am}
-            onChange={next => updatePart(0, hour % 12 + next * 12)} />}
+            value={period} options={periodOptions} format={formatPeriod}
+            onChange={changePeriod} />}
         </div>
         {!draftValid && <PencilText as="p" className="inkra-time-picker__error" role="status">{copy.invalid}</PencilText>}
         <PencilLine />

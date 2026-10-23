@@ -1,7 +1,10 @@
 import {
   forwardRef,
+  memo,
+  useCallback,
   useEffect,
   useId,
+  useMemo,
   useRef,
   useState,
   type DragEvent,
@@ -133,6 +136,33 @@ function statusLabel(status: UploadStatus, labels: UploadLabels): string {
   return labels[status];
 }
 
+const UploadRow = memo(function UploadRow({ item, labels, disabled, canUpload, startUpload, cancel, remove }: {
+  item: UploadItem;
+  labels: UploadLabels;
+  disabled: boolean;
+  canUpload: boolean;
+  startUpload: (id: string, reason?: 'upload-start' | 'retry') => void;
+  cancel: (id: string) => void;
+  remove: (id: string) => void;
+}) {
+  return <li className="inkra-upload__item" data-status={item.status}>
+    <PencilSurface className="inkra-upload__item-surface" variant="paper" radius={8}>
+      <div className="inkra-upload__file">
+        <span className="inkra-upload__name">{item.file.name}</span>
+        <span className="inkra-upload__meta">{formatBytes(item.file.size)} · {statusLabel(item.status, labels)}</span>
+        {item.status === 'uploading' && <Progress size="sm" value={item.progress ?? 0} aria-label={`${item.file.name}: ${Math.round(item.progress ?? 0)}%`} />}
+        {item.error && <span className="inkra-upload__error">{item.error}</span>}
+      </div>
+      <div className="inkra-upload__actions">
+        {item.status === 'uploading' && <Button disabled={disabled} size="sm" variant="ghost" onClick={() => cancel(item.id)}>{labels.cancel}</Button>}
+        {canUpload && item.status === 'selected' && <Button disabled={disabled} size="sm" variant="ghost" onClick={() => startUpload(item.id)}>{labels.upload}</Button>}
+        {canUpload && (item.status === 'error' || item.status === 'cancelled') && <Button disabled={disabled} size="sm" variant="ghost" onClick={() => startUpload(item.id, 'retry')}>{labels.retry}</Button>}
+        <Button disabled={disabled} size="sm" variant="ghost" onClick={() => remove(item.id)}>{labels.remove}</Button>
+      </div>
+    </PencilSurface>
+  </li>;
+});
+
 export const Upload = forwardRef<HTMLDivElement, UploadProps>(function Upload(
   {
     accept,
@@ -169,7 +199,7 @@ export const Upload = forwardRef<HTMLDivElement, UploadProps>(function Upload(
   const itemsRef = useRef(items);
   itemsRef.current = items;
   disabledRef.current = disabled;
-  const labels = { ...defaultLabels, ...labelOverrides };
+  const labels = useMemo(() => ({ ...defaultLabels, ...labelOverrides }), [labelOverrides]);
   const commitRef = useRef<(next: readonly UploadItem[], details: UploadChangeDetails) => void>(() => {});
 
   const commit = (next: readonly UploadItem[], details: UploadChangeDetails) => {
@@ -181,16 +211,16 @@ export const Upload = forwardRef<HTMLDivElement, UploadProps>(function Upload(
   };
   commitRef.current = commit;
 
-  const updateItem = (id: string, update: (item: UploadItem) => UploadItem, details: UploadChangeDetails) => {
+  const updateItem = useCallback((id: string, update: (item: UploadItem) => UploadItem, details: UploadChangeDetails) => {
     const current = itemsRef.current;
     const index = current.findIndex(item => item.id === id);
     if (index < 0) return;
     const next = [...current];
     next[index] = update(current[index]);
     commitRef.current(next, { ...details, item: next[index] });
-  };
+  }, []);
 
-  const startUpload = (id: string, reason: 'upload-start' | 'retry' = 'upload-start') => {
+  const startUpload = useCallback((id: string, reason: 'upload-start' | 'retry' = 'upload-start') => {
     const item = itemsRef.current.find(candidate => candidate.id === id);
     if (!item || !onUpload || disabledRef.current) return;
     controllers.current.get(id)?.controller.abort();
@@ -220,7 +250,7 @@ export const Upload = forwardRef<HTMLDivElement, UploadProps>(function Upload(
       controllers.current.delete(id);
       updateItem(id, current => ({ ...current, status: 'error', progress: undefined, error: asErrorMessage(error, labels.error) }), { reason: 'upload-error' });
     });
-  };
+  }, [onUpload, labels.error, updateItem]);
 
   const addFiles = (incoming: readonly File[]) => {
     if (disabled || incoming.length === 0) return;
@@ -268,20 +298,20 @@ export const Upload = forwardRef<HTMLDivElement, UploadProps>(function Upload(
     });
   };
 
-  const remove = (id: string) => {
-    if (disabled) return;
+  const remove = useCallback((id: string) => {
+    if (disabledRef.current) return;
     controllers.current.get(id)?.controller.abort();
     controllers.current.delete(id);
     const item = itemsRef.current.find(candidate => candidate.id === id);
     commitRef.current(itemsRef.current.filter(candidate => candidate.id !== id), { reason: 'remove', item });
-  };
+  }, []);
 
-  const cancel = (id: string) => {
-    if (disabled) return;
+  const cancel = useCallback((id: string) => {
+    if (disabledRef.current) return;
     controllers.current.get(id)?.controller.abort();
     controllers.current.delete(id);
     updateItem(id, item => ({ ...item, status: 'cancelled', progress: undefined, error: undefined }), { reason: 'cancel' });
-  };
+  }, [updateItem]);
 
   useEffect(() => {
     mounted.current = true;
@@ -357,22 +387,8 @@ export const Upload = forwardRef<HTMLDivElement, UploadProps>(function Upload(
     </div>}
 
     {items.length > 0 && <ul className="inkra-upload__list" aria-live="polite">
-      {items.map(item => <li key={item.id} className="inkra-upload__item" data-status={item.status}>
-        <PencilSurface className="inkra-upload__item-surface" variant="paper" radius={8}>
-          <div className="inkra-upload__file">
-            <span className="inkra-upload__name">{item.file.name}</span>
-            <span className="inkra-upload__meta">{formatBytes(item.file.size)} · {statusLabel(item.status, labels)}</span>
-            {item.status === 'uploading' && <Progress size="sm" value={item.progress ?? 0} aria-label={`${item.file.name}: ${Math.round(item.progress ?? 0)}%`} />}
-            {item.error && <span className="inkra-upload__error">{item.error}</span>}
-          </div>
-          <div className="inkra-upload__actions">
-            {item.status === 'uploading' && <Button disabled={disabled} size="sm" variant="ghost" onClick={() => cancel(item.id)}>{labels.cancel}</Button>}
-            {onUpload && item.status === 'selected' && <Button disabled={disabled} size="sm" variant="ghost" onClick={() => startUpload(item.id)}>{labels.upload}</Button>}
-            {onUpload && (item.status === 'error' || item.status === 'cancelled') && <Button disabled={disabled} size="sm" variant="ghost" onClick={() => startUpload(item.id, 'retry')}>{labels.retry}</Button>}
-            <Button disabled={disabled} size="sm" variant="ghost" onClick={() => remove(item.id)}>{labels.remove}</Button>
-          </div>
-        </PencilSurface>
-      </li>)}
+      {items.map(item => <UploadRow key={item.id} item={item} labels={labels} disabled={disabled}
+        canUpload={Boolean(onUpload)} startUpload={startUpload} cancel={cancel} remove={remove} />)}
     </ul>}
   </div>;
 });
