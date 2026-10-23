@@ -1,0 +1,2668 @@
+{
+  "baseline": "7bd08e47b05c9d61a226bbbfd3d5d620ce93962a",
+  "scope": "All 123 assigned public React component identities, plus shared rendering and public helper functions.",
+  "methodology": "Read every listed implementation and effect/state/resource path; inspect bounds, identity dependencies, loops and cleanup; run existing contracts plus new focused runtime regressions and replay regressions on the baseline.",
+  "components": [
+    {
+      "component": "Accordion.Content",
+      "aliases": [
+        "Accordion.Content",
+        "AccordionContent"
+      ],
+      "source": "packages/inkra/src/accordion/Accordion.tsx",
+      "module": "accordion",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Orientation context is primitive; headers/items/content forward Radix behavior and refs. Decoration uses bounded shared painters; no owned global listeners or unbounded derived algorithm."
+      ],
+      "verification": [
+        "packages/inkra/test/accordion.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Accordion.Header",
+      "aliases": [
+        "Accordion.Header",
+        "AccordionHeader"
+      ],
+      "source": "packages/inkra/src/accordion/Accordion.tsx",
+      "module": "accordion",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Orientation context is primitive; headers/items/content forward Radix behavior and refs. Decoration uses bounded shared painters; no owned global listeners or unbounded derived algorithm."
+      ],
+      "verification": [
+        "packages/inkra/test/accordion.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Accordion.Item",
+      "aliases": [
+        "Accordion.Item",
+        "AccordionItem"
+      ],
+      "source": "packages/inkra/src/accordion/Accordion.tsx",
+      "module": "accordion",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Orientation context is primitive; headers/items/content forward Radix behavior and refs. Decoration uses bounded shared painters; no owned global listeners or unbounded derived algorithm."
+      ],
+      "verification": [
+        "packages/inkra/test/accordion.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Accordion.Root",
+      "aliases": [
+        "Accordion.Root",
+        "AccordionRoot"
+      ],
+      "source": "packages/inkra/src/accordion/Accordion.tsx",
+      "module": "accordion",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Orientation context is primitive; headers/items/content forward Radix behavior and refs. Decoration uses bounded shared painters; no owned global listeners or unbounded derived algorithm."
+      ],
+      "verification": [
+        "packages/inkra/test/accordion.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Accordion.Trigger",
+      "aliases": [
+        "Accordion.Trigger",
+        "AccordionTrigger"
+      ],
+      "source": "packages/inkra/src/accordion/Accordion.tsx",
+      "module": "accordion",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Orientation context is primitive; headers/items/content forward Radix behavior and refs. Decoration uses bounded shared painters; no owned global listeners or unbounded derived algorithm."
+      ],
+      "verification": [
+        "packages/inkra/test/accordion.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "AlertDialog.Action",
+      "aliases": [
+        "AlertDialog.Action",
+        "AlertDialogAction"
+      ],
+      "source": "packages/inkra/src/alert-dialog/index.tsx",
+      "module": "alert-dialog",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Pending guards, cancel ref, focus microtask and Radix dialog forwarding reviewed. Constant-size context object is recreated on parent render, but no demonstrated expensive work or cycle warrants semantic/focus changes."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/expansion-overlays.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "AlertDialog.Backdrop",
+      "aliases": [
+        "AlertDialog.Backdrop",
+        "AlertDialogBackdrop"
+      ],
+      "source": "packages/inkra/src/alert-dialog/index.tsx",
+      "module": "alert-dialog",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Pending guards, cancel ref, focus microtask and Radix dialog forwarding reviewed. Constant-size context object is recreated on parent render, but no demonstrated expensive work or cycle warrants semantic/focus changes."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/expansion-overlays.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "AlertDialog.Body",
+      "aliases": [
+        "AlertDialog.Body",
+        "AlertDialogBody"
+      ],
+      "source": "packages/inkra/src/alert-dialog/index.tsx",
+      "module": "alert-dialog",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Pending guards, cancel ref, focus microtask and Radix dialog forwarding reviewed. Constant-size context object is recreated on parent render, but no demonstrated expensive work or cycle warrants semantic/focus changes."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/expansion-overlays.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "AlertDialog.Cancel",
+      "aliases": [
+        "AlertDialog.Cancel",
+        "AlertDialogCancel"
+      ],
+      "source": "packages/inkra/src/alert-dialog/index.tsx",
+      "module": "alert-dialog",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Pending guards, cancel ref, focus microtask and Radix dialog forwarding reviewed. Constant-size context object is recreated on parent render, but no demonstrated expensive work or cycle warrants semantic/focus changes."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/expansion-overlays.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "AlertDialog.Content",
+      "aliases": [
+        "AlertDialog.Content",
+        "AlertDialogContent"
+      ],
+      "source": "packages/inkra/src/alert-dialog/index.tsx",
+      "module": "alert-dialog",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Pending guards, cancel ref, focus microtask and Radix dialog forwarding reviewed. Constant-size context object is recreated on parent render, but no demonstrated expensive work or cycle warrants semantic/focus changes."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/expansion-overlays.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "AlertDialog.Description",
+      "aliases": [
+        "AlertDialog.Description",
+        "AlertDialogDescription"
+      ],
+      "source": "packages/inkra/src/alert-dialog/index.tsx",
+      "module": "alert-dialog",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Pending guards, cancel ref, focus microtask and Radix dialog forwarding reviewed. Constant-size context object is recreated on parent render, but no demonstrated expensive work or cycle warrants semantic/focus changes."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/expansion-overlays.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "AlertDialog.Footer",
+      "aliases": [
+        "AlertDialog.Footer",
+        "AlertDialogFooter"
+      ],
+      "source": "packages/inkra/src/alert-dialog/index.tsx",
+      "module": "alert-dialog",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Pending guards, cancel ref, focus microtask and Radix dialog forwarding reviewed. Constant-size context object is recreated on parent render, but no demonstrated expensive work or cycle warrants semantic/focus changes."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/expansion-overlays.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "AlertDialog.Header",
+      "aliases": [
+        "AlertDialog.Header",
+        "AlertDialogHeader"
+      ],
+      "source": "packages/inkra/src/alert-dialog/index.tsx",
+      "module": "alert-dialog",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Pending guards, cancel ref, focus microtask and Radix dialog forwarding reviewed. Constant-size context object is recreated on parent render, but no demonstrated expensive work or cycle warrants semantic/focus changes."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/expansion-overlays.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "AlertDialog.Portal",
+      "aliases": [
+        "AlertDialog.Portal",
+        "AlertDialogPortal"
+      ],
+      "source": "packages/inkra/src/alert-dialog/index.tsx",
+      "module": "alert-dialog",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Pending guards, cancel ref, focus microtask and Radix dialog forwarding reviewed. Constant-size context object is recreated on parent render, but no demonstrated expensive work or cycle warrants semantic/focus changes."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/expansion-overlays.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "AlertDialog.Root",
+      "aliases": [
+        "AlertDialog.Root",
+        "AlertDialogRoot"
+      ],
+      "source": "packages/inkra/src/alert-dialog/index.tsx",
+      "module": "alert-dialog",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Pending guards, cancel ref, focus microtask and Radix dialog forwarding reviewed. Constant-size context object is recreated on parent render, but no demonstrated expensive work or cycle warrants semantic/focus changes."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/expansion-overlays.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "AlertDialog.Title",
+      "aliases": [
+        "AlertDialog.Title",
+        "AlertDialogTitle"
+      ],
+      "source": "packages/inkra/src/alert-dialog/index.tsx",
+      "module": "alert-dialog",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Pending guards, cancel ref, focus microtask and Radix dialog forwarding reviewed. Constant-size context object is recreated on parent render, but no demonstrated expensive work or cycle warrants semantic/focus changes."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/expansion-overlays.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "AlertDialog.Trigger",
+      "aliases": [
+        "AlertDialog.Trigger",
+        "AlertDialogTrigger"
+      ],
+      "source": "packages/inkra/src/alert-dialog/index.tsx",
+      "module": "alert-dialog",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Pending guards, cancel ref, focus microtask and Radix dialog forwarding reviewed. Constant-size context object is recreated on parent render, but no demonstrated expensive work or cycle warrants semantic/focus changes."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/expansion-overlays.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Breadcrumb.Item",
+      "aliases": [
+        "Breadcrumb.Item"
+      ],
+      "source": "packages/inkra/src/breadcrumb/index.tsx",
+      "module": "breadcrumb",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Semantic nav/list/link/page wrappers perform constant local work; no state, collection-wide scans or owned resources."
+      ],
+      "verification": [
+        "packages/inkra/test/breadcrumb.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Breadcrumb.Link",
+      "aliases": [
+        "Breadcrumb.Link"
+      ],
+      "source": "packages/inkra/src/breadcrumb/index.tsx",
+      "module": "breadcrumb",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Semantic nav/list/link/page wrappers perform constant local work; no state, collection-wide scans or owned resources."
+      ],
+      "verification": [
+        "packages/inkra/test/breadcrumb.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Breadcrumb.List",
+      "aliases": [
+        "Breadcrumb.List"
+      ],
+      "source": "packages/inkra/src/breadcrumb/index.tsx",
+      "module": "breadcrumb",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Semantic nav/list/link/page wrappers perform constant local work; no state, collection-wide scans or owned resources."
+      ],
+      "verification": [
+        "packages/inkra/test/breadcrumb.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Breadcrumb.Page",
+      "aliases": [
+        "Breadcrumb.Page"
+      ],
+      "source": "packages/inkra/src/breadcrumb/index.tsx",
+      "module": "breadcrumb",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Semantic nav/list/link/page wrappers perform constant local work; no state, collection-wide scans or owned resources."
+      ],
+      "verification": [
+        "packages/inkra/test/breadcrumb.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Breadcrumb.Root",
+      "aliases": [
+        "Breadcrumb.Root"
+      ],
+      "source": "packages/inkra/src/breadcrumb/index.tsx",
+      "module": "breadcrumb",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Semantic nav/list/link/page wrappers perform constant local work; no state, collection-wide scans or owned resources."
+      ],
+      "verification": [
+        "packages/inkra/test/breadcrumb.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Breadcrumb.Separator",
+      "aliases": [
+        "Breadcrumb.Separator"
+      ],
+      "source": "packages/inkra/src/breadcrumb/index.tsx",
+      "module": "breadcrumb",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Semantic nav/list/link/page wrappers perform constant local work; no state, collection-wide scans or owned resources."
+      ],
+      "verification": [
+        "packages/inkra/test/breadcrumb.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "ContextMenu.CheckboxItem",
+      "aliases": [
+        "ContextMenu.CheckboxItem",
+        "ContextMenuCheckboxItem",
+        "DropdownMenu.CheckboxItem"
+      ],
+      "source": "packages/inkra/src/context-menu/index.tsx",
+      "module": "context-menu",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Context memoization, long-press timer cancellation, exclusion checks and keyboard/native-menu guards reviewed; menu items are aliases of DropdownMenu primitives, not duplicate implementations."
+      ],
+      "verification": [
+        "packages/inkra/test/context-menu.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "ContextMenu.Content",
+      "aliases": [
+        "ContextMenu.Content",
+        "ContextMenuContent"
+      ],
+      "source": "packages/inkra/src/context-menu/index.tsx",
+      "module": "context-menu",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Context memoization, long-press timer cancellation, exclusion checks and keyboard/native-menu guards reviewed; menu items are aliases of DropdownMenu primitives, not duplicate implementations."
+      ],
+      "verification": [
+        "packages/inkra/test/context-menu.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "ContextMenu.Group",
+      "aliases": [
+        "ContextMenu.Group",
+        "ContextMenuGroup",
+        "DropdownMenu.Group"
+      ],
+      "source": "packages/inkra/src/context-menu/index.tsx",
+      "module": "context-menu",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Context memoization, long-press timer cancellation, exclusion checks and keyboard/native-menu guards reviewed; menu items are aliases of DropdownMenu primitives, not duplicate implementations."
+      ],
+      "verification": [
+        "packages/inkra/test/context-menu.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "ContextMenu.Item",
+      "aliases": [
+        "ContextMenu.Item",
+        "ContextMenuItem",
+        "DropdownMenu.Item"
+      ],
+      "source": "packages/inkra/src/context-menu/index.tsx",
+      "module": "context-menu",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Context memoization, long-press timer cancellation, exclusion checks and keyboard/native-menu guards reviewed; menu items are aliases of DropdownMenu primitives, not duplicate implementations."
+      ],
+      "verification": [
+        "packages/inkra/test/context-menu.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "ContextMenu.Label",
+      "aliases": [
+        "ContextMenu.Label",
+        "ContextMenuLabel",
+        "DropdownMenu.Label"
+      ],
+      "source": "packages/inkra/src/context-menu/index.tsx",
+      "module": "context-menu",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Context memoization, long-press timer cancellation, exclusion checks and keyboard/native-menu guards reviewed; menu items are aliases of DropdownMenu primitives, not duplicate implementations."
+      ],
+      "verification": [
+        "packages/inkra/test/context-menu.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "ContextMenu.Portal",
+      "aliases": [
+        "ContextMenu.Portal",
+        "ContextMenuPortal",
+        "DropdownMenu.Portal"
+      ],
+      "source": "packages/inkra/src/context-menu/index.tsx",
+      "module": "context-menu",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Context memoization, long-press timer cancellation, exclusion checks and keyboard/native-menu guards reviewed; menu items are aliases of DropdownMenu primitives, not duplicate implementations."
+      ],
+      "verification": [
+        "packages/inkra/test/context-menu.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "ContextMenu.RadioGroup",
+      "aliases": [
+        "ContextMenu.RadioGroup",
+        "ContextMenuRadioGroup",
+        "DropdownMenu.RadioGroup"
+      ],
+      "source": "packages/inkra/src/context-menu/index.tsx",
+      "module": "context-menu",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Context memoization, long-press timer cancellation, exclusion checks and keyboard/native-menu guards reviewed; menu items are aliases of DropdownMenu primitives, not duplicate implementations."
+      ],
+      "verification": [
+        "packages/inkra/test/context-menu.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "ContextMenu.RadioItem",
+      "aliases": [
+        "ContextMenu.RadioItem",
+        "ContextMenuRadioItem",
+        "DropdownMenu.RadioItem"
+      ],
+      "source": "packages/inkra/src/context-menu/index.tsx",
+      "module": "context-menu",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Context memoization, long-press timer cancellation, exclusion checks and keyboard/native-menu guards reviewed; menu items are aliases of DropdownMenu primitives, not duplicate implementations."
+      ],
+      "verification": [
+        "packages/inkra/test/context-menu.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "ContextMenu.Root",
+      "aliases": [
+        "ContextMenu.Root",
+        "ContextMenuRoot"
+      ],
+      "source": "packages/inkra/src/context-menu/index.tsx",
+      "module": "context-menu",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Context memoization, long-press timer cancellation, exclusion checks and keyboard/native-menu guards reviewed; menu items are aliases of DropdownMenu primitives, not duplicate implementations."
+      ],
+      "verification": [
+        "packages/inkra/test/context-menu.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "ContextMenu.Separator",
+      "aliases": [
+        "ContextMenu.Separator",
+        "ContextMenuSeparator",
+        "DropdownMenu.Separator"
+      ],
+      "source": "packages/inkra/src/context-menu/index.tsx",
+      "module": "context-menu",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Context memoization, long-press timer cancellation, exclusion checks and keyboard/native-menu guards reviewed; menu items are aliases of DropdownMenu primitives, not duplicate implementations."
+      ],
+      "verification": [
+        "packages/inkra/test/context-menu.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "ContextMenu.Sub",
+      "aliases": [
+        "ContextMenu.Sub",
+        "ContextMenuSub"
+      ],
+      "source": "packages/inkra/src/context-menu/index.tsx",
+      "module": "context-menu",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Context memoization, long-press timer cancellation, exclusion checks and keyboard/native-menu guards reviewed; menu items are aliases of DropdownMenu primitives, not duplicate implementations."
+      ],
+      "verification": [
+        "packages/inkra/test/context-menu.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "ContextMenu.SubContent",
+      "aliases": [
+        "ContextMenu.SubContent",
+        "ContextMenuSubContent"
+      ],
+      "source": "packages/inkra/src/context-menu/index.tsx",
+      "module": "context-menu",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Context memoization, long-press timer cancellation, exclusion checks and keyboard/native-menu guards reviewed; menu items are aliases of DropdownMenu primitives, not duplicate implementations."
+      ],
+      "verification": [
+        "packages/inkra/test/context-menu.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "ContextMenu.SubTrigger",
+      "aliases": [
+        "ContextMenu.SubTrigger",
+        "ContextMenuSubTrigger"
+      ],
+      "source": "packages/inkra/src/context-menu/index.tsx",
+      "module": "context-menu",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Context memoization, long-press timer cancellation, exclusion checks and keyboard/native-menu guards reviewed; menu items are aliases of DropdownMenu primitives, not duplicate implementations."
+      ],
+      "verification": [
+        "packages/inkra/test/context-menu.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "ContextMenu.Trigger",
+      "aliases": [
+        "ContextMenu.Trigger",
+        "ContextMenuTrigger"
+      ],
+      "source": "packages/inkra/src/context-menu/index.tsx",
+      "module": "context-menu",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Context memoization, long-press timer cancellation, exclusion checks and keyboard/native-menu guards reviewed; menu items are aliases of DropdownMenu primitives, not duplicate implementations."
+      ],
+      "verification": [
+        "packages/inkra/test/context-menu.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Badge",
+      "aliases": [
+        "Badge"
+      ],
+      "source": "packages/inkra/src/display/index.tsx",
+      "module": "display",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Badge/Skeleton/Separator are constant-size decoration wrappers. Progress clamps numeric dimensions/counts and uses CSS clipping rather than repainting on value changes; circular painter required bounds/recovery fixes."
+      ],
+      "verification": [
+        "packages/inkra/test/display.test.mjs",
+        "packages/inkra/test/segmented-progress.test.mjs",
+        "packages/inkra/test/progress-ring-performance.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Progress",
+      "aliases": [
+        "Progress"
+      ],
+      "source": "packages/inkra/src/display/index.tsx",
+      "module": "display",
+      "group": "lead",
+      "status": "fixed-runtime-tested",
+      "findings": [
+        "Badge/Skeleton/Separator are constant-size decoration wrappers. Progress clamps numeric dimensions/counts and uses CSS clipping rather than repainting on value changes; circular painter required bounds/recovery fixes."
+      ],
+      "verification": [
+        "packages/inkra/test/display.test.mjs",
+        "packages/inkra/test/segmented-progress.test.mjs",
+        "packages/inkra/test/progress-ring-performance.test.mjs"
+      ],
+      "disposition": "Focused compatible correction; normal inputs retain API/semantics. Runtime mock tests are not browser performance measurements.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Separator",
+      "aliases": [
+        "Separator"
+      ],
+      "source": "packages/inkra/src/display/index.tsx",
+      "module": "display",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Badge/Skeleton/Separator are constant-size decoration wrappers. Progress clamps numeric dimensions/counts and uses CSS clipping rather than repainting on value changes; circular painter required bounds/recovery fixes."
+      ],
+      "verification": [
+        "packages/inkra/test/display.test.mjs",
+        "packages/inkra/test/segmented-progress.test.mjs",
+        "packages/inkra/test/progress-ring-performance.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Skeleton",
+      "aliases": [
+        "Skeleton"
+      ],
+      "source": "packages/inkra/src/display/index.tsx",
+      "module": "display",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Badge/Skeleton/Separator are constant-size decoration wrappers. Progress clamps numeric dimensions/counts and uses CSS clipping rather than repainting on value changes; circular painter required bounds/recovery fixes."
+      ],
+      "verification": [
+        "packages/inkra/test/display.test.mjs",
+        "packages/inkra/test/segmented-progress.test.mjs",
+        "packages/inkra/test/progress-ring-performance.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "DockablePanel",
+      "aliases": [
+        "DockablePanel"
+      ],
+      "source": "packages/inkra/src/dockable-panel/index.tsx",
+      "module": "dockable-panel",
+      "group": "lead",
+      "status": "fixed-runtime-tested",
+      "findings": [
+        "Activation always allocated order and invalidated every panel even when already frontmost; repeated linear layer lookups made all-panel resolution quadratic. Preserve unchanged order and memoize id-to-layer map. Position/drag/resize cleanup reviewed without replacing dnd-kit."
+      ],
+      "verification": [
+        "packages/inkra/test/dockable-panel.test.mjs",
+        "packages/inkra/test/dockable-performance.test.mjs"
+      ],
+      "disposition": "Focused compatible correction; normal inputs retain API/semantics. Runtime mock tests are not browser performance measurements.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "DockablePanelWorkspace",
+      "aliases": [
+        "DockablePanelWorkspace"
+      ],
+      "source": "packages/inkra/src/dockable-panel/index.tsx",
+      "module": "dockable-panel",
+      "group": "lead",
+      "status": "fixed-runtime-tested",
+      "findings": [
+        "Activation always allocated order and invalidated every panel even when already frontmost; repeated linear layer lookups made all-panel resolution quadratic. Preserve unchanged order and memoize id-to-layer map. Position/drag/resize cleanup reviewed without replacing dnd-kit."
+      ],
+      "verification": [
+        "packages/inkra/test/dockable-panel.test.mjs",
+        "packages/inkra/test/dockable-performance.test.mjs"
+      ],
+      "disposition": "Focused compatible correction; normal inputs retain API/semantics. Runtime mock tests are not browser performance measurements.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Drawer.Backdrop",
+      "aliases": [
+        "Drawer.Backdrop",
+        "DrawerBackdrop"
+      ],
+      "source": "packages/inkra/src/drawer/index.tsx",
+      "module": "drawer",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Radix state/focus/portal primitives are forwarded; fixed-size headings/body/footer do not own work loops. Effective theme propagation is shared through PortalThemeProvider."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-overlays.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Drawer.Body",
+      "aliases": [
+        "Drawer.Body",
+        "DrawerBody"
+      ],
+      "source": "packages/inkra/src/drawer/index.tsx",
+      "module": "drawer",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Radix state/focus/portal primitives are forwarded; fixed-size headings/body/footer do not own work loops. Effective theme propagation is shared through PortalThemeProvider."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-overlays.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Drawer.Close",
+      "aliases": [
+        "Drawer.Close",
+        "DrawerClose"
+      ],
+      "source": "packages/inkra/src/drawer/index.tsx",
+      "module": "drawer",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Radix state/focus/portal primitives are forwarded; fixed-size headings/body/footer do not own work loops. Effective theme propagation is shared through PortalThemeProvider."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-overlays.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Drawer.CloseButton",
+      "aliases": [
+        "Drawer.CloseButton",
+        "DrawerCloseButton"
+      ],
+      "source": "packages/inkra/src/drawer/index.tsx",
+      "module": "drawer",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Radix state/focus/portal primitives are forwarded; fixed-size headings/body/footer do not own work loops. Effective theme propagation is shared through PortalThemeProvider."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-overlays.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Drawer.Content",
+      "aliases": [
+        "Drawer.Content",
+        "DrawerContent"
+      ],
+      "source": "packages/inkra/src/drawer/index.tsx",
+      "module": "drawer",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Radix state/focus/portal primitives are forwarded; fixed-size headings/body/footer do not own work loops. Effective theme propagation is shared through PortalThemeProvider."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-overlays.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Drawer.Description",
+      "aliases": [
+        "Drawer.Description",
+        "DrawerDescription"
+      ],
+      "source": "packages/inkra/src/drawer/index.tsx",
+      "module": "drawer",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Radix state/focus/portal primitives are forwarded; fixed-size headings/body/footer do not own work loops. Effective theme propagation is shared through PortalThemeProvider."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-overlays.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Drawer.Footer",
+      "aliases": [
+        "Drawer.Footer",
+        "DrawerFooter"
+      ],
+      "source": "packages/inkra/src/drawer/index.tsx",
+      "module": "drawer",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Radix state/focus/portal primitives are forwarded; fixed-size headings/body/footer do not own work loops. Effective theme propagation is shared through PortalThemeProvider."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-overlays.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Drawer.Header",
+      "aliases": [
+        "Drawer.Header",
+        "DrawerHeader"
+      ],
+      "source": "packages/inkra/src/drawer/index.tsx",
+      "module": "drawer",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Radix state/focus/portal primitives are forwarded; fixed-size headings/body/footer do not own work loops. Effective theme propagation is shared through PortalThemeProvider."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-overlays.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Drawer.Portal",
+      "aliases": [
+        "Drawer.Portal",
+        "DrawerPortal"
+      ],
+      "source": "packages/inkra/src/drawer/index.tsx",
+      "module": "drawer",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Radix state/focus/portal primitives are forwarded; fixed-size headings/body/footer do not own work loops. Effective theme propagation is shared through PortalThemeProvider."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-overlays.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Drawer.Root",
+      "aliases": [
+        "Drawer.Root",
+        "DrawerRoot"
+      ],
+      "source": "packages/inkra/src/drawer/index.tsx",
+      "module": "drawer",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Radix state/focus/portal primitives are forwarded; fixed-size headings/body/footer do not own work loops. Effective theme propagation is shared through PortalThemeProvider."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-overlays.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Drawer.Title",
+      "aliases": [
+        "Drawer.Title",
+        "DrawerTitle"
+      ],
+      "source": "packages/inkra/src/drawer/index.tsx",
+      "module": "drawer",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Radix state/focus/portal primitives are forwarded; fixed-size headings/body/footer do not own work loops. Effective theme propagation is shared through PortalThemeProvider."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-overlays.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Drawer.Trigger",
+      "aliases": [
+        "Drawer.Trigger",
+        "DrawerTrigger"
+      ],
+      "source": "packages/inkra/src/drawer/index.tsx",
+      "module": "drawer",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Radix state/focus/portal primitives are forwarded; fixed-size headings/body/footer do not own work loops. Effective theme propagation is shared through PortalThemeProvider."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-overlays.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "DropdownMenu.Content",
+      "aliases": [
+        "DropdownMenu.Content"
+      ],
+      "source": "packages/inkra/src/dropdown-menu/index.tsx",
+      "module": "dropdown-menu",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Radix menu primitives own focus/selection; wrapper item bodies are constant size. Same-value inline icon paths already covered by first-batch value-aware geometry snapshots. Theme propagation uses shared bridge."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-overlays.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs",
+        "packages/inkra/test/icon-lifecycle.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "DropdownMenu.Root",
+      "aliases": [
+        "DropdownMenu.Root"
+      ],
+      "source": "packages/inkra/src/dropdown-menu/index.tsx",
+      "module": "dropdown-menu",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Radix menu primitives own focus/selection; wrapper item bodies are constant size. Same-value inline icon paths already covered by first-batch value-aware geometry snapshots. Theme propagation uses shared bridge."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-overlays.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs",
+        "packages/inkra/test/icon-lifecycle.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "DropdownMenu.Trigger",
+      "aliases": [
+        "DropdownMenu.Trigger"
+      ],
+      "source": "packages/inkra/src/dropdown-menu/index.tsx",
+      "module": "dropdown-menu",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Radix menu primitives own focus/selection; wrapper item bodies are constant size. Same-value inline icon paths already covered by first-batch value-aware geometry snapshots. Theme propagation uses shared bridge."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-overlays.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs",
+        "packages/inkra/test/icon-lifecycle.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Empty.Actions",
+      "aliases": [
+        "Empty.Actions"
+      ],
+      "source": "packages/inkra/src/empty/index.tsx",
+      "module": "empty",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Static semantic root/icon/title/description/actions wrappers have no owned state, observers, timers or repeated collection processing."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-feedback.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Empty.Description",
+      "aliases": [
+        "Empty.Description"
+      ],
+      "source": "packages/inkra/src/empty/index.tsx",
+      "module": "empty",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Static semantic root/icon/title/description/actions wrappers have no owned state, observers, timers or repeated collection processing."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-feedback.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Empty.Icon",
+      "aliases": [
+        "Empty.Icon"
+      ],
+      "source": "packages/inkra/src/empty/index.tsx",
+      "module": "empty",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Static semantic root/icon/title/description/actions wrappers have no owned state, observers, timers or repeated collection processing."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-feedback.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Empty.Root",
+      "aliases": [
+        "Empty.Root"
+      ],
+      "source": "packages/inkra/src/empty/index.tsx",
+      "module": "empty",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Static semantic root/icon/title/description/actions wrappers have no owned state, observers, timers or repeated collection processing."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-feedback.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Empty.Title",
+      "aliases": [
+        "Empty.Title"
+      ],
+      "source": "packages/inkra/src/empty/index.tsx",
+      "module": "empty",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Static semantic root/icon/title/description/actions wrappers have no owned state, observers, timers or repeated collection processing."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-feedback.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "HoverCard.Close",
+      "aliases": [
+        "HoverCard.Close",
+        "HoverCardClose",
+        "Popover.Close",
+        "PopoverClose"
+      ],
+      "source": "packages/inkra/src/hover-card/index.tsx",
+      "module": "hover-card",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "One cancellable open/close timeout per root, finite delays, matching unmount cleanup, Popover positioning and explicit focus policies reviewed. Do not replace event/focus architecture without browser evidence."
+      ],
+      "verification": [
+        "packages/inkra/test/hover-card.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "HoverCard.Content",
+      "aliases": [
+        "HoverCard.Content",
+        "HoverCardContent"
+      ],
+      "source": "packages/inkra/src/hover-card/index.tsx",
+      "module": "hover-card",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "One cancellable open/close timeout per root, finite delays, matching unmount cleanup, Popover positioning and explicit focus policies reviewed. Do not replace event/focus architecture without browser evidence."
+      ],
+      "verification": [
+        "packages/inkra/test/hover-card.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "HoverCard.Description",
+      "aliases": [
+        "HoverCard.Description",
+        "HoverCardDescription",
+        "Popover.Description",
+        "PopoverDescription"
+      ],
+      "source": "packages/inkra/src/hover-card/index.tsx",
+      "module": "hover-card",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "One cancellable open/close timeout per root, finite delays, matching unmount cleanup, Popover positioning and explicit focus policies reviewed. Do not replace event/focus architecture without browser evidence."
+      ],
+      "verification": [
+        "packages/inkra/test/hover-card.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "HoverCard.Root",
+      "aliases": [
+        "HoverCard.Root",
+        "HoverCardRoot"
+      ],
+      "source": "packages/inkra/src/hover-card/index.tsx",
+      "module": "hover-card",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "One cancellable open/close timeout per root, finite delays, matching unmount cleanup, Popover positioning and explicit focus policies reviewed. Do not replace event/focus architecture without browser evidence."
+      ],
+      "verification": [
+        "packages/inkra/test/hover-card.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "HoverCard.Title",
+      "aliases": [
+        "HoverCard.Title",
+        "HoverCardTitle",
+        "Popover.Title",
+        "PopoverTitle"
+      ],
+      "source": "packages/inkra/src/hover-card/index.tsx",
+      "module": "hover-card",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "One cancellable open/close timeout per root, finite delays, matching unmount cleanup, Popover positioning and explicit focus policies reviewed. Do not replace event/focus architecture without browser evidence."
+      ],
+      "verification": [
+        "packages/inkra/test/hover-card.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "HoverCard.Trigger",
+      "aliases": [
+        "HoverCard.Trigger",
+        "HoverCardTrigger"
+      ],
+      "source": "packages/inkra/src/hover-card/index.tsx",
+      "module": "hover-card",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "One cancellable open/close timeout per root, finite delays, matching unmount cleanup, Popover positioning and explicit focus policies reviewed. Do not replace event/focus architecture without browser evidence."
+      ],
+      "verification": [
+        "packages/inkra/test/hover-card.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Container",
+      "aliases": [
+        "Container"
+      ],
+      "source": "packages/inkra/src/layout/index.tsx",
+      "module": "layout",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Flex/Stack/Grid/Container and Layout regions are CSS-based constant-work wrappers; responsive grid columns are already finite and capped at 12; no JS resize measurement loop."
+      ],
+      "verification": [
+        "packages/inkra/test/layout.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Flex",
+      "aliases": [
+        "Flex"
+      ],
+      "source": "packages/inkra/src/layout/index.tsx",
+      "module": "layout",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Flex/Stack/Grid/Container and Layout regions are CSS-based constant-work wrappers; responsive grid columns are already finite and capped at 12; no JS resize measurement loop."
+      ],
+      "verification": [
+        "packages/inkra/test/layout.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Grid",
+      "aliases": [
+        "Grid"
+      ],
+      "source": "packages/inkra/src/layout/index.tsx",
+      "module": "layout",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Flex/Stack/Grid/Container and Layout regions are CSS-based constant-work wrappers; responsive grid columns are already finite and capped at 12; no JS resize measurement loop."
+      ],
+      "verification": [
+        "packages/inkra/test/layout.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Layout.Body",
+      "aliases": [
+        "Layout.Body"
+      ],
+      "source": "packages/inkra/src/layout/index.tsx",
+      "module": "layout",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Flex/Stack/Grid/Container and Layout regions are CSS-based constant-work wrappers; responsive grid columns are already finite and capped at 12; no JS resize measurement loop."
+      ],
+      "verification": [
+        "packages/inkra/test/layout.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Layout.Content",
+      "aliases": [
+        "Layout.Content"
+      ],
+      "source": "packages/inkra/src/layout/index.tsx",
+      "module": "layout",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Flex/Stack/Grid/Container and Layout regions are CSS-based constant-work wrappers; responsive grid columns are already finite and capped at 12; no JS resize measurement loop."
+      ],
+      "verification": [
+        "packages/inkra/test/layout.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Layout.Footer",
+      "aliases": [
+        "Layout.Footer"
+      ],
+      "source": "packages/inkra/src/layout/index.tsx",
+      "module": "layout",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Flex/Stack/Grid/Container and Layout regions are CSS-based constant-work wrappers; responsive grid columns are already finite and capped at 12; no JS resize measurement loop."
+      ],
+      "verification": [
+        "packages/inkra/test/layout.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Layout.Header",
+      "aliases": [
+        "Layout.Header"
+      ],
+      "source": "packages/inkra/src/layout/index.tsx",
+      "module": "layout",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Flex/Stack/Grid/Container and Layout regions are CSS-based constant-work wrappers; responsive grid columns are already finite and capped at 12; no JS resize measurement loop."
+      ],
+      "verification": [
+        "packages/inkra/test/layout.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Layout.Root",
+      "aliases": [
+        "Layout.Root"
+      ],
+      "source": "packages/inkra/src/layout/index.tsx",
+      "module": "layout",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Flex/Stack/Grid/Container and Layout regions are CSS-based constant-work wrappers; responsive grid columns are already finite and capped at 12; no JS resize measurement loop."
+      ],
+      "verification": [
+        "packages/inkra/test/layout.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Layout.Sidebar",
+      "aliases": [
+        "Layout.Sidebar"
+      ],
+      "source": "packages/inkra/src/layout/index.tsx",
+      "module": "layout",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Flex/Stack/Grid/Container and Layout regions are CSS-based constant-work wrappers; responsive grid columns are already finite and capped at 12; no JS resize measurement loop."
+      ],
+      "verification": [
+        "packages/inkra/test/layout.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Stack",
+      "aliases": [
+        "Stack"
+      ],
+      "source": "packages/inkra/src/layout/index.tsx",
+      "module": "layout",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Flex/Stack/Grid/Container and Layout regions are CSS-based constant-work wrappers; responsive grid columns are already finite and capped at 12; no JS resize measurement loop."
+      ],
+      "verification": [
+        "packages/inkra/test/layout.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Overlay.Backdrop",
+      "aliases": [
+        "Overlay.Backdrop",
+        "OverlayBackdrop"
+      ],
+      "source": "packages/inkra/src/overlay/Overlay.tsx",
+      "module": "overlay",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Dialog/Popover wrapper state and portal ref forwarding reviewed. Theme observer previously broadcast new objects for identical computed theme; semantic snapshot equality now suppresses those broadcasts and preserves all theme fields."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Overlay.Body",
+      "aliases": [
+        "Overlay.Body",
+        "OverlayBody"
+      ],
+      "source": "packages/inkra/src/overlay/Overlay.tsx",
+      "module": "overlay",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Dialog/Popover wrapper state and portal ref forwarding reviewed. Theme observer previously broadcast new objects for identical computed theme; semantic snapshot equality now suppresses those broadcasts and preserves all theme fields."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Overlay.Close",
+      "aliases": [
+        "Overlay.Close",
+        "OverlayClose"
+      ],
+      "source": "packages/inkra/src/overlay/Overlay.tsx",
+      "module": "overlay",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Dialog/Popover wrapper state and portal ref forwarding reviewed. Theme observer previously broadcast new objects for identical computed theme; semantic snapshot equality now suppresses those broadcasts and preserves all theme fields."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Overlay.CloseButton",
+      "aliases": [
+        "Overlay.CloseButton",
+        "OverlayCloseButton"
+      ],
+      "source": "packages/inkra/src/overlay/Overlay.tsx",
+      "module": "overlay",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Dialog/Popover wrapper state and portal ref forwarding reviewed. Theme observer previously broadcast new objects for identical computed theme; semantic snapshot equality now suppresses those broadcasts and preserves all theme fields."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Overlay.Content",
+      "aliases": [
+        "Overlay.Content",
+        "OverlayContent"
+      ],
+      "source": "packages/inkra/src/overlay/Overlay.tsx",
+      "module": "overlay",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Dialog/Popover wrapper state and portal ref forwarding reviewed. Theme observer previously broadcast new objects for identical computed theme; semantic snapshot equality now suppresses those broadcasts and preserves all theme fields."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Overlay.Description",
+      "aliases": [
+        "Overlay.Description",
+        "OverlayDescription"
+      ],
+      "source": "packages/inkra/src/overlay/Overlay.tsx",
+      "module": "overlay",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Dialog/Popover wrapper state and portal ref forwarding reviewed. Theme observer previously broadcast new objects for identical computed theme; semantic snapshot equality now suppresses those broadcasts and preserves all theme fields."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Overlay.Footer",
+      "aliases": [
+        "Overlay.Footer",
+        "OverlayFooter"
+      ],
+      "source": "packages/inkra/src/overlay/Overlay.tsx",
+      "module": "overlay",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Dialog/Popover wrapper state and portal ref forwarding reviewed. Theme observer previously broadcast new objects for identical computed theme; semantic snapshot equality now suppresses those broadcasts and preserves all theme fields."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Overlay.Header",
+      "aliases": [
+        "Overlay.Header",
+        "OverlayHeader"
+      ],
+      "source": "packages/inkra/src/overlay/Overlay.tsx",
+      "module": "overlay",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Dialog/Popover wrapper state and portal ref forwarding reviewed. Theme observer previously broadcast new objects for identical computed theme; semantic snapshot equality now suppresses those broadcasts and preserves all theme fields."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Overlay.Portal",
+      "aliases": [
+        "Overlay.Portal",
+        "OverlayPortal"
+      ],
+      "source": "packages/inkra/src/overlay/Overlay.tsx",
+      "module": "overlay",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Dialog/Popover wrapper state and portal ref forwarding reviewed. Theme observer previously broadcast new objects for identical computed theme; semantic snapshot equality now suppresses those broadcasts and preserves all theme fields."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Overlay.Root",
+      "aliases": [
+        "Overlay.Root",
+        "OverlayRoot"
+      ],
+      "source": "packages/inkra/src/overlay/Overlay.tsx",
+      "module": "overlay",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Dialog/Popover wrapper state and portal ref forwarding reviewed. Theme observer previously broadcast new objects for identical computed theme; semantic snapshot equality now suppresses those broadcasts and preserves all theme fields."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Overlay.Title",
+      "aliases": [
+        "Overlay.Title",
+        "OverlayTitle"
+      ],
+      "source": "packages/inkra/src/overlay/Overlay.tsx",
+      "module": "overlay",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Dialog/Popover wrapper state and portal ref forwarding reviewed. Theme observer previously broadcast new objects for identical computed theme; semantic snapshot equality now suppresses those broadcasts and preserves all theme fields."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Overlay.Trigger",
+      "aliases": [
+        "Overlay.Trigger",
+        "OverlayTrigger"
+      ],
+      "source": "packages/inkra/src/overlay/Overlay.tsx",
+      "module": "overlay",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Dialog/Popover wrapper state and portal ref forwarding reviewed. Theme observer previously broadcast new objects for identical computed theme; semantic snapshot equality now suppresses those broadcasts and preserves all theme fields."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Popover.Anchor",
+      "aliases": [
+        "Popover.Anchor",
+        "PopoverAnchor"
+      ],
+      "source": "packages/inkra/src/overlay/Popover.tsx",
+      "module": "overlay",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Dialog/Popover wrapper state and portal ref forwarding reviewed. Theme observer previously broadcast new objects for identical computed theme; semantic snapshot equality now suppresses those broadcasts and preserves all theme fields."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Popover.Content",
+      "aliases": [
+        "Popover.Content",
+        "PopoverContent"
+      ],
+      "source": "packages/inkra/src/overlay/Popover.tsx",
+      "module": "overlay",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Dialog/Popover wrapper state and portal ref forwarding reviewed. Theme observer previously broadcast new objects for identical computed theme; semantic snapshot equality now suppresses those broadcasts and preserves all theme fields."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Popover.Portal",
+      "aliases": [
+        "Popover.Portal",
+        "PopoverPortal"
+      ],
+      "source": "packages/inkra/src/overlay/Popover.tsx",
+      "module": "overlay",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Dialog/Popover wrapper state and portal ref forwarding reviewed. Theme observer previously broadcast new objects for identical computed theme; semantic snapshot equality now suppresses those broadcasts and preserves all theme fields."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Popover.Root",
+      "aliases": [
+        "Popover.Root",
+        "PopoverRoot"
+      ],
+      "source": "packages/inkra/src/overlay/Popover.tsx",
+      "module": "overlay",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Dialog/Popover wrapper state and portal ref forwarding reviewed. Theme observer previously broadcast new objects for identical computed theme; semantic snapshot equality now suppresses those broadcasts and preserves all theme fields."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Popover.Trigger",
+      "aliases": [
+        "Popover.Trigger",
+        "PopoverTrigger"
+      ],
+      "source": "packages/inkra/src/overlay/Popover.tsx",
+      "module": "overlay",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Dialog/Popover wrapper state and portal ref forwarding reviewed. Theme observer previously broadcast new objects for identical computed theme; semantic snapshot equality now suppresses those broadcasts and preserves all theme fields."
+      ],
+      "verification": [
+        "packages/inkra/test/overlay.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Pagination",
+      "aliases": [
+        "Pagination"
+      ],
+      "source": "packages/inkra/src/pagination/index.tsx",
+      "module": "pagination",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Page-entry model uses bounded sibling/boundary windows (max3), even for MAX_SAFE_INTEGER total; uncontrolled correction has equality bailout. No allocation proportional to total pages."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-navigation.test.mjs",
+        "packages/inkra/test/property-extensions.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "PencilIcon",
+      "aliases": [
+        "PencilIcon"
+      ],
+      "source": "packages/inkra/src/PencilIcon.tsx",
+      "module": "PencilIcon.tsx",
+      "group": "lead",
+      "status": "fixed-first-batch",
+      "findings": [
+        "First-batch value-aware geometry snapshots retain unchanged effects yet detect mutated paths on next render; finite path, sample, raster and source budgets; balanced observer/recovery cleanup verified."
+      ],
+      "verification": [
+        "packages/inkra/test/render-performance.test.mjs",
+        "packages/inkra/test/icon-lifecycle.test.mjs"
+      ],
+      "disposition": "Retain validated first-batch fix; no additional component rewrite warranted.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "PencilLine",
+      "aliases": [
+        "PencilLine"
+      ],
+      "source": "packages/inkra/src/PencilLine.tsx",
+      "module": "PencilLine.tsx",
+      "group": "lead",
+      "status": "fixed-first-batch",
+      "findings": [
+        "First-batch backing-store budget applied before allocation; primitive dependencies and bounded cache reviewed. Resize/theme changes are RAF-coalesced and listener cleanup is paired."
+      ],
+      "verification": [
+        "packages/inkra/test/render-performance.test.mjs",
+        "packages/inkra/test/render-tokens.test.mjs"
+      ],
+      "disposition": "Retain validated first-batch fix; no additional component rewrite warranted.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "PencilSurface",
+      "aliases": [
+        "PencilSurface"
+      ],
+      "source": "packages/inkra/src/PencilSurface.tsx",
+      "module": "PencilSurface.tsx",
+      "group": "lead",
+      "status": "fixed-first-batch",
+      "findings": [
+        "First-batch repeat-admitted bounded snapshot cache covers every appearance input; copied live canvases and cloned points isolate callers. Geometry budget and fallback preserve semantic children; lifecycle is RAF-coalesced with cleanup."
+      ],
+      "verification": [
+        "packages/inkra/test/render-performance.test.mjs",
+        "packages/inkra/test/render-defaults.test.mjs",
+        "packages/inkra/test/render-tokens.test.mjs"
+      ],
+      "disposition": "Retain validated first-batch fix; no additional component rewrite warranted.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "PencilText",
+      "aliases": [
+        "PencilText"
+      ],
+      "source": "packages/inkra/src/PencilText.tsx",
+      "module": "PencilText.tsx",
+      "group": "lead",
+      "status": "fixed-runtime-tested",
+      "findings": [
+        "Unsupported/fallback appearances were never remembered, so every unrelated ancestor mutation retried paint/layout work. Remember each attempted appearance while allowing font/theme/size/recovery retries; also apply shared axis limit before canvas allocation. Existing per-line/text pixel limits, queue cancellation and observer/font cleanup reviewed."
+      ],
+      "verification": [
+        "packages/inkra/test/pencil-text.test.mjs",
+        "packages/inkra/test/text-performance.test.mjs"
+      ],
+      "disposition": "Focused compatible correction; normal inputs retain API/semantics. Runtime mock tests are not browser performance measurements.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Resizable.Handle",
+      "aliases": [
+        "Resizable.Handle"
+      ],
+      "source": "packages/inkra/src/resizable/index.tsx",
+      "module": "resizable",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Thin react-resizable-panels wrappers preserve constraints and imperative refs. Controlled layout sync checks tolerance before setLayout. No custom pointer/RAF engine added; real constrained drag and focus verification requires browser."
+      ],
+      "verification": [
+        "packages/inkra/test/resizable.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Resizable.Panel",
+      "aliases": [
+        "Resizable.Panel"
+      ],
+      "source": "packages/inkra/src/resizable/index.tsx",
+      "module": "resizable",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Thin react-resizable-panels wrappers preserve constraints and imperative refs. Controlled layout sync checks tolerance before setLayout. No custom pointer/RAF engine added; real constrained drag and focus verification requires browser."
+      ],
+      "verification": [
+        "packages/inkra/test/resizable.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Resizable.Root",
+      "aliases": [
+        "Resizable.Root"
+      ],
+      "source": "packages/inkra/src/resizable/index.tsx",
+      "module": "resizable",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Thin react-resizable-panels wrappers preserve constraints and imperative refs. Controlled layout sync checks tolerance before setLayout. No custom pointer/RAF engine added; real constrained drag and focus verification requires browser."
+      ],
+      "verification": [
+        "packages/inkra/test/resizable.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "ScrollArea",
+      "aliases": [
+        "ScrollArea",
+        "ScrollArea.Root",
+        "ScrollAreaRoot",
+        "ScrollAreaRoot.Root"
+      ],
+      "source": "packages/inkra/src/scroll-area/index.tsx",
+      "module": "scroll-area",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Thin BaseUI root/viewport/content/scrollbar/thumb/corner wrappers own no observers or timers; native scrolling mechanics remain upstream. Decorative backing stores now use shared limits."
+      ],
+      "verification": [
+        "packages/inkra/test/scroll-area.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "ScrollArea.Content",
+      "aliases": [
+        "ScrollArea.Content",
+        "ScrollAreaContent",
+        "ScrollAreaRoot.Content"
+      ],
+      "source": "packages/inkra/src/scroll-area/index.tsx",
+      "module": "scroll-area",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Thin BaseUI root/viewport/content/scrollbar/thumb/corner wrappers own no observers or timers; native scrolling mechanics remain upstream. Decorative backing stores now use shared limits."
+      ],
+      "verification": [
+        "packages/inkra/test/scroll-area.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "ScrollArea.Corner",
+      "aliases": [
+        "ScrollArea.Corner",
+        "ScrollAreaCorner",
+        "ScrollAreaRoot.Corner"
+      ],
+      "source": "packages/inkra/src/scroll-area/index.tsx",
+      "module": "scroll-area",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Thin BaseUI root/viewport/content/scrollbar/thumb/corner wrappers own no observers or timers; native scrolling mechanics remain upstream. Decorative backing stores now use shared limits."
+      ],
+      "verification": [
+        "packages/inkra/test/scroll-area.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "ScrollArea.Scrollbar",
+      "aliases": [
+        "ScrollArea.Scrollbar",
+        "ScrollAreaRoot.Scrollbar",
+        "ScrollAreaScrollbar"
+      ],
+      "source": "packages/inkra/src/scroll-area/index.tsx",
+      "module": "scroll-area",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Thin BaseUI root/viewport/content/scrollbar/thumb/corner wrappers own no observers or timers; native scrolling mechanics remain upstream. Decorative backing stores now use shared limits."
+      ],
+      "verification": [
+        "packages/inkra/test/scroll-area.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "ScrollArea.Thumb",
+      "aliases": [
+        "ScrollArea.Thumb",
+        "ScrollAreaRoot.Thumb",
+        "ScrollAreaThumb"
+      ],
+      "source": "packages/inkra/src/scroll-area/index.tsx",
+      "module": "scroll-area",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Thin BaseUI root/viewport/content/scrollbar/thumb/corner wrappers own no observers or timers; native scrolling mechanics remain upstream. Decorative backing stores now use shared limits."
+      ],
+      "verification": [
+        "packages/inkra/test/scroll-area.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "ScrollArea.Viewport",
+      "aliases": [
+        "ScrollArea.Viewport",
+        "ScrollAreaRoot.Viewport",
+        "ScrollAreaViewport"
+      ],
+      "source": "packages/inkra/src/scroll-area/index.tsx",
+      "module": "scroll-area",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Thin BaseUI root/viewport/content/scrollbar/thumb/corner wrappers own no observers or timers; native scrolling mechanics remain upstream. Decorative backing stores now use shared limits."
+      ],
+      "verification": [
+        "packages/inkra/test/scroll-area.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Slot",
+      "aliases": [
+        "Slot"
+      ],
+      "source": "packages/inkra/src/slot/index.tsx",
+      "module": "slot",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Selected surfaces mount conditionally; counts use caller render function once and semantics remain native button/static div. No owned subscription or repeated collection scan."
+      ],
+      "verification": [
+        "packages/inkra/test/slot.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Steps",
+      "aliases": [
+        "Steps"
+      ],
+      "source": "packages/inkra/src/steps/index.tsx",
+      "module": "steps",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "One linear items pass, stable id keys and static status geometry; decoration shared caches apply. No unnecessary algorithmic rewrite or forced virtualization of navigable steps."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-flows.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Tabs.Content",
+      "aliases": [
+        "Tabs.Content"
+      ],
+      "source": "packages/inkra/src/tabs/index.tsx",
+      "module": "tabs",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Primitive scalar contexts, duplicate-selection ref guard and shared selection animation reviewed. Animation work is fixed-size and cancels with observers/media listeners; focus/hidden semantics preserved."
+      ],
+      "verification": [
+        "packages/inkra/test/tabs.test.mjs",
+        "packages/inkra/test/library-motion.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Tabs.List",
+      "aliases": [
+        "Tabs.List"
+      ],
+      "source": "packages/inkra/src/tabs/index.tsx",
+      "module": "tabs",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Primitive scalar contexts, duplicate-selection ref guard and shared selection animation reviewed. Animation work is fixed-size and cancels with observers/media listeners; focus/hidden semantics preserved."
+      ],
+      "verification": [
+        "packages/inkra/test/tabs.test.mjs",
+        "packages/inkra/test/library-motion.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Tabs.Root",
+      "aliases": [
+        "Tabs.Root"
+      ],
+      "source": "packages/inkra/src/tabs/index.tsx",
+      "module": "tabs",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Primitive scalar contexts, duplicate-selection ref guard and shared selection animation reviewed. Animation work is fixed-size and cancels with observers/media listeners; focus/hidden semantics preserved."
+      ],
+      "verification": [
+        "packages/inkra/test/tabs.test.mjs",
+        "packages/inkra/test/library-motion.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Tabs.Trigger",
+      "aliases": [
+        "Tabs.Trigger"
+      ],
+      "source": "packages/inkra/src/tabs/index.tsx",
+      "module": "tabs",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "Primitive scalar contexts, duplicate-selection ref guard and shared selection animation reviewed. Animation work is fixed-size and cancels with observers/media listeners; focus/hidden semantics preserved."
+      ],
+      "verification": [
+        "packages/inkra/test/tabs.test.mjs",
+        "packages/inkra/test/library-motion.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Timeline",
+      "aliases": [
+        "Timeline"
+      ],
+      "source": "packages/inkra/src/timeline/index.tsx",
+      "module": "timeline",
+      "group": "lead",
+      "status": "reviewed-no-change",
+      "findings": [
+        "One linear item pass with stable keys and static marker geometry. Long timelines still mount all supplied rows; implicit virtualization would change semantics, so use explicit VirtualList when needed."
+      ],
+      "verification": [
+        "packages/inkra/test/tree-timeline-regression.test.mjs",
+        "packages/inkra/test/expansion-flows.test.mjs"
+      ],
+      "disposition": "No additional measured library-owned bottleneck warrants changing this component in this pass.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Toast.Provider",
+      "aliases": [
+        "Toast.Provider"
+      ],
+      "source": "packages/inkra/src/toast/index.tsx",
+      "module": "toast",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Queue lifetime/limit delegated to BaseUI; wrapper renders current queue and theme bridge, with no extra global manager or unbounded cache. Theme snapshot fix avoids irrelevant inherited-style broadcasts."
+      ],
+      "verification": [
+        "packages/inkra/test/expansion-feedback.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Tooltip.Content",
+      "aliases": [
+        "Tooltip.Content",
+        "TooltipContent"
+      ],
+      "source": "packages/inkra/src/tooltip/Tooltip.tsx",
+      "module": "tooltip",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Radix Provider/Root/Trigger/Portal/Content retain upstream timing and focus semantics; no duplicate tooltip listener engine. Portal themes benefit from snapshot equality."
+      ],
+      "verification": [
+        "packages/inkra/test/tooltip.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Tooltip.Portal",
+      "aliases": [
+        "Tooltip.Portal",
+        "TooltipPortal"
+      ],
+      "source": "packages/inkra/src/tooltip/Tooltip.tsx",
+      "module": "tooltip",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Radix Provider/Root/Trigger/Portal/Content retain upstream timing and focus semantics; no duplicate tooltip listener engine. Portal themes benefit from snapshot equality."
+      ],
+      "verification": [
+        "packages/inkra/test/tooltip.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Tooltip.Provider",
+      "aliases": [
+        "Tooltip.Provider",
+        "TooltipProvider"
+      ],
+      "source": "packages/inkra/src/tooltip/Tooltip.tsx",
+      "module": "tooltip",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Radix Provider/Root/Trigger/Portal/Content retain upstream timing and focus semantics; no duplicate tooltip listener engine. Portal themes benefit from snapshot equality."
+      ],
+      "verification": [
+        "packages/inkra/test/tooltip.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Tooltip.Root",
+      "aliases": [
+        "Tooltip.Root",
+        "TooltipRoot"
+      ],
+      "source": "packages/inkra/src/tooltip/Tooltip.tsx",
+      "module": "tooltip",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Radix Provider/Root/Trigger/Portal/Content retain upstream timing and focus semantics; no duplicate tooltip listener engine. Portal themes benefit from snapshot equality."
+      ],
+      "verification": [
+        "packages/inkra/test/tooltip.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    },
+    {
+      "component": "Tooltip.Trigger",
+      "aliases": [
+        "Tooltip.Trigger",
+        "TooltipTrigger"
+      ],
+      "source": "packages/inkra/src/tooltip/Tooltip.tsx",
+      "module": "tooltip",
+      "group": "lead",
+      "status": "reviewed-shared-fix",
+      "findings": [
+        "Radix Provider/Root/Trigger/Portal/Content retain upstream timing and focus semantics; no duplicate tooltip listener engine. Portal themes benefit from snapshot equality."
+      ],
+      "verification": [
+        "packages/inkra/test/tooltip.test.mjs",
+        "packages/inkra/test/overlay-performance.test.mjs"
+      ],
+      "disposition": "Preserve wrapper behavior; shared theme bridge regression test covers effective-theme invalidation and cleanup.",
+      "limitations": [
+        "No real browser visual, keyboard/focus, layout, hydration or device-GPU acceptance run was possible in the restricted environment. Existing tests include source contracts/SSR; those are not substituted for browser QA."
+      ]
+    }
+  ],
+  "helpers": [
+    {
+      "exports": [
+        "createPencilPoints",
+        "createPencilPath"
+      ],
+      "status": "fixed-runtime-tested",
+      "finding": "Public points argument could request impossible allocation and throw RangeError. Clamp finite count to2–65536; default nonfinite geometry/count inputs. Deterministic ordinary path output matches baseline.",
+      "verification": [
+        "packages/inkra/test/pencil-helper-performance.test.mjs"
+      ]
+    },
+    {
+      "exports": [
+        "useResizablePanelCallbackRef",
+        "useResizablePanelRef",
+        "useResizableRootCallbackRef",
+        "useResizableRootRef",
+        "createToastManager",
+        "useToastManager"
+      ],
+      "status": "reviewed-no-change",
+      "finding": "Direct upstream reexports; no library wrapper work or independent resource lifetime added.",
+      "verification": [
+        "packages/inkra/test/resizable.test.mjs",
+        "packages/inkra/test/expansion-feedback.test.mjs"
+      ]
+    }
+  ]
+}

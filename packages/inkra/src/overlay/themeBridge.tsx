@@ -89,6 +89,14 @@ function readThemeSnapshot(
   };
 }
 
+function sameThemeSnapshot(left: PortalThemeSnapshot, right: PortalThemeSnapshot): boolean {
+  if (left.theme !== right.theme || left.inkraTheme !== right.inkraTheme
+    || left.direction !== right.direction || left.language !== right.language) return false;
+  const entries = Object.entries(left.style);
+  return entries.length === Object.keys(right.style).length
+    && entries.every(([property, value]) => right.style[property as keyof InkraStyle] === value);
+}
+
 export function PortalThemeProvider({ children }: { children: ReactNode }) {
   const parentDepth = useContext(PortalLayerDepthContext);
   const depth = parentDepth + 1;
@@ -96,12 +104,16 @@ export function PortalThemeProvider({ children }: { children: ReactNode }) {
   const [snapshot, setSnapshot] = useState<PortalThemeSnapshot>(emptySnapshot);
   const captureTrigger = useCallback((node: HTMLElement | null) => {
     setTrigger(node);
-    setSnapshot(readThemeSnapshot(node));
+    const next = readThemeSnapshot(node);
+    setSnapshot(current => sameThemeSnapshot(current, next) ? current : next);
   }, []);
 
   useEffect(() => {
     if (!trigger || typeof MutationObserver === 'undefined') return undefined;
-    const refresh = () => setSnapshot(readThemeSnapshot(trigger));
+    const refresh = () => {
+      const next = readThemeSnapshot(trigger);
+      setSnapshot(current => sameThemeSnapshot(current, next) ? current : next);
+    };
     const observer = new MutationObserver(refresh);
     for (let target: HTMLElement | null = trigger; target; target = target.parentElement) {
       observer.observe(target, {
