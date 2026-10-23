@@ -68,10 +68,17 @@ export function pencilStroke(
   closed = false,
   settings: StrokeSettings = {},
 ): void {
-  if (points.length < 2) return;
-  if (points.length > 65536 || points.some(point => !Number.isFinite(point[0]) || !Number.isFinite(point[1]))) return;
+  const pointCount = points.length;
+  if (pointCount < 2 || pointCount > 65536) return;
+  // Validate the coordinates we retain, without scanning then cloning them again.
+  const line: [number, number][] = [];
+  for (let index = 0; index < pointCount; index += 1) {
+    const point = points[index];
+    const x = point[0], y = point[1];
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+    line.push([x, y]);
+  }
   const scale = Math.max(0.4, settings.scale ?? 1);
-  const line = points.map(point => [...point] as [number, number]);
   const lastPoint = line[line.length - 1];
   if (closed && Math.hypot(line[0][0] - lastPoint[0], line[0][1] - lastPoint[1]) > 0.01) {
     line.push(line[0]);

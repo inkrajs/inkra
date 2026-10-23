@@ -96,6 +96,18 @@ test('stroke sampling cannot loop forever or allocate unbounded samples', () => 
   }
 });
 
+test('stroke validates and snapshots each coordinate in one pass', () => {
+  let reads = 0;
+  const points = [0, 10].map(x => Object.defineProperties([], {
+    0: { get() { reads++; return x; } },
+    1: { get() { reads++; return 0; } },
+  }));
+  points[Symbol.iterator] = () => { throw Error('outer array iterator must not bypass the point count budget'); };
+  const context = { globalAlpha: 1, save() {}, restore() {} };
+  pencilStroke(context, points, 'black', 1, 1, 1, 0);
+  assert.equal(reads, 4, 'validation and retained geometry should use the same coordinate reads');
+});
+
 test('surface snapshots hit by value, isolate callers, invalidate colors and lost contexts, and evict by bytes', () => {
   const previous = globalThis.document;
   const created = [];

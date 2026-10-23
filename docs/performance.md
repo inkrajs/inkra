@@ -23,7 +23,9 @@ They are not evidence that an application-specific page crash has been reproduce
   Inputs over 65,536 characters per path or 1024 paths are not decorated.
 - Stroke sampling rejects invalid steps, excessive samples, pass/filament counts
   and unsafe distance offsets. This prevents malformed internal inputs from
-  entering nonterminating loops; ordinary stroke output is unchanged.
+  entering nonterminating loops; ordinary stroke output is unchanged. Coordinates
+  are validated and copied in one bounded indexed pass, avoiding a separate scan
+  and spread-based cloning on cold paints.
 - Oversized/invalid cache entries are not retained and no longer evict all useful
   small entries. Cache accounting also handles the empty-string key correctly.
 - Equal-value icon path/badge props retain the same drawing effect and observers.
