@@ -42,7 +42,8 @@ lookups. TreeSelect reuses its index across interactions, traverses its model
 iteratively and aggregates propagated selection bottom-up. Duplicate handling,
 ordering, disabled nodes and controlled-key behavior remain covered by tests.
 Deep-tree model safety does not imply that arbitrarily deep React/ARIA trees are
-supported: TreeSelect's component rendering is still recursive.
+supported: the open React/ARIA rendering stack may still recurse. See
+`performance-audit.md` for the subsequent component-by-component audit.
 
 ## Reproduce
 

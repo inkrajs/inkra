@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createElement as h, memo } from 'react';
+import { createElement as h, memo, StrictMode } from 'react';
 import { act, create } from 'react-test-renderer';
 import { PortalThemeProvider, usePortalThemeProps, usePortalTriggerRef } from '../dist/overlay/themeBridge.js';
 
@@ -16,7 +16,7 @@ function environment() {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   globalThis.window = {
     getComputedStyle: () => ({ ...state, length: Object.keys(properties).length, item: index => Object.keys(properties)[index], getPropertyValue: key => properties[key] }),
-    matchMedia: query => ({ matches: query.includes('forced-colors') && state.forced, addEventListener: (_, callback) => media.add(callback), removeEventListener: (_, callback) => media.delete(callback) }),
+    matchMedia: query => ({ matches: query.includes('forced-colors') && state.forced, addEventListener: (_, callback) => media.add({ query, callback }), removeEventListener: (_, callback) => { for (const entry of media) if (entry.query === query && entry.callback === callback) media.delete(entry); } }),
   };
   globalThis.MutationObserver = class {
     constructor(callback) { this.callback = callback; observers.add(this); }
@@ -62,4 +62,20 @@ test('portal theme ignores equivalent ancestor mutations but propagates every ef
     if (renderer) await act(() => renderer.unmount());
     assert.equal(env.observers.size, 0); assert.equal(env.media.size, 0); env.restore();
   }
+});
+
+test('StrictMode batches of portal roots release observers and media listeners on unmount', async () => {
+  const env = environment();
+  const Trigger = () => h('button', { ref: usePortalTriggerRef(null) });
+  try {
+    for (let round = 0; round < 3; round++) {
+      let renderer;
+      await act(() => { renderer = create(h(StrictMode, null, Array.from({ length: 100 }, (_, key) => h(PortalThemeProvider, { key }, h(Trigger)))), { createNodeMock: () => env.node }); });
+      assert.equal(env.observers.size, 100);
+      assert.equal(env.media.size, 200);
+      await act(() => renderer.unmount());
+      assert.equal(env.observers.size, 0);
+      assert.equal(env.media.size, 0);
+    }
+  } finally { env.restore(); }
 });
