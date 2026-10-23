@@ -111,7 +111,8 @@ test('TagInput SSR keeps native input, semantic tag list, labels, hidden values 
   assert.match(markup, /<ul[^>]*aria-label="Selected tags"/);
   assert.match(markup, /data-tag-id="frontend"/);
   assert.match(markup, />Frontend</);
-  assert.match(markup, /<input[^>]*readonly=""/);
+  // HTML attribute names are case-insensitive; React may emit readOnly.
+  assert.match(markup, /<input[^>]*readonly=""/i);
   assert.equal((markup.match(/type="hidden"/g) ?? []).length, 2);
   assert.match(markup, /name="tags"[^>]*value="fe"/);
   assert.doesNotMatch(markup, /inkra-tag-input__remove|inkra-tag-input__clear/);
