@@ -2,6 +2,7 @@ import { pencilPaper } from './paper.js';
 import { pencilStroke } from './stroke.js';
 import { drawPencilWash } from './wash.js';
 import { pencilRenderDefaults } from './renderTokens.js';
+import { BoundedCache, PENCIL_RENDERER_VERSION, boundedCanvasSize, canvasByteCost, canvasIsUsable } from './cache.js';
 
 export type PencilSurfaceVariant =
   | 'paper'
@@ -118,7 +119,7 @@ function paperPattern(
   return pattern;
 }
 
-export function drawPencilSurface(
+function paintPencilSurface(
   canvas: HTMLCanvasElement,
   borderCanvas: HTMLCanvasElement | null,
   width: number,
@@ -130,8 +131,9 @@ export function drawPencilSurface(
   radius?: number,
 ): Array<readonly [number, number]> | undefined {
   const bleed = variant === 'wash' ? 12 : 0;
-  canvas.width = Math.ceil((width + bleed * 2) * dpr);
-  canvas.height = Math.ceil((height + bleed * 2) * dpr);
+  const pixels = boundedCanvasSize(width + bleed * 2, height + bleed * 2, dpr);
+  canvas.width = pixels.width;
+  canvas.height = pixels.height;
   const context = canvas.getContext('2d');
   if (!context) throw new Error('Canvas 2D is unavailable');
   context.setTransform(
@@ -243,5 +245,83 @@ export function drawPencilSurface(
     gain: variant === 'action' ? 2.5 : 2.1,
     step: 0.8,
   });
+  return points;
+}
+
+interface SurfaceImage {
+  ink: HTMLCanvasElement;
+  border: HTMLCanvasElement | null;
+  points: Array<readonly [number, number]> | undefined;
+  valid: boolean;
+}
+
+const surfaceCache = new BoundedCache<SurfaceImage>(64, 16 * 1024 * 1024);
+// Admit only a repeat within the recent working set. Cold mounts and long scans
+// must not pay for snapshots that will be evicted before they are ever reused.
+const surfaceRequests = new BoundedCache<true>(64, 64);
+
+function copyCanvas(source: HTMLCanvasElement, target: HTMLCanvasElement): void {
+  target.width = source.width;
+  target.height = source.height;
+  const context = target.getContext('2d');
+  if (!context || context.isContextLost?.()) throw new Error('Canvas 2D is unavailable');
+  context.drawImage(source, 0, 0);
+}
+
+export function drawPencilSurface(
+  canvas: HTMLCanvasElement,
+  borderCanvas: HTMLCanvasElement | null,
+  width: number,
+  height: number,
+  variant: PencilSurfaceVariant,
+  seed: number,
+  dpr: number,
+  theme: PencilSurfaceTheme,
+  radius?: number,
+): Array<readonly [number, number]> | undefined {
+  // Transparent surfaces have no pixels to allocate or cache.
+  if (variant === 'ghost') {
+    canvas.width = canvas.height = 0;
+    if (borderCanvas) borderCanvas.width = borderCanvas.height = 0;
+    return undefined;
+  }
+  const bleed = variant === 'wash' ? 12 : 0;
+  boundedCanvasSize(width + bleed * 2, height + bleed * 2, dpr);
+  const key = JSON.stringify([
+    PENCIL_RENDERER_VERSION, variant, width, height, seed, dpr, Boolean(borderCanvas), radius,
+    theme.paper, theme.dark, theme.ink, theme.wash, theme.strokeWidth, theme.strokeRoughness,
+    theme.washSettings?.strength, theme.washSettings?.spacing,
+    theme.washSettings?.roughness, theme.washSettings?.angle,
+  ]);
+  const cached = surfaceCache.get(key);
+  if (cached?.valid && canvasIsUsable(cached.ink) && (!cached.border || canvasIsUsable(cached.border))) {
+    copyCanvas(cached.ink, canvas);
+    if (cached.border && borderCanvas) copyCanvas(cached.border, borderCanvas);
+    return cached.points?.map(([x, y]) => [x, y] as const);
+  }
+  if (cached) surfaceCache.delete(key);
+  const points = paintPencilSurface(canvas, borderCanvas, width, height, variant, seed, dpr, theme, radius);
+  const cost = canvasByteCost(canvas) + (borderCanvas ? canvasByteCost(borderCanvas) : 0);
+  const repeated = surfaceRequests.get(key) === true;
+  surfaceRequests.set(key, true, 1);
+  // Keep the cache useful for repeated controls, not a single large panel.
+  if (repeated && cost <= 2 * 1024 * 1024) {
+    try {
+      const ink = document.createElement('canvas');
+      const border = borderCanvas ? document.createElement('canvas') : null;
+      copyCanvas(canvas, ink);
+      if (border && borderCanvas) copyCanvas(borderCanvas, border);
+      const image: SurfaceImage = { ink, border, points: points?.map(([x, y]) => [x, y] as const), valid: true };
+      // A restored context can report healthy after losing all of its pixels.
+      // Keep that entry invalid even if loss and restoration precede the next hit.
+      const invalidate = () => { image.valid = false; };
+      ink.addEventListener?.('contextlost', invalidate, { once: true });
+      border?.addEventListener?.('contextlost', invalidate, { once: true });
+      surfaceCache.set(key, image, cost);
+    } catch {
+      // Caching is optional: a snapshot allocation failure must not discard a
+      // successfully painted live surface.
+    }
+  }
   return points;
 }

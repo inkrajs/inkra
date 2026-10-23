@@ -101,6 +101,10 @@ export function usePencilSurface(
         delete root.dataset.pencilFallback;
         lastPaint = paintKey;
       } catch {
+        // Release the previous backing store and do not display stale artwork
+        // when a resized surface exceeds the decoration budget.
+        canvas.width = canvas.height = 0;
+        if (borderRef.current) borderRef.current.width = borderRef.current.height = 0;
         root.dataset.pencilFallback = 'true';
         root.style.removeProperty('--inkra-pencil-clip');
         lastPaint = '';

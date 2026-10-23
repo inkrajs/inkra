@@ -1,4 +1,4 @@
-import { BoundedCache, PENCIL_RENDERER_VERSION, canvasByteCost, canvasIsUsable } from './cache.js';
+import { BoundedCache, PENCIL_RENDERER_VERSION, boundedCanvasSize, canvasByteCost, canvasIsUsable } from './cache.js';
 import { pencilStroke } from './stroke.js';
 
 export interface PencilWashOptions {
@@ -40,9 +40,10 @@ function makeWash(
 ): HTMLCanvasElement {
   const { strength, spacing, roughness, inset, radius, edgeReach, angle } = settings;
   const bleed = edgeReach ? Math.ceil(edgeReach + 4) : 0;
+  const pixels = boundedCanvasSize(width + bleed * 2, height + bleed * 2, dpr);
   const canvas = document.createElement('canvas');
-  canvas.width = Math.ceil((width + bleed * 2) * dpr);
-  canvas.height = Math.ceil((height + bleed * 2) * dpr);
+  canvas.width = pixels.width;
+  canvas.height = pixels.height;
   const context = canvas.getContext('2d');
   if (!context) return canvas;
   context.scale(dpr, dpr);
