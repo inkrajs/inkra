@@ -92,3 +92,36 @@ test('Transfer SSR keeps both named panels, native inputs, disabled items, count
   assert.match(markup, /0\/0/);
 });
 
+
+test('Transfer normalizes large unknown-key lists with linear key reads', () => {
+  const count = 2000;
+  const values = Array.from({ length: count }, (_, index) => `external-${index}`);
+  let reads = 0;
+  const keys = new Proxy([...values, ...values], {
+    get(target, property, receiver) {
+      if (typeof property === 'string' && /^\d+$/.test(property)) reads++;
+      return Reflect.get(target, property, receiver);
+    },
+  });
+  assert.deepEqual(normalizeTargetKeys([], keys), values);
+  assert.ok(reads <= keys.length * 2, `Expected linear key reads, received ${reads}`);
+});
+
+test('Transfer retains first-record identity, special ids and unknown key order', () => {
+  const first = { id: 'a\u0000b', label: 'First' };
+  const second = { id: 'a', label: 'Second' };
+  const records = [first, second, { id: 'a\u0000b', label: 'Duplicate' }];
+  assert.deepEqual(normalizeTargetKeys(records, ['external', 'a', 'a\u0000b', 'external', 'other']), ['a\u0000b', 'a', 'external', 'other']);
+  assert.deepEqual(splitTransferItems(records, ['a\u0000b']), { source: [second], target: [first] });
+  assert.equal(splitTransferItems(records, ['a\u0000b']).target[0], first);
+});
+
+test('Transfer reuses data-derived state and uses collision-free key membership for effects', () => {
+  assert.match(componentSource, /currentTargetKeys = useMemo/);
+  assert.match(componentSource, /panels = useMemo/);
+  assert.match(componentSource, /visibleSource = useMemo/);
+  assert.match(componentSource, /visibleTarget = useMemo/);
+  assert.match(componentSource, /itemsById\.get\(key\)/);
+  assert.match(componentSource, /currentTargetSet\.has\(key\)/);
+  assert.doesNotMatch(componentSource, /currentTargetKeys\.join|keys\.indexOf|uniqueItems\.find/);
+});

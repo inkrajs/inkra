@@ -21,9 +21,9 @@ import { Popover } from '../overlay/index.js';
 import { Tree } from '../tree/index.js';
 import type { TreeKey, TreeSelection } from '../tree/index.js';
 import {
-  filterTreeSelectNodes,
+  filterTreeSelectNodesFromIndex,
   indexTreeSelectNodes,
-  updateTreeSelectSelection,
+  updateTreeSelectSelectionFromIndex,
 } from './model.js';
 import type {
   TreeSelectBranchSelection,
@@ -168,17 +168,20 @@ export const TreeSelect = forwardRef<HTMLDivElement, TreeSelectProps>(function T
   const resolvedInvalid = Boolean(invalid || field?.invalid);
   const describedBy = mergeAriaIds(ariaDescribedBy, field?.descriptionId, field?.errorId);
   const normalized = useMemo(() => indexTreeSelectNodes(items), [items]);
-  const defaultSelection = useRef(selectionFromProps(props));
   const controlledSelection = props.value !== undefined;
-  const [uncontrolledSelection, setUncontrolledSelection] = useState<string[]>(defaultSelection.current);
-  const selectedIds = controlledSelection ? selectionFromProps(props) : uncontrolledSelection;
+  const [uncontrolledSelection, setUncontrolledSelection] = useState<string[]>(() => selectionFromProps(props));
+  const defaultSelection = useRef(uncontrolledSelection);
+  const selectedIds = useMemo(
+    () => controlledSelection ? selectionFromProps(props) : uncontrolledSelection,
+    [controlledSelection, props.value, props.multiple, uncontrolledSelection],
+  );
   const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
   const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
   const isOpen = controlledOpen ?? uncontrolledOpen;
   const [uncontrolledExpanded, setUncontrolledExpanded] = useState<string[]>(() => [...new Set(defaultExpandedIds)]);
   const baseExpanded = expandedIds ?? uncontrolledExpanded;
   const [query, setQuery] = useState('');
-  const filtered = useMemo(() => filterTreeSelectNodes(normalized.nodes, query), [normalized.nodes, query]);
+  const filtered = useMemo(() => filterTreeSelectNodesFromIndex(normalized, query), [normalized, query]);
   const effectiveExpanded = useMemo(
     () => new Set<TreeKey>([...baseExpanded, ...filtered.expandedIds]),
     [baseExpanded, filtered.expandedIds],
@@ -225,7 +228,7 @@ export const TreeSelect = forwardRef<HTMLDivElement, TreeSelectProps>(function T
     const toggledId = added ?? removed;
     if (!toggledId) return;
     const selected = added === toggledId;
-    const next = updateTreeSelectSelection(normalized.nodes, selectedIds, toggledId, selected, {
+    const next = updateTreeSelectSelectionFromIndex(normalized, selectedIds, toggledId, selected, {
       multiple: Boolean(props.multiple),
       branchSelection,
       selectionPropagation,
@@ -360,7 +363,7 @@ export const TreeSelect = forwardRef<HTMLDivElement, TreeSelectProps>(function T
             onExpandedChange={handleExpandedChange}
             onSelectionChange={handleSelectionChange}
             ref={treeRef}
-            selectedKeys={new Set<TreeKey>(selectedIds)}
+            selectedKeys={selectedSet}
             selectionMode={props.multiple ? 'multiple' : 'single'}
           >
             {renderNodes(filtered.nodes)}

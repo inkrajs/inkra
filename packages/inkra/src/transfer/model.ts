@@ -18,24 +18,36 @@ export function normalizeTargetKeys<Item extends TransferIdentity>(
   items: readonly Item[],
   targetKeys: readonly string[],
 ): string[] {
-  const uniqueItems = uniqueTransferItems(items);
   const requested = new Set(targetKeys);
-  const knownIds = new Set(uniqueItems.map(item => item.id));
-  const orderedKnown = uniqueItems.filter(item => requested.has(item.id)).map(item => item.id);
-  const unknown = targetKeys.filter((key, index) => !knownIds.has(key) && targetKeys.indexOf(key) === index);
-  return [...orderedKnown, ...unknown];
+  const knownIds = new Set<string>();
+  const orderedKnown: string[] = [];
+  for (const item of items) {
+    if (knownIds.has(item.id)) continue;
+    knownIds.add(item.id);
+    if (requested.has(item.id)) orderedKnown.push(item.id);
+  }
+  // Set iteration preserves the first occurrence of unknown controlled keys,
+  // without scanning the entire key array for each unknown key.
+  for (const key of requested) {
+    if (!knownIds.has(key)) orderedKnown.push(key);
+  }
+  return orderedKnown;
 }
 
 export function splitTransferItems<Item extends TransferIdentity>(
   items: readonly Item[],
   targetKeys: readonly string[],
 ): { source: Item[]; target: Item[] } {
-  const target = new Set(targetKeys);
-  const uniqueItems = uniqueTransferItems(items);
-  return {
-    source: uniqueItems.filter(item => !target.has(item.id)),
-    target: uniqueItems.filter(item => target.has(item.id)),
-  };
+  const targetKeysSet = new Set(targetKeys);
+  const seen = new Set<string>();
+  const source: Item[] = [];
+  const target: Item[] = [];
+  for (const item of items) {
+    if (seen.has(item.id)) continue;
+    seen.add(item.id);
+    (targetKeysSet.has(item.id) ? target : source).push(item);
+  }
+  return { source, target };
 }
 
 export function moveTransferKeys<Item extends TransferIdentity>(
