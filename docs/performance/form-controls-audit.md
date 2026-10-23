@@ -24,7 +24,7 @@ The same test file was copied to an isolated clean checkout of the baseline and 
 | ButtonGroup, stable child, change class | Button renders 2 times including mount | 1 |
 | RadioGroup, two stable children, change class | Items render 4 times including mount | 2 |
 
-The Calendar index is linear in event count and retains event identity, original within-day order, and local-date grouping. Replacing the event collection invalidates the index. Upload retains individual progress callbacks and immutable item updates rather than dropping/coalescing updates; only unchanged row rendering is skipped. As with existing collection memoization in this library, data updates should replace changed arrays/objects instead of mutating props in place.
+The Calendar index is linear in event count and retains event identity, original within-day order, and local-date grouping. Replacing the event collection invalidates the index. Upload retains individual progress callbacks and immutable item updates rather than dropping/coalescing updates; only unchanged row rendering is skipped. Memoization contract: Calendar event/date changes must replace the events array, and Upload item changes must replace the changed item objects (normally in a replacement files array). Same-reference in-place mutations of these collection values are intentionally not observed by the new memoized paths. Upload label overrides are compared by their individual values, so same-object label edits and new-but-equivalent label objects remain supported.
 
 ## Component-by-component findings
 
@@ -56,15 +56,15 @@ The Calendar index is linear in event count and retains event identity, original
 | Calendar | Fixed | Removed repeated full-event filtering from both day-cell and day-button rendering. A single local-date index is shared through stable context. Runtime test verifies event order, accessible names, event identity, and stopPropagation; index invalidates on replacement events. |
 | DatePicker | Fixed | Day labels constructed a fresh `Intl.NumberFormat` per cell, unlike its already memoized date formatters. Added the corresponding locale-keyed number formatter. Tests verify locale changes and cell formatting while existing single/range/form tests pass. |
 | TimePicker | Fixed | Memoized localized display formatter, fixed option arrays, and memoized option columns with stable callbacks. Minute/second edits now leave other columns untouched. Callbacks read the latest draft, preserve AM/PM, and invalidate for constraints/cycle/localization changes. Runtime test commits 21:30:15 after separate minute/second/period/hour edits. Native validation remains authoritative. |
-| Upload | Fixed | Progress updated one item but reconstructed every row's expensive control/surface subtree. Extracted a memoized row and stabilized labels/actions while retaining latest callbacks via existing refs. Tests cover unrelated rows, same item identity, every progress notification, cancellation/late callbacks, and disabled/label changes. The parent still traverses the file list for ordered immutable updates. |
+| Upload | Fixed | Progress updated one item but reconstructed every row's expensive control/surface subtree. Extracted a memoized row and stabilized labels/actions while retaining latest callbacks via existing refs. Tests cover unrelated rows, same item identity, every progress notification, cancellation/late callbacks, and disabled/label changes, including same-object label edits and equivalent override objects. The parent still traverses the file list for ordered immutable updates. |
 | InputAction (internal file export) | Inspected, no additional justified change | Hover/focus state is local to the action; disabled clears both. Primitive boolean action context and selection-drawing cleanup inspected. The focus-containment guard prevents needless blur changes within the action. |
 | EditablePencilText (internal file export) | Inspected; browser measurement blocked | Existing per-editor bounded 128-entry/4 MiB glyph cache, 4,096-character total bound, 256-character line bound, appearance-key deduplication, native numeric-draft fallback, IME handling, and observer/font/reset cleanup inspected. Textarea line measurement still performs native range geometry reads. Further measurement-cache or paint-scheduling changes require actual wrapping/scroll/font/IME evidence; no unverified layout shortcut was added. |
 
 ## Verification and remaining boundary
 
 - Build/type generation passed.
-- Full library suite: 431 tests, 425 passed, 6 existing skips, 0 failed.
-- New runtime regression file: 10/10 passed; unchanged baseline: 1 passed, 9 expected performance failures.
+- Full library suite: 432 tests, 426 passed, 6 existing skips, 0 failed.
+- New runtime regression file: 11/11 passed; unchanged baseline: 1 passed, 10 expected performance failures.
 - Release policy tests: 5/5 passed.
 - Repository portability and `git diff --check` passed.
 - Package validation/pack passed: 273 entries, required exports/assets present. Used a writable local npm cache because the default home cache was unavailable.

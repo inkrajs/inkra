@@ -199,7 +199,14 @@ export const Upload = forwardRef<HTMLDivElement, UploadProps>(function Upload(
   const itemsRef = useRef(items);
   itemsRef.current = items;
   disabledRef.current = disabled;
-  const labels = useMemo(() => ({ ...defaultLabels, ...labelOverrides }), [labelOverrides]);
+  const labelValues = { ...defaultLabels, ...labelOverrides };
+  // Snapshot scalar/function values so same-object label edits remain observable.
+  const labels = useMemo(() => labelValues, [
+    labelValues.browse, labelValues.drop, labelValues.selected, labelValues.upload,
+    labelValues.uploading, labelValues.success, labelValues.error, labelValues.cancelled,
+    labelValues.retry, labelValues.cancel, labelValues.remove, labelValues.rejected,
+    labelValues.acceptError, labelValues.sizeError, labelValues.countError,
+  ]);
   const commitRef = useRef<(next: readonly UploadItem[], details: UploadChangeDetails) => void>(() => {});
 
   const commit = (next: readonly UploadItem[], details: UploadChangeDetails) => {

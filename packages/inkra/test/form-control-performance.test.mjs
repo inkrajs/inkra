@@ -344,3 +344,24 @@ test('TimePicker draft changes keep unchanged option columns out of the render p
     restore();
   }
 });
+
+
+test('Upload observes same-object label overrides without rerendering rows for equivalent labels', async () => {
+  let reads = 0;
+  const files = [{ id: 'one', status: 'selected', file: { get name() { reads++; return 'one.txt'; }, size: 100 } }];
+  const labels = { remove: 'Remove file' };
+  let renderer;
+  try {
+    await act(() => { renderer = create(h(Upload, { files, labels })); });
+    assert.equal(reads, 1);
+    await act(() => renderer.update(h(Upload, { files, labels: { ...labels } })));
+    assert.equal(reads, 1);
+    labels.remove = 'Delete file';
+    await act(() => renderer.update(h(Upload, { files, labels })));
+    assert.equal(renderer.root.findAllByType(Button).find(node => node.props.children === 'Delete file').props.children, 'Delete file');
+    assert.equal(reads, 2);
+    delete labels.remove;
+    await act(() => renderer.update(h(Upload, { files, labels })));
+    assert.ok(renderer.root.findAllByType(Button).some(node => node.props.children === 'Remove'));
+  } finally { if (renderer) await act(() => renderer.unmount()); }
+});

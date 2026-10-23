@@ -25,7 +25,7 @@
         "Existing suite passed: packages/inkra/test/components.test.mjs",
         "Existing suite passed: packages/inkra/test/input.test.mjs",
         "Focused runtime regression passed: packages/inkra/test/form-control-performance.test.mjs; baseline replay demonstrates redundant work.",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Inspected; benefits from fixed group context",
       "browser_only_gaps": [
@@ -47,7 +47,7 @@
       "verification": [
         "Existing suite passed: packages/inkra/test/components.test.mjs",
         "Focused runtime regression passed: packages/inkra/test/form-control-performance.test.mjs; baseline replay demonstrates redundant work.",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Fixed",
       "browser_only_gaps": [
@@ -68,7 +68,7 @@
       ],
       "verification": [
         "Existing suite passed: packages/inkra/test/components.test.mjs",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Inspected; benefits from fixed group context",
       "browser_only_gaps": [
@@ -85,12 +85,13 @@
       "group": "controls",
       "status": "fixed_runtime_tested",
       "findings": [
-        "Removed repeated full-event filtering from both day-cell and day-button rendering. A single local-date index is shared through stable context. Runtime test verifies event order, accessible names, event identity, and stopPropagation; index invalidates on replacement events."
+        "Removed repeated full-event filtering from both day-cell and day-button rendering. A single local-date index is shared through stable context. Runtime test verifies event order, accessible names, event identity, and stopPropagation; index invalidates on replacement events.",
+        "Memoization contract: event/date edits must replace the events array. Same-reference in-place collection mutations are intentionally not observed by the indexed paths."
       ],
       "verification": [
         "Existing suite passed: packages/inkra/test/travel.test.mjs",
         "Focused runtime regression passed: packages/inkra/test/form-control-performance.test.mjs; baseline replay demonstrates redundant work.",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Fixed",
       "browser_only_gaps": [
@@ -111,7 +112,7 @@
       ],
       "verification": [
         "Existing suite passed: packages/inkra/test/color-picker.test.mjs",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Inspected, no additional justified change",
       "browser_only_gaps": [
@@ -133,7 +134,7 @@
       "verification": [
         "Existing suite passed: packages/inkra/test/expansion-dates.test.mjs",
         "Focused runtime regression passed: packages/inkra/test/form-control-performance.test.mjs; baseline replay demonstrates redundant work.",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Fixed",
       "browser_only_gaps": [
@@ -154,7 +155,7 @@
       ],
       "verification": [
         "Existing suite passed: packages/inkra/test/editable.test.mjs",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Inspected, no additional justified change",
       "browser_only_gaps": [
@@ -176,7 +177,7 @@
       "verification": [
         "Existing suite passed: packages/inkra/test/form.test.mjs",
         "Focused runtime regression passed: packages/inkra/test/form-control-performance.test.mjs; baseline replay demonstrates redundant work.",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Fixed",
       "browser_only_gaps": [
@@ -198,7 +199,7 @@
       "verification": [
         "Existing suite passed: packages/inkra/test/input.test.mjs",
         "Existing suite passed: packages/inkra/test/form.test.mjs",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Inspected, no additional justified change",
       "browser_only_gaps": [
@@ -221,7 +222,7 @@
       "verification": [
         "Existing suite passed: packages/inkra/test/textarea-counter.test.mjs",
         "Existing suite passed: packages/inkra/test/form.test.mjs",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Inspected, no additional justified change",
       "browser_only_gaps": [
@@ -243,7 +244,7 @@
       ],
       "verification": [
         "Existing suite passed: packages/inkra/test/hotkey.test.mjs",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Inspected, no additional justified change",
       "browser_only_gaps": [
@@ -264,7 +265,7 @@
       ],
       "verification": [
         "Existing suite passed: packages/inkra/test/hotkey.test.mjs",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Inspected, no additional justified change",
       "browser_only_gaps": [
@@ -287,7 +288,7 @@
         "Existing suite passed: packages/inkra/test/input-number.test.mjs",
         "Existing suite passed: packages/inkra/test/input-number-model.test.mjs",
         "Focused runtime regression passed: packages/inkra/test/form-control-performance.test.mjs; baseline replay demonstrates redundant work.",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Fixed",
       "browser_only_gaps": [
@@ -308,7 +309,7 @@
       ],
       "verification": [
         "Existing suite passed: packages/inkra/test/keypad.test.mjs",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Inspected, no additional justified change",
       "browser_only_gaps": [
@@ -329,7 +330,7 @@
       ],
       "verification": [
         "Existing suite passed: packages/inkra/test/range-slider.test.mjs",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Inspected, no additional justified change",
       "browser_only_gaps": [
@@ -350,7 +351,7 @@
       ],
       "verification": [
         "Existing suite passed: packages/inkra/test/rating.test.mjs",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Inspected, no additional justified change",
       "browser_only_gaps": [
@@ -371,7 +372,7 @@
       ],
       "verification": [
         "Existing suite passed: packages/inkra/test/selection.test.mjs",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Inspected, no additional justified change",
       "browser_only_gaps": [
@@ -393,7 +394,7 @@
       "verification": [
         "Existing suite passed: packages/inkra/test/selection.test.mjs",
         "Focused runtime regression passed: packages/inkra/test/form-control-performance.test.mjs; baseline replay demonstrates redundant work.",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Fixed",
       "browser_only_gaps": [
@@ -415,7 +416,7 @@
       "verification": [
         "Existing suite passed: packages/inkra/test/selection.test.mjs",
         "Focused runtime regression passed: packages/inkra/test/form-control-performance.test.mjs; baseline replay demonstrates redundant work.",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Inspected; benefits from fixed provider",
       "browser_only_gaps": [
@@ -436,7 +437,7 @@
       ],
       "verification": [
         "Existing suite passed: packages/inkra/test/selection.test.mjs",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Inspected, no additional justified change",
       "browser_only_gaps": [
@@ -457,7 +458,7 @@
       ],
       "verification": [
         "Existing suite passed: packages/inkra/test/slider.test.mjs",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Inspected, no additional justified change",
       "browser_only_gaps": [
@@ -479,7 +480,7 @@
       "verification": [
         "Existing suite passed: packages/inkra/test/expansion-dates.test.mjs",
         "Focused runtime regression passed: packages/inkra/test/form-control-performance.test.mjs; baseline replay demonstrates redundant work.",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Fixed",
       "browser_only_gaps": [
@@ -501,7 +502,7 @@
       ],
       "verification": [
         "Existing suite passed: packages/inkra/test/expansion-feedback.test.mjs",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Inspected, no additional justified change",
       "browser_only_gaps": [
@@ -522,7 +523,7 @@
       ],
       "verification": [
         "Existing suite passed: packages/inkra/test/expansion-feedback.test.mjs",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Inspected, no additional justified change",
       "browser_only_gaps": [
@@ -539,12 +540,13 @@
       "group": "controls",
       "status": "fixed_runtime_tested",
       "findings": [
-        "Progress updated one item but reconstructed every row's expensive control/surface subtree. Extracted a memoized row and stabilized labels/actions while retaining latest callbacks via existing refs. Tests cover unrelated rows, same item identity, every progress notification, cancellation/late callbacks, and disabled/label changes. The parent still traverses the file list for ordered immutable updates."
+        "Progress updated one item but reconstructed every row's expensive control/surface subtree. Extracted a memoized row and stabilized labels/actions while retaining latest callbacks via existing refs. Tests cover unrelated rows, same item identity, every progress notification, cancellation/late callbacks, and disabled/label changes. The parent still traverses the file list for ordered immutable updates.",
+        "Changed Upload items must replace the changed item objects, normally in a replacement files array; same-reference in-place item mutation is intentionally unsupported by memoized rows. Individual label override values are dependencies, so same-object label edits/deletion and new-but-equivalent override objects remain supported and runtime-tested."
       ],
       "verification": [
         "Existing suite passed: packages/inkra/test/expansion-flows.test.mjs",
         "Focused runtime regression passed: packages/inkra/test/form-control-performance.test.mjs; baseline replay demonstrates redundant work.",
-        "TypeScript build and full library suite passed (425 passed, 6 pre-existing skips, 0 failed)."
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
       ],
       "disposition": "Fixed",
       "browser_only_gaps": [
@@ -573,18 +575,18 @@
   "package_verification": {
     "build": "passed",
     "library_tests": {
-      "total": 431,
-      "passed": 425,
+      "total": 432,
+      "passed": 426,
       "skipped": 6,
       "failed": 0
     },
     "focused_runtime_tests": {
-      "total": 10,
-      "passed": 10
+      "total": 11,
+      "passed": 11
     },
     "baseline_replay": {
-      "total": 10,
-      "expected_performance_failures": 9,
+      "total": 11,
+      "expected_performance_failures": 10,
       "behavior_preservation_passes": 1
     },
     "release_tests": {
