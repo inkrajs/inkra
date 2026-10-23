@@ -65,13 +65,23 @@ the GitHub repository remains inkrajs/inkra. New tags are react-vX.Y.Z; retain
 the unsuccessful v0.1.0 tag without moving or deleting it. The one-off unscoped
 recovery workflow has been retired and its temporary GitHub secrets removed.
 
-## Approval Gates
+## Release Authorization
 
-The npm-release environment requires review by NWYLZW, disallows administrator
-bypass, and must permit the version-tag pattern react-v*. Immutable-tag protection
-must cover both historical v* and current react-v* tags.
-Only the final GitHub Release job gets contents:write; the publishing job has
-contents:read and id-token:write. Do not disable or bypass approval gates.
+On 2026-10-23, the maintainer explicitly requested removal of the redundant
+GitHub environment approval. The npm-release environment has no required
+reviewers and no wait timer. Once an explicitly requested publish run passes
+validation, publication proceeds without a second manual approval.
+
+Keep the npm-release environment and the workflow's environment binding: npm
+Trusted Publishing uses this identity. Preserve its version-tag policies
+(react-v* and historical v*) and disabled administrator bypass. Immutable-tag
+protection must continue to cover both tag patterns.
+
+Pushing main or a tag still does not publish. Dispatch publish.yml only when
+the user explicitly requests publication, and retain all source, version,
+archive, browser and registry checks. Only the final GitHub Release job gets
+contents:write; the publishing job has contents:read and id-token:write.
+Do not reinstate required reviewers without the maintainer's authorization.
 
 ## Bootstrap Procedure
 
@@ -85,8 +95,8 @@ npm-release environment using gh secret set with standard input. Never put
 credentials in chat, command arguments or repository files. A session token
 supports staging; staging defers rather than bypasses npm's required 2FA.
 
-Dispatch bootstrap-stage for the reviewed react-v0.1.0 tag. Approve the protected
-GitHub deployment, then approve the staged package on npm with 2FA. A staged
+The first release used bootstrap-stage for the reviewed react-v0.1.0 tag,
+with GitHub environment approval followed by npm approval with 2FA. A staged
 placeholder is not the usable release. Never submit a duplicate while a stage
 is awaiting approval. Afterwards dispatch verify for the same tag and docs_ref.
 
