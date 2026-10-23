@@ -137,14 +137,16 @@ function VirtualListInner<Item>(
     [getScrollElement],
   );
   const resolveItemKey = useCallback(
-    (index: number) => itemKey(itemsRef.current[index], index),
-    [itemKey],
+    // The engine caches measurements by this callback, not by the items array
+    // or estimateSize callback. Invalidate it for immutable data/estimate updates.
+    (index: number) => itemKey(items[index], index),
+    [items, itemKey, estimateSize],
   );
   const resolveEstimateSize = useCallback((index: number) => {
-    const item = itemsRef.current[index];
+    const item = items[index];
     const value = typeof estimateSize === 'function' ? estimateSize(item, index) : estimateSize;
     return normalizeVirtualListSize(value);
-  }, [estimateSize]);
+  }, [items, estimateSize]);
 
   const virtualizer = useVirtualizer<HTMLElement, HTMLLIElement>({
     count: items.length,
@@ -203,10 +205,9 @@ function VirtualListInner<Item>(
     }
   }
 
-  const fallbackIndexes = getVirtualListSsrIndexes(items.length, ssrItemCount);
   const renderedRows = virtualized
     ? virtualRows.map(row => ({ index: row.index, key: row.key as VirtualListKey, start: row.start }))
-    : fallbackIndexes.map(index => ({ index, key: itemKey(items[index], index), start: null }));
+    : getVirtualListSsrIndexes(items.length, ssrItemCount).map(index => ({ index, key: itemKey(items[index], index), start: null }));
   const rootStyle = externalScroll ? style : { blockSize: height, ...style };
 
   const content = <>

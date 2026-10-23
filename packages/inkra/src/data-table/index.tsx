@@ -17,7 +17,7 @@ import type {
   TableOptions,
   Updater,
 } from '@tanstack/react-table';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
 
 import { Button } from '../Button.js';
@@ -82,6 +82,14 @@ function classes(...values: Array<string | undefined | false>): string {
 
 function resolve<T>(updater: Updater<T>, current: T): T {
   return functionalUpdate(updater, current);
+}
+
+// Keep malformed numeric input out of the row-model arithmetic and correction
+// effect: 0 / 0 produces NaN, which never satisfies the page-index stop guard.
+function normalizePagination(state: PaginationState): PaginationState {
+  const pageIndex = Number.isFinite(state.pageIndex) ? Math.max(0, Math.floor(state.pageIndex)) : 0;
+  const pageSize = Number.isFinite(state.pageSize) && state.pageSize > 0 ? Math.max(1, Math.floor(state.pageSize)) : 10;
+  return pageIndex === state.pageIndex && pageSize === state.pageSize ? state : { pageIndex, pageSize };
 }
 
 function SelectionCheckbox(props: {
@@ -149,7 +157,8 @@ export function DataTable<TData>({
   const [internalSelection, setInternalSelection] = useState(defaultRowSelection);
   const resolvedFilter = globalFilter ?? internalFilter;
   const resolvedSorting = sorting ?? internalSorting;
-  const resolvedPagination = paginationState ?? internalPagination;
+  const requestedPagination = paginationState ?? internalPagination;
+  const resolvedPagination = useMemo(() => normalizePagination(requestedPagination), [requestedPagination]);
   const resolvedSelection = rowSelection ?? internalSelection;
 
   const handleSorting: OnChangeFn<SortingState> = updater => {
@@ -157,7 +166,7 @@ export function DataTable<TData>({
     onSortingChange?.(updater);
   };
   const handlePagination: OnChangeFn<PaginationState> = updater => {
-    if (paginationState === undefined) setInternalPagination(current => resolve(updater, current));
+    if (paginationState === undefined) setInternalPagination(current => normalizePagination(resolve(updater, normalizePagination(current))));
     onPaginationChange?.(updater);
   };
   const handleSelection: OnChangeFn<RowSelectionState> = updater => {

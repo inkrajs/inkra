@@ -55,7 +55,7 @@ test('TagInput source exposes separate controlled tag and draft state with valid
   assert.match(componentSource, /validateTag\?\.\(candidate, context\)/);
   assert.match(componentSource, /createTag \? createTag\(candidate, context\) : createDefaultTag/);
   assert.match(componentSource, /working\.length >= limit/);
-  assert.match(componentSource, /hasTagValue\(working, candidate, getTagValueKey\)/);
+  assert.match(componentSource, /valueKeys\.has\(getTagValueKey\(candidate\)\)/);
   assert.match(componentSource, /role="alert"/);
   assert.match(componentSource, /aria-errormessage=\{state\.errorMessage\}/);
   assert.match(componentSource, /inputRef\.current\?\.focus\(\{ preventScroll: true \}\)/);

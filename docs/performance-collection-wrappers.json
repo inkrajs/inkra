@@ -1,0 +1,476 @@
+[
+  {
+    "component": "Command.Empty",
+    "source": "packages/inkra/src/command/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 59–62: cmdk controls empty state; matching/no-match query transitions pass."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:159 — real cmdk React state with null host refs; 512 items, 12 unrelated updates, zero additional filter calls; each query adds exactly 512 filter calls.",
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:200 — 20 composition/update cycles retain newest handlers and guard IME Enter.",
+      "No DOM sorting, list measurement, focus movement or real keyboard acceptance."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Command.Group",
+    "source": "packages/inkra/src/command/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 54–57: Thin cmdk group with a string heading adapter; no duplicate grouping/filter scan."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:159 — real cmdk React state with null host refs; 512 items, 12 unrelated updates, zero additional filter calls; each query adds exactly 512 filter calls.",
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:200 — 20 composition/update cycles retain newest handlers and guard IME Enter.",
+      "No DOM sorting, list measurement, focus movement or real keyboard acceptance."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Command.Input",
+    "source": "packages/inkra/src/command/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 31–34: Thin cmdk input plus one divider. Query updates invalidate the engine filter once per item."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:159 — real cmdk React state with null host refs; 512 items, 12 unrelated updates, zero additional filter calls; each query adds exactly 512 filter calls.",
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:200 — 20 composition/update cycles retain newest handlers and guard IME Enter.",
+      "No DOM sorting, list measurement, focus movement or real keyboard acceptance."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Command.Item",
+    "source": "packages/inkra/src/command/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 41–52: cmdk owns filtering/selection; wrapper adds constant decoration and content. Disabled selection and latest callbacks pass."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:159 — real cmdk React state with null host refs; 512 items, 12 unrelated updates, zero additional filter calls; each query adds exactly 512 filter calls.",
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:200 — 20 composition/update cycles retain newest handlers and guard IME Enter.",
+      "No DOM sorting, list measurement, focus movement or real keyboard acceptance."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Command.List",
+    "source": "packages/inkra/src/command/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 36–39: Thin cmdk list; no duplicate collection work. DOM height observation and sorting remain unverified."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:159 — real cmdk React state with null host refs; 512 items, 12 unrelated updates, zero additional filter calls; each query adds exactly 512 filter calls.",
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:200 — 20 composition/update cycles retain newest handlers and guard IME Enter.",
+      "No DOM sorting, list measurement, focus movement or real keyboard acceptance."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Command.Root",
+    "source": "packages/inkra/src/command/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 15–29: Composition guard uses a ref, not render state. Stable-prop updates do not refilter 512 cmdk items. Actual DOM focus is not tested."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:159 — real cmdk React state with null host refs; 512 items, 12 unrelated updates, zero additional filter calls; each query adds exactly 512 filter calls.",
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:200 — 20 composition/update cycles retain newest handlers and guard IME Enter.",
+      "No DOM sorting, list measurement, focus movement or real keyboard acceptance."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Command.Separator",
+    "source": "packages/inkra/src/command/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 64–67: Thin cmdk separator plus one divider; alwaysRender remains present through queries."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:159 — real cmdk React state with null host refs; 512 items, 12 unrelated updates, zero additional filter calls; each query adds exactly 512 filter calls.",
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:200 — 20 composition/update cycles retain newest handlers and guard IME Enter.",
+      "No DOM sorting, list measurement, focus movement or real keyboard acceptance."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Command.Shortcut",
+    "source": "packages/inkra/src/command/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 69–72: Native kbd plus conditional PencilText; no collection work."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:159 — real cmdk React state with null host refs; 512 items, 12 unrelated updates, zero additional filter calls; each query adds exactly 512 filter calls.",
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:200 — 20 composition/update cycles retain newest handlers and guard IME Enter.",
+      "No DOM sorting, list measurement, focus movement or real keyboard acceptance."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Alert.Description",
+    "source": "packages/inkra/src/content/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 88–90: Native div plus conditional PencilText; no expensive wrapper-local derivation."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:68 — 128 composed alerts, repeated controlled updates and close/reopen; latest callback and uncontrolled close.",
+      "packages/inkra/test/content.test.mjs — semantic role/tone/action checks."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Alert.Root",
+    "source": "packages/inkra/src/content/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 63–84: Local controlled/uncontrolled visibility with live close handler; constant-size tokens and decoration."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:68 — 128 composed alerts, repeated controlled updates and close/reopen; latest callback and uncontrolled close.",
+      "packages/inkra/test/content.test.mjs — semantic role/tone/action checks."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Alert.Title",
+    "source": "packages/inkra/src/content/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 85–87: Native paragraph plus conditional PencilText; no expensive wrapper-local derivation."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:68 — 128 composed alerts, repeated controlled updates and close/reopen; latest callback and uncontrolled close.",
+      "packages/inkra/test/content.test.mjs — semantic role/tone/action checks."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Avatar.Fallback",
+    "source": "packages/inkra/src/content/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 108–111: Thin Radix fallback wrapper; repeated delay changes cancel prior timers and unmount clears pending timer."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:91 — 128 image/fallback pairs, 12 updates, border/radius and keyed-child preservation.",
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:111 — 20 fallback delay changes, one live timer, cleanup.",
+      "No real image fetch/load/error lifecycle acceptance."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Avatar.Image",
+    "source": "packages/inkra/src/content/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 104–107: Thin Radix image wrapper; actual image loading requires a DOM and is not verified here."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:91 — 128 image/fallback pairs, 12 updates, border/radius and keyed-child preservation.",
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:111 — 20 fallback delay changes, one live timer, cleanup.",
+      "No real image fetch/load/error lifecycle acceptance."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Avatar.Root",
+    "source": "packages/inkra/src/content/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 98–103: Constant-cost radius clamp and optional border; image state delegated to Radix."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:91 — 128 image/fallback pairs, 12 updates, border/radius and keyed-child preservation.",
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:111 — 20 fallback delay changes, one live timer, cleanup.",
+      "No real image fetch/load/error lifecycle acceptance."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Card.Content",
+    "source": "packages/inkra/src/content/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 38–41: Native div with prop/ref forwarding; no derivation or effect."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:46 — 128 cards, all six parts, 12 updates; context propagation, stable seeds, no keyed-child remounts.",
+      "packages/inkra/test/content.test.mjs — native markup/props checks."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Card.Description",
+    "source": "packages/inkra/src/content/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 35–37: Native paragraph plus conditional PencilText; constant-cost wrapper."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:46 — 128 cards, all six parts, 12 updates; context propagation, stable seeds, no keyed-child remounts.",
+      "packages/inkra/test/content.test.mjs — native markup/props checks."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Card.Footer",
+    "source": "packages/inkra/src/content/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 42–46: Reads divider context and renders an optional line; no collection traversal."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:46 — 128 cards, all six parts, 12 updates; context propagation, stable seeds, no keyed-child remounts.",
+      "packages/inkra/test/content.test.mjs — native markup/props checks."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Card.Header",
+    "source": "packages/inkra/src/content/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 26–30: Reads divider context and creates one optional line; no collection traversal or wrapper-owned subscription."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:46 — 128 cards, all six parts, 12 updates; context propagation, stable seeds, no keyed-child remounts.",
+      "packages/inkra/test/content.test.mjs — native markup/props checks."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Card.Root",
+    "source": "packages/inkra/src/content/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 22–25: Stable useId seed and primitive boolean divider context; constant-cost wrapper, no collection work."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:46 — 128 cards, all six parts, 12 updates; context propagation, stable seeds, no keyed-child remounts.",
+      "packages/inkra/test/content.test.mjs — native markup/props checks."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Card.Title",
+    "source": "packages/inkra/src/content/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 31–34: Native heading plus conditional PencilText for string children; constant-cost wrapper."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:46 — 128 cards, all six parts, 12 updates; context propagation, stable seeds, no keyed-child remounts.",
+      "packages/inkra/test/content.test.mjs — native markup/props checks."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Table.Body",
+    "source": "packages/inkra/src/content/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 129: Direct tbody/ref forwarding; no derived work."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:135 — 512 rows × 4 cells, eight selection/text updates, all nine exports, stable keyed children and native semantics.",
+      "packages/inkra/test/content.test.mjs — native markup/props checks."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Table.Caption",
+    "source": "packages/inkra/src/content/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 142: Native caption plus conditional PencilText; constant-cost wrapper."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:135 — 512 rows × 4 cells, eight selection/text updates, all nine exports, stable keyed children and native semantics.",
+      "packages/inkra/test/content.test.mjs — native markup/props checks."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Table.Cell",
+    "source": "packages/inkra/src/content/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 139–141: Native td with conditional nowrap/text and one PencilLine per cell. Browser decoration cost is not measured."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:135 — 512 rows × 4 cells, eight selection/text updates, all nine exports, stable keyed children and native semantics.",
+      "packages/inkra/test/content.test.mjs — native markup/props checks."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Table.Container",
+    "source": "packages/inkra/src/content/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 125–127: Native focusable overflow container; no collection derivation."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:135 — 512 rows × 4 cells, eight selection/text updates, all nine exports, stable keyed children and native semantics.",
+      "packages/inkra/test/content.test.mjs — native markup/props checks."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Table.Footer",
+    "source": "packages/inkra/src/content/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 130: Direct tfoot/ref forwarding; no derived work."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:135 — 512 rows × 4 cells, eight selection/text updates, all nine exports, stable keyed children and native semantics.",
+      "packages/inkra/test/content.test.mjs — native markup/props checks."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Table.Head",
+    "source": "packages/inkra/src/content/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 133–138: Native th scope, conditional nowrap/text and one PencilLine per cell. Browser decoration cost is not measured."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:135 — 512 rows × 4 cells, eight selection/text updates, all nine exports, stable keyed children and native semantics.",
+      "packages/inkra/test/content.test.mjs — native markup/props checks."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Table.Header",
+    "source": "packages/inkra/src/content/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 128: Direct thead/ref forwarding; no derived work."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:135 — 512 rows × 4 cells, eight selection/text updates, all nine exports, stable keyed children and native semantics.",
+      "packages/inkra/test/content.test.mjs — native markup/props checks."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Table.Root",
+    "source": "packages/inkra/src/content/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 122–124: Native table with styling attributes; no implicit grid or duplicate row model."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:135 — 512 rows × 4 cells, eight selection/text updates, all nine exports, stable keyed children and native semantics.",
+      "packages/inkra/test/content.test.mjs — native markup/props checks."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Table.Row",
+    "source": "packages/inkra/src/content/index.tsx",
+    "status": "node-verified-browser-pending",
+    "findings": [
+      "Source lines 131–132: Direct tr/ref forwarding plus selected attribute; no selection scan."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:135 — 512 rows × 4 cells, eight selection/text updates, all nine exports, stable keyed children and native semantics.",
+      "packages/inkra/test/content.test.mjs — native markup/props checks."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "OverflowList",
+    "source": "packages/inkra/src/overflow-list/index.tsx",
+    "status": "fixed-node-verified-browser-pending",
+    "findings": [
+      "Source lines 138–175, 187–277, 296–305: Fixed observer targets staying stale after visible membership changed while overflow remained active. Fixed joined-key collision suppressing onOverflowChange. Existing memoized entries, cached widths, one-frame coalescing and unchanged-layout bailout remain intact."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:306 — 2000-item mounted synthetic geometry test, 12 unrelated updates, 100 resize callbacks → one frame / six geometry reads, observer/frame cleanup.",
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:339 — 4→7→2 visible items refresh observer targets, release hidden nodes.",
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:366 — delimiter-colliding priority partitions emit distinct changes.",
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:395 — 20000-item helper across start/end/priority and five widths; ordered disjoint partitions.",
+      "Both defect regressions failed against baseline dist and pass after rebuild; no real DOM acceptance."
+    ],
+    "disposition": "Keep two focused lifecycle/correctness fixes; browser resize/focus acceptance remains open."
+  },
+  {
+    "component": "Tree.Item",
+    "source": "packages/inkra/src/tree/index.tsx",
+    "status": "boundary-reviewed-browser-pending",
+    "findings": [
+      "Source lines 58–62: Thin React Aria item wrapper preserving id, textValue and ref; no independent flattening or selection model."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:227 — pure forwardRef wrapper boundary and 10000 ItemContent state callbacks; no React Aria engine mount.",
+      "packages/inkra/test/expansion-data.test.mjs and tree-timeline-regression.test.mjs — delegation/style source checks.",
+      "Full Tree mount attempt rejected by react-test-renderer due to ReactDOM collection portal; real DOM/browser needed."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Tree.ItemContent",
+    "source": "packages/inkra/src/tree/index.tsx",
+    "status": "boundary-reviewed-browser-pending",
+    "findings": [
+      "Source lines 81–123: Runs state-aware child/icon render callbacks and conditionally mounts selected/focused decorations; no wrapper-local collection traversal."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:227 — pure forwardRef wrapper boundary and 10000 ItemContent state callbacks; no React Aria engine mount.",
+      "packages/inkra/test/expansion-data.test.mjs and tree-timeline-regression.test.mjs — delegation/style source checks.",
+      "Full Tree mount attempt rejected by react-test-renderer due to ReactDOM collection portal; real DOM/browser needed."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Tree.ItemDescription",
+    "source": "packages/inkra/src/tree/index.tsx",
+    "status": "boundary-reviewed-browser-pending",
+    "findings": [
+      "Source lines 130–133: Native span forwards existing children without reprocessing; pure wrapper boundary verified."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:227 — pure forwardRef wrapper boundary and 10000 ItemContent state callbacks; no React Aria engine mount.",
+      "packages/inkra/test/expansion-data.test.mjs and tree-timeline-regression.test.mjs — delegation/style source checks.",
+      "Full Tree mount attempt rejected by react-test-renderer due to ReactDOM collection portal; real DOM/browser needed."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Tree.ItemTitle",
+    "source": "packages/inkra/src/tree/index.tsx",
+    "status": "boundary-reviewed-browser-pending",
+    "findings": [
+      "Source lines 125–128: Native span plus conditional PencilText; pure wrapper boundary verified."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:227 — pure forwardRef wrapper boundary and 10000 ItemContent state callbacks; no React Aria engine mount.",
+      "packages/inkra/test/expansion-data.test.mjs and tree-timeline-regression.test.mjs — delegation/style source checks.",
+      "Full Tree mount attempt rejected by react-test-renderer due to ReactDOM collection portal; real DOM/browser needed."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  },
+  {
+    "component": "Tree.Root",
+    "source": "packages/inkra/src/tree/index.tsx",
+    "status": "boundary-reviewed-browser-pending",
+    "findings": [
+      "Source lines 34–56: Delegates collection, selection and expansion to React Aria; one style object/empty renderer per wrapper render. Full Tree mounting unavailable in react-test-renderer."
+    ],
+    "verification": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs:227 — pure forwardRef wrapper boundary and 10000 ItemContent state callbacks; no React Aria engine mount.",
+      "packages/inkra/test/expansion-data.test.mjs and tree-timeline-regression.test.mjs — delegation/style source checks.",
+      "Full Tree mount attempt rejected by react-test-renderer due to ReactDOM collection portal; real DOM/browser needed."
+    ],
+    "disposition": "No source change justified by current evidence; do not blanket-memoize thin wrappers. Real-browser acceptance remains open."
+  }
+]

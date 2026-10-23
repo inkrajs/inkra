@@ -26,7 +26,6 @@ import {
   createDefaultTag,
   defaultTagInputDelimiters,
   defaultTagValueKey,
-  hasTagValue,
   normalizeTagInputValue,
   splitTagInputValue,
 } from './model.js';
@@ -292,6 +291,8 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
   const commitCandidates = (candidates: readonly string[], reason: TagInputCommitReason) => {
     if (!canEdit) return false;
     const working = [...currentTags];
+    const valueKeys = new Set(currentTags.map(tag => getTagValueKey(tag.value)));
+    const ids = new Set(currentTags.map(tag => tag.id));
     const added: TagInputTag[] = [];
     let rejected: { candidate: string; code: TagInputValidationCode; message: string } | undefined;
 
@@ -302,7 +303,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
         rejected = { candidate, code: 'max-tags', message: copy.maxTags(limit) };
         break;
       }
-      if (hasTagValue(working, candidate, getTagValueKey)) {
+      if (valueKeys.has(getTagValueKey(candidate))) {
         rejected = { candidate, code: 'duplicate', message: copy.duplicate(candidate) };
         break;
       }
@@ -319,11 +320,13 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
         rejected = { candidate, code: 'invalid', message: copy.invalid(candidate) };
         break;
       }
-      if (working.some(current => current.id === tag.id) || hasTagValue(working, tag.value, getTagValueKey)) {
+      if (ids.has(tag.id) || valueKeys.has(getTagValueKey(tag.value))) {
         rejected = { candidate, code: 'duplicate', message: copy.duplicate(candidate) };
         break;
       }
       working.push(tag);
+      ids.add(tag.id);
+      valueKeys.add(getTagValueKey(tag.value));
       added.push(tag);
     }
 
@@ -592,8 +595,8 @@ export {
   createDefaultTag,
   defaultTagInputDelimiters,
   defaultTagValueKey,
-  hasTagValue,
   normalizeTagInputValue,
   splitTagInputValue,
 };
+export { hasTagValue } from './model.js';
 export type { FieldControlSize, TagInputIdentity };

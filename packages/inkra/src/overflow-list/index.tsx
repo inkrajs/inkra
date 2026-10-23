@@ -254,6 +254,9 @@ function OverflowListInner<Item extends OverflowListItem>(
     setLayout({ signature, visibleKeys: new Set(allKeys), needsOverflow: false, measuring: true });
   }, [allKeys, layout.signature, signature]);
 
+  // Keep observer targets in sync when a resize reveals or hides items without
+  // changing whether an overflow trigger is needed. Memoized visibleEntries
+  // leaves the observer intact during unrelated parent updates.
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return undefined;
@@ -271,7 +274,7 @@ function OverflowListInner<Item extends OverflowListItem>(
         frameRef.current = null;
       }
     };
-  }, [effectiveLayout.measuring, effectiveLayout.needsOverflow, scheduleLayout, signature]);
+  }, [effectiveLayout.measuring, effectiveLayout.needsOverflow, scheduleLayout, signature, visibleEntries]);
 
   useEffect(() => {
     const fonts = typeof document === 'undefined' ? undefined : document.fonts;
@@ -292,7 +295,7 @@ function OverflowListInner<Item extends OverflowListItem>(
 
   useEffect(() => {
     if (effectiveLayout.measuring) return;
-    const changeKey = `${signature}:${visibleEntries.map(entry => entry.key).join('|')}`;
+    const changeKey = JSON.stringify([signature, visibleEntries.map(entry => entry.key)]);
     if (lastChangeRef.current === changeKey) return;
     lastChangeRef.current = changeKey;
     onOverflowChangeRef.current?.({

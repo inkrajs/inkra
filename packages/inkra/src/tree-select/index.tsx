@@ -190,9 +190,9 @@ export const TreeSelect = forwardRef<HTMLDivElement, TreeSelectProps>(function T
   const searchRef = useRef<HTMLInputElement>(null);
   const treeRef = useRef<HTMLDivElement>(null);
   const formAnchorRef = useRef<HTMLInputElement>(null);
-  const selectedNodes = selectedIds
+  const selectedNodes = useMemo(() => selectedIds
     .map(selectedId => normalized.byId.get(selectedId))
-    .filter((node): node is TreeSelectNode => node !== undefined);
+    .filter((node): node is TreeSelectNode => node !== undefined), [selectedIds, normalized]);
 
   const setOpen = (next: boolean) => {
     if (resolvedDisabled || resolvedReadOnly) return;
@@ -255,28 +255,45 @@ export const TreeSelect = forwardRef<HTMLDivElement, TreeSelectProps>(function T
     treeRef.current?.focus();
   };
 
-  const renderNodes = (nodes: readonly TreeSelectNode[]): ReactNode => nodes.map(node => {
-    const branch = Boolean(node.children?.length);
-    const label = renderLabel?.(node, {
-      branch,
-      disabled: Boolean(node.disabled),
-      selected: selectedSet.has(node.id),
-      query,
-    }) ?? node.label;
-    return <Tree.Item
-      className="inkra-tree-select__item"
-      id={node.id}
-      isDisabled={node.disabled}
-      key={node.id}
-      textValue={node.label}
-    >
-      <Tree.ItemContent collapseLabel={collapseLabel} expandLabel={expandLabel}>
-        <Tree.ItemTitle>{label}</Tree.ItemTitle>
-        {node.description ? <Tree.ItemDescription>{node.description}</Tree.ItemDescription> : null}
-      </Tree.ItemContent>
-      {node.children?.length ? renderNodes(node.children) : null}
-    </Tree.Item>;
-  });
+  const treeItems = useMemo(() => {
+    // Construct the same nested tree without growing the JavaScript call stack.
+    // Enter jobs keep renderLabel callbacks in the original depth-first order.
+    const result: ReactNode[] = [];
+    type Job = { node: TreeSelectNode; output: ReactNode[]; finish?: { label: ReactNode; children: ReactNode[] } };
+    const stack: Job[] = [];
+    for (let index = filtered.nodes.length - 1; index >= 0; index--) stack.push({ node: filtered.nodes[index], output: result });
+    while (stack.length) {
+      const { node, output, finish } = stack.pop()!;
+      if (finish) {
+        output.push(<Tree.Item
+          className="inkra-tree-select__item"
+          id={node.id}
+          isDisabled={node.disabled}
+          key={node.id}
+          textValue={node.label}
+        >
+          <Tree.ItemContent collapseLabel={collapseLabel} expandLabel={expandLabel}>
+            <Tree.ItemTitle>{finish.label}</Tree.ItemTitle>
+            {node.description ? <Tree.ItemDescription>{node.description}</Tree.ItemDescription> : null}
+          </Tree.ItemContent>
+          {node.children?.length ? finish.children : null}
+        </Tree.Item>);
+        continue;
+      }
+      const label = renderLabel?.(node, {
+        branch: Boolean(node.children?.length),
+        disabled: Boolean(node.disabled),
+        selected: selectedSet.has(node.id),
+        query,
+      }) ?? node.label;
+      const children: ReactNode[] = [];
+      stack.push({ node, output, finish: { label, children } });
+      for (let index = (node.children?.length ?? 0) - 1; index >= 0; index--) {
+        stack.push({ node: node.children![index], output: children });
+      }
+    }
+    return result;
+  }, [filtered.nodes, renderLabel, selectedSet, query, collapseLabel, expandLabel]);
 
   const fallbackValue = selectedIds.map(selectedId => normalized.byId.get(selectedId)?.label ?? selectedId).join(', ');
   const valueContent = renderValue?.(selectedNodes, selectedIds)
@@ -366,7 +383,7 @@ export const TreeSelect = forwardRef<HTMLDivElement, TreeSelectProps>(function T
             selectedKeys={selectedSet}
             selectionMode={props.multiple ? 'multiple' : 'single'}
           >
-            {renderNodes(filtered.nodes)}
+            {treeItems}
           </Tree.Root>
         </Popover.Content>
       </Popover.Portal>

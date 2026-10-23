@@ -1,6 +1,6 @@
 import { Combobox } from '@base-ui/react/combobox';
 import { DirectionProvider } from '@base-ui/react/direction-provider';
-import { forwardRef, useId, useMemo, useRef } from 'react';
+import { forwardRef, useCallback, useId, useMemo, useRef } from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { Button } from '../Button.js';
 import { Input } from '../form/Input.js';
@@ -76,6 +76,11 @@ const SearchableControl = forwardRef<HTMLDivElement, SearchableSelectProps>(func
   const lookup = useMemo(() => new Map(items.map(item => [item.value, item])), [items]);
   const values = useMemo(() => items.map(item => item.value), [items]);
   const { contains } = Combobox.useFilter({ sensitivity: 'base' });
+  const itemToStringLabel = useCallback((item: string) => lookup.get(item)?.label ?? item, [lookup]);
+  const filter = useCallback((item: string, query: string) => {
+    const option = lookup.get(item);
+    return contains(`${option?.label ?? item} ${option?.keywords ?? ''}`, query);
+  }, [contains, lookup]);
   const summary = (selected: string | string[] | null) => {
     const selectedValues = Array.isArray(selected) ? selected : selected == null ? [] : [selected];
     return selectedValues.map(item => lookup.get(item)?.label ?? item).join(', ');
@@ -98,8 +103,8 @@ const SearchableControl = forwardRef<HTMLDivElement, SearchableSelectProps>(func
       name={name} form={form} autoHighlight
       open={resolvedReadOnly || resolvedDisabled ? false : open} defaultOpen={defaultOpen}
       onOpenChange={(next, details) => { if (resolvedReadOnly || resolvedDisabled) details.cancel(); else onOpenChange?.(next); }}
-      itemToStringLabel={item => lookup.get(item)?.label ?? item}
-      filter={(item, query) => contains(`${lookup.get(item)?.label ?? item} ${lookup.get(item)?.keywords ?? ''}`, query)}
+      itemToStringLabel={itemToStringLabel}
+      filter={filter}
       onValueChange={next => {
         if (resolvedDisabled || resolvedReadOnly) return;
         if (props.multiple) props.onValueChange?.(Array.isArray(next) ? next : []);
