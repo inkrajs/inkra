@@ -1,7 +1,7 @@
 # React Package Releases
 
 Repository: inkrajs/inkra. Package: @inkra/react. First release: 0.1.0.
-Version 0.1.0 is published and registry-verified. Future source versions remain
+Version 0.2.0 is published and registry-verified. Future source versions remain
 candidates until their own registry verification passes.
 Website deployment does not publish an npm package.
 
@@ -14,11 +14,20 @@ Website deployment does not publish an npm package.
   f86161cf33223628c64451ec87e39488f4b0f1ebc28db31e8ab7a8a595291a67.
 - Temporary GitHub bootstrap secrets removed from npm-release and npm-bootstrap.
 
-The first version used staging, not OIDC publishing. The maintainer has saved
-the trusted publisher in npm package settings; it still shows Pending validation.
-Do not describe OIDC as verified until a new version is successfully published
-through that trusted workflow. Re-running 0.1.0 only verifies its existing bytes
-and skips publishing, so it cannot validate the new trust relationship.
+The first version used staging, not OIDC publishing. Version 0.2.0 subsequently
+validated the trusted publisher through a successful OIDC publication.
+
+## Version 0.2.0 Record
+
+- Source/tag: 035d3380cc2e1bd1c524d69ca74dd62f4ed10230 / react-v0.2.0.
+- Release run: 39873927781, approved by the maintainer on 2026-10-23.
+- OIDC publication succeeded; public archive and React 18/19 installation checks passed.
+- GitHub Release was created after registry verification succeeded.
+- Public archive SHA-256:
+  f3f9448495c3fd6fe6a013a7c91801e52fc787b39f3852575551d890c82e935a.
+- npm initially reported that the package was still processing. The first registry
+  verification exhausted its one-minute availability window; only the failed verification
+  jobs were rerun after the public package became available. No duplicate publication occurred.
 
 ## Pipeline
 

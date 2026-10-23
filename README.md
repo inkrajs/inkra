@@ -77,7 +77,7 @@ package and the main branch may contain different features.*
 
 ## Find Your Components
 
-The published **0.1.0** package includes:
+The published **0.2.0** package includes these core components:
 
 | Use | Components |
 | --- | --- |
@@ -89,12 +89,12 @@ The published **0.1.0** package includes:
 | Dates and maps | Calendar, DayAgenda, JourneyMap |
 | Drawing | PencilIcon, PencilText, PencilSurface, PencilLine |
 
-**0.2.0 source:** adds richer forms and overlays, layout primitives, media
+**New in 0.2.0:** richer forms and overlays, layout primitives, media
 controls (AudioPlayer, Carousel, ImageViewer, ImageCropper), graph and canvas
 interactions (NodeGraph, Sortable, PanZoom), data views (Log, Radar, Heatmap,
-Sparkline, VirtualList) and circular Progress. These additions are not in
-npm 0.1.0. Check [Releases](https://github.com/inkrajs/inkra/releases) for
-publication status, and the [changelog](./CHANGELOG.md) and
+Sparkline, VirtualList) and circular Progress. Version 0.2.0 is published on npm
+and verified with React 18 and 19. See [Releases](https://github.com/inkrajs/inkra/releases),
+the [changelog](./CHANGELOG.md) and
 [package API](./packages/inkra/README.md) for the full scope and known limits.
 
 ## Work on Inkra
