@@ -126,10 +126,13 @@ export const Separator = forwardRef<HTMLDivElement, SeparatorProps>(function Sep
 export interface SkeletonProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
   seed?: string | number;
   radius?: number;
+  width?: CSSProperties['width'];
+  height?: CSSProperties['height'];
+  animation?: 'none' | 'pulse';
 }
 
 export const Skeleton = forwardRef<HTMLDivElement, SkeletonProps>(function Skeleton(
-  { className, seed = 'inkra-skeleton', radius, ...props },
+  { className, seed = 'inkra-skeleton', radius, width, height, animation = 'none', style, ...props },
   ref,
 ) {
   return (
@@ -138,6 +141,8 @@ export const Skeleton = forwardRef<HTMLDivElement, SkeletonProps>(function Skele
       aria-hidden="true"
       as="div"
       className={['inkra-skeleton', className].filter(Boolean).join(' ')}
+      data-animation={animation}
+      style={{ width, height, ...style }}
       ref={ref}
       seed={seed}
       radius={radius}

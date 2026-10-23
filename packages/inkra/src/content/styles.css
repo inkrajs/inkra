@@ -31,6 +31,8 @@
 .inkra-alert__icon { display: inline-flex; width: 20px; height: 20px; flex: none; }
 .inkra-alert__icon > * { width: 100%; height: 100%; }
 .inkra-alert__body { display: grid; gap: var(--inkra-space-2); min-width: 0; overflow-wrap: anywhere; }
+.inkra-alert:has(> .inkra-alert__close) .inkra-alert__body { flex: 1; }
+.inkra-alert__close { flex: none; align-self: flex-start; }
 .inkra-alert__title { margin: 0; font-size: 17px; line-height: var(--inkra-line-ui); }
 .inkra-alert__description { font-size: var(--inkra-text-md); line-height: var(--inkra-line-body); }
 .inkra-avatar { position: relative; display: inline-flex; width: 44px; height: 44px; flex: none; isolation: isolate; }

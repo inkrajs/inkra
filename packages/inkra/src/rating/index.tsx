@@ -1,8 +1,10 @@
 import {
   forwardRef,
+  useCallback,
   useEffect,
   useId,
   useMemo,
+  useRef,
   useState,
   type HTMLAttributes,
   type KeyboardEvent,
@@ -27,6 +29,10 @@ export interface RatingProps extends Omit<HTMLAttributes<HTMLDivElement>, 'child
   value?: number;
   defaultValue?: number;
   onValueChange?: (value: number) => void;
+  name?: string;
+  form?: string;
+  hoverPreview?: boolean;
+  onPreviewChange?: (value: number | null) => void;
   count?: number;
   step?: number;
   clearable?: RatingClearStrategy;
@@ -75,6 +81,10 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
     value,
     defaultValue = 0,
     onValueChange,
+    name,
+    form,
+    hoverPreview = true,
+    onPreviewChange,
     count: countProp = 5,
     step: stepProp = 1,
     clearable = false,
@@ -101,21 +111,53 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
   const [uncontrolledValue, setUncontrolledValue] = useState(() => normalizeRatingValue(defaultValue, count, step));
   const committedValue = normalizeRatingValue(controlled ? value : uncontrolledValue, count, step);
   const [previewValue, setPreviewValue] = useState<number | null>(null);
-  const displayValue = previewValue ?? committedValue;
+  const previewRef = useRef<number | null>(null);
+  const previewCallback = useRef(onPreviewChange);
+  previewCallback.current = onPreviewChange;
+  const resetState = useRef({ controlled, defaultValue, count, step });
+  resetState.current = { controlled, defaultValue, count, step };
+  const inputRef = useRef<HTMLInputElement>(null);
+  const changePreview = useCallback((next: number | null) => {
+    if (previewRef.current === next) return;
+    previewRef.current = next;
+    setPreviewValue(next);
+    previewCallback.current?.(next);
+  }, []);
+  const previewing = hoverPreview && !disabled && !readOnly && previewValue !== null;
+  const displayValue = previewing ? normalizeRatingValue(previewValue, count, step) : committedValue;
   const symbolId = useId();
   const symbolIndexes = useMemo(() => Array.from({ length: count }, (_, index) => index), [count]);
   const defaultIconSize = size === 'sm' ? 26 : size === 'lg' ? 38 : 32;
 
   useEffect(() => {
-    if (disabled || readOnly) setPreviewValue(null);
-  }, [disabled, readOnly]);
+    if (disabled || readOnly || !hoverPreview) changePreview(null);
+  }, [disabled, readOnly, hoverPreview, changePreview]);
+
+  useEffect(() => { changePreview(null); }, [count, step, changePreview]);
+
+  useEffect(() => {
+    const owner = inputRef.current?.form;
+    if (!owner) return;
+    let resetTimer: ReturnType<typeof setTimeout> | undefined;
+    const reset = (event: Event) => {
+      clearTimeout(resetTimer);
+      resetTimer = setTimeout(() => {
+        if (event.defaultPrevented) return;
+        changePreview(null);
+        const state = resetState.current;
+        if (!state.controlled) setUncontrolledValue(normalizeRatingValue(state.defaultValue, state.count, state.step));
+      }, 0);
+    };
+    owner.addEventListener('reset', reset);
+    return () => { clearTimeout(resetTimer); owner.removeEventListener('reset', reset); };
+  }, [form, changePreview]);
 
   const commit = (nextValue: number) => {
     if (disabled || readOnly) return;
     const normalized = normalizeRatingValue(nextValue, count, step);
     const cleared = normalized === committedValue && normalized !== 0 && allowsReselectClear(clearable);
     const resolved = cleared ? 0 : normalized;
-    setPreviewValue(null);
+    changePreview(null);
     if (resolved === committedValue) return;
     if (!controlled) setUncontrolledValue(resolved);
     onValueChange?.(resolved);
@@ -145,7 +187,7 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
     if (['Backspace', 'Delete', 'Escape'].includes(event.key) && allowsKeyboardClear(clearable)) nextValue = 0;
     if (nextValue === null) return;
     event.preventDefault();
-    setPreviewValue(null);
+    changePreview(null);
     let normalized = normalizeRatingValue(nextValue, count, step);
     if (normalized === 0 && committedValue > 0 && !allowsKeyboardClear(clearable)) {
       normalized = Math.min(step, count);
@@ -160,7 +202,7 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
       index: index + 1,
       fraction,
       filled,
-      previewing: previewValue !== null,
+      previewing,
     };
     if (renderSymbol) return renderSymbol(state);
     if (symbol !== undefined) return symbol;
@@ -180,23 +222,24 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
       aria-valuetext={getValueLabel(committedValue, count)}
       className={['inkra-rating', className].filter(Boolean).join(' ')}
       data-disabled={disabled || undefined}
-      data-previewing={previewValue !== null || undefined}
+      data-previewing={previewing || undefined}
       data-readonly={readOnly || undefined}
       data-size={size}
       dir={dir}
       onBlur={(event) => {
-        setPreviewValue(null);
+        changePreview(null);
         onBlur?.(event);
       }}
       onKeyDown={handleKeyDown}
       onPointerLeave={(event) => {
-        setPreviewValue(null);
+        changePreview(null);
         onPointerLeave?.(event);
       }}
       ref={forwardedRef}
       role="slider"
       tabIndex={disabled ? undefined : (props.tabIndex ?? 0)}
     >
+      <input ref={inputRef} type="hidden" name={name} form={form} value={committedValue} disabled={disabled} />
       <span className="inkra-rating__symbols" aria-hidden="true">
         {symbolIndexes.map((index) => {
           const fraction = Math.min(1, Math.max(0, displayValue - index));
@@ -207,8 +250,8 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
               key={index}
               onClick={(event) => commit(valueFromPointer(event, index))}
               onPointerMove={(event) => {
-                if (event.pointerType === 'mouse' && !disabled && !readOnly) {
-                  setPreviewValue(valueFromPointer(event, index));
+                if (hoverPreview && event.pointerType === 'mouse' && !disabled && !readOnly) {
+                  changePreview(valueFromPointer(event, index));
                 }
               }}
             >

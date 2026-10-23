@@ -68,8 +68,10 @@ test('Skeleton is static, hidden and accepts consumer dimensions', () => {
   assert.match(markup, /aria-hidden="true"/);
   assert.match(markup, /inkra-pencil-surface--quiet/);
   assert.match(markup, /class="inkra-pencil-surface inkra-pencil-surface--quiet inkra-skeleton consumer-skeleton"/);
-  assert.match(markup, /style="height:28px;width:12rem"/);
-  assert.doesNotMatch(markup, /role="progressbar"|animation/);
+  assert.match(markup, /width:12rem/);
+  assert.match(markup, /height:28px/);
+  assert.match(markup, /data-animation="none"/);
+  assert.doesNotMatch(markup, /role="progressbar"|animation:/);
 });
 
 test('Progress clamps determinate values and keeps native progressbar ARIA', () => {

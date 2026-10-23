@@ -63,12 +63,12 @@ test('Rating preserves read-only focus and removes disabled tab stop', () => {
 
 test('Rating source separates hover preview from committed change', () => {
   assert.match(source, /const \[previewValue, setPreviewValue\] = useState<number \| null>\(null\)/);
-  assert.match(source, /onPointerMove=\{\(event\) => \{[\s\S]*setPreviewValue\(valueFromPointer/);
+  assert.match(source, /onPointerMove=\{\(event\) => \{[\s\S]*hoverPreview[\s\S]*changePreview\(valueFromPointer/);
   assert.match(source, /onClick=\{\(event\) => commit\(valueFromPointer/);
   assert.doesNotMatch(source, /onPointerMove=\{[\s\S]{0,240}onValueChange/);
   assert.match(source, /if \(!controlled\) setUncontrolledValue/);
   assert.match(source, /aria-valuenow=\{committedValue\}/);
-  assert.match(source, /if \(disabled \|\| readOnly\) setPreviewValue\(null\)/);
+  assert.match(source, /if \(disabled \|\| readOnly \|\| !hoverPreview\) changePreview\(null\)/);
 });
 
 test('Rating source defines keyboard endpoints, RTL and clear strategies', () => {

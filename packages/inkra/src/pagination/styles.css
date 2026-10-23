@@ -1,6 +1,7 @@
 .inkra-pagination { min-inline-size: 0; max-inline-size: 100%; color: var(--inkra-ink); }
 .inkra-pagination__list { box-sizing: border-box; display: flex; flex-wrap: nowrap; align-items: center; gap: var(--inkra-space-1); max-inline-size: 100%; overflow-x: auto; overscroll-behavior-inline: contain; scroll-padding-inline: 8px; list-style: none; padding: 8px; margin: 0; }
 .inkra-pagination__list > li { display: flex; flex: 0 0 auto; }
+.inkra-pagination__summary { min-block-size: var(--inkra-touch-target); align-items: center; justify-content: center; padding-inline: var(--inkra-space-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .inkra-pagination__page.inkra-button { min-inline-size: var(--inkra-touch-target); }
 .inkra-pagination__page .inkra-button__surface { padding-inline: var(--inkra-space-2); }
 .inkra-pagination__page .inkra-button__surface { isolation: isolate; }

@@ -1,6 +1,6 @@
 .inkra-tree { display: grid; gap: 2px; min-width: 0; color: var(--inkra-ink); outline: none; }
 .inkra-tree__item { position: relative; min-width: 0; outline: none; }
-.inkra-tree__item-content { position: relative; isolation: isolate; display: grid; grid-template-columns: var(--inkra-touch-target) minmax(0, auto) minmax(0, 1fr); align-items: center; min-height: var(--inkra-touch-target); padding-inline-start: calc((var(--inkra-tree-level, 1) - 1) * 24px); padding-inline-end: var(--inkra-space-2); border-radius: var(--inkra-radius-md); overflow: visible; }
+.inkra-tree__item-content { position: relative; isolation: isolate; display: grid; grid-template-columns: var(--inkra-touch-target) minmax(0, auto) minmax(0, 1fr); align-items: center; min-height: var(--inkra-touch-target); padding-inline-start: calc((var(--inkra-tree-level, 1) - 1) * var(--inkra-tree-indent, 24px)); padding-inline-end: var(--inkra-space-2); border-radius: var(--inkra-radius-md); overflow: visible; }
 .inkra-tree__item-content:not([data-has-icon]) { grid-template-columns: var(--inkra-touch-target) minmax(0, 1fr); }
 .inkra-tree__selection, .inkra-tree__focus { position: absolute; inset: 2px; z-index: -1; pointer-events: none; }
 .inkra-tree__focus { inset: -1px; z-index: 2; }
@@ -17,6 +17,9 @@
 .inkra-tree__icon { display: inline-grid; place-items: center; width: 28px; height: 28px; color: var(--inkra-accent-strong); }
 .inkra-tree__icon > * { max-width: 100%; max-height: 100%; }
 .inkra-tree__copy { display: grid; gap: 2px; min-width: 0; padding-block: var(--inkra-space-2); overflow-wrap: anywhere; }
+.inkra-tree[data-size="sm"] .inkra-tree__copy { padding-block: var(--inkra-space-1); }
+.inkra-tree[data-size="lg"] .inkra-tree__copy { padding-block: var(--inkra-space-3); }
+.inkra-tree[data-size="lg"] .inkra-tree__item-content { min-height: 52px; }
 .inkra-tree__title { min-width: 0; font-size: var(--inkra-text-md); line-height: var(--inkra-line-ui); }
 .inkra-tree__description { min-width: 0; color: var(--inkra-ink-muted); font-size: var(--inkra-text-sm); line-height: var(--inkra-line-body); }
 .inkra-tree__item[data-disabled] .inkra-tree__item-content { opacity: .55; }

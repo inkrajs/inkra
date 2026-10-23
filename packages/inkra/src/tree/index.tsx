@@ -26,10 +26,16 @@ export type TreeRootProps<T extends object = object> = Omit<AriaTreeProps<T>, 'c
   className?: string;
   style?: CSSProperties;
   emptyState?: ReactNode;
+  /** Indentation per level in CSS pixels. Nonfinite values use 24. */
+  indent?: number;
+  size?: 'sm' | 'md' | 'lg';
 };
 
 function TreeRootInner<T extends object>({
   className,
+  style,
+  indent = 24,
+  size = 'md',
   emptyState = 'No items',
   selectionMode = 'single',
   selectionBehavior = 'toggle',
@@ -39,6 +45,8 @@ function TreeRootInner<T extends object>({
     {...props}
     ref={ref}
     className={['inkra-tree', className].filter(Boolean).join(' ')}
+    data-size={size}
+    style={{ '--inkra-tree-indent': `${Number.isFinite(indent) ? Math.max(0, indent) : 24}px`, ...style } as CSSProperties}
     selectionMode={selectionMode}
     selectionBehavior={selectionBehavior}
     renderEmptyState={() => <div className="inkra-tree__empty">{emptyState}</div>}
@@ -54,6 +62,7 @@ const TreeItem = forwardRef<HTMLDivElement, TreeItemProps>(function TreeItem({ c
 });
 
 export interface TreeItemContentState {
+  level: number;
   isExpanded: boolean;
   hasChildItems: boolean;
   isSelected: boolean;
@@ -61,7 +70,7 @@ export interface TreeItemContentState {
 }
 
 export interface TreeItemContentProps {
-  children: ReactNode;
+  children: ReactNode | ((state: TreeItemContentState) => ReactNode);
   className?: string;
   icon?: ReactNode | ((state: TreeItemContentState) => ReactNode);
   disclosureIcon?: ReactNode | ((state: TreeItemContentState) => ReactNode);
@@ -86,7 +95,7 @@ const TreeItemContent = forwardRef<Element, TreeItemContentProps>(function TreeI
     level,
     id,
   }) => {
-    const state = { isExpanded, hasChildItems, isSelected, isDisabled };
+    const state = { isExpanded, hasChildItems, isSelected, isDisabled, level };
     const resolvedIcon = typeof icon === 'function' ? icon(state) : icon;
     const resolvedDisclosure = typeof disclosureIcon === 'function' ? disclosureIcon(state) : disclosureIcon;
     return <div
@@ -108,7 +117,7 @@ const TreeItemContent = forwardRef<Element, TreeItemContentProps>(function TreeI
         </>}
       </AriaButton> : <span className="inkra-tree__disclosure-spacer" aria-hidden="true" />}
       {resolvedIcon != null && <span className="inkra-tree__icon" aria-hidden="true">{resolvedIcon}</span>}
-      <span className="inkra-tree__copy">{children}</span>
+      <span className="inkra-tree__copy">{typeof children === 'function' ? children(state) : children}</span>
     </div>;
   }}</AriaTreeItemContent>;
 });

@@ -43,6 +43,14 @@
   max-inline-size: 100%;
   min-inline-size: 8px;
 }
+.inkra-skeleton[data-animation="pulse"] { animation: inkra-skeleton-pulse calc(var(--inkra-motion-slow) * 4) var(--inkra-ease) infinite; }
+@keyframes inkra-skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .45; }
+}
+@media (prefers-reduced-motion: reduce), (forced-colors: active), print {
+  .inkra-skeleton[data-animation="pulse"] { animation: none; }
+}
 
 .inkra-progress {
   display: grid;

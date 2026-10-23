@@ -1,5 +1,7 @@
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
-import { createContext, useContext, forwardRef, useId, type HTMLAttributes, type ComponentPropsWithoutRef, type ReactNode, type CSSProperties } from 'react';
+import { createContext, useContext, forwardRef, useId, useState, type HTMLAttributes, type ComponentPropsWithoutRef, type ReactNode, type CSSProperties } from 'react';
+import { Button } from '../Button.js';
+import { PencilIcon } from '../PencilIcon.js';
 import { PencilSurface } from '../PencilSurface.js';
 import { PencilText } from '../PencilText.js';
 import { PencilLine } from '../PencilLine.js';
@@ -52,9 +54,16 @@ export interface AlertProps extends HTMLAttributes<HTMLDivElement> {
   size?: ContentSize;
   appearance?: 'soft' | 'outline';
   actions?: ReactNode;
+  closable?: boolean;
+  open?: boolean;
+  defaultOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  closeLabel?: string;
 }
-const AlertRoot = forwardRef<HTMLDivElement, AlertProps>(function AlertRoot({ className, variant = 'info', icon, seed, style, children, role = 'status', size = 'md', appearance = 'soft', actions, ...props }, ref) {
+const AlertRoot = forwardRef<HTMLDivElement, AlertProps>(function AlertRoot({ className, variant = 'info', icon, seed, style, children, role = 'status', size = 'md', appearance = 'soft', actions, closable = false, open, defaultOpen = true, onOpenChange, closeLabel = 'Dismiss notification', ...props }, ref) {
   const id = useId();
+  const [internalOpen, setInternalOpen] = useState(defaultOpen);
+  if (!(open ?? internalOpen)) return null;
   const tokens = {
     color: `var(--inkra-${variant}-foreground)`,
     '--inkra-paper': `var(--inkra-${variant}-surface)`,
@@ -67,6 +76,10 @@ const AlertRoot = forwardRef<HTMLDivElement, AlertProps>(function AlertRoot({ cl
   return <PencilSurface {...props} ref={ref} role={role} className={classes('inkra-alert', className)} data-variant={variant} data-size={size} data-appearance={appearance} variant={appearance === 'outline' ? 'outline' : 'action'} radius={8} style={tokens} seed={seed ?? `alert-${id}`}>
     {icon && <span className="inkra-alert__icon" aria-hidden="true">{icon}</span>}
     <div className="inkra-alert__body">{children}{actions != null && <div className="inkra-alert__actions">{actions}</div>}</div>
+    {closable && <Button className="inkra-alert__close" variant="ghost" size="icon" aria-label={closeLabel} title={closeLabel} onClick={() => {
+      if (open === undefined) setInternalOpen(false);
+      onOpenChange?.(false);
+    }}><PencilIcon paths={[{ d: 'M18 6 6 18M6 6l12 12' }]} sourceSize={24} size={20} /></Button>}
   </PencilSurface>;
 });
 const AlertTitle = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLParagraphElement>>(function AlertTitle({ className, children, ...props }, ref) {
