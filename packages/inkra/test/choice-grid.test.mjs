@@ -120,7 +120,11 @@ test('ChoiceGrid source composes selection primitives without a parallel selecti
   assert.match(source, /import \{ Checkbox \} from '\.\.\/selection\/Checkbox\.js'/);
   assert.match(source, /import \{ RadioGroup, RadioGroupItem \} from '\.\.\/selection\/RadioGroup\.js'/);
   assert.match(source, /querySelectorAll<HTMLInputElement>\('input\[type="checkbox"\]\[data-choice-grid-value\]'/);
-  assert.doesNotMatch(source, /useState|useReducer/);
+  // Paging owns its page index; selection still belongs to native controls or
+  // controlled props. The runtime tests verify off-page values and native reset.
+  assert.match(source, /const \[page, setPage\] = useState\(0\)/);
+  assert.equal((source.match(/\buseState\s*\(/g) ?? []).length, 1);
+  assert.doesNotMatch(source, /useReducer/);
   assert.match(styles, /repeat\(auto-fit, minmax\(min\(100%, var\(--inkra-choice-grid-min-item/);
   assert.match(styles, /@media \(max-width: 640px\)[\s\S]*grid-template-columns: minmax\(0, 1fr\)/);
   assert.match(styles, /container-type:\s*inline-size/);
