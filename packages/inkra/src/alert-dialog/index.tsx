@@ -162,9 +162,24 @@ export const AlertDialogContent = forwardRef<
         onOpenAutoFocus?.(event);
         if (event.defaultPrevented) return;
         event.preventDefault();
-        queueMicrotask(() => (context?.cancelRef.current ?? contentRef.current)?.focus());
+        queueMicrotask(() => {
+          const cancel = context?.cancelRef.current;
+          const content = contentRef.current;
+          const ownerDocument = content?.ownerDocument;
+          if (cancel && !cancel.disabled && cancel.isConnected) cancel.focus({ preventScroll: true });
+          if (ownerDocument?.activeElement === cancel) return;
+          if (content?.isConnected) content.focus({ preventScroll: true });
+        });
       }}
     >
+      <PencilSurface
+        aria-hidden="true"
+        as="span"
+        className="inkra-alert-dialog__focus-ring"
+        radius={8}
+        seed={`${seed ?? `inkra-alert-dialog-${id}`}-focus`}
+        variant="outline"
+      />
       <PencilSurface
         className="inkra-alert-dialog__surface"
         radius={8}

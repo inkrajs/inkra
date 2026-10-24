@@ -1,9 +1,10 @@
 import { Combobox } from '@base-ui/react/combobox';
 import { DirectionProvider } from '@base-ui/react/direction-provider';
-import { forwardRef, useId, useMemo, useRef } from 'react';
+import { forwardRef, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { Button } from '../Button.js';
 import { Input } from '../form/Input.js';
+import { InputAction } from '../form/InputAction.js';
 import { mergeAriaIds, useFieldContext } from '../form/context.js';
 import { PencilIcon } from '../PencilIcon.js';
 import { PencilSurface } from '../PencilSurface.js';
@@ -64,6 +65,7 @@ const SearchableControl = forwardRef<HTMLDivElement, SearchableSelectProps>(func
     ...rest
   } = props;
   const indicatorSize = size === 'sm' ? 24 : size === 'lg' ? 32 : 28;
+  const actionSize = size === 'sm' ? 'icon-sm' : size === 'lg' ? 'icon-lg' : 'icon';
   const field = useFieldContext();
   const generatedId = useId();
   const controlId = field?.controlId ?? id ?? generatedId;
@@ -72,10 +74,42 @@ const SearchableControl = forwardRef<HTMLDivElement, SearchableSelectProps>(func
   const resolvedInvalid = Boolean(invalid || field?.invalid);
   const describedBy = mergeAriaIds(ariaDescribedBy, field?.descriptionId, field?.errorId);
   const searchRef = useRef<HTMLInputElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const defaultValueRef = useRef(defaultValue);
+  const actionsRef = useRef<Combobox.Root.Actions | null>(null);
   const portalRef = usePortalTriggerRef<HTMLDivElement>(forwardedRef);
+  const [resetVersion, setResetVersion] = useState(0);
+  const captureRoot = useCallback((node: HTMLDivElement | null) => {
+    rootRef.current = node;
+    portalRef(node);
+  }, [portalRef]);
   const lookup = useMemo(() => new Map(items.map(item => [item.value, item])), [items]);
   const values = useMemo(() => items.map(item => item.value), [items]);
   const { contains } = Combobox.useFilter({ sensitivity: 'base' });
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return undefined;
+    const ownerDocument = root.ownerDocument;
+    const formElement = form
+      ? ownerDocument.getElementById(form) as HTMLFormElement | null
+      : root.closest('form');
+    if (!formElement) return undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const reset = (event: Event) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        if (event.defaultPrevented) return;
+        actionsRef.current?.close();
+        setResetVersion(version => version + 1);
+      }, 0);
+    };
+    formElement.addEventListener('reset', reset);
+    return () => {
+      clearTimeout(timer);
+      formElement.removeEventListener('reset', reset);
+    };
+  }, [form]);
   const summary = (selected: string | string[] | null) => {
     const selectedValues = Array.isArray(selected) ? selected : selected == null ? [] : [selected];
     return selectedValues.map(item => lookup.get(item)?.label ?? item).join(', ');
@@ -88,15 +122,44 @@ const SearchableControl = forwardRef<HTMLDivElement, SearchableSelectProps>(func
     aria-invalid={resolvedInvalid || undefined}
     ref={searchRef}
     placeholder={searchPlacement === 'trigger' ? placeholder : searchPlaceholder}
-    render={<Input size={size} variant={searchPlacement === 'trigger' ? 'outline' : 'underline'} startIcon={<PencilIcon paths={searchPaths} size={22} sourceSize={24} />} />}
+    render={<Input classNames={searchPlacement === 'trigger' ? {
+      root: 'inkra-search-select__input',
+      control: 'inkra-search-select__input-control',
+    } : undefined} size={size} variant={searchPlacement === 'trigger' ? 'ghost' : 'underline'}
+      startIcon={<PencilIcon paths={searchPaths} size={22} sourceSize={24} />} />}
   />;
+  const clear = clearable ? <InputAction disabled={resolvedReadOnly || resolvedDisabled} seed={`search-select-clear-${controlId}`}>
+    <Combobox.Clear
+      aria-label={clearLabel}
+      className="inkra-search-select__clear"
+      disabled={resolvedReadOnly || resolvedDisabled}
+      keepMounted
+      onMouseDown={event => {
+        event.preventDefault();
+        event.stopPropagation();
+      }}
+      onClick={event => {
+        event.stopPropagation();
+        setTimeout(() => {
+          actionsRef.current?.close();
+          (searchPlacement === 'trigger' ? searchRef.current : triggerRef.current)?.focus({ preventScroll: true });
+        }, 0);
+      }}
+      render={(renderProps, state) => <Button {...renderProps}
+        aria-hidden={!state.visible || undefined} tabIndex={state.visible ? 0 : -1}
+        variant="ghost" size={actionSize} />}
+    ><PencilIcon paths={clearPaths} size={24} sourceSize={24} /></Combobox.Clear>
+  </InputAction> : null;
 
   return <DirectionProvider direction={dir}>
     <Combobox.Root<string, boolean>
-      items={values} multiple={multiple} value={value} defaultValue={defaultValue}
+      key={resetVersion}
+      actionsRef={actionsRef}
+      items={values} multiple={multiple} value={value} defaultValue={defaultValueRef.current}
       disabled={resolvedDisabled} readOnly={resolvedReadOnly} required={Boolean(required || field?.required)}
       name={name} form={form} autoHighlight
-      open={resolvedReadOnly || resolvedDisabled ? false : open} defaultOpen={defaultOpen}
+      open={resolvedReadOnly || resolvedDisabled ? false : open}
+      defaultOpen={resetVersion === 0 ? defaultOpen : false}
       onOpenChange={(next, details) => { if (resolvedReadOnly || resolvedDisabled) details.cancel(); else onOpenChange?.(next); }}
       itemToStringLabel={item => lookup.get(item)?.label ?? item}
       filter={(item, query) => contains(`${lookup.get(item)?.label ?? item} ${lookup.get(item)?.keywords ?? ''}`, query)}
@@ -106,16 +169,28 @@ const SearchableControl = forwardRef<HTMLDivElement, SearchableSelectProps>(func
         else props.onValueChange?.(typeof next === 'string' ? next : null);
       }}
     >
-      <div {...rest} ref={portalRef} dir={dir} className={['inkra-search-select', className].filter(Boolean).join(' ')} data-placement={searchPlacement} data-invalid={resolvedInvalid || undefined}>
-        <Combobox.InputGroup className="inkra-search-select__anchor">
-          {searchPlacement === 'trigger' ? search : <Combobox.Trigger
+      <div {...rest} ref={captureRoot} dir={dir} className={['inkra-search-select', className].filter(Boolean).join(' ')}
+        data-disabled={resolvedDisabled || undefined} data-placement={searchPlacement}
+        data-invalid={resolvedInvalid || undefined} data-readonly={resolvedReadOnly || undefined} data-size={size}>
+        <Combobox.InputGroup render={<PencilSurface
+          className="inkra-search-select__anchor inkra-search-select__control" radius={8}
+          seed={`search-select-control-${controlId}`} variant={resolvedInvalid ? 'danger' : 'outline'} />}>
+          {searchPlacement === 'trigger' ? <>
+            {search}
+            <InputAction disabled={resolvedReadOnly || resolvedDisabled} seed={`search-select-open-${controlId}`}>
+              <Combobox.Trigger aria-label={openLabel} className="inkra-search-select__open"
+                disabled={resolvedReadOnly || resolvedDisabled}
+                render={<Button variant="ghost" size={actionSize} />}>
+                <PencilIcon paths={chevronPaths} size={indicatorSize} sourceSize={24} />
+              </Combobox.Trigger>
+            </InputAction>
+            {clear}
+          </> : <><Combobox.Trigger
             id={controlId} aria-label={ariaLabel} aria-labelledby={ariaLabelledBy} aria-describedby={describedBy}
             aria-invalid={resolvedInvalid || undefined} aria-readonly={resolvedReadOnly || undefined}
-            className="inkra-search-select__trigger"
-            render={<Button variant="outline" fullWidth size={size} align="start" />}
-          ><Combobox.Value>{(selected: string | string[] | null) => <PencilText ellipsis>{summary(selected) || placeholder}</PencilText>}</Combobox.Value><PencilIcon paths={chevronPaths} size={indicatorSize} sourceSize={24} /></Combobox.Trigger>}
-          {searchPlacement === 'trigger' && <Combobox.Trigger aria-label={openLabel} render={<Button variant="ghost" size="icon" />}><PencilIcon paths={chevronPaths} size={indicatorSize} sourceSize={24} /></Combobox.Trigger>}
-          {clearable && <Combobox.Clear aria-label={clearLabel} disabled={resolvedReadOnly || resolvedDisabled} render={<Button variant="ghost" size="icon" />}><PencilIcon paths={clearPaths} size={24} sourceSize={24} /></Combobox.Clear>}
+            className="inkra-search-select__trigger" ref={triggerRef}
+            render={<Button variant="ghost" fullWidth size={size} align="start" />}
+          ><Combobox.Value>{(selected: string | string[] | null) => <PencilText ellipsis>{summary(selected) || placeholder}</PencilText>}</Combobox.Value><PencilIcon paths={chevronPaths} size={indicatorSize} sourceSize={24} /></Combobox.Trigger>{clear}</>}
         </Combobox.InputGroup>
         {multiple && searchPlacement === 'trigger' && <Combobox.Value>{(selected: string[]) => selected.length ? <PencilText className="inkra-search-select__summary">{summary(selected)}</PencilText> : null}</Combobox.Value>}
       </div>

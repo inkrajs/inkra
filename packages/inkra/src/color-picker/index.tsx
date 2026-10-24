@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { FieldsetHTMLAttributes, ReactNode } from 'react';
 
 import { Input } from '../form/Input.js';
@@ -65,6 +65,7 @@ export function ColorPicker({
   className,
   defaultValue = DEFAULT_COLOR_VALUE,
   disabled = false,
+  form,
   id,
   label = 'Color',
   labels,
@@ -80,10 +81,17 @@ export function ColorPicker({
   const generatedId = useId();
   const resolvedId = id ?? `inkra-color-picker-${generatedId}`;
   const resolvedSeed = seed ?? resolvedId;
+  const controlled = value !== undefined;
   const controlledValue = value === undefined ? null : normalizeColorValue(value);
   const normalizedDefault = normalizeColorValue(defaultValue) ?? DEFAULT_COLOR_VALUE;
+  const defaultValueRef = useRef<ColorValue>(normalizedDefault);
   const [uncontrolledValue, setUncontrolledValue] = useState<ColorValue>(normalizedDefault);
-  const currentValue = controlledValue ?? (value === undefined ? uncontrolledValue : DEFAULT_COLOR_VALUE);
+  const currentValue = controlledValue ?? (controlled ? DEFAULT_COLOR_VALUE : uncontrolledValue);
+  const currentValueRef = useRef<ColorValue>(currentValue);
+  const fieldsetRef = useRef<HTMLFieldSetElement>(null);
+  const hiddenInputRef = useRef<HTMLInputElement>(null);
+  const composingRef = useRef(false);
+  const skipNextBlurRef = useRef(false);
   const [draft, setDraft] = useState<string>(currentValue);
   const copy = { ...defaultLabels, ...labels };
   const parsedPresets = useMemo(() => presets.map(presetData).filter((preset): preset is NonNullable<typeof preset> => preset !== null), [presets]);
@@ -91,15 +99,49 @@ export function ColorPicker({
   const rgbValue = colorRgbValue(currentValue) ?? '#4b96aa';
   const alpha = colorAlphaPercent(currentValue);
 
-  useEffect(() => setDraft(currentValue), [currentValue]);
+  useEffect(() => {
+    currentValueRef.current = currentValue;
+    setDraft(currentValue);
+  }, [currentValue]);
+
+  useEffect(() => {
+    const ownerForm = hiddenInputRef.current?.form ?? fieldsetRef.current?.form;
+    if (!ownerForm) return undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const reset = (event: Event) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        if (event.defaultPrevented) return;
+        const restored = controlled ? currentValueRef.current : defaultValueRef.current;
+        if (!controlled) setUncontrolledValue(restored);
+        setDraft(restored);
+        if (hiddenInputRef.current) hiddenInputRef.current.value = restored;
+        composingRef.current = false;
+        skipNextBlurRef.current = false;
+      }, 0);
+    };
+    ownerForm.addEventListener('reset', reset);
+    return () => {
+      clearTimeout(timer);
+      ownerForm.removeEventListener('reset', reset);
+    };
+  }, [controlled, form, name]);
 
   const commit = (next: ColorValue, source: ColorPickerChangeDetails['source']) => {
-    if (value === undefined) setUncontrolledValue(next);
-    else setDraft(currentValue);
+    if (disabled) return;
+    if (next === currentValue) {
+      setDraft(currentValue);
+      return;
+    }
+    if (!controlled) {
+      setUncontrolledValue(next);
+      setDraft(next);
+    } else setDraft(currentValue);
     onValueChange?.(next, { source });
   };
 
   const submitDraft = () => {
+    if (disabled || composingRef.current) return;
     const normalized = normalizeColorValue(draft);
     if (normalized) commit(normalized, 'input');
     else onInvalidInput?.(draft);
@@ -112,7 +154,9 @@ export function ColorPicker({
     data-controlled={value !== undefined || undefined}
     data-invalid-value={value !== undefined && controlledValue === null || undefined}
     disabled={disabled}
+    form={form}
     id={resolvedId}
+    ref={fieldsetRef}
   >
     <legend className="inkra-color-picker__legend">
       {typeof label === 'string' ? <PencilText seed={`${resolvedSeed}-legend`}>{label}</PencilText> : label}
@@ -122,6 +166,7 @@ export function ColorPicker({
         <span className="inkra-color-picker__checker" aria-hidden="true" />
         <span className="inkra-color-picker__current" aria-hidden="true" style={{ backgroundColor: currentValue }} />
         <PencilSurface as="span" aria-hidden="true" className="inkra-color-picker__palette-outline" variant="outline" seed={`${resolvedSeed}-palette`} />
+        <PencilSurface as="span" aria-hidden="true" className="inkra-color-picker__focus" variant="outline" seed={`${resolvedSeed}-palette-focus`} />
         <input
           aria-label={copy.palette}
           className="inkra-color-picker__native"
@@ -149,15 +194,32 @@ export function ColorPicker({
           inputMode="text"
           spellCheck={false}
           value={draft}
-          onBlur={submitDraft}
+          onBlur={() => {
+            if (skipNextBlurRef.current) {
+              skipNextBlurRef.current = false;
+              return;
+            }
+            submitDraft();
+          }}
+          onCompositionStart={() => { composingRef.current = true; }}
+          onCompositionEnd={() => { composingRef.current = false; }}
           onKeyDown={event => {
+            if (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) return;
             if (event.key === 'Enter') {
               event.preventDefault();
+              skipNextBlurRef.current = true;
               submitDraft();
             }
-            if (event.key === 'Escape') setDraft(currentValue);
+            if (event.key === 'Escape') {
+              event.preventDefault();
+              skipNextBlurRef.current = true;
+              setDraft(currentValue);
+            }
           }}
-          onValueChange={setDraft}
+          onValueChange={next => {
+            skipNextBlurRef.current = false;
+            setDraft(next);
+          }}
         />
         <span className="inkra-color-picker__error" id={`${resolvedId}-error`} aria-live="polite">
           {inputInvalid ? copy.invalid : ''}
@@ -200,10 +262,11 @@ export function ColorPicker({
           <span className="inkra-color-picker__checker" aria-hidden="true" />
           <span className="inkra-color-picker__preset-color" aria-hidden="true" style={{ backgroundColor: preset.value }} />
           <PencilSurface as="span" aria-hidden="true" className="inkra-color-picker__preset-outline" variant={preset.value === currentValue ? 'selection' : 'outline'} seed={`${resolvedSeed}-preset-${index}`} />
+          <PencilSurface as="span" aria-hidden="true" className="inkra-color-picker__focus" variant="outline" seed={`${resolvedSeed}-preset-${index}-focus`} />
         </button>)}
       </div>
     </> : null}
-    {name ? <input type="hidden" name={name} value={currentValue} /> : null}
+    {name ? <input ref={hiddenInputRef} type="hidden" form={form} name={name} value={currentValue} /> : null}
   </fieldset>;
 }
 

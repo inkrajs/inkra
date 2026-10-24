@@ -19,6 +19,7 @@ import type {
 
 import { Button } from '../Button.js';
 import { SearchableSelect } from './SearchableSelect.js';
+import { SelectStepper } from './StepperSelect.js';
 import { MultipleSelect, MultipleSelectContext, MultipleSelectRoot } from './MultipleSelect.js';
 import type { SelectMultipleRootProps } from './MultipleSelect.js';
 import { mergeAriaIds, useFieldContext } from '../form/context.js';
@@ -635,6 +636,7 @@ export const SelectClear = forwardRef<HTMLButtonElement, SelectClearProps>(funct
 
 export const Select = Object.freeze({
   Searchable: SearchableSelect,
+  Stepper: SelectStepper,
   Root: SelectRoot,
   Trigger: SelectTrigger,
   Value: SelectValue,

@@ -19,6 +19,10 @@ test('Rating normalizes finite values to count and step', () => {
   assert.equal(normalizeRatingValue(Number.NaN, 5, 0.25), 0);
   assert.equal(normalizeRatingValue(0.3, 1, 0.1), 0.3);
   assert.equal(normalizeRatingValue(0.0026, 1, 1e-3), 0.003);
+  assert.equal(normalizeRatingValue(5, 5, 1.5), 5);
+  assert.equal(normalizeRatingValue(3.5, 5, 1.5), 3);
+  assert.equal(normalizeRatingValue(2, 5, 3), 3);
+  assert.equal(normalizeRatingValue(0.29, 1, 0.1), 0.3);
 });
 
 test('Rating renders one named slider with semantic committed value', () => {
@@ -77,10 +81,22 @@ test('Rating source defines keyboard endpoints, RTL and clear strategies', () =>
   assert.match(source, /event\.key === 'Home'/);
   assert.match(source, /event\.key === 'End'/);
   assert.match(source, /\['Backspace', 'Delete', 'Escape'\]/);
-  assert.match(source, /rtl \? -step : step/);
+  assert.match(source, /event\.key === 'ArrowRight'[\s\S]*rtl[\s\S]*previousRatingValue/);
+  assert.match(source, /event\.key === 'ArrowLeft'[\s\S]*previousRatingValue/);
   assert.match(source, /allowsReselectClear/);
   assert.match(source, /allowsKeyboardClear/);
   assert.match(source, /normalized === 0 && committedValue > 0 && !allowsKeyboardClear/);
+  assert.match(source, /rootRef\.current\?\.focus\(\{ preventScroll: true \}\)/);
+  assert.match(source, /symbolsRef\.current/);
+  assert.match(source, /scroller\.scrollLeft \+= delta/);
+  assert.doesNotMatch(source, /scrollIntoView/);
+  assert.match(source, /pendingKeyboardValueRef/);
+  assert.match(source, /previousRatingValue\(committedValue, count, step\)/);
+  assert.match(source, /Math\.ceil\(count \/ step\) - 1/);
+  assert.match(source, /event\.key === 'ArrowRight'[\s\S]*rtl[\s\S]*previousRatingValue/);
+  assert.match(source, /event\.key === 'ArrowLeft'[\s\S]*previousRatingValue/);
+  assert.match(source, /setTimeout\(\(\) => \{[\s\S]*pendingKeyboardValueRef\.current = null[\s\S]*\}, 100\)/);
+  assert.match(source, /if \(!event\.defaultPrevented && !disabled\)/);
 });
 
 test('Rating styles keep stable touch targets and logical fractional clipping', () => {
@@ -89,6 +105,11 @@ test('Rating styles keep stable touch targets and logical fractional clipping', 
   assert.match(styles, /inset-inline-start:\s*0/);
   assert.match(styles, /overflow:\s*hidden/);
   assert.match(styles, /touch-action:\s*manipulation/);
+  assert.match(styles, /\.inkra-rating__focus-ring/);
+  assert.match(styles, /--inkra-accent-strong:\s*var\(--inkra-focus\)/);
+  assert.match(styles, /prefers-reduced-motion:\s*no-preference/);
   assert.match(styles, /@media \(forced-colors: active\)/);
+  assert.match(styles, /outline:\s*var\(--inkra-focus-width\) solid Highlight/);
+  assert.doesNotMatch(styles, /\.inkra-rating:focus-visible\s*\{\s*outline:\s*var\(--inkra-focus-width\) solid var\(--inkra-focus\)/);
   assert.doesNotMatch(styles, /border-radius:\s*999|#[0-9a-f]{3,8}/i);
 });

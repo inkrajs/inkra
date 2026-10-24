@@ -287,7 +287,11 @@ export const ChoiceGridOption = forwardRef<HTMLInputElement, ChoiceGridOptionPro
   const content = (
     <>
       <OptionMedia icon={icon} image={image} />
-      <span className="inkra-choice-grid__option-label">{label}</span>
+      <span className="inkra-choice-grid__option-label">
+        {typeof label === 'string'
+          ? <PencilText seed={`${resolvedSeed}-label`}>{label}</PencilText>
+          : label}
+      </span>
     </>
   );
   const control = context.mode === 'single' ? (
@@ -345,6 +349,14 @@ export const ChoiceGridOption = forwardRef<HTMLInputElement, ChoiceGridOptionPro
         radius={8}
         seed={`${resolvedSeed}-selection`}
         variant="selection"
+      />
+      <PencilSurface
+        aria-hidden="true"
+        as="span"
+        className="inkra-choice-grid__focus"
+        radius={8}
+        seed={`${resolvedSeed}-focus`}
+        variant="outline"
       />
       {control}
       <PencilSurface

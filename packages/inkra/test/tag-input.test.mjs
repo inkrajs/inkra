@@ -86,8 +86,11 @@ test('TagInput source keeps id, value, label and repeated form values distinct',
 });
 
 test('TagInput styles use shared tokens, stable touch targets and system fallbacks', () => {
-  assert.match(styles, /min-block-size:\s*var\(--inkra-touch-target\)/);
+  assert.match(styles, /--inkra-tag-input-item-height:\s*calc\(var\(--inkra-field-control-height\) - 2 \* var\(--inkra-tag-input-control-inset\)\)/);
+  assert.match(styles, /--inkra-tag-input-row-gap:\s*max\(/);
+  assert.match(styles, /min-block-size:\s*var\(--inkra-tag-input-item-height\)/);
   assert.match(styles, /inline-size:\s*var\(--inkra-touch-target\)/);
+  assert.match(styles, /min-block-size:\s*var\(--inkra-touch-target\);\s*\n\s*content:\s*""/);
   assert.match(styles, /flex-wrap:\s*wrap/);
   assert.match(styles, /overflow:\s*hidden/);
   assert.match(styles, /text-overflow:\s*ellipsis/);
@@ -95,6 +98,23 @@ test('TagInput styles use shared tokens, stable touch targets and system fallbac
   assert.match(styles, /@media \(forced-colors: active\)/);
   assert.match(styles, /@media print/);
   assert.doesNotMatch(styles, /border-radius:\s*999|#[0-9a-f]{3,8}/i);
+});
+
+test('TagInput single-line sizing follows Input controls and only real content wrapping adds height', () => {
+  const tagRule = styles.match(/\.inkra-tag-input__tag\s*\{([\s\S]*?)\}/)?.[1] ?? '';
+  assert.match(styles, /--inkra-field-control-height:\s*var\(--inkra-control-md\)/);
+  assert.match(styles, /\[data-size="sm"\][\s\S]*--inkra-field-control-height:\s*var\(--inkra-control-sm\)/);
+  assert.match(styles, /\[data-size="lg"\][\s\S]*--inkra-field-control-height:\s*var\(--inkra-control-lg\)/);
+  assert.match(styles, /min-block-size:\s*var\(--inkra-field-control-height\);\s*\n\s*block-size:\s*auto/);
+  assert.match(styles, /padding:\s*var\(--inkra-tag-input-control-inset\) var\(--inkra-field-control-padding\)/);
+  assert.match(styles, /\[data-has-tags="true"\] \.inkra-tag-input__control\s*\{\s*padding-inline:\s*var\(--inkra-tag-input-control-inset\)/);
+  assert.match(tagRule, /block-size:\s*var\(--inkra-tag-input-item-height\)/);
+  assert.match(styles, /\.inkra-tag-input__tag[\s\S]*padding:\s*var\(--inkra-tag-input-tag-inset\)/);
+  assert.match(styles, /data-draft-empty="true"\]\[data-has-tags="true"\].*data-has-placeholder/s);
+  assert.match(styles, /flex-basis:\s*1px/);
+  assert.doesNotMatch(tagRule, /min-block-size:\s*var\(--inkra-touch-target\)/);
+  assert.match(componentSource, /data-draft-empty=\{currentDraft\.length === 0 \|\| undefined\}/);
+  assert.match(componentSource, /data-has-tags=\{currentTags\.length > 0 \|\| undefined\}/);
 });
 
 test('TagInput SSR keeps native input, semantic tag list, labels, hidden values and read-only state', { skip: !tagInputModule }, async () => {

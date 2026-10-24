@@ -454,8 +454,11 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
       {...rootProps}
       className={classes('inkra-field-control-hit', 'inkra-tag-input', className, classNames.root)}
       data-disabled={state.disabled || undefined}
+      data-draft-empty={currentDraft.length === 0 || undefined}
       data-focus-within={focusWithin || undefined}
       data-full-width={fullWidth}
+      data-has-placeholder={Boolean(placeholder) || undefined}
+      data-has-tags={currentTags.length > 0 || undefined}
       data-invalid={state.invalid || undefined}
       data-max-reached={atLimit || undefined}
       data-readonly={state.readOnly || undefined}
@@ -488,7 +491,6 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
             <PencilSurface<'li'>
               as="li"
               className={classes('inkra-tag-input__tag', classNames.tag)}
-              clipContent
               data-tag-id={tag.id}
               key={`${tag.id}-${index}`}
               radius={6}

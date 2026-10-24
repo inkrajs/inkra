@@ -129,7 +129,7 @@ const TreeItemTitle = forwardRef<HTMLSpanElement, TreeItemTitleProps>(function T
 
 export interface TreeItemDescriptionProps extends HTMLAttributes<HTMLSpanElement> {}
 const TreeItemDescription = forwardRef<HTMLSpanElement, TreeItemDescriptionProps>(function TreeItemDescription({ className, children, ...props }, ref) {
-  return <span {...props} ref={ref} className={['inkra-tree__description', className].filter(Boolean).join(' ')}>{children}</span>;
+  return <span {...props} ref={ref} className={['inkra-tree__description', className].filter(Boolean).join(' ')}>{typeof children === 'string' ? <PencilText>{children}</PencilText> : children}</span>;
 });
 
 export const Tree = {

@@ -24,8 +24,8 @@ test('DataTable composes TanStack v8 with the existing semantic Table and Checkb
 test('DataTable keeps pagination and select-all valid as filtering or eligibility changes', () => {
   assert.match(dataTable, /handleFilter[\s\S]*pageIndex: 0/);
   assert.match(dataTable, /getPrePaginationRowModel\(\)\.rows\.length/);
-  assert.match(dataTable, /Math\.ceil\(filteredRowCount \/ resolvedPagination\.pageSize\) - 1/);
-  assert.match(dataTable, /resolvedPagination\.pageIndex <= lastPageIndex/);
+  assert.match(dataTable, /normalizeDataTablePagination\(initialPagination, filteredRowCount\)/);
+  assert.match(dataTable, /paginationCorrection\.current === signature/);
   assert.match(dataTable, /rows\.some\(row => row\.getCanSelect\(\)\)/);
   assert.match(dataTable, /disabled=\{loading \|\| !hasSelectableRows\}/);
 });

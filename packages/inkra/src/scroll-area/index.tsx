@@ -1,3 +1,4 @@
+import { DirectionProvider, useDirection } from '@base-ui/react/direction-provider';
 import { ScrollArea as ScrollAreaPrimitive } from '@base-ui/react/scroll-area';
 import type {
   ScrollAreaContentProps as PrimitiveContentProps,
@@ -31,7 +32,7 @@ export interface ScrollAreaProps extends Omit<HTMLAttributes<HTMLDivElement>, 'c
   viewportProps?: Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'role'>;
 }
 
-export type ScrollAreaRootProps = PrimitiveRootProps;
+export type ScrollAreaRootProps = ScrollAreaProps;
 export type ScrollAreaViewportProps = PrimitiveViewportProps;
 export type ScrollAreaScrollbarProps = PrimitiveScrollbarProps;
 export type ScrollAreaThumbProps = PrimitiveThumbProps;
@@ -53,6 +54,7 @@ const ScrollAreaRoot = forwardRef<HTMLDivElement, ScrollAreaProps>(function Scro
     'aria-label': ariaLabel,
     children,
     className,
+    dir,
     overflowEdgeThreshold,
     seed,
     style,
@@ -63,43 +65,48 @@ const ScrollAreaRoot = forwardRef<HTMLDivElement, ScrollAreaProps>(function Scro
   },
   ref,
 ) {
+  const inheritedDirection = useDirection();
+  const resolvedDirection = dir === 'rtl' || dir === 'ltr' ? dir : inheritedDirection;
   const generatedId = useId();
   const resolvedSeed = seed ?? `inkra-scroll-area-${generatedId}`;
   const viewportClassName = classes('inkra-scroll-area__viewport', viewportProps?.className);
   const viewportStyle = viewportProps?.style as CSSProperties | undefined;
   const viewportLabelValue = viewportProps?.['aria-label'] ?? viewportLabel ?? ariaLabel;
 
-  return <ScrollAreaPrimitive.Root
-    {...props}
-    {...(ariaLabel ? { 'aria-label': ariaLabel } : {})}
-    className={classes('inkra-scroll-area', className)}
-    data-type={type}
-    overflowEdgeThreshold={overflowEdgeThreshold}
-    ref={ref}
-    style={style}
-  >
-    <ScrollAreaPrimitive.Viewport
-      {...viewportProps}
-      aria-label={viewportLabelValue}
-      className={viewportClassName}
-      style={viewportStyle}
+  return <DirectionProvider direction={resolvedDirection}>
+    <ScrollAreaPrimitive.Root
+      {...props}
+      {...(ariaLabel ? { 'aria-label': ariaLabel } : {})}
+      className={classes('inkra-scroll-area', className)}
+      data-type={type}
+      dir={dir}
+      overflowEdgeThreshold={overflowEdgeThreshold}
+      ref={ref}
+      style={style}
     >
-      {children}
-    </ScrollAreaPrimitive.Viewport>
-    <ScrollAreaPrimitive.Scrollbar className="inkra-scroll-area__scrollbar" orientation="vertical">
-      <PencilSurface aria-hidden="true" as="span" className="inkra-scroll-area__track" radius={3} seed={`${resolvedSeed}-vertical-track`} variant="quiet" />
-      <ScrollAreaPrimitive.Thumb className="inkra-scroll-area__thumb">
-        <PencilSurface aria-hidden="true" as="span" className="inkra-scroll-area__thumb-surface" radius={3} seed={`${resolvedSeed}-vertical-thumb`} variant="outline" />
-      </ScrollAreaPrimitive.Thumb>
-    </ScrollAreaPrimitive.Scrollbar>
-    <ScrollAreaPrimitive.Scrollbar className="inkra-scroll-area__scrollbar" orientation="horizontal">
-      <PencilSurface aria-hidden="true" as="span" className="inkra-scroll-area__track" radius={3} seed={`${resolvedSeed}-horizontal-track`} variant="quiet" />
-      <ScrollAreaPrimitive.Thumb className="inkra-scroll-area__thumb">
-        <PencilSurface aria-hidden="true" as="span" className="inkra-scroll-area__thumb-surface" radius={3} seed={`${resolvedSeed}-horizontal-thumb`} variant="outline" />
-      </ScrollAreaPrimitive.Thumb>
-    </ScrollAreaPrimitive.Scrollbar>
-    <ScrollAreaPrimitive.Corner className="inkra-scroll-area__corner" />
-  </ScrollAreaPrimitive.Root>;
+      <ScrollAreaPrimitive.Viewport
+        {...viewportProps}
+        aria-label={viewportLabelValue}
+        className={viewportClassName}
+        style={viewportStyle}
+      >
+        {children}
+      </ScrollAreaPrimitive.Viewport>
+      <ScrollAreaPrimitive.Scrollbar className="inkra-scroll-area__scrollbar" orientation="vertical">
+        <PencilSurface aria-hidden="true" as="span" className="inkra-scroll-area__track" radius={3} seed={`${resolvedSeed}-vertical-track`} variant="quiet" />
+        <ScrollAreaPrimitive.Thumb className="inkra-scroll-area__thumb">
+          <PencilSurface aria-hidden="true" as="span" className="inkra-scroll-area__thumb-surface" radius={3} seed={`${resolvedSeed}-vertical-thumb`} variant="quiet" />
+        </ScrollAreaPrimitive.Thumb>
+      </ScrollAreaPrimitive.Scrollbar>
+      <ScrollAreaPrimitive.Scrollbar className="inkra-scroll-area__scrollbar" orientation="horizontal">
+        <PencilSurface aria-hidden="true" as="span" className="inkra-scroll-area__track" radius={3} seed={`${resolvedSeed}-horizontal-track`} variant="quiet" />
+        <ScrollAreaPrimitive.Thumb className="inkra-scroll-area__thumb">
+          <PencilSurface aria-hidden="true" as="span" className="inkra-scroll-area__thumb-surface" radius={3} seed={`${resolvedSeed}-horizontal-thumb`} variant="quiet" />
+        </ScrollAreaPrimitive.Thumb>
+      </ScrollAreaPrimitive.Scrollbar>
+      <ScrollAreaPrimitive.Corner className="inkra-scroll-area__corner" />
+    </ScrollAreaPrimitive.Root>
+  </DirectionProvider>;
 });
 
 const Viewport = forwardRef<HTMLDivElement, ScrollAreaViewportProps>(function Viewport({ className, ...props }, ref) {

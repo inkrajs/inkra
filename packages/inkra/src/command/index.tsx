@@ -1,12 +1,29 @@
 import { Command as Primitive } from 'cmdk';
-import { forwardRef, useRef } from 'react';
-import type { ComponentPropsWithoutRef, HTMLAttributes, ReactNode } from 'react';
+import { __iconData as searchIcon } from 'lucide-react/dist/esm/icons/search.mjs';
+import { forwardRef, useCallback, useRef } from 'react';
+import type { ComponentPropsWithoutRef, HTMLAttributes, ReactNode, Ref } from 'react';
 import { PencilSurface } from '../PencilSurface.js';
 import { PencilText } from '../PencilText.js';
 import { PencilLine } from '../PencilLine.js';
+import { EditablePencilText } from '../form/EditablePencilText.js';
+import { PencilIcon } from '../PencilIcon.js';
+
+const searchPaths = searchIcon.node.map(([tag, attributes]) => {
+  if (tag === 'circle') {
+    const cx = Number(attributes.cx);
+    const cy = Number(attributes.cy);
+    const r = Number(attributes.r);
+    return { d: `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${r * 2} 0a${r} ${r} 0 1 0 -${r * 2} 0` };
+  }
+  return { d: attributes.d };
+});
 
 function classes(base: string, extra?: string) { return [base, extra].filter(Boolean).join(' '); }
 function copy(value: ReactNode) { return typeof value === 'string' ? <PencilText>{value}</PencilText> : value; }
+function assignRef<T>(ref: Ref<T> | undefined, value: T | null) {
+  if (typeof ref === 'function') ref(value);
+  else if (ref) ref.current = value;
+}
 
 export type CommandRootProps = Omit<ComponentPropsWithoutRef<typeof Primitive>, 'asChild'> & {
   /** Disable when a parent dialog already supplies the paper and outline. */
@@ -29,8 +46,23 @@ const Root = forwardRef<HTMLDivElement, CommandRootProps>(function Root({
 });
 
 export type CommandInputProps = Omit<ComponentPropsWithoutRef<typeof Primitive.Input>, 'asChild'>;
-const Input = forwardRef<HTMLInputElement, CommandInputProps>(function Input({ className, ...props }, ref) {
-  return <div className="inkra-command__input-wrap"><Primitive.Input {...props} ref={ref} className={classes('inkra-command__input', className)} /><PencilLine className="inkra-command__input-line" /></div>;
+const Input = forwardRef<HTMLInputElement, CommandInputProps>(function Input({ className, defaultValue, placeholder, value, ...props }, ref) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const captureRef = useCallback((node: HTMLInputElement | null) => {
+    inputRef.current = node;
+    assignRef(ref, node);
+  }, [ref]);
+  return <div className="inkra-command__input-wrap inkra-field-control-hit">
+    <div className="inkra-command__input-frame">
+      <span aria-hidden="true" className="inkra-command__input-icon"><PencilIcon paths={searchPaths} size={22} sourceSize={24} /></span>
+      <Primitive.Input {...props} defaultValue={defaultValue} placeholder={placeholder} value={value}
+        ref={captureRef} className={classes('inkra-command__input', className)} />
+      <EditablePencilText controlRef={inputRef} defaultValue={defaultValue} placeholder={placeholder}
+        seed="command-input" value={value} />
+    </div>
+    <PencilLine className="inkra-command__input-line" />
+    <PencilLine className="inkra-command__input-focus-line" seed="command-input-focus" weight={2.2} />
+  </div>;
 });
 
 export type CommandListProps = Omit<ComponentPropsWithoutRef<typeof Primitive.List>, 'asChild'>;
@@ -45,6 +77,7 @@ export interface CommandItemProps extends Omit<ComponentPropsWithoutRef<typeof P
 const Item = forwardRef<HTMLDivElement, CommandItemProps>(function Item({ className, children, icon, shortcut, ...props }, ref) {
   return <Primitive.Item {...props} ref={ref} className={classes('inkra-command__item', className)}>
     <PencilSurface as="span" variant="selection" aria-hidden="true" className="inkra-command__highlight" />
+    <PencilSurface as="span" variant="outline" aria-hidden="true" className="inkra-command__item-focus" />
     {icon != null && <span aria-hidden="true" className="inkra-command__icon">{icon}</span>}
     <span className="inkra-command__label">{copy(children)}</span>
     {shortcut != null && <Shortcut>{shortcut}</Shortcut>}

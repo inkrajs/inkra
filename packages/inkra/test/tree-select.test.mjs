@@ -118,15 +118,27 @@ test('TreeSelect composes existing Tree, Popover, Input and Button primitives', 
   assert.match(componentSource, /<Tree\.Root/);
   assert.match(componentSource, /<Input/);
   assert.match(componentSource, /<Button/);
+  assert.match(componentSource, /<ButtonGroup/);
   assert.match(componentSource, /filterTreeSelectNodes/);
   assert.match(componentSource, /updateTreeSelectSelection/);
   assert.match(componentSource, /onOpenAutoFocus/);
   assert.match(componentSource, /treeRef\.current\?\.focus/);
+  assert.match(componentSource, /onPointerDown=\{event => event\.preventDefault\(\)\}/);
+  assert.match(componentSource, /setOpen\(false\)/);
+  assert.match(componentSource, /triggerRef\.current\?\.focus\(\{ preventScroll: true \}\)/);
   assert.doesNotMatch(componentSource, /role=["']tree["']|role=["']treeitem["']/);
 });
 
 test('TreeSelect styles preserve stable controls, bounded popup and accessibility fallbacks', () => {
-  assert.match(styles, /grid-template-columns:\s*minmax\(0, 1fr\) auto/);
+  assert.match(styles, /--inkra-tree-select-control-height:\s*var\(--inkra-control-md\)/);
+  assert.match(styles, /data-size="sm".*var\(--inkra-control-sm\)/);
+  assert.match(styles, /data-size="lg".*var\(--inkra-control-lg\)/);
+  assert.match(styles, /\.inkra-button-group\.inkra-tree-select__control/);
+  assert.match(styles, /block-size:\s*var\(--inkra-tree-select-control-height\)/);
+  assert.match(styles, /min-height:\s*var\(--inkra-touch-target\)/);
+  assert.match(styles, /\.inkra-tree-select__clear\[aria-hidden="true"\]/);
+  assert.match(styles, /--inkra-accent-strong:\s*var\(--inkra-danger\)/);
+  assert.match(styles, /text-overflow:\s*ellipsis/);
   assert.match(styles, /--radix-popover-trigger-width/);
   assert.match(styles, /max-height:\s*min\(22rem/);
   assert.match(styles, /overflow:\s*auto/);
@@ -134,6 +146,15 @@ test('TreeSelect styles preserve stable controls, bounded popup and accessibilit
   assert.match(styles, /@media \(forced-colors: active\)/);
   assert.match(styles, /@media print/);
   assert.doesNotMatch(styles, /border-radius:\s*(?:9|[1-9][0-9]+)px/);
+});
+
+test('TreeSelect reset waits for cancellation and preserves controlled value ownership', () => {
+  assert.match(componentSource, /const reset = \(event: Event\)/);
+  assert.match(componentSource, /resetTimer = setTimeout\(\(\) => \{/);
+  assert.match(componentSource, /if \(event\.defaultPrevented\) return/);
+  assert.match(componentSource, /if \(!controlledSelection\) setUncontrolledSelection\(defaultSelection\.current\)/);
+  assert.match(componentSource, /formAnchorRef\.current\?\.form/);
+  assert.match(componentSource, /clearTimeout\(resetTimer\)/);
 });
 
 test('TreeSelect SSR keeps the trigger and submitted values without requiring a portal', { skip: !treeSelectModule }, async () => {

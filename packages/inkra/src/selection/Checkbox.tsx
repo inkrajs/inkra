@@ -33,6 +33,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
     defaultChecked,
     description,
     disabled = false,
+    form,
     id,
     indeterminate = false,
     label,
@@ -54,6 +55,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
   const { controlled, syncUncontrolled, visualChecked } = useNativeChecked({
     checked,
     defaultChecked,
+    form,
     indeterminate,
     inputRef,
   });
@@ -77,6 +79,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
         className="inkra-selection-control__input"
         defaultChecked={controlled ? undefined : defaultChecked}
         disabled={disabled}
+        form={form}
         id={inputId}
         onChange={(event) => {
           const nextChecked = event.currentTarget.checked;
@@ -96,6 +99,8 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
         seed={`${resolvedSeed}-mark`}
         variant={selected ? 'quiet' : 'outline'}
       >
+        <PencilSurface as="span" aria-hidden="true" className="inkra-selection-control__focus-ring"
+          seed={`${resolvedSeed}-focus`} variant="outline" />
         {selected ? (
           <PencilIcon
             className="inkra-selection-control__glyph"

@@ -62,6 +62,7 @@ export const PopoverContent = forwardRef<
     arrowProps,
     children,
     className,
+    collisionPadding = 12,
     seed,
     showArrow = false,
     surfaceClassName,
@@ -77,6 +78,7 @@ export const PopoverContent = forwardRef<
     <PopoverPrimitive.Content
       {...props}
       className={classes('inkra-popover__content', className)}
+      collisionPadding={collisionPadding}
       ref={ref}
     >
       <PencilSurface

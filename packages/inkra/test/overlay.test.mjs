@@ -11,6 +11,13 @@ const themeBridge = readFileSync(new URL('../src/overlay/themeBridge.tsx', impor
 const index = readFileSync(new URL('../src/overlay/index.ts', import.meta.url), 'utf8');
 const styles = readFileSync(new URL('../src/overlay/styles.css', import.meta.url), 'utf8');
 
+test('Overlay centers on the same physical axis as its entrance and exit transforms in RTL', () => {
+  const content = styles.match(/\.inkra-overlay__content\s*\{([^}]+)\}/)[1];
+  assert.match(content, /left: 50%/);
+  assert.match(content, /transform: translate\(-50%, -50%\)/);
+  assert.doesNotMatch(content, /inset-inline-start/);
+});
+
 test('Overlay exposes the complete Radix-backed compound API', () => {
   for (const name of [
     'OverlayRoot',
@@ -102,8 +109,19 @@ test('Popover forwards placement props and owns safe direct-child arrow placemen
   assert.match(popover, /interface PopoverContentProps extends PopoverPrimitive\.PopoverContentProps/);
   assert.match(popover, /showArrow\?: boolean/);
   assert.match(popover, /showArrow = false/);
+  assert.match(popover, /collisionPadding = 12/);
+  assert.match(popover, /collisionPadding=\{collisionPadding\}/);
   assert.match(popover, /<\/PencilSurface>\s*\{showArrow \? \(\s*<PopoverPrimitive\.Arrow/);
   assert.doesNotMatch(popover, /addEventListener\(['"](?:keydown|pointerdown|click)/);
+});
+
+test('Popover bounds long content to Radix available space without replacing dismissal semantics', () => {
+  assert.match(styles, /--radix-popover-content-available-width/);
+  assert.match(styles, /--radix-popover-content-available-height/);
+  assert.match(styles, /max-height: min\(70dvh/);
+  assert.match(styles, /\.inkra-popover__content-body\s*\{[\s\S]*?overflow: auto;[\s\S]*?overflow-wrap: anywhere;[\s\S]*?overscroll-behavior: contain/);
+  assert.match(styles, /\.inkra-popover__title,[\s\S]*?\.inkra-popover__description[\s\S]*?overflow-wrap: anywhere/);
+  assert.doesNotMatch(popover, /addEventListener\(['"](?:keydown|pointerdown|click|focus|blur)/);
 });
 
 test('Portal bridge snapshots scoped tokens and refreshes from every trigger ancestor', () => {

@@ -34,6 +34,7 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(function Switch(
     defaultChecked,
     description,
     disabled = false,
+    form,
     id,
     label,
     onChange,
@@ -54,6 +55,7 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(function Switch(
   const { controlled, syncUncontrolled, visualChecked } = useNativeChecked({
     checked,
     defaultChecked,
+    form,
     inputRef,
   });
 
@@ -73,6 +75,7 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(function Switch(
         className="inkra-selection-control__input"
         defaultChecked={controlled ? undefined : defaultChecked}
         disabled={disabled}
+        form={form}
         id={inputId}
         onChange={(event) => {
           const nextChecked = event.currentTarget.checked;
@@ -92,6 +95,8 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(function Switch(
         seed={`${resolvedSeed}-track`}
         variant={visualChecked ? 'quiet' : 'outline'}
       >
+        <PencilSurface as="span" aria-hidden="true" className="inkra-selection-control__focus-ring"
+          seed={`${resolvedSeed}-focus`} variant="outline" />
         <PencilIcon
           className="inkra-switch__thumb"
           paths={thumbPaths}

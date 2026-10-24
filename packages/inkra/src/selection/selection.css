@@ -54,11 +54,23 @@
   line-height: var(--inkra-line-ui);
 }
 
-.inkra-selection-control:has(.inkra-selection-control__input:focus-visible) .inkra-selection-control__mark,
-.inkra-selection-control:has(.inkra-selection-control__input:focus-visible) .inkra-switch__track,
-.inkra-selection-control:has(.inkra-selection-control__input:focus-visible) .inkra-radio-group__segment {
-  outline: var(--inkra-focus-width) solid var(--inkra-focus);
-  outline-offset: var(--inkra-focus-offset);
+.inkra-selection-control__focus-ring {
+  --inkra-accent-strong: var(--inkra-focus);
+
+  inset: calc(-1 * var(--inkra-focus-offset));
+  opacity: 0;
+  pointer-events: none;
+  position: absolute !important;
+  z-index: 3;
+}
+
+.inkra-selection-control__focus-ring--inset {
+  inset: var(--inkra-focus-width);
+}
+
+.inkra-selection-control:has(.inkra-selection-control__input:focus-visible)
+  .inkra-selection-control__focus-ring {
+  opacity: 1;
 }
 
 .inkra-selection-control[data-disabled="true"] {
@@ -106,6 +118,7 @@
 
 .inkra-radio-group__mark {
   color: var(--inkra-ink);
+  position: relative;
 }
 
 .inkra-radio-group__icon {
@@ -137,10 +150,6 @@
 .inkra-radio-group__frame > .inkra-radio-group__items {
   gap: 0;
   margin: 0;
-}
-
-.inkra-radio-group__frame .inkra-selection-control:has(.inkra-selection-control__input:focus-visible) .inkra-radio-group__segment {
-  outline-offset: calc(-1 * var(--inkra-focus-width));
 }
 
 .inkra-radio-group__segment {
@@ -193,7 +202,7 @@
   display: inline-flex;
   height: 32px;
   justify-content: flex-start;
-  overflow: hidden;
+  overflow: visible;
   padding-inline: 4px;
   width: 52px;
 }
@@ -207,6 +216,11 @@
   transition: transform var(--inkra-motion-fast) var(--inkra-ease);
 }
 
+.inkra-switch__track > .inkra-pencil-surface__ink {
+  border-radius: inherit;
+  overflow: hidden;
+}
+
 .inkra-switch[data-checked="true"] .inkra-switch__thumb {
   --inkra-switch-thumb-shift: 20px;
 
@@ -218,6 +232,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .inkra-selection-control__focus-ring,
   .inkra-radio-segment__surface,
   .inkra-switch__thumb {
     transition: none;
@@ -235,9 +250,15 @@
     z-index: auto;
   }
 
-  .inkra-selection-control__mark,
-  .inkra-switch__track,
-  .inkra-radio-segment__surface {
+  .inkra-selection-control .inkra-selection-control__mark,
+  .inkra-selection-control .inkra-switch__track,
+  .inkra-selection-control .inkra-radio-segment__surface,
+  .inkra-selection-control .inkra-selection-control__focus-ring {
     display: none;
+  }
+
+  .inkra-selection-control__input:focus-visible {
+    outline: var(--inkra-focus-width) solid Highlight;
+    outline-offset: var(--inkra-focus-offset);
   }
 }

@@ -31,6 +31,7 @@ test('Accordion delegates single, multiple, disabled and keyboard behavior to Ra
   assert.match(accordion, /<AccordionPrimitive\.Trigger/);
   assert.match(accordion, /<AccordionPrimitive\.Content/);
   assert.doesNotMatch(accordion, /role=['"](?:button|heading|region)['"]/);
+  assert.doesNotMatch(accordion, /MutationObserver|addEventListener\(['"](?:keydown|click|pointerdown)/);
 });
 
 test('Accordion uses pencil decoration without intercepting trigger input', () => {
@@ -50,5 +51,11 @@ test('Accordion styling keeps stable targets and accessible motion and color fal
   assert.match(styles, /--radix-accordion-content-width/);
   assert.match(styles, /prefers-reduced-motion: reduce[\s\S]*?animation: none !important/);
   assert.match(styles, /forced-colors: active[\s\S]*?outline: var\(--inkra-focus-width\) solid Highlight/);
+  assert.match(styles, /\.inkra-pencil-surface\.inkra-accordion__focus-ring\s*\{\s*display: none !important/);
+  assert.match(styles, /\.inkra-accordion__content\[data-state="closed"\][\s\S]*animation:[^;]*both[\s\S]*height: 0/);
+  assert.match(styles, /\.inkra-accordion__content-body\.inkra-accordion__content\[data-state="closed"\]\s*\{\s*padding: 0/);
+  assert.match(styles, /horizontal[^}]*\.inkra-accordion__content\[data-state="closed"\][\s\S]*width: 0/);
+  assert.match(styles, /\.inkra-accordion__focus-ring[\s\S]*inset: var\(--inkra-focus-width\)/);
+  assert.match(styles, /outline-offset: calc\(-1 \* var\(--inkra-focus-width\)\)/);
   assert.doesNotMatch(normalStyles, /border(?:-\w+)?:\s*[^;]*solid/);
 });

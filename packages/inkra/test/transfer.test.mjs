@@ -8,7 +8,9 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import {
   moveTransferKeys,
   normalizeTargetKeys,
+  resolveTransferFocusIntent,
   splitTransferItems,
+  transferKeysEqual,
   uniqueTransferItems,
 } from '../src/transfer/model.ts';
 
@@ -43,6 +45,18 @@ test('Transfer uses the first stable id and does not render duplicate records tw
   assert.deepEqual(uniqueTransferItems([...items, { id: 'beta', label: 'Duplicate beta' }]), items);
 });
 
+test('Transfer focus waits for controlled acceptance and respects user focus changes', () => {
+  assert.equal(resolveTransferFocusIntent('unchanged', true, false), 'wait');
+  assert.equal(resolveTransferFocusIntent('unchanged', false, true), 'wait');
+  assert.equal(resolveTransferFocusIntent('unchanged', false, false), 'cancel');
+  assert.equal(resolveTransferFocusIntent('accepted', true, false), 'focus');
+  assert.equal(resolveTransferFocusIntent('accepted', false, true), 'focus');
+  assert.equal(resolveTransferFocusIntent('accepted', false, false), 'cancel');
+  assert.equal(resolveTransferFocusIntent('mismatch', true, true), 'cancel');
+  assert.equal(transferKeysEqual(['alpha', 'beta'], ['alpha', 'beta']), true);
+  assert.equal(transferKeysEqual(['alpha'], ['beta']), false);
+});
+
 test('Transfer source exposes controlled state, visible batch semantics, disabled guards and focus recovery', () => {
   assert.match(componentSource, /targetKeys\?: readonly string\[\]/);
   assert.match(componentSource, /defaultTargetKeys\?: readonly string\[\]/);
@@ -51,21 +65,40 @@ test('Transfer source exposes controlled state, visible batch semantics, disable
   assert.match(componentSource, /selectableVisible\('source'\)/);
   assert.match(componentSource, /selectableVisible\('target'\)/);
   assert.match(componentSource, /filter\(item => !item\.disabled && !disabled\)/);
-  assert.match(componentSource, /setPendingFocus\(\{ id: movedKeys\[0\], side: destinationSide \}\)/);
+  assert.match(componentSource, /previousTargetKeys: \[\.\.\.currentTargetKeys\]/);
+  assert.match(componentSource, /expectedTargetKeys: next/);
+  assert.match(componentSource, /if \(valueResolution !== 'accepted'\)[\s\S]*?addEventListener\('focusin', cancel\)/);
+  assert.match(componentSource, /valueResolution = transferKeysEqual\(currentTargetKeys, pendingFocus\.expectedTargetKeys\)/);
+  assert.match(componentSource, /originUnavailable = pendingFocus\.origin != null[\s\S]*?matches\(':disabled'\)/);
+  assert.match(componentSource, /resolveTransferFocusIntent\(valueResolution, originStillOwnsFocus, originUnavailable\) !== 'wait'/);
+  assert.match(componentSource, /resolveTransferFocusIntent\('accepted', originStillOwnsFocus, originUnavailable\) !== 'focus'/);
+  assert.match(componentSource, /documentFallback && unavailable/);
+  assert.doesNotMatch(componentSource, /setTimeout\([^)]*setPendingFocus/);
   assert.match(componentSource, /control \?\? panelRefs\.current\[pendingFocus\.side\]/);
   assert.match(componentSource, /<Input/);
   assert.match(componentSource, /<Checkbox/);
   assert.match(componentSource, /<Button/);
+  assert.doesNotMatch(componentSource, /export \{[^}]*resolveTransferFocusIntent/);
+  assert.doesNotMatch(componentSource, /export type \{[^}]*TransferFocusIntent/);
   assert.doesNotMatch(componentSource, /DndContext|useSortable|draggable|onDrag/);
 });
 
 test('Transfer styles provide stable panels, mobile stacking, readable wrapping and system fallbacks', () => {
-  assert.match(styles, /grid-template-columns:\s*minmax\(0, 1fr\) auto minmax\(0, 1fr\)/);
+  assert.match(styles, /\.inkra-transfer__layout[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\) auto minmax\(0, 1fr\)/);
   assert.match(styles, /grid-template-rows:\s*auto auto auto minmax\(180px, 1fr\)/);
   assert.match(styles, /\[data-searchable\][\s\S]*grid-template-rows:\s*auto auto auto auto minmax\(180px, 1fr\)/);
   assert.match(styles, /min-height:\s*var\(--inkra-touch-target\)/);
   assert.match(styles, /overflow-wrap:\s*anywhere/);
-  assert.match(styles, /@media \(max-width: 720px\)/);
+  assert.match(styles, /container-type:\s*inline-size/);
+  assert.match(styles, /@container inkra-transfer \(max-width: 720px\)/);
+  assert.match(styles, /@container inkra-transfer[\s\S]*:dir\(rtl\)[^\n]*data-direction="to-target"[\s\S]*transform:\s*rotate\(90deg\)/);
+  assert.match(styles, /@container inkra-transfer[\s\S]*:dir\(rtl\)[^\n]*data-direction="to-source"[\s\S]*transform:\s*rotate\(-90deg\)/);
+  assert.match(styles, /\.inkra-transfer:dir\(rtl\)[^\n]*data-direction="to-target"[\s\S]*scaleX\(-1\)/);
+  assert.match(styles, /\.inkra-transfer:dir\(rtl\)[^\n]*data-direction="to-source"[\s\S]*transform:\s*none/);
+  assert.match(styles, /font-family:\s*var\(--inkra-font-body\)/);
+  assert.match(componentSource, /className="inkra-transfer__panel-focus" variant="outline"/);
+  assert.match(styles, /\.inkra-transfer__panel:focus-visible > \.inkra-transfer__panel-focus[\s\S]*opacity:\s*1/);
+  assert.match(styles, /forced-colors: active[\s\S]*outline:\s*2px solid Highlight/);
   assert.match(styles, /@media \(forced-colors: active\)/);
   assert.match(styles, /@media print/);
   assert.doesNotMatch(styles, /border-radius:\s*(?:9|[1-9][0-9]+)px/);

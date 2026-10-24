@@ -9,13 +9,26 @@
 
 .inkra-drawer__content {
   box-sizing: border-box;
+  container-name: inkra-drawer;
+  container-type: inline-size;
   max-height: 100dvh;
   max-width: 100vw;
   outline: 0;
   position: fixed;
   z-index: calc(var(--inkra-z-modal, 30) + var(--inkra-floating-layer-offset, 0) + 1);
 }
-.inkra-drawer__content:focus-visible { outline: var(--inkra-focus-width) solid var(--inkra-focus); outline-offset: calc(-1 * var(--inkra-focus-width)); }
+.inkra-drawer__content:focus-visible { outline: 0; }
+.inkra-drawer__focus-ring {
+  --inkra-accent-strong: var(--inkra-focus);
+
+  display: block !important;
+  inset: var(--inkra-focus-width);
+  opacity: 0;
+  pointer-events: none;
+  position: absolute !important;
+  z-index: 3;
+}
+.inkra-drawer__content:focus-visible > .inkra-drawer__focus-ring { opacity: 1; }
 .inkra-drawer__content[data-direction="left"],
 .inkra-drawer__content[data-direction="right"] { block-size: 100dvh; inset-block: 0; inline-size: min(var(--inkra-drawer-size), 100vw); }
 .inkra-drawer__content[data-direction="left"] { animation: inkra-drawer-left-in var(--inkra-motion-slow) var(--inkra-ease); left: 0; }
@@ -44,13 +57,23 @@
 .inkra-drawer__content[data-direction="bottom"] .inkra-drawer__edge { block-size: 8px; inline-size: 100%; inset-block-start: -4px; inset-inline: 0; }
 
 .inkra-drawer__header,
-.inkra-drawer__footer { display: flex; flex: none; gap: var(--inkra-space-3); min-width: 0; padding: var(--inkra-space-5); position: relative; }
-.inkra-drawer__header { align-items: center; }
-.inkra-drawer__heading { display: grid; flex: 1; gap: var(--inkra-space-2); min-width: 0; overflow-wrap: anywhere; }
-.inkra-drawer__header-actions { align-items: center; display: flex; flex: none; gap: var(--inkra-space-2); }
+.inkra-drawer__body,
+.inkra-drawer__footer { box-sizing: border-box; gap: var(--inkra-space-3); min-width: 0; padding: var(--inkra-space-5); position: relative; }
+.inkra-drawer__header,
+.inkra-drawer__footer { flex: none; }
+.inkra-drawer__header {
+  align-items: center;
+  display: flex;
+  max-block-size: 50%;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.inkra-drawer__heading { display: grid; flex: 1 1 auto; gap: var(--inkra-space-2); min-width: 0; overflow-wrap: anywhere; }
+.inkra-drawer__header-actions { align-items: center; display: flex; flex: none; flex-wrap: wrap; gap: var(--inkra-space-2); justify-content: flex-end; max-inline-size: 100%; min-width: 0; overflow: auto; overscroll-behavior: contain; }
 .inkra-drawer__close-button { flex: none; }
 .inkra-drawer__body { flex: 1 1 auto; min-height: 0; min-width: 0; overflow: auto; overscroll-behavior: contain; padding: var(--inkra-space-5); scrollbar-gutter: stable; }
-.inkra-drawer__footer { align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.inkra-drawer__footer { align-items: center; display: flex; flex-wrap: wrap; justify-content: flex-end; max-block-size: 40%; overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
 .inkra-drawer__footer[data-align="start"] { justify-content: flex-start; }
 .inkra-drawer__footer[data-align="center"] { justify-content: center; }
 .inkra-drawer__footer > .inkra-button { max-width: 100%; }
@@ -60,6 +83,11 @@
 .inkra-drawer__divider { height: 8px; inset-inline: 0; pointer-events: none; position: absolute; width: 100%; }
 .inkra-drawer__header > .inkra-drawer__divider { bottom: -4px; }
 .inkra-drawer__footer > .inkra-drawer__divider { top: -4px; }
+
+@container inkra-drawer (max-width: 24rem) {
+  .inkra-drawer__header[data-custom-action] { align-items: stretch; flex-direction: column; }
+  .inkra-drawer__header[data-custom-action] .inkra-drawer__header-actions { align-self: stretch; order: -1; }
+}
 
 @keyframes inkra-drawer-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes inkra-drawer-backdrop-out { from { opacity: 1; } to { opacity: 0; } }
@@ -99,5 +127,7 @@
   .inkra-drawer__content[data-direction="bottom"] { border-top: 1px solid CanvasText; }
   .inkra-drawer__header[data-divided] { border-bottom: 1px solid CanvasText; }
   .inkra-drawer__footer[data-divided] { border-top: 1px solid CanvasText; }
-  .inkra-drawer__edge { display: none; }
+  .inkra-drawer__edge,
+  .inkra-drawer__focus-ring { display: none !important; }
+  .inkra-drawer__content:focus-visible { outline: var(--inkra-focus-width) solid Highlight; outline-offset: calc(-1 * var(--inkra-focus-width)); }
 }

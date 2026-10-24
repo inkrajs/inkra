@@ -73,6 +73,10 @@ test('HotkeyInput keeps capture local and exposes controlled, uncontrolled, conf
   assert.match(componentSource, /validateHotkey\?\.\(nextValue\)/);
   assert.match(componentSource, /onConflict\?\.\(nextValue, message\)/);
   assert.match(componentSource, /onCancel\?\.\(\)/);
+  assert.match(componentSource, /recordingLabel\?: string/);
+  assert.match(componentSource, /const recording = focused && !state\.disabled && !state\.readOnly/);
+  assert.match(componentSource, /data-recording=\{recording \|\| undefined\}/);
+  assert.match(componentSource, /aria-live="polite"/);
   assert.match(componentSource, /onCompositionStart/);
   assert.match(componentSource, /onCompositionEnd/);
   assert.match(componentSource, /aria-errormessage/);
@@ -86,8 +90,14 @@ test('HotkeyInput keeps capture local and exposes controlled, uncontrolled, conf
 
 test('Hotkey styles preserve a native focus target and forced-colors fallback', () => {
   assert.match(styles, /\.inkra-hotkey-input__native/);
-  assert.match(styles, /min-block-size:\s*max\(var\(--inkra-hotkey-input-height\), var\(--inkra-touch-target\)\)/);
+  assert.match(styles, /block-size:\s*var\(--inkra-hotkey-input-height\)/);
+  assert.match(styles, /margin-block:\s*max\(0px, calc\(\(var\(--inkra-touch-target\) - var\(--inkra-hotkey-input-height\)\) \/ 2\)\)/);
+  assert.match(styles, /inset-block:\s*min\(0px, calc\(\(var\(--inkra-hotkey-input-height\) - var\(--inkra-touch-target\)\) \/ 2\)\)/);
+  assert.match(styles, /\.inkra-hotkey-input__control > \.inkra-pencil-surface__content \{\s*overflow: visible;\s*clip-path: none;/);
   assert.match(styles, /@media \(forced-colors: active\)/);
   assert.match(styles, /outline:\s*2px solid Highlight/);
+  assert.match(styles, /\.inkra-hotkey-input__focus-ring/);
+  assert.match(styles, /\.inkra-hotkey-input\[data-recording="true"\].*opacity:\s*1/s);
+  assert.match(styles, /@media \(prefers-reduced-motion: reduce\)/);
   assert.match(styles, /@media print/);
 });

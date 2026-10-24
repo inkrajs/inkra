@@ -9,6 +9,34 @@ import { TimePicker } from '../dist/time-picker/index.js';
 
 const input = (html, name) => html.match(new RegExp(`<input\\b[^>]*name="${name}"[^>]*>`))?.[0] ?? '';
 
+function assertNoNestedButtons(html) {
+  let depth = 0;
+  let maximum = 0;
+  for (const token of html.matchAll(/<\/?button\b/g)) {
+    if (token[0].startsWith('</')) depth -= 1;
+    else {
+      depth += 1;
+      maximum = Math.max(maximum, depth);
+    }
+  }
+  assert.equal(depth, 0);
+  assert.equal(maximum, 1);
+}
+
+function assertSharedPickerControl(html, picker) {
+  const controlClass = `inkra-${picker}__control`;
+  const triggerClass = `inkra-${picker}__trigger`;
+  const clearClass = `inkra-${picker}__clear`;
+  const controlStart = html.indexOf(controlClass);
+  const controlEnd = html.indexOf('</div>', controlStart);
+  const trigger = html.indexOf(triggerClass, controlStart);
+  const clear = html.indexOf(clearClass, controlStart);
+  assert.ok(controlStart >= 0, `${picker} should render a shared control surface`);
+  assert.ok(trigger > controlStart && trigger < controlEnd, `${picker} trigger should be inside the shared surface`);
+  assert.ok(clear > trigger && clear < controlEnd, `${picker} clear action should follow the trigger inside the shared surface`);
+  assertNoNestedButtons(html);
+}
+
 test('DatePicker submits a local calendar date without UTC conversion', () => {
   const localDate = new Date(2026, 9, 22, 0, 15);
   assert.equal(datePickerLocalValue(localDate), '2026-10-22');
@@ -57,6 +85,19 @@ test('DatePicker exposes Field-compatible state and a stable clear control', () 
   assert.match(html, /data-readonly="true"/);
   assert.match(html, /aria-label="Clear arrival"/);
   assert.match(html, /disabled=""/);
+  assertSharedPickerControl(html, 'date-picker');
+});
+
+test('DatePicker keeps picker sizes on one shared pencil surface', () => {
+  const html = renderToStaticMarkup(createElement(DatePicker, {
+    defaultValue: new Date(2026, 9, 22),
+    size: 'sm',
+  }));
+  assert.match(html, /inkra-date-picker[^>]*data-size="sm"/);
+  assert.match(html, /data-size="sm"[^>]*class="[^"]*inkra-date-picker__control/);
+  assert.match(html, /inkra-date-picker__trigger[^>]*data-size="sm"/);
+  assert.match(html, /inkra-date-picker__clear[^>]*data-size="icon-sm"/);
+  assertSharedPickerControl(html, 'date-picker');
 });
 
 test('DatePicker required fields use native constraint controls and keep visible value naming', () => {
@@ -93,6 +134,19 @@ test('TimePicker uses a pencil button while retaining native validation and opti
   assert.match(html, /inkra-time-picker__trigger/);
   assert.match(html, /inkra-pencil-text__source">09:30:15/);
   assert.match(html, /AM/);
+  assertSharedPickerControl(html, 'time-picker');
+});
+
+test('TimePicker keeps picker sizes on one shared pencil surface', () => {
+  const html = renderToStaticMarkup(createElement(TimePicker, {
+    defaultValue: '09:30',
+    size: 'lg',
+  }));
+  assert.match(html, /inkra-time-picker[^>]*data-size="lg"/);
+  assert.match(html, /data-size="lg"[^>]*class="[^"]*inkra-time-picker__control/);
+  assert.match(html, /inkra-time-picker__trigger[^>]*data-size="lg"/);
+  assert.match(html, /inkra-time-picker__clear[^>]*data-size="icon-lg"/);
+  assertSharedPickerControl(html, 'time-picker');
 });
 
 test('TimePicker associates its Field label with the visible trigger and describes the chosen value', () => {

@@ -80,7 +80,7 @@ export const Pagination = forwardRef<HTMLElement, PaginationProps>(function Pagi
       {simple ? <li className="inkra-pagination__summary" aria-live="polite" aria-atomic="true">
         {renderSummary ? renderSummary(current, total) : <PencilText>{`${current} / ${total}`}</PencilText>}
       </li> : getPaginationEntries(total, current, siblingCount, boundaryCount).map(entry => typeof entry === 'number'
-        ? <li key={entry}><Button size={size} variant="ghost" className="inkra-pagination__page"
+        ? <li key={entry} className="inkra-pagination__page-item"><Button size={size} variant="ghost" className="inkra-pagination__page"
           aria-label={text.page(entry)} aria-current={entry === current ? 'page' : undefined}
           disabled={disabled} onClick={() => select(entry)}>
           {entry === current && <PencilSurface as="span" aria-hidden="true" variant="selection" className="inkra-pagination__selection" seed={`page-${entry}`} />}

@@ -51,6 +51,7 @@
 .inkra-hotkey-input {
   --inkra-hotkey-input-height: var(--inkra-control-md);
 
+  position: relative;
   display: grid;
   inline-size: 20rem;
   max-inline-size: 100%;
@@ -70,17 +71,25 @@
   box-sizing: border-box;
   inline-size: 100%;
   min-inline-size: 0;
-  min-block-size: max(var(--inkra-hotkey-input-height), var(--inkra-touch-target));
+  block-size: var(--inkra-hotkey-input-height);
+  min-block-size: var(--inkra-hotkey-input-height);
   align-items: center;
+  margin-block: max(0px, calc((var(--inkra-touch-target) - var(--inkra-hotkey-input-height)) / 2));
+}
+
+.inkra-hotkey-input__control > .inkra-pencil-surface__content {
+  overflow: visible;
+  clip-path: none;
 }
 
 .inkra-hotkey-input__native {
   position: absolute;
   z-index: 2;
-  inset: 0;
+  inset-inline: 0;
+  inset-block: min(0px, calc((var(--inkra-hotkey-input-height) - var(--inkra-touch-target)) / 2));
   box-sizing: border-box;
   inline-size: 100%;
-  block-size: 100%;
+  block-size: auto;
   border: 0;
   outline: 0;
   background: transparent;
@@ -104,19 +113,45 @@
 }
 
 .inkra-hotkey-input:has(.inkra-hotkey-input__clear) .inkra-hotkey-input__value {
-  padding-inline-end: calc(var(--inkra-touch-target) + var(--inkra-space-2));
+  padding-inline-end: calc(max(var(--inkra-touch-target), var(--inkra-hotkey-input-height)) + var(--inkra-space-2));
 }
 
 .inkra-hotkey-input__placeholder { color: var(--inkra-ink-subtle); }
 
+.inkra-hotkey-input__recording {
+  color: var(--inkra-accent-strong);
+}
+
+.inkra-hotkey-input__focus-ring {
+  position: absolute !important;
+  z-index: 4;
+  inset: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--inkra-motion-fast) var(--inkra-ease);
+}
+
+.inkra-hotkey-input[data-recording="true"] .inkra-hotkey-input__focus-ring { opacity: 1; }
+
+.inkra-hotkey-input__status {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
 .inkra-hotkey-input__clear {
   position: absolute;
   z-index: 3;
-  inset-block: 0;
+  inset-block: min(0px, calc((var(--inkra-hotkey-input-height) - var(--inkra-touch-target)) / 2));
   inset-inline-end: 0;
   display: inline-flex;
-  inline-size: var(--inkra-touch-target);
-  block-size: 100%;
+  inline-size: max(var(--inkra-touch-target), var(--inkra-hotkey-input-height));
+  block-size: auto;
   align-items: center;
   justify-content: center;
   border: 0;
@@ -142,6 +177,10 @@
   .inkra-hotkey-input[data-focus-within="true"] .inkra-hotkey-input__control { outline: 2px solid Highlight; outline-offset: 2px; }
   .inkra-hotkey-input[data-invalid="true"] .inkra-hotkey-input__control { border-color: Mark; }
   .inkra-hotkey-input__message { color: Mark; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inkra-hotkey-input__focus-ring { transition: none; }
 }
 
 @media print {

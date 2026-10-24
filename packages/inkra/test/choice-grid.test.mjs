@@ -48,6 +48,8 @@ test('ChoiceGrid delegates single selection to native RadioGroup semantics', () 
   assert.match(markup, /<img[^>]*src="\/sample\.png"[^>]*alt=""/);
   assert.match(markup, /aria-hidden="true" class="inkra-choice-grid__media" data-kind="image"/);
   assert.match(markup, /data-option-icon="spacious"/);
+  assert.match(markup, /inkra-choice-grid__option-label[^>]*>.*inkra-pencil-text/);
+  assert.match(markup, /inkra-pencil-text__source">Spacious/);
   assert.match(markup, /disabled=""/);
   assert.doesNotMatch(markup, /role="radio"|role="radiogroup"|<button/);
 });
@@ -98,6 +100,19 @@ test('ChoiceGrid multiple defaults stay delegated to uncontrolled Checkbox input
   assert.doesNotMatch(markup, /defaultValues=|values=/);
 });
 
+test('ChoiceGrid preserves arbitrary ReactNode option labels without wrapping their content in PencilText', () => {
+  const markup = renderToStaticMarkup(createElement(
+    ChoiceGrid,
+    { label: 'Output', name: 'output' },
+    createElement(ChoiceGridOption, {
+      label: createElement('strong', { 'data-custom-label': true }, 'Custom label'),
+      value: 'custom',
+    }),
+  ));
+  assert.match(markup, /data-custom-label="true">Custom label<\/strong>/);
+  assert.doesNotMatch(markup, /inkra-pencil-text__source">Custom label/);
+});
+
 test('ChoiceGrid source composes selection primitives without a parallel selection store', () => {
   const source = readFileSync(new URL('../src/choice-grid/index.tsx', import.meta.url), 'utf8');
   const styles = readFileSync(new URL('../src/choice-grid/styles.css', import.meta.url), 'utf8');
@@ -108,8 +123,17 @@ test('ChoiceGrid source composes selection primitives without a parallel selecti
   assert.doesNotMatch(source, /useState|useReducer/);
   assert.match(styles, /repeat\(auto-fit, minmax\(min\(100%, var\(--inkra-choice-grid-min-item/);
   assert.match(styles, /@media \(max-width: 640px\)[\s\S]*grid-template-columns: minmax\(0, 1fr\)/);
+  assert.match(styles, /container-type:\s*inline-size/);
+  assert.match(styles, /@container \(max-width: 640px\)[\s\S]*grid-template-columns: minmax\(0, 1fr\)/);
   assert.match(styles, /@media \(forced-colors: active\)[\s\S]*Highlight/);
   assert.match(styles, /:has\(\.inkra-selection-control__input:focus-visible\)/);
+  assert.match(source, /typeof label === 'string'[\s\S]*<PencilText seed=\{`\$\{resolvedSeed\}-label`\}>\{label\}<\/PencilText>/);
+  assert.match(source, /className="inkra-choice-grid__focus"/);
+  assert.match(styles, /\.inkra-choice-grid__focus \{[\s\S]*--inkra-accent-strong: var\(--inkra-focus\)/);
+  assert.match(styles, /focus-visible\) \.inkra-choice-grid__focus \{\s*opacity: 1/);
+  assert.match(styles, /\.inkra-choice-grid__control \.inkra-selection-control__focus-ring \{\s*display: none !important/);
+  assert.doesNotMatch(styles.split('@media (forced-colors: active)')[0], /focus-visible\)[^{]*\{[^}]*outline:\s*var\(--inkra-focus-width\) solid var\(--inkra-focus\)/);
   assert.doesNotMatch(styles.split('@media (forced-colors: active)')[0], /border:\s*1px solid/);
+  assert.doesNotMatch(source, /ResizeObserver/);
 });
 

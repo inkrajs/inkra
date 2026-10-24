@@ -5,6 +5,7 @@ import { PENCIL_RENDERER_VERSION, effectiveDpr } from './cache.js';
 import { observeCanvasRecovery } from './recovery.js';
 import { seedToNumber } from './random.js';
 import { drawPencilSurface } from './surfaceRenderer.js';
+import { releaseSurfaceBitmaps } from './surfaceBudget.js';
 import { maxStrokeRoughness, pencilRenderDefaults, readRenderToken } from './renderTokens.js';
 import type { PencilSurfaceVariant } from './surfaceRenderer.js';
 
@@ -101,6 +102,7 @@ export function usePencilSurface(
         delete root.dataset.pencilFallback;
         lastPaint = paintKey;
       } catch {
+        releaseSurfaceBitmaps(canvas, borderRef.current);
         root.dataset.pencilFallback = 'true';
         root.style.removeProperty('--inkra-pencil-clip');
         lastPaint = '';

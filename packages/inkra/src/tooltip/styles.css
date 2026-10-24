@@ -1,6 +1,7 @@
 .inkra-tooltip__content {
   animation: inkra-tooltip-content-in var(--inkra-motion-fast) var(--inkra-ease) both;
-  max-width: min(20rem, calc(100vw - var(--inkra-space-4)));
+  max-height: min(50dvh, var(--radix-tooltip-content-available-height, 50dvh));
+  max-width: min(20rem, var(--radix-tooltip-content-available-width, calc(100dvw - var(--inkra-space-4))));
   outline: 0;
   transform-origin: var(--radix-tooltip-content-transform-origin);
   z-index: calc(var(--inkra-z-tooltip, 40) + var(--inkra-floating-layer-offset, 0));
@@ -14,7 +15,9 @@
 .inkra-tooltip__surface {
   color: var(--inkra-ink);
   display: block;
+  max-height: inherit;
   max-width: inherit;
+  min-width: 0;
 }
 
 .inkra-tooltip__content-body {
@@ -22,9 +25,13 @@
   font-family: var(--inkra-font-body);
   font-size: var(--inkra-text-sm);
   line-height: var(--inkra-line-ui);
+  max-height: inherit;
   max-width: inherit;
+  overflow: auto;
   overflow-wrap: anywhere;
+  overscroll-behavior: contain;
   padding: var(--inkra-space-2) var(--inkra-space-3);
+  scrollbar-gutter: stable;
   user-select: text;
 }
 

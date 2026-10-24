@@ -1,9 +1,19 @@
 .inkra-date-picker {
+  --inkra-date-picker-control-height: var(--inkra-control-md);
+
   align-items: center;
   display: inline-flex;
-  gap: var(--inkra-space-1);
   max-width: 100%;
+  min-height: var(--inkra-touch-target);
   min-width: 0;
+}
+
+.inkra-date-picker[data-size="sm"] {
+  --inkra-date-picker-control-height: var(--inkra-control-sm);
+}
+
+.inkra-date-picker[data-size="lg"] {
+  --inkra-date-picker-control-height: var(--inkra-control-lg);
 }
 
 .inkra-date-picker[data-full-width] {
@@ -11,8 +21,21 @@
   width: 100%;
 }
 
-.inkra-date-picker__trigger {
+.inkra-button-group.inkra-date-picker__control {
+  align-items: center;
+  block-size: var(--inkra-date-picker-control-height);
+  flex: 1 1 auto;
   min-width: 0;
+  overflow: visible;
+}
+
+.inkra-date-picker__control > .inkra-date-picker__trigger {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.inkra-date-picker__control > .inkra-date-picker__clear {
+  flex: 0 0 auto;
 }
 
 .inkra-date-picker__trigger .inkra-button__content {
@@ -35,6 +58,12 @@
 
 .inkra-date-picker__clear[aria-hidden="true"] {
   visibility: hidden;
+}
+
+.inkra-date-picker__control .inkra-button-group__divider[data-orientation="vertical"] {
+  block-size: var(--inkra-date-picker-control-height);
+  inset-block-start: 50%;
+  transform: translateY(-50%);
 }
 
 .inkra-date-picker__form-field,

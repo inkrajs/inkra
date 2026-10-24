@@ -168,8 +168,9 @@ test('RadioGroup supports segmented presentation, orientation and decorative ico
   assert.equal((segmented.match(/inkra-radio-group__segment/g) ?? []).length, 2);
   assert.equal((segmented.match(/inkra-radio-group__icon/g) ?? []).length, 2);
   assert.equal((segmented.match(/inkra-pencil-surface--selection/g) ?? []).length, 2);
-  assert.equal((segmented.match(/inkra-pencil-surface--outline/g) ?? []).length, 1);
   assert.equal((segmented.match(/inkra-radio-group__frame/g) ?? []).length, 1);
+  assert.match(segmented, /inkra-pencil-surface--outline inkra-radio-group__frame/);
+  assert.equal((segmented.match(/inkra-pencil-surface--outline inkra-selection-control__focus-ring inkra-selection-control__focus-ring--inset/g) ?? []).length, 2);
   assert.equal((segmented.match(/inkra-radio-segment__surface--selection/g) ?? []).length, 2);
   assert.doesNotMatch(segmented, /inkra-radio-segment__surface--outline/);
   assert.match(segmented, /data-theme-icon="graphite"/);

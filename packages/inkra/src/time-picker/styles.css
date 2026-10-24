@@ -1,16 +1,33 @@
 .inkra-time-picker {
+  --inkra-time-picker-control-height: var(--inkra-control-md);
+
   display: flex;
   align-items: center;
   gap: var(--inkra-space-2);
   position: relative;
+  min-height: var(--inkra-touch-target);
   min-width: 0;
   width: fit-content;
   max-width: 100%;
 }
+.inkra-time-picker[data-size="sm"] { --inkra-time-picker-control-height: var(--inkra-control-sm); }
+.inkra-time-picker[data-size="lg"] { --inkra-time-picker-control-height: var(--inkra-control-lg); }
 .inkra-time-picker[data-full-width="true"] { width: 100%; }
-.inkra-time-picker__trigger { flex: 1; min-width: 0; }
-.inkra-time-picker__clear { flex: none; }
+.inkra-button-group.inkra-time-picker__control {
+  align-items: center;
+  block-size: var(--inkra-time-picker-control-height);
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: visible;
+}
+.inkra-time-picker__control > .inkra-time-picker__trigger { flex: 1 1 auto; min-width: 0; }
+.inkra-time-picker__control > .inkra-time-picker__clear { flex: 0 0 auto; }
 .inkra-time-picker__clear[aria-hidden="true"] { visibility: hidden; }
+.inkra-time-picker__control .inkra-button-group__divider[data-orientation="vertical"] {
+  block-size: var(--inkra-time-picker-control-height);
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+}
 .inkra-time-picker[data-invalid="true"] { color: var(--inkra-danger); }
 .inkra-time-picker__native,
 .inkra-time-picker__accessible-value {

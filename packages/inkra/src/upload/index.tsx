@@ -151,6 +151,7 @@ export const Upload = forwardRef<HTMLDivElement, UploadProps>(function Upload(
     onReject,
     onUpload,
     validate,
+    'aria-label': ariaLabel,
     ...props
   },
   ref,
@@ -302,6 +303,10 @@ export const Upload = forwardRef<HTMLDivElement, UploadProps>(function Upload(
     });
   }, [items]);
 
+  useEffect(() => {
+    if (disabled) setDragActive(false);
+  }, [disabled]);
+
   const openPicker = () => {
     if (!disabled) inputRef.current?.click();
   };
@@ -316,9 +321,10 @@ export const Upload = forwardRef<HTMLDivElement, UploadProps>(function Upload(
     addFiles(Array.from(event.dataTransfer.files));
   };
 
-  return <div {...props} ref={ref} className={['inkra-upload', className].filter(Boolean).join(' ')} data-disabled={disabled || undefined}>
+  return <div {...props} aria-label={ariaLabel} ref={ref} className={['inkra-upload', className].filter(Boolean).join(' ')} data-disabled={disabled || undefined}>
     <input
       {...inputProps}
+      aria-hidden="true"
       ref={inputRef}
       className={['inkra-upload__input', inputProps?.className].filter(Boolean).join(' ')}
       type="file"
@@ -326,6 +332,7 @@ export const Upload = forwardRef<HTMLDivElement, UploadProps>(function Upload(
       capture={capture}
       multiple={multiple}
       disabled={disabled}
+      tabIndex={-1}
       onChange={event => {
         addFiles(Array.from(event.currentTarget.files ?? []));
         event.currentTarget.value = '';
@@ -337,6 +344,7 @@ export const Upload = forwardRef<HTMLDivElement, UploadProps>(function Upload(
       data-drag-active={dragActive || undefined}
       variant={dragActive ? 'selection' : 'outline'}
       role="button"
+      aria-label={ariaLabel}
       tabIndex={disabled ? -1 : 0}
       aria-disabled={disabled || undefined}
       onClick={openPicker}
@@ -346,6 +354,13 @@ export const Upload = forwardRef<HTMLDivElement, UploadProps>(function Upload(
       onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragActive(false); }}
       onDrop={handleDrop}
     >
+      <PencilSurface<'span'>
+        aria-hidden="true"
+        as="span"
+        className="inkra-upload__focus-ring"
+        seed={`${instanceId}-focus`}
+        variant="outline"
+      />
       <PencilIcon className="inkra-upload__icon" paths={uploadPaths} size={32} sourceSize={24} />
       <span className="inkra-upload__prompt"><PencilText>{labels.browse}</PencilText><span>{labels.drop}</span></span>
       {accept && <span className="inkra-upload__hint">{accept}</span>}
@@ -360,7 +375,7 @@ export const Upload = forwardRef<HTMLDivElement, UploadProps>(function Upload(
       {items.map(item => <li key={item.id} className="inkra-upload__item" data-status={item.status}>
         <PencilSurface className="inkra-upload__item-surface" variant="paper" radius={8}>
           <div className="inkra-upload__file">
-            <span className="inkra-upload__name">{item.file.name}</span>
+            <PencilText className="inkra-upload__name" ellipsis>{item.file.name}</PencilText>
             <span className="inkra-upload__meta">{formatBytes(item.file.size)} · {statusLabel(item.status, labels)}</span>
             {item.status === 'uploading' && <Progress size="sm" value={item.progress ?? 0} aria-label={`${item.file.name}: ${Math.round(item.progress ?? 0)}%`} />}
             {item.error && <span className="inkra-upload__error">{item.error}</span>}

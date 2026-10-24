@@ -8,6 +8,7 @@ const source = readFileSync(new URL('../src/scroll-area/index.tsx', import.meta.
 const styles = readFileSync(new URL('../src/scroll-area/styles.css', import.meta.url), 'utf8');
 
 test('ScrollArea delegates scroll geometry and input mechanics to Base UI', () => {
+  assert.match(source, /from '@base-ui\/react\/direction-provider'/);
   assert.match(source, /from '@base-ui\/react\/scroll-area'/);
   assert.match(source, /ScrollAreaPrimitive\.Viewport/);
   assert.match(source, /ScrollAreaPrimitive\.Scrollbar/);
@@ -16,8 +17,16 @@ test('ScrollArea delegates scroll geometry and input mechanics to Base UI', () =
   assert.doesNotMatch(source, /setPointerCapture|pointermove|clientX|clientY|requestAnimationFrame|scrollTop\s*=/);
 });
 
+test('ScrollArea bridges explicit and inherited direction into the Base UI engine', () => {
+  assert.match(source, /const inheritedDirection = useDirection\(\)/);
+  assert.match(source, /dir === 'rtl' \|\| dir === 'ltr' \? dir : inheritedDirection/);
+  assert.match(source, /<DirectionProvider direction=\{resolvedDirection\}>/);
+  assert.match(source, /dir=\{dir\}/);
+});
+
 test('ScrollArea exposes the bounded two-axis and visibility contract', () => {
   assert.match(source, /type ScrollAreaVisibility = 'auto' \| 'always'/);
+  assert.match(source, /export type ScrollAreaRootProps = ScrollAreaProps/);
   assert.match(source, /orientation="vertical"/);
   assert.match(source, /orientation="horizontal"/);
   assert.match(source, /overflowEdgeThreshold/);
@@ -25,6 +34,23 @@ test('ScrollArea exposes the bounded two-axis and visibility contract', () => {
   assert.match(styles, /data-type="always"/);
   assert.match(styles, /:hover .*inkra-scroll-area__scrollbar/);
   assert.match(styles, /:focus-within .*inkra-scroll-area__scrollbar/);
+  assert.match(styles, /data-hovering/);
+  assert.match(styles, /data-scrolling/);
+  assert.match(styles, /inkra-scroll-area__thumb:active/);
+});
+
+test('ScrollArea keeps pencil track and thumb surfaces in the convenience wrapper', () => {
+  assert.match(source, /className="inkra-scroll-area__track"/);
+  assert.match(source, /className="inkra-scroll-area__thumb-surface"/);
+  assert.match(source, /resolvedSeed.*vertical-track/);
+  assert.match(source, /resolvedSeed.*horizontal-thumb/);
+  assert.match(styles, /--inkra-scroll-area-size: 14px/);
+  assert.match(styles, /data-orientation="vertical"[\s\S]*inset-inline: 4px/);
+  assert.match(styles, /data-orientation="horizontal"[\s\S]*inset-block: 4px/);
+  assert.match(styles, /min-block-size: 28px/);
+  assert.match(styles, /min-inline-size: 32px/);
+  assert.doesNotMatch(styles, /border-style:\s*dashed|stroke-dasharray/);
+  assert.doesNotMatch(styles, /\bfilter\s*:/);
 });
 
 test('ScrollArea styles hide only the local viewport scrollbar and preserve fallback modes', () => {

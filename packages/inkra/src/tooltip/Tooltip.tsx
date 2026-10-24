@@ -54,6 +54,7 @@ export const TooltipContent = forwardRef<
   {
     children,
     className,
+    collisionPadding = 8,
     seed,
     sideOffset = 6,
     surfaceClassName,
@@ -71,6 +72,7 @@ export const TooltipContent = forwardRef<
     <TooltipPrimitive.Content
       {...props}
       className={classes('inkra-tooltip__content', className)}
+      collisionPadding={collisionPadding}
       ref={ref}
       sideOffset={sideOffset}
     >

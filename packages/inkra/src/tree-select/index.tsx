@@ -12,7 +12,7 @@ import type {
   ReactNode,
 } from 'react';
 
-import { Button } from '../Button.js';
+import { Button, ButtonGroup } from '../Button.js';
 import { Input } from '../form/Input.js';
 import { mergeAriaIds, useFieldContext } from '../form/context.js';
 import { PencilIcon } from '../PencilIcon.js';
@@ -205,17 +205,24 @@ export const TreeSelect = forwardRef<HTMLDivElement, TreeSelectProps>(function T
   };
 
   useEffect(() => {
-    if (controlledSelection) return;
     const currentForm = formAnchorRef.current?.form;
     if (!currentForm) return;
-    const reset = () => {
-      setUncontrolledSelection(defaultSelection.current);
-      setQuery('');
-      if (controlledOpen === undefined) setUncontrolledOpen(false);
+    let resetTimer: ReturnType<typeof setTimeout> | undefined;
+    const reset = (event: Event) => {
+      clearTimeout(resetTimer);
+      resetTimer = setTimeout(() => {
+        if (event.defaultPrevented) return;
+        if (!controlledSelection) setUncontrolledSelection(defaultSelection.current);
+        setQuery('');
+        if (controlledOpen === undefined) setUncontrolledOpen(false);
+      }, 0);
     };
     currentForm.addEventListener('reset', reset);
-    return () => currentForm.removeEventListener('reset', reset);
-  }, [controlledOpen, controlledSelection]);
+    return () => {
+      clearTimeout(resetTimer);
+      currentForm.removeEventListener('reset', reset);
+    };
+  }, [controlledOpen, controlledSelection, form]);
 
   const handleSelectionChange = (nextSelection: TreeSelection) => {
     if (resolvedDisabled || resolvedReadOnly) return;
@@ -291,7 +298,16 @@ export const TreeSelect = forwardRef<HTMLDivElement, TreeSelectProps>(function T
     ref={ref}
   >
     <Popover.Root open={exposedOpen} onOpenChange={setOpen}>
-      <div className="inkra-tree-select__control">
+      <ButtonGroup
+        aria-label={ariaLabel ?? (ariaLabelledBy ? undefined : treeLabel)}
+        aria-labelledby={ariaLabelledBy}
+        className="inkra-tree-select__control"
+        data-size={size}
+        disabled={resolvedDisabled}
+        fullWidth
+        size={size}
+        variant="outline"
+      >
         <Popover.Trigger asChild>
           <Button
             aria-describedby={describedBy}
@@ -307,22 +323,26 @@ export const TreeSelect = forwardRef<HTMLDivElement, TreeSelectProps>(function T
             id={controlId}
             ref={triggerRef}
             size={size}
-            variant="outline"
           >
             <span className="inkra-tree-select__value" data-placeholder={!selectedIds.length || undefined}>{valueContent}</span>
           </Button>
         </Popover.Trigger>
         {clearable ? <Button
+          aria-hidden={!selectedIds.length || undefined}
           aria-label={clearLabel}
           className="inkra-tree-select__clear"
-          data-visible={selectedIds.length > 0 || undefined}
           disabled={resolvedDisabled || resolvedReadOnly || selectedIds.length === 0}
-          onClick={() => emitSelection([], { reason: 'clear' })}
+          onPointerDown={event => event.preventDefault()}
+          onClick={() => {
+            emitSelection([], { reason: 'clear' });
+            setOpen(false);
+            triggerRef.current?.focus({ preventScroll: true });
+          }}
           size={size === 'sm' ? 'icon-sm' : size === 'lg' ? 'icon-lg' : 'icon'}
           tabIndex={selectedIds.length ? undefined : -1}
           variant="ghost"
         ><PencilIcon paths={clearPaths} size={24} sourceSize={24} /></Button> : null}
-      </div>
+      </ButtonGroup>
       <Popover.Portal>
         <Popover.Content
           align={align}

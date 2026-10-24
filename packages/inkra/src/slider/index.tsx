@@ -29,7 +29,10 @@ export const Slider = forwardRef<HTMLSpanElement, SliderProps>(function Slider(
     inverted = false,
     min = 0,
     max = 100,
+    name,
+    form,
     onValueChange,
+    onValueCommit,
     orientation = 'horizontal',
     seed,
     size = 'md',
@@ -43,11 +46,17 @@ export const Slider = forwardRef<HTMLSpanElement, SliderProps>(function Slider(
   const generatedId = useId();
   const rootRef = useRef<HTMLSpanElement>(null);
   useImperativeHandle(forwardedRef, () => rootRef.current as HTMLSpanElement);
-  const [uncontrolledValue, setUncontrolledValue] = useState(() => defaultValue ?? [min]);
+  const controlled = value !== undefined;
+  const defaultValueRef = useRef([...(defaultValue ?? [min])]);
+  const [uncontrolledValue, setUncontrolledValue] = useState(() => [...defaultValueRef.current]);
   const [inferredDir, setInferredDir] = useState<'ltr' | 'rtl'>('ltr');
   const values = value ?? uncontrolledValue;
+  const valuesRef = useRef(values);
+  const formInputRefs = useRef(new Map<number, HTMLInputElement>());
+  valuesRef.current = values;
   const resolvedDir = dir ?? inferredDir;
   const resolvedSeed = seed ?? `inkra-slider-${generatedId}`;
+  const radixFormId = `${generatedId}-radix-inert-form`;
 
   useEffect(() => {
     const root = rootRef.current;
@@ -60,6 +69,35 @@ export const Slider = forwardRef<HTMLSpanElement, SliderProps>(function Slider(
     }
     return () => observer.disconnect();
   }, [dir]);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return undefined;
+    const ownerDocument = root.ownerDocument;
+    const candidate = form ? ownerDocument.getElementById(form) : root.closest('form');
+    const FormElement = ownerDocument.defaultView?.HTMLFormElement;
+    const formElement = FormElement && candidate instanceof FormElement ? candidate : null;
+    if (!formElement) return undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const reset = (event: Event) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        if (event.defaultPrevented) return;
+        if (controlled) {
+          formInputRefs.current.forEach((input, index) => {
+            input.value = String(valuesRef.current[index] ?? '');
+          });
+        } else {
+          setUncontrolledValue([...defaultValueRef.current]);
+        }
+      }, 0);
+    };
+    formElement.addEventListener('reset', reset);
+    return () => {
+      clearTimeout(timer);
+      formElement.removeEventListener('reset', reset);
+    };
+  }, [controlled, form]);
 
   const percentage = (number: number) => max > min ? Math.min(100, Math.max(0, (number - min) / (max - min) * 100)) : 0;
   const low = values.length > 1 ? percentage(Math.min(...values)) : 0;
@@ -76,19 +114,20 @@ export const Slider = forwardRef<HTMLSpanElement, SliderProps>(function Slider(
     className={['inkra-slider', className].filter(Boolean).join(' ')}
     data-size={size}
     data-variant={variant}
-    defaultValue={defaultValue}
     dir={resolvedDir}
     disabled={disabled}
+    form={radixFormId}
     inverted={inverted}
     min={min}
     max={max}
     onValueChange={next => {
-      if (value === undefined) setUncontrolledValue(next);
+      if (!controlled) setUncontrolledValue(next);
       onValueChange?.(next);
     }}
+    onValueCommit={onValueCommit}
     orientation={orientation}
     ref={rootRef}
-    value={value}
+    value={values}
   >
     <SliderPrimitive.Track className="inkra-slider__track">
       <PencilSurface as="span" aria-hidden="true" className="inkra-slider__track-surface" variant="outline" radius={variant === 'inset' ? 8 : 3} seed={`${resolvedSeed}-track`} />
@@ -100,19 +139,26 @@ export const Slider = forwardRef<HTMLSpanElement, SliderProps>(function Slider(
       const thumbLabel = thumbLabels?.[index];
       const labelledBy = thumbLabel ? undefined : ariaLabelledBy;
       const label = thumbLabel ?? (ariaLabel ? `${ariaLabel}${values.length > 1 ? ` ${index + 1}` : ''}` : labelledBy ? undefined : `Value${values.length > 1 ? ` ${index + 1}` : ''}`);
-      return <SliderPrimitive.Thumb
-        key={index}
-        aria-describedby={ariaDescribedBy}
-        aria-label={label}
-        aria-labelledby={labelledBy}
-        aria-valuenow={current}
-        aria-valuetext={getValueLabel?.(current, index) ?? ariaValueText}
-        className="inkra-slider__thumb"
-      >
-        <PencilSurface as="span" aria-hidden="true" className="inkra-slider__thumb-surface" variant="paper" radius={8} seed={`${resolvedSeed}-thumb-${index}`}>
-          <PencilSurface as="span" className="inkra-slider__focus-ring" variant="outline" radius={8} seed={`${resolvedSeed}-focus-${index}`} />
-        </PencilSurface>
-      </SliderPrimitive.Thumb>;
+      const inputName = name ? values.length > 1 ? `${name}[]` : name : undefined;
+      return <SliderPrimitive.unstable_ThumbProvider key={index} name={inputName}>
+        <SliderPrimitive.unstable_ThumbTrigger
+          aria-describedby={ariaDescribedBy}
+          aria-label={label}
+          aria-labelledby={labelledBy}
+          aria-valuenow={current}
+          aria-valuetext={getValueLabel?.(current, index) ?? ariaValueText}
+          className="inkra-slider__thumb"
+        >
+          <PencilSurface as="span" aria-hidden="true" className="inkra-slider__thumb-surface" variant="paper" radius={8} seed={`${resolvedSeed}-thumb-${index}`}>
+            <PencilSurface as="span" className="inkra-slider__focus-ring" variant="outline" radius={8} seed={`${resolvedSeed}-focus-${index}`} />
+          </PencilSurface>
+        </SliderPrimitive.unstable_ThumbTrigger>
+        <SliderPrimitive.unstable_BubbleInput disabled={disabled} form={form} name={inputName}
+          ref={input => {
+            if (input) formInputRefs.current.set(index, input);
+            else formInputRefs.current.delete(index);
+          }} />
+      </SliderPrimitive.unstable_ThumbProvider>;
     })}
   </SliderPrimitive.Root>;
 });

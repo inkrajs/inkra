@@ -5,7 +5,7 @@ import test from 'node:test';
 const source = readFileSync(new URL('../src/audio-player/index.tsx', import.meta.url), 'utf8');
 const styles = readFileSync(new URL('../src/audio-player/styles.css', import.meta.url), 'utf8');
 
-test('AudioPlayer uses native media events and cleans listeners on source changes', () => {
+test('AudioPlayer uses native media events and cleans listeners on unmount', () => {
   assert.match(source, /HTMLAudioElement/);
   assert.match(source, /loadedmetadata/);
   assert.match(source, /waiting/);
@@ -36,7 +36,8 @@ test('AudioPlayer exposes accessible custom controls and no default autoplay', (
 test('AudioPlayer layout preserves touch targets and forced-color fallback', () => {
   assert.match(styles, /inkra-slider/);
   assert.match(styles, /min-inline-size: 0/);
-  assert.match(styles, /@media \(max-width: 40rem\)/);
+  assert.match(styles, /container-type: inline-size/);
+  assert.match(styles, /@container \(max-width: 40rem\)/);
   assert.match(styles, /@media \(forced-colors: active\)/);
   assert.match(styles, /inkra-slider/);
   assert.match(styles, /\.inkra-audio-player__settings\s*>\s*\.inkra-select__trigger\s*\{[^}]*flex:\s*none;[^}]*min-width:\s*5\.5rem;/);

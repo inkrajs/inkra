@@ -91,6 +91,13 @@ export const DrawerContent = forwardRef<
       ref={ref}
       style={mergedStyle}
     >
+      <PencilSurface
+        aria-hidden="true"
+        className="inkra-drawer__focus-ring"
+        radius={0}
+        seed={`drawer-focus-${id}`}
+        variant="outline"
+      />
       <PencilSurface className="inkra-drawer__surface" radius={0} seed={seed ?? `inkra-drawer-${id}`} variant="full">
         <PencilLine className="inkra-drawer__edge" orientation={edgeOrientation} seed={`drawer-edge-${id}`} />
         <div className="inkra-drawer__layout">{children}</div>
@@ -169,9 +176,10 @@ export interface DrawerHeaderProps extends ComponentPropsWithoutRef<'div'> {
 export const DrawerHeader = forwardRef<HTMLDivElement, DrawerHeaderProps>(
   function DrawerHeader({ action, children, className, closeLabel = 'Close', divided = true, showClose = true, ...props }, ref) {
     const id = useId();
-    return <div {...props} className={classes('inkra-drawer__header', className)} data-divided={divided || undefined} ref={ref}>
+    const hasActions = Boolean(action || showClose);
+    return <div {...props} className={classes('inkra-drawer__header', className)} data-actions={hasActions || undefined} data-custom-action={action ? true : undefined} data-divided={divided || undefined} ref={ref}>
       <div className="inkra-drawer__heading">{children}</div>
-      {(action || showClose) ? <div className="inkra-drawer__header-actions">{action}{showClose ? <DrawerCloseButton label={closeLabel} /> : null}</div> : null}
+      {hasActions ? <div className="inkra-drawer__header-actions">{action}{showClose ? <DrawerCloseButton label={closeLabel} /> : null}</div> : null}
       {divided ? <PencilLine className="inkra-drawer__divider" seed={`drawer-header-${id}`} /> : null}
     </div>;
   },

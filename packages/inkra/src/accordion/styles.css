@@ -62,7 +62,7 @@
   --inkra-accent-strong: var(--inkra-focus);
 
   display: block !important;
-  inset: calc(-1 * var(--inkra-focus-offset));
+  inset: var(--inkra-focus-width);
   opacity: 0;
   pointer-events: none;
   position: absolute !important;
@@ -109,7 +109,8 @@
 }
 
 .inkra-accordion__content[data-state="closed"] {
-  animation: inkra-accordion-content-up var(--inkra-motion-normal) var(--inkra-ease);
+  animation: inkra-accordion-content-up var(--inkra-motion-normal) var(--inkra-ease) both;
+  height: 0;
 }
 
 .inkra-accordion__content-body {
@@ -128,6 +129,10 @@
 .inkra-accordion__content[data-state="closed"] > .inkra-accordion__content-body {
   animation: inkra-accordion-body-out var(--inkra-motion-normal) var(--inkra-ease) both;
   pointer-events: none;
+}
+
+.inkra-accordion__content-body.inkra-accordion__content[data-state="closed"] {
+  padding: 0;
 }
 
 @keyframes inkra-accordion-body-in {
@@ -180,6 +185,8 @@
 
 .inkra-accordion[data-orientation="horizontal"] .inkra-accordion__content[data-state="closed"] {
   animation-name: inkra-accordion-content-close-horizontal;
+  height: auto;
+  width: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -195,13 +202,13 @@
 }
 
 @media (forced-colors: active) {
-  .inkra-accordion__focus-ring {
+  .inkra-pencil-surface.inkra-accordion__focus-ring {
     display: none !important;
   }
 
   .inkra-accordion__trigger:focus-visible {
     outline: var(--inkra-focus-width) solid Highlight;
-    outline-offset: var(--inkra-focus-offset);
+    outline-offset: calc(-1 * var(--inkra-focus-width));
   }
 
   .inkra-accordion__trigger-icon::before {

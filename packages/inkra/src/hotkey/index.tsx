@@ -64,6 +64,7 @@ export interface HotkeyInputProps
   conflictMessage?: string;
   platform?: HotkeyPlatform;
   placeholder?: string;
+  recordingLabel?: string;
   clearable?: boolean;
   clearButtonLabel?: string;
   blurOnCapture?: boolean;
@@ -153,6 +154,7 @@ export const HotkeyInput = forwardRef<HTMLInputElement, HotkeyInputProps>(functi
     placeholder = 'Press shortcut',
     platform = 'auto',
     readOnly,
+    recordingLabel = 'Press a shortcut...',
     required,
     seed,
     size = 'md',
@@ -175,18 +177,20 @@ export const HotkeyInput = forwardRef<HTMLInputElement, HotkeyInputProps>(functi
   const currentSignature = hotkeySignature(currentValue);
   const validationMessage = externalConflict ?? (localConflict?.signature === currentSignature ? localConflict.message : undefined);
   const messageId = validationMessage ? `${id ?? generatedId}-hotkey-conflict` : undefined;
+  const statusId = `${id ?? generatedId}-hotkey-status`;
   const state = useResolvedControlProps({
     id,
     required,
     disabled,
     readOnly,
     invalid: invalid || Boolean(validationMessage),
-    'aria-describedby': [ariaDescribedBy, messageId].filter(Boolean).join(' ') || undefined,
+    'aria-describedby': [ariaDescribedBy, statusId, messageId].filter(Boolean).join(' ') || undefined,
     'aria-errormessage': validationMessage ? messageId : ariaErrorMessage,
     'aria-invalid': ariaInvalid,
   });
   const resolvedSeed = seed ?? `inkra-hotkey-input-${state.id ?? generatedId}`;
   const displayValue = currentValue ? formatHotkey(currentValue, resolvedPlatform) : '';
+  const recording = focused && !state.disabled && !state.readOnly;
   useImperativeHandle(forwardedRef, () => inputRef.current as HTMLInputElement);
 
   const updateValue = (nextValue: HotkeyValue | null, details: HotkeyInputChangeDetails) => {
@@ -250,6 +254,7 @@ export const HotkeyInput = forwardRef<HTMLInputElement, HotkeyInputProps>(functi
       data-disabled={state.disabled || undefined}
       data-focus-within={focused || undefined}
       data-invalid={state.invalid || undefined}
+      data-recording={recording || undefined}
       data-readonly={state.readOnly || undefined}
       data-size={size}
     >
@@ -290,7 +295,13 @@ export const HotkeyInput = forwardRef<HTMLInputElement, HotkeyInputProps>(functi
           value={displayValue}
         />
         <span aria-hidden="true" className={classes('inkra-hotkey-input__value', classNames.value)}>
-          {currentValue ? <Hotkey value={currentValue} platform={resolvedPlatform} size={size} /> : <PencilText className="inkra-hotkey-input__placeholder" seed={`${resolvedSeed}-placeholder`}>{placeholder}</PencilText>}
+          {recording ? (
+            <PencilText className="inkra-hotkey-input__recording" seed={`${resolvedSeed}-recording`}>{recordingLabel}</PencilText>
+          ) : currentValue ? (
+            <Hotkey value={currentValue} platform={resolvedPlatform} size={size} />
+          ) : (
+            <PencilText className="inkra-hotkey-input__placeholder" seed={`${resolvedSeed}-placeholder`}>{placeholder}</PencilText>
+          )}
         </span>
         {clearable && currentValue ? (
           <button
@@ -305,7 +316,15 @@ export const HotkeyInput = forwardRef<HTMLInputElement, HotkeyInputProps>(functi
             <PencilIcon paths={clearPaths} seed={`${resolvedSeed}-clear`} size={size === 'sm' ? 18 : size === 'lg' ? 26 : 22} sourceSize={24} />
           </button>
         ) : null}
+        <PencilSurface<'span'>
+          aria-hidden="true"
+          as="span"
+          className="inkra-hotkey-input__focus-ring"
+          seed={`${resolvedSeed}-focus`}
+          variant="outline"
+        />
       </PencilSurface>
+      <span aria-live="polite" className="inkra-hotkey-input__status" id={statusId}>{recording ? recordingLabel : ''}</span>
       {validationMessage ? (
         <PencilText as="span" className={classes('inkra-hotkey-input__message', classNames.message)} id={messageId} role="alert" seed={`${resolvedSeed}-message`}>
           {validationMessage}

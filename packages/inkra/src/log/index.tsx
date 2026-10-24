@@ -162,7 +162,11 @@ export const Log = forwardRef<HTMLDivElement, LogProps>(function Log(
   const scrollToLatest = useCallback((behavior: ScrollBehavior = 'smooth') => {
     const viewport = viewportRef.current;
     if (!viewport) return;
-    viewport.scrollTo({ top: viewport.scrollHeight, behavior });
+    const resolvedBehavior = behavior === 'smooth'
+      && viewport.ownerDocument.defaultView?.matchMedia('(prefers-reduced-motion: reduce)').matches
+      ? 'auto'
+      : behavior;
+    viewport.scrollTo({ top: viewport.scrollHeight, behavior: resolvedBehavior });
     nearBottomRef.current = true;
     setNearBottom(true);
   }, []);
@@ -222,6 +226,7 @@ export const Log = forwardRef<HTMLDivElement, LogProps>(function Log(
   const viewportClassName = classes('inkra-log__viewport', viewportProps?.className);
   const viewportTabIndex = viewportProps?.tabIndex ?? 0;
   const levelMap = new Map(resolvedLevels.map(level => [level.value, level]));
+  const showLatest = (!nearBottom || resolvedPaused) && visibleItems.length > 0;
 
   return (
     <PencilSurface
@@ -275,37 +280,41 @@ export const Log = forwardRef<HTMLDivElement, LogProps>(function Log(
         </Button> : null}
         <PencilLine className="inkra-log__toolbar-divider" seed="inkra-log-toolbar-divider" />
       </div> : null}
-      <div
-        {...viewportProps}
-        aria-label={viewportLabel}
-        className={viewportClassName}
-        onKeyDown={handleViewportKeyDown}
-        onScroll={handleScroll}
-        ref={viewportRef}
-        role="region"
-        tabIndex={viewportTabIndex}
-      >
-        {visibleItems.length > 0 ? <ol className="inkra-log__list">
-          {visibleItems.map((item, index) => {
-            const definition = item.level ? levelMap.get(item.level) : undefined;
-            const tone = definition?.tone ?? (item.level ? defaultTones[item.level] : undefined) ?? 'neutral';
-            return <li className="inkra-log__item" data-has-icon={item.icon != null || undefined} data-level={item.level} data-tone={tone} key={item.id}>
-              {index > 0 ? <PencilLine className="inkra-log__item-divider" seed={`inkra-log-item-${item.id}-divider`} /> : null}
-              {item.icon == null ? null : <span aria-hidden="true" className="inkra-log__icon">{item.icon}</span>}
-              <div className="inkra-log__record">
-                {item.time == null && item.level == null ? null : <div className="inkra-log__meta">
-                  {item.time == null ? null : item.dateTime
-                    ? <time dateTime={item.dateTime}>{renderText(item.time)}</time>
-                    : <span>{renderText(item.time)}</span>}
-                  {item.level == null ? null : <span className="inkra-log__level">{renderText(definition?.label ?? item.level)}</span>}
-                </div>}
-                <div className="inkra-log__content">{renderText(item.content)}</div>
-              </div>
-            </li>;
-          })}
-        </ol> : <div className="inkra-log__empty">{renderText(isEmpty ? (empty ?? labels.empty) : (noMatches ?? labels.noMatches))}</div>}
+      <div className="inkra-log__viewport-frame">
+        <PencilSurface aria-hidden="true" as="span" className="inkra-log__focus-ring" variant="outline" seed="inkra-log-focus" />
+        <div
+          {...viewportProps}
+          aria-label={viewportLabel}
+          className={viewportClassName}
+          onKeyDown={handleViewportKeyDown}
+          onScroll={handleScroll}
+          ref={viewportRef}
+          role="region"
+          tabIndex={viewportTabIndex}
+        >
+          {visibleItems.length > 0 ? <ol className="inkra-log__list">
+            {visibleItems.map((item, index) => {
+              const definition = item.level ? levelMap.get(item.level) : undefined;
+              const tone = definition?.tone ?? (item.level ? defaultTones[item.level] : undefined) ?? 'neutral';
+              return <li className="inkra-log__item" data-has-icon={item.icon != null || undefined} data-level={item.level} data-tone={tone} key={item.id}>
+                {index > 0 ? <PencilLine className="inkra-log__item-divider" seed={`inkra-log-item-${item.id}-divider`} /> : null}
+                {item.icon == null ? null : <span aria-hidden="true" className="inkra-log__icon">{item.icon}</span>}
+                <div className="inkra-log__record">
+                  {item.time == null && item.level == null ? null : <div className="inkra-log__meta">
+                    {item.time == null ? null : item.dateTime
+                      ? <time dateTime={item.dateTime}>{renderText(item.time)}</time>
+                      : <span>{renderText(item.time)}</span>}
+                    {item.level == null ? null : <span className="inkra-log__level">{renderText(definition?.label ?? item.level)}</span>}
+                  </div>}
+                  <div className="inkra-log__content">{renderText(item.content)}</div>
+                </div>
+              </li>;
+            })}
+          </ol> : <div className="inkra-log__empty">{renderText(isEmpty ? (empty ?? labels.empty) : (noMatches ?? labels.noMatches))}</div>}
+        </div>
       </div>
-      {(!nearBottom || resolvedPaused) && visibleItems.length > 0 ? <div className="inkra-log__latest">
+      {showLatest ? <div className="inkra-log__latest">
+        <PencilLine className="inkra-log__latest-divider" seed="inkra-log-latest-divider" />
         <Button
           size="sm"
           startIcon={<PencilIcon paths={followPaths} size={18} sourceSize={24} />}

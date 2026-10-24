@@ -34,13 +34,16 @@ test('ColorPicker conversions preserve RGB or alpha according to the interaction
 test('ColorPicker SSR output exposes native palette, text, slider, presets and form value', () => {
   const html = renderToStaticMarkup(createElement(ColorPicker, {
     defaultValue: '#33669980',
+    form: 'brand-form',
     label: 'Brand color',
     labels: { palette: 'Choose color', value: 'Hex value', alpha: 'Opacity', presets: 'Saved colors' },
     name: 'brandColor',
     presets: [{ value: '#fff', label: 'Paper' }, '#00000080', 'invalid'],
     seed: 'brand',
   }));
-  assert.match(html, /<fieldset[^>]*class="inkra-color-picker"/);
+  const fieldset = html.match(/<fieldset[^>]*>/)?.[0] ?? '';
+  assert.match(fieldset, /class="inkra-color-picker"/);
+  assert.match(fieldset, /form="brand-form"/);
   assert.match(html, /<legend[^>]*>.*Brand color/);
   assert.match(html, /type="color" value="#336699"/);
   assert.match(html, /aria-label="Choose color"/);
@@ -48,7 +51,7 @@ test('ColorPicker SSR output exposes native palette, text, slider, presets and f
   assert.match(html, /aria-valuenow="50"/);
   assert.match(html, /role="group" aria-label="Saved colors"/);
   assert.equal((html.match(/class="inkra-color-picker__preset"/g) ?? []).length, 2);
-  assert.match(html, /type="hidden" name="brandColor" value="#33669980"/);
+  assert.match(html, /type="hidden" form="brand-form" name="brandColor" value="#33669980"/);
 });
 
 test('ColorPicker controlled, opaque and disabled contracts are explicit in SSR', () => {
@@ -70,8 +73,16 @@ test('ColorPicker delegates accessible one-dimensional input and avoids a custom
   assert.match(source, /<Slider/);
   assert.match(source, /aria-live="polite"/);
   assert.match(source, /onInvalidInput/);
+  assert.match(source, /ownerForm\.addEventListener\('reset', reset\)/);
+  assert.match(source, /if \(event\.defaultPrevented\) return/);
+  assert.match(source, /controlled \? currentValueRef\.current : defaultValueRef\.current/);
+  assert.match(source, /form=\{form\} name=\{name\}/);
+  assert.match(source, /event\.nativeEvent\.isComposing \|\| event\.nativeEvent\.keyCode === 229/);
+  assert.match(source, /skipNextBlurRef/);
   assert.match(parser, /#RGB, #RGBA|HEX_COLOR/);
   assert.doesNotMatch(source, /pointermove|mousemove|touchmove/);
   assert.match(css, /min-width: var\(--inkra-touch-target\)/);
   assert.match(css, /forced-colors: active/);
+  assert.match(css, /inkra-color-picker__focus/);
+  assert.match(css, /--inkra-accent-strong: var\(--inkra-focus\)/);
 });

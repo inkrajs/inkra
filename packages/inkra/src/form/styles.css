@@ -161,7 +161,8 @@
   z-index: 3;
   left: 0;
   top: 0;
-  display: block;
+  /* Inactive canvases may retain geometry from a previous size or direction. */
+  display: none;
   width: 100%;
   height: 100%;
   opacity: 0;
@@ -169,6 +170,7 @@
 }
 
 .inkra-field-control-hit[data-pencil-editable-ready="true"] .inkra-editable-text {
+  display: block;
   opacity: 1;
 }
 

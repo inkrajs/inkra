@@ -18,7 +18,8 @@
 }
 
 .inkra-context-menu__sub-content {
-  max-block-size: var(--radix-dropdown-menu-content-available-height);
+  max-block-size: var(--radix-dropdown-menu-content-available-height, calc(100dvh - 16px));
+  max-inline-size: min(320px, var(--radix-dropdown-menu-content-available-width, calc(100vw - 16px)), calc(100vw - 16px));
   transform-origin: var(--radix-dropdown-menu-content-transform-origin);
 }
 

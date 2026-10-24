@@ -1,6 +1,7 @@
 .inkra-choice-grid {
   border: 0;
   color: var(--inkra-ink);
+  container-type: inline-size;
   margin: 0;
   max-inline-size: 100%;
   min-inline-size: 0;
@@ -41,6 +42,7 @@ div.inkra-choice-grid > .inkra-radio-group {
 }
 
 .inkra-choice-grid__selection,
+.inkra-choice-grid__focus,
 .inkra-choice-grid__outline {
   inset: 0;
   pointer-events: none;
@@ -50,6 +52,13 @@ div.inkra-choice-grid > .inkra-radio-group {
 .inkra-choice-grid__selection {
   opacity: 0;
   z-index: 0;
+}
+
+.inkra-choice-grid__focus {
+  --inkra-accent-strong: var(--inkra-focus);
+  inset: calc(-1 * var(--inkra-focus-offset));
+  opacity: 0;
+  z-index: 3;
 }
 
 .inkra-choice-grid__outline { z-index: 2; }
@@ -138,6 +147,10 @@ div.inkra-choice-grid > .inkra-radio-group {
   overflow-wrap: anywhere;
 }
 
+.inkra-choice-grid__control .inkra-selection-control__focus-ring {
+  display: none !important;
+}
+
 .inkra-choice-grid__messages {
   display: grid;
   gap: var(--inkra-space-1);
@@ -159,8 +172,11 @@ div.inkra-choice-grid > .inkra-radio-group {
 }
 
 .inkra-choice-grid__option:has(.inkra-selection-control__input:focus-visible) {
-  outline: var(--inkra-focus-width) solid var(--inkra-focus);
-  outline-offset: var(--inkra-focus-offset);
+  outline: none;
+}
+
+.inkra-choice-grid__option:has(.inkra-selection-control__input:focus-visible) .inkra-choice-grid__focus {
+  opacity: 1;
 }
 
 .inkra-choice-grid__option:has(.inkra-selection-control__input:focus-visible) .inkra-selection-control__mark {
@@ -168,6 +184,13 @@ div.inkra-choice-grid > .inkra-radio-group {
 }
 
 @media (max-width: 640px) {
+  .inkra-choice-grid[data-columns] .inkra-radio-group__items,
+  .inkra-choice-grid[data-columns] .inkra-choice-grid__items {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@container (max-width: 640px) {
   .inkra-choice-grid[data-columns] .inkra-radio-group__items,
   .inkra-choice-grid[data-columns] .inkra-choice-grid__items {
     grid-template-columns: minmax(0, 1fr);
@@ -185,9 +208,19 @@ div.inkra-choice-grid > .inkra-radio-group {
     outline-offset: -3px;
   }
 
-  .inkra-choice-grid__selection,
-  .inkra-choice-grid__outline {
+  .inkra-choice-grid__option:has(.inkra-selection-control__input:focus-visible) {
+    outline: var(--inkra-focus-width) solid Highlight;
+    outline-offset: var(--inkra-focus-offset);
+  }
+
+  .inkra-choice-grid__option > .inkra-choice-grid__selection,
+  .inkra-choice-grid__option > .inkra-choice-grid__focus,
+  .inkra-choice-grid__option > .inkra-choice-grid__outline {
     display: none;
+  }
+
+  .inkra-choice-grid__control > .inkra-selection-control__input:focus-visible {
+    outline: none;
   }
 }
 

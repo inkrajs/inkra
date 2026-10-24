@@ -416,6 +416,7 @@ export const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel
     style={rootStyle}
     tabIndex={!disabled && count > 1 ? (tabIndex ?? 0) : tabIndex}
   >
+    <PencilSurface aria-hidden="true" as="span" className="inkra-carousel__focus-ring" radius={8} seed={`${generatedId}-focus`} variant="outline" />
     {count === 0 ? <div className="inkra-carousel__empty">{emptyState ?? labels?.empty ?? 'No items'}</div> : <>
       <div className="inkra-carousel__viewport" ref={viewportRef}>
         <div className="inkra-carousel__container">
@@ -455,7 +456,9 @@ export const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel
             key={index}
             onClick={() => scrollTo(index)}
             type="button"
-          ><PencilSurface as="span" aria-hidden="true" className="inkra-carousel__page-mark" radius={6} seed={`${generatedId}-page-${index}`} variant={index === selectedIndex ? 'selection' : 'outline'} /></button>)}
+          ><PencilSurface as="span" aria-hidden="true" className="inkra-carousel__page-mark" radius={6} seed={`${generatedId}-page-${index}`} variant={index === selectedIndex ? 'selection' : 'outline'} />
+            <PencilSurface as="span" aria-hidden="true" className="inkra-carousel__page-focus" radius={6} seed={`${generatedId}-page-${index}-focus`} variant="outline" />
+          </button>)}
         </div>}
         {autoplayEnabled && <Button
           aria-label={playing ? (labels?.pause ?? 'Pause autoplay') : (labels?.play ?? 'Play autoplay')}

@@ -3,6 +3,7 @@ import {
   useCallback,
   useEffect,
   useId,
+  useImperativeHandle,
   useMemo,
   useRef,
   useState,
@@ -12,6 +13,7 @@ import {
 } from 'react';
 
 import { PencilIcon, type PencilIconPath } from '../PencilIcon.js';
+import { PencilSurface } from '../PencilSurface.js';
 
 export type RatingSize = 'sm' | 'md' | 'lg';
 export type RatingClearStrategy = boolean | 'reselect' | 'keyboard';
@@ -63,6 +65,8 @@ function decimalPlaces(value: number): number {
 
 export function normalizeRatingValue(value: number | undefined, count: number, step: number): number {
   const numeric = typeof value === 'number' && Number.isFinite(value) ? value : 0;
+  if (numeric <= 0) return 0;
+  if (numeric >= count) return count;
   const precision = Math.min(8, Math.max(decimalPlaces(step), decimalPlaces(count)));
   const snapped = Math.round(numeric / step) * step;
   return Number(Math.min(count, Math.max(0, snapped)).toFixed(precision));
@@ -74,6 +78,15 @@ function allowsReselectClear(clearable: RatingClearStrategy): boolean {
 
 function allowsKeyboardClear(clearable: RatingClearStrategy): boolean {
   return clearable === true || clearable === 'keyboard';
+}
+
+function previousRatingValue(value: number, count: number, step: number): number {
+  if (value >= count) {
+    const precision = Math.min(8, Math.max(decimalPlaces(step), decimalPlaces(count)));
+    const previousIndex = Math.max(0, Math.ceil(count / step) - 1);
+    return Number((previousIndex * step).toFixed(precision));
+  }
+  return value - step;
 }
 
 export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
@@ -100,6 +113,7 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
     'aria-labelledby': ariaLabelledBy,
     onBlur,
     onKeyDown,
+    onPointerDown,
     onPointerLeave,
     ...props
   },
@@ -117,6 +131,16 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
   const resetState = useRef({ controlled, defaultValue, count, step });
   resetState.current = { controlled, defaultValue, count, step };
   const inputRef = useRef<HTMLInputElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const symbolsRef = useRef<HTMLSpanElement>(null);
+  const pendingKeyboardValueRef = useRef<number | null>(null);
+  const pendingKeyboardTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useImperativeHandle(forwardedRef, () => rootRef.current as HTMLDivElement);
+  const clearPendingKeyboard = useCallback(() => {
+    clearTimeout(pendingKeyboardTimerRef.current);
+    pendingKeyboardTimerRef.current = undefined;
+    pendingKeyboardValueRef.current = null;
+  }, []);
   const changePreview = useCallback((next: number | null) => {
     if (previewRef.current === next) return;
     previewRef.current = next;
@@ -133,7 +157,12 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
     if (disabled || readOnly || !hoverPreview) changePreview(null);
   }, [disabled, readOnly, hoverPreview, changePreview]);
 
-  useEffect(() => { changePreview(null); }, [count, step, changePreview]);
+  useEffect(() => {
+    clearPendingKeyboard();
+    changePreview(null);
+  }, [count, step, changePreview, clearPendingKeyboard]);
+
+  useEffect(() => clearPendingKeyboard, [clearPendingKeyboard]);
 
   useEffect(() => {
     const owner = inputRef.current?.form;
@@ -143,6 +172,7 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
       clearTimeout(resetTimer);
       resetTimer = setTimeout(() => {
         if (event.defaultPrevented) return;
+        clearPendingKeyboard();
         changePreview(null);
         const state = resetState.current;
         if (!state.controlled) setUncontrolledValue(normalizeRatingValue(state.defaultValue, state.count, state.step));
@@ -150,10 +180,11 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
     };
     owner.addEventListener('reset', reset);
     return () => { clearTimeout(resetTimer); owner.removeEventListener('reset', reset); };
-  }, [form, changePreview]);
+  }, [form, changePreview, clearPendingKeyboard]);
 
   const commit = (nextValue: number) => {
     if (disabled || readOnly) return;
+    clearPendingKeyboard();
     const normalized = normalizeRatingValue(nextValue, count, step);
     const cleared = normalized === committedValue && normalized !== 0 && allowsReselectClear(clearable);
     const resolved = cleared ? 0 : normalized;
@@ -173,15 +204,40 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
     return normalizeRatingValue(Math.max(step, Math.ceil((rawValue - Number.EPSILON) / step) * step), count, step);
   };
 
+  const revealValue = useCallback((nextValue: number) => {
+    const scroller = symbolsRef.current;
+    if (!scroller) return;
+    const targetIndex = Math.max(1, Math.ceil(normalizeRatingValue(nextValue, count, step)));
+    const target = scroller.querySelector<HTMLElement>(`[data-index="${targetIndex}"]`);
+    if (!target) return;
+    const viewport = scroller.getBoundingClientRect();
+    const item = target.getBoundingClientRect();
+    const delta = item.left < viewport.left ? item.left - viewport.left
+      : item.right > viewport.right ? item.right - viewport.right
+        : 0;
+    if (delta) scroller.scrollLeft += delta;
+  }, [count, step]);
+
+  useEffect(() => {
+    const pending = pendingKeyboardValueRef.current;
+    if (pending === null) return;
+    clearPendingKeyboard();
+    if (pending === committedValue) revealValue(committedValue);
+  }, [committedValue, revealValue, clearPendingKeyboard]);
+
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     onKeyDown?.(event);
     if (event.defaultPrevented || disabled || readOnly) return;
     const rtl = (dir ?? getComputedStyle(event.currentTarget).direction) === 'rtl';
     let nextValue: number | null = null;
     if (event.key === 'ArrowUp') nextValue = committedValue + step;
-    if (event.key === 'ArrowDown') nextValue = committedValue - step;
-    if (event.key === 'ArrowRight') nextValue = committedValue + (rtl ? -step : step);
-    if (event.key === 'ArrowLeft') nextValue = committedValue + (rtl ? step : -step);
+    if (event.key === 'ArrowDown') nextValue = previousRatingValue(committedValue, count, step);
+    if (event.key === 'ArrowRight') nextValue = rtl
+      ? previousRatingValue(committedValue, count, step)
+      : committedValue + step;
+    if (event.key === 'ArrowLeft') nextValue = rtl
+      ? committedValue + step
+      : previousRatingValue(committedValue, count, step);
     if (event.key === 'Home') nextValue = allowsKeyboardClear(clearable) ? 0 : Math.min(step, count);
     if (event.key === 'End') nextValue = count;
     if (['Backspace', 'Delete', 'Escape'].includes(event.key) && allowsKeyboardClear(clearable)) nextValue = 0;
@@ -193,6 +249,12 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
       normalized = Math.min(step, count);
     }
     if (normalized === committedValue) return;
+    clearPendingKeyboard();
+    pendingKeyboardValueRef.current = normalized;
+    pendingKeyboardTimerRef.current = setTimeout(() => {
+      pendingKeyboardTimerRef.current = undefined;
+      pendingKeyboardValueRef.current = null;
+    }, 100);
     if (!controlled) setUncontrolledValue(normalized);
     onValueChange?.(normalized);
   };
@@ -227,20 +289,29 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
       data-size={size}
       dir={dir}
       onBlur={(event) => {
+        clearPendingKeyboard();
         changePreview(null);
         onBlur?.(event);
       }}
       onKeyDown={handleKeyDown}
+      onPointerDown={(event) => {
+        onPointerDown?.(event);
+        if (!event.defaultPrevented && !disabled) {
+          clearPendingKeyboard();
+          rootRef.current?.focus({ preventScroll: true });
+        }
+      }}
       onPointerLeave={(event) => {
         changePreview(null);
         onPointerLeave?.(event);
       }}
-      ref={forwardedRef}
+      ref={rootRef}
       role="slider"
       tabIndex={disabled ? undefined : (props.tabIndex ?? 0)}
     >
+      <PencilSurface aria-hidden="true" as="span" className="inkra-rating__focus-ring" variant="outline" seed={`${symbolId}-focus`} />
       <input ref={inputRef} type="hidden" name={name} form={form} value={committedValue} disabled={disabled} />
-      <span className="inkra-rating__symbols" aria-hidden="true">
+      <span className="inkra-rating__symbols" aria-hidden="true" ref={symbolsRef}>
         {symbolIndexes.map((index) => {
           const fraction = Math.min(1, Math.max(0, displayValue - index));
           return (

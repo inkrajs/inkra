@@ -1,12 +1,14 @@
 .inkra-pagination { min-inline-size: 0; max-inline-size: 100%; color: var(--inkra-ink); }
 .inkra-pagination__list { box-sizing: border-box; display: flex; flex-wrap: nowrap; align-items: center; gap: var(--inkra-space-1); max-inline-size: 100%; overflow-x: auto; overscroll-behavior-inline: contain; scroll-padding-inline: 8px; list-style: none; padding: 8px; margin: 0; }
 .inkra-pagination__list > li { display: flex; flex: 0 0 auto; }
-.inkra-pagination__summary { min-block-size: var(--inkra-touch-target); align-items: center; justify-content: center; padding-inline: var(--inkra-space-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.inkra-pagination__page.inkra-button { min-inline-size: var(--inkra-touch-target); }
-.inkra-pagination__page .inkra-button__surface { padding-inline: var(--inkra-space-2); }
+.inkra-pagination__summary { align-items: center; box-sizing: border-box; font-variant-numeric: tabular-nums; justify-content: center; max-inline-size: 100%; min-block-size: var(--inkra-touch-target); min-inline-size: 0; overflow-wrap: anywhere; padding-inline: var(--inkra-space-2); text-align: center; white-space: normal; }
+.inkra-pagination__page-item { max-inline-size: max(var(--inkra-touch-target), 50%); }
+.inkra-pagination__page.inkra-button { max-inline-size: 100%; min-inline-size: var(--inkra-touch-target); scroll-margin-inline: 8px; }
+.inkra-pagination__page .inkra-button__surface { height: auto; min-height: var(--inkra-button-visual-height); padding-block: var(--inkra-space-1); padding-inline: var(--inkra-space-2); }
 .inkra-pagination__page .inkra-button__surface { isolation: isolate; }
+.inkra-pagination__page > .inkra-button__focus-ring { height: auto; inset-block: 0; top: 0; transform: none; }
 .inkra-pagination__page .inkra-button__content,
-.inkra-pagination__page .inkra-button__label { position: static; }
+.inkra-pagination__page .inkra-button__label { max-inline-size: 100%; min-inline-size: 0; overflow-wrap: anywhere; position: static; white-space: normal; }
 .inkra-pagination__selection { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
 .inkra-pagination__page[aria-current="page"] { color: var(--inkra-selection-foreground); }
 .inkra-pagination__ellipsis { min-inline-size: 24px; min-block-size: var(--inkra-touch-target); align-items: center; justify-content: center; }
@@ -14,6 +16,6 @@
 .inkra-pagination__sr-only { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @media (forced-colors: active) {
   .inkra-pagination__page[aria-current="page"] { color: HighlightText; background: Highlight; outline: 1px solid Highlight; }
-  .inkra-pagination__selection { display: none; }
+  .inkra-pencil-surface.inkra-pagination__selection { display: none !important; }
 }
 @media (prefers-reduced-motion: reduce) { .inkra-pagination * { transition: none !important; animation: none !important; } }

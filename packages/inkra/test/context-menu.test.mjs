@@ -72,7 +72,7 @@ test('ContextMenu composes the existing menu implementation and restores focus o
 test('ContextMenu uses a viewport-aware virtual anchor and pencil submenu surface', () => {
   assert.match(styles, /position: fixed/);
   assert.match(styles, /pointer-events: none/);
-  assert.match(styles, /max-block-size: var\(--radix-dropdown-menu-content-available-height\)/);
+  assert.match(styles, /max-block-size: var\(--radix-dropdown-menu-content-available-height, calc\(100dvh - 16px\)\)/);
   assert.match(styles, /forced-colors: active/);
   assert.match(source, /collisionPadding = 8/);
   assert.match(source, /<PencilSurface[\s\S]*?variant="paper"/);

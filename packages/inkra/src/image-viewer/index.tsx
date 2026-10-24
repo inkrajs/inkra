@@ -42,14 +42,15 @@ import type {
   OverlayRootProps,
   OverlayTriggerProps,
 } from '../overlay/index.js';
+import { lucideNodesToPencilPaths } from './lucideGeometry.js';
 import { nextImageViewerIndex, resolveImageViewerSelection } from './model.js';
 
-const chevronLeftPaths = chevronLeftIcon.node.map(([, attributes]) => ({ d: attributes.d }));
-const chevronRightPaths = chevronRightIcon.node.map(([, attributes]) => ({ d: attributes.d }));
-const imageOffPaths = imageOffIcon.node.map(([, attributes]) => ({ d: attributes.d }));
-const rotatePaths = rotateIcon.node.map(([, attributes]) => ({ d: attributes.d }));
-const zoomInPaths = zoomInIcon.node.map(([, attributes]) => ({ d: attributes.d }));
-const zoomOutPaths = zoomOutIcon.node.map(([, attributes]) => ({ d: attributes.d }));
+const chevronLeftPaths = lucideNodesToPencilPaths(chevronLeftIcon.node);
+const chevronRightPaths = lucideNodesToPencilPaths(chevronRightIcon.node);
+const imageOffPaths = lucideNodesToPencilPaths(imageOffIcon.node);
+const rotatePaths = lucideNodesToPencilPaths(rotateIcon.node);
+const zoomInPaths = lucideNodesToPencilPaths(zoomInIcon.node);
+const zoomOutPaths = lucideNodesToPencilPaths(zoomOutIcon.node);
 
 export interface ImageViewerItem {
   id: string;
@@ -280,19 +281,30 @@ export const ImageViewerContent = forwardRef<
   const { activeIndex, activeItem, items, loop, selectIndex, step } = useImageViewerContext();
   const labels = { ...defaultLabels, ...labelOverrides };
   const stageRef = useRef<HTMLDivElement>(null);
+  const thumbnailsRef = useRef<HTMLDivElement>(null);
   const thumbnailRefs = useRef(new Map<string, HTMLButtonElement>());
   const panZoomRef = useRef<PanZoomRef>(null);
-  const [failedIds, setFailedIds] = useState<Set<string>>(() => new Set());
+  const [failedResources, setFailedResources] = useState<Set<string>>(() => new Set());
   const [attempts, setAttempts] = useState<Record<string, number>>({});
   const [rotation, setRotation] = useState(0);
   const total = items.length;
   const atStart = activeIndex <= 0;
   const atEnd = activeIndex >= total - 1;
+  const activeItemKey = activeItem ? JSON.stringify([activeItem.id, activeItem.src]) : undefined;
 
   useEffect(() => {
-    if (activeItem) thumbnailRefs.current.get(activeItem.id)?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    const thumbnail = activeItem ? thumbnailRefs.current.get(activeItem.id) : undefined;
+    const viewport = thumbnailsRef.current;
+    if (thumbnail && viewport) {
+      const item = thumbnail.getBoundingClientRect();
+      const clip = viewport.getBoundingClientRect();
+      if (item.left < clip.left) viewport.scrollLeft -= clip.left - item.left;
+      else if (item.right > clip.right) viewport.scrollLeft += item.right - clip.right;
+    }
     setRotation(0);
-  }, [activeItem]);
+    setFailedResources(current => activeItemKey && current.has(activeItemKey) ? new Set([activeItemKey]) : new Set());
+    setAttempts(current => activeItemKey && current[activeItemKey] !== undefined ? { [activeItemKey]: current[activeItemKey] } : {});
+  }, [activeItemKey]);
 
   const handleStageKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.target !== event.currentTarget) return;
@@ -322,22 +334,25 @@ export const ImageViewerContent = forwardRef<
     <img key={key} {...imageProps} draggable={false} />
   );
 
-  const failed = activeItem ? failedIds.has(activeItem.id) : false;
-  const imageProps: ImageViewerImageRenderProps | null = activeItem ? {
-    alt: activeItem.alt,
-    className: 'inkra-image-viewer__image',
-    height: activeItem.height,
-    key: `${activeItem.id}:${attempts[activeItem.id] ?? 0}`,
-    onError: () => setFailedIds(current => new Set(current).add(activeItem.id)),
-    onLoad: () => setFailedIds(current => {
-      if (!current.has(activeItem.id)) return current;
-      const next = new Set(current);
-      next.delete(activeItem.id);
-      return next;
-    }),
-    src: activeItem.src,
-    width: activeItem.width,
-  } : null;
+  const failed = activeItemKey ? failedResources.has(activeItemKey) : false;
+  const imageProps: ImageViewerImageRenderProps | null = activeItem && activeItemKey ? (() => {
+    const resourceKey = activeItemKey;
+    return {
+      alt: activeItem.alt,
+      className: 'inkra-image-viewer__image',
+      height: activeItem.height,
+      key: `${resourceKey}:${attempts[resourceKey] ?? 0}`,
+      onError: () => setFailedResources(current => new Set(current).add(resourceKey)),
+      onLoad: () => setFailedResources(current => {
+        if (!current.has(resourceKey)) return current;
+        const next = new Set(current);
+        next.delete(resourceKey);
+        return next;
+      }),
+      src: activeItem.src,
+      width: activeItem.width,
+    };
+  })() : null;
 
   return (
     <OverlayPortal>
@@ -372,25 +387,27 @@ export const ImageViewerContent = forwardRef<
               ref={stageRef}
               tabIndex={0}
             >
+              <PencilSurface aria-hidden="true" className="inkra-image-viewer__stage-focus" radius={6} seed={`image-viewer-stage-${activeItem.id}`} variant="outline" />
               {failed ? <div className="inkra-image-viewer__state" role="alert">
                 <PencilIcon decorative paths={imageOffPaths} size={48} sourceSize={24} />
                 <PencilText as="h3">{labels.failedTitle}</PencilText>
                 <PencilText as="p">{labels.failedDescription(activeItem)}</PencilText>
                 <Button variant="outline" onClick={() => {
-                  const failedId = activeItem.id;
-                  setFailedIds(current => {
+                  if (!activeItemKey) return;
+                  const failedKey = activeItemKey;
+                  setFailedResources(current => {
                     const next = new Set(current);
-                    next.delete(failedId);
+                    next.delete(failedKey);
                     return next;
                   });
-                  setAttempts(current => ({ ...current, [failedId]: (current[failedId] ?? 0) + 1 }));
+                  setAttempts(current => ({ ...current, [failedKey]: (current[failedKey] ?? 0) + 1 }));
                 }}>{labels.retry}</Button>
               </div> : <PanZoom
                 aria-label={labels.panZoom(activeItem)}
                 centerOnInit
                 className="inkra-image-viewer__pan-zoom"
                 fitOnInit="contain"
-                key={activeItem.id}
+                key={activeItemKey}
                 keyboard={zoomable}
                 maxScale={maxScale}
                 minScale={minScale}
@@ -406,6 +423,7 @@ export const ImageViewerContent = forwardRef<
               </PanZoom>}
 
               {!failed && (zoomable || rotatable) ? <div className="inkra-image-viewer__tools" role="group" aria-label={labels.panZoom(activeItem)} data-pan-zoom-no-drag>
+                <PencilSurface aria-hidden="true" className="inkra-image-viewer__tools-paper" radius={8} seed={`image-viewer-tools-${activeItem.id}`} variant="paper" />
                 {zoomable ? <>
                   <Button aria-label={labels.zoomOut} onClick={() => void panZoomRef.current?.zoomOut()} size="icon-sm" variant="outline">
                     <PencilIcon decorative paths={zoomOutPaths} size={24} sourceSize={24} />
@@ -424,25 +442,16 @@ export const ImageViewerContent = forwardRef<
               </div> : null}
 
               {total > 1 ? <div className="inkra-image-viewer__navigation">
-                <Button
-                  aria-label={labels.previous}
-                  className="inkra-image-viewer__previous"
-                  disabled={!loop && atStart}
-                  onClick={() => step(-1)}
-                  size="icon"
-                  variant="outline"
-                ><PencilIcon decorative paths={chevronLeftPaths} size={30} sourceSize={24} /></Button>
-                <Button
-                  aria-label={labels.next}
-                  className="inkra-image-viewer__next"
-                  disabled={!loop && atEnd}
-                  onClick={() => step(1)}
-                  size="icon"
-                  variant="outline"
-                ><PencilIcon decorative paths={chevronRightPaths} size={30} sourceSize={24} /></Button>
+                <Button aria-label={labels.previous} className="inkra-image-viewer__previous" disabled={!loop && atStart} onClick={() => step(-1)} size="icon" variant="secondary">
+                  <PencilIcon decorative paths={chevronLeftPaths} size={30} sourceSize={24} />
+                </Button>
+                <Button aria-label={labels.next} className="inkra-image-viewer__next" disabled={!loop && atEnd} onClick={() => step(1)} size="icon" variant="secondary">
+                  <PencilIcon decorative paths={chevronRightPaths} size={30} sourceSize={24} />
+                </Button>
               </div> : null}
             </div>
           </> : <div className="inkra-image-viewer__state" ref={stageRef} tabIndex={0}>
+            <PencilSurface aria-hidden="true" className="inkra-image-viewer__stage-focus" radius={6} seed="image-viewer-empty-stage" variant="outline" />
             {emptyState ?? <>
               <PencilIcon decorative paths={imageOffPaths} size={48} sourceSize={24} />
               <PencilText as="h3">{labels.emptyTitle}</PencilText>
@@ -454,6 +463,7 @@ export const ImageViewerContent = forwardRef<
         {showThumbnails && total > 1 ? <div
           aria-label={labels.thumbnails}
           className="inkra-image-viewer__thumbnails"
+          ref={thumbnailsRef}
           role="listbox"
         >
           {items.map((item, index) => {

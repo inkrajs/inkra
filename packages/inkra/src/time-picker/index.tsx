@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useId, useImperativeHandle, useRef, useState } from 'react';
 import type { MouseEvent, ReactNode } from 'react';
 
-import { Button } from '../Button.js';
+import { Button, ButtonGroup } from '../Button.js';
 import { useResolvedControlProps } from '../form/controlProps.js';
 import { mergeAriaIds, useFieldContext } from '../form/context.js';
 import type { InputProps, InputValueChangeDetails } from '../form/Input.js';
@@ -106,6 +106,8 @@ export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function
     }).format(new Date(2000, 0, 1, ...currentParts))
     : placeholder ?? copy.title;
   const canClear = clearable && Boolean(currentValue) && !state.disabled && !state.readOnly;
+  const buttonVariant = variant === 'soft' ? 'secondary' : variant === 'underline' ? 'outline' : variant;
+  const clearSize = size === 'sm' ? 'icon-sm' : size === 'lg' ? 'icon-lg' : 'icon';
   const valueId = field ? `${state.id}-value` : undefined;
   const [hour, minute, second] = partsOf(draft) ?? [0, 0, 0];
 
@@ -172,28 +174,31 @@ export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function
     <div className={['inkra-time-picker', classNames?.root, className].filter(Boolean).join(' ')}
       style={style} dir={nativeProps.dir} data-full-width={fullWidth}
       data-invalid={state.invalid || constraintInvalid || undefined} data-readonly={state.readOnly || undefined}
-      data-disabled={state.disabled || undefined}>
+      data-disabled={state.disabled || undefined} data-size={size}>
       {startAction}
-      <Popover.Trigger asChild>
-        <Button className={['inkra-time-picker__trigger', classNames?.control].filter(Boolean).join(' ')}
-          id={state.id} ref={triggerRef} aria-label={ariaLabel} aria-labelledby={ariaLabelledBy}
-          aria-describedby={mergeAriaIds(state.describedBy, valueId)} aria-invalid={constraintInvalid || state.ariaInvalid}
-          aria-errormessage={state.errorMessage} aria-required={state.required || undefined}
-          aria-readonly={state.readOnly || undefined} disabled={state.disabled} fullWidth align={textAlign}
-          variant={variant === 'soft' ? 'secondary' : variant === 'underline' ? 'outline' : variant}
-          size={size} seed={seed} loading={loading} autoFocus={nativeProps.autoFocus}
-          startIcon={startIcon ?? <PencilIcon paths={clockPaths} sourceSize={24} size={22} />} endIcon={endIcon}>
-          {prefix}<PencilText>{displayValue}</PencilText>{suffix}
-        </Button>
-      </Popover.Trigger>
+      <ButtonGroup aria-label={copy.title} className={['inkra-time-picker__control', classNames?.control].filter(Boolean).join(' ')}
+        data-size={size} fullWidth={fullWidth} size={size} variant={buttonVariant}>
+        <Popover.Trigger asChild>
+          <Button className="inkra-time-picker__trigger"
+            id={state.id} ref={triggerRef} aria-label={ariaLabel} aria-labelledby={ariaLabelledBy}
+            aria-describedby={mergeAriaIds(state.describedBy, valueId)} aria-invalid={constraintInvalid || state.ariaInvalid}
+            aria-errormessage={state.errorMessage} aria-required={state.required || undefined}
+            aria-readonly={state.readOnly || undefined} disabled={state.disabled} fullWidth={fullWidth} align={textAlign}
+            seed={seed} loading={loading} autoFocus={nativeProps.autoFocus}
+            startIcon={startIcon ?? <PencilIcon paths={clockPaths} sourceSize={24} size={22} />} endIcon={endIcon}>
+            {prefix}<PencilText>{displayValue}</PencilText>{suffix}
+          </Button>
+        </Popover.Trigger>
+        {clearable && <Button className="inkra-time-picker__clear" aria-label={clearButtonLabel ?? copy.clear}
+          title={clearButtonLabel ?? copy.clear} aria-hidden={!canClear || undefined} disabled={!canClear}
+          tabIndex={canClear ? 0 : -1} variant="ghost" size={clearSize}
+          onPointerDown={event => event.preventDefault()} onClick={event => {
+            commit('', 'clear');
+            onClear?.(event);
+            triggerRef.current?.focus({ preventScroll: true });
+          }}><PencilIcon paths={clearPaths} sourceSize={24} size={22} /></Button>}
+      </ButtonGroup>
       {valueId && <span className="inkra-time-picker__accessible-value" id={valueId}>{displayValue}</span>}
-      {clearable && <Button className="inkra-time-picker__clear" aria-label={clearButtonLabel ?? copy.clear}
-        title={clearButtonLabel ?? copy.clear} aria-hidden={!canClear || undefined} disabled={!canClear}
-        tabIndex={canClear ? 0 : -1} variant="outline" size="icon" onClick={event => {
-          commit('', 'clear');
-          onClear?.(event);
-          triggerRef.current?.focus({ preventScroll: true });
-        }}><PencilIcon paths={clearPaths} sourceSize={24} size={22} /></Button>}
       {endAction}
       <input {...nativeProps} ref={inputRef} type="time" className="inkra-time-picker__native"
         id={`${state.id}-native`} aria-hidden="true" tabIndex={-1}

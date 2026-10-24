@@ -10,11 +10,12 @@ import {
 import type { AriaAttributes, CSSProperties, FocusEventHandler } from 'react';
 import type { DateRange } from 'react-day-picker';
 
-import { Button } from '../Button.js';
+import { Button, ButtonGroup } from '../Button.js';
 import { Calendar } from '../calendar/index.js';
 import type { CalendarProps } from '../calendar/index.js';
 import { mergeAriaIds, useFieldContext } from '../form/context.js';
 import { useResolvedControlProps } from '../form/controlProps.js';
+import type { FieldControlSize } from '../form/types.js';
 import { PencilIcon } from '../PencilIcon.js';
 import { PencilLine } from '../PencilLine.js';
 import { Popover } from '../overlay/Popover.js';
@@ -47,6 +48,7 @@ export interface DatePickerProps {
   onBlur?: FocusEventHandler<HTMLButtonElement>;
   onFocus?: FocusEventHandler<HTMLButtonElement>;
   required?: boolean;
+  size?: FieldControlSize;
   style?: CSSProperties;
   mode?: DatePickerMode;
   value?: DatePickerValue;
@@ -152,6 +154,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
     rangeSeparator = ' – ',
     readOnly = false,
     required = false,
+    size = 'md',
     style,
     value,
   } = allProps;
@@ -263,50 +266,54 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
         data-invalid={state.invalid || constraintInvalid || undefined}
         data-mode={mode}
         data-readonly={state.readOnly || undefined}
+        data-size={size}
         dir={dir}
         style={style}
       >
-        <Popover.Trigger asChild>
-          <Button
-            aria-describedby={mergeAriaIds(state.describedBy, accessibleValueId)}
-            aria-errormessage={state.errorMessage}
-            aria-invalid={constraintInvalid || state.ariaInvalid}
-            aria-label={ariaLabel ?? (openButtonLabel ? `${openButtonLabel}: ${displayValue}` : undefined)}
-            aria-required={state.required || undefined}
-            autoFocus={autoFocus}
-            className="inkra-date-picker__trigger"
-            disabled={state.disabled}
-            form={form}
-            fullWidth={fullWidth}
-            id={triggerId}
-            onBlur={onBlur}
-            onFocus={onFocus}
-            ref={triggerRef}
-            startIcon={<PencilIcon paths={calendarPaths} sourceSize={24} size={22} />}
-            variant="outline"
-          >
-            <span className="inkra-date-picker__value" data-placeholder={!hasValue || undefined}>{displayValue}</span>
-          </Button>
-        </Popover.Trigger>
+        <ButtonGroup aria-label={copy.calendar} className="inkra-date-picker__control" data-size={size}
+          fullWidth={fullWidth} size={size} variant="outline">
+          <Popover.Trigger asChild>
+            <Button
+              aria-describedby={mergeAriaIds(state.describedBy, accessibleValueId)}
+              aria-errormessage={state.errorMessage}
+              aria-invalid={constraintInvalid || state.ariaInvalid}
+              aria-label={ariaLabel ?? (openButtonLabel ? `${openButtonLabel}: ${displayValue}` : undefined)}
+              aria-required={state.required || undefined}
+              autoFocus={autoFocus}
+              className="inkra-date-picker__trigger"
+              disabled={state.disabled}
+              form={form}
+              fullWidth={fullWidth}
+              id={triggerId}
+              onBlur={onBlur}
+              onFocus={onFocus}
+              ref={triggerRef}
+              startIcon={<PencilIcon paths={calendarPaths} sourceSize={24} size={22} />}
+            >
+              <span className="inkra-date-picker__value" data-placeholder={!hasValue || undefined}>{displayValue}</span>
+            </Button>
+          </Popover.Trigger>
+          {clearable ? (
+            <Button
+              aria-hidden={!hasValue || undefined}
+              aria-label={clearButtonLabel ?? copy.clear}
+              className="inkra-date-picker__clear"
+              disabled={!hasValue || state.disabled || state.readOnly}
+              onPointerDown={event => event.preventDefault()}
+              onClick={() => {
+                commit(undefined, 'clear');
+                updateOpen(false);
+                triggerRef.current?.focus({ preventScroll: true });
+              }}
+              size={size === 'sm' ? 'icon-sm' : size === 'lg' ? 'icon-lg' : 'icon'}
+              tabIndex={hasValue ? 0 : -1}
+              variant="ghost"
+            >
+              <PencilIcon paths={clearPaths} sourceSize={24} size={22} />
+            </Button>
+          ) : null}
+        </ButtonGroup>
         {accessibleValueId ? <span className="inkra-date-picker__accessible-value" id={accessibleValueId}>{displayValue}</span> : null}
-        {clearable ? (
-          <Button
-            aria-hidden={!hasValue || undefined}
-            aria-label={clearButtonLabel ?? copy.clear}
-            className="inkra-date-picker__clear"
-            disabled={!hasValue || state.disabled || state.readOnly}
-            onClick={() => {
-              commit(undefined, 'clear');
-              updateOpen(false);
-              triggerRef.current?.focus({ preventScroll: true });
-            }}
-            size="icon"
-            tabIndex={hasValue ? 0 : -1}
-            variant="ghost"
-          >
-            <PencilIcon paths={clearPaths} sourceSize={24} size={22} />
-          </Button>
-        ) : null}
         {name || state.required ? (
           mode === 'range' ? <>
             <input aria-hidden="true" className="inkra-date-picker__form-field" disabled={state.disabled} form={form} name={name}

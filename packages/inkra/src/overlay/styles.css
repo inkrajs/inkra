@@ -18,7 +18,7 @@
 .inkra-overlay__content {
   animation: inkra-overlay-content-in var(--inkra-motion-normal) var(--inkra-ease) both;
   inset-block-start: 50%;
-  inset-inline-start: 50%;
+  left: 50%;
   max-height: min(80vh, calc(100dvh - var(--inkra-space-8)));
   outline: 0;
   position: fixed;
@@ -128,8 +128,8 @@
 
 .inkra-popover__content {
   animation: inkra-popover-content-in var(--inkra-motion-normal) var(--inkra-ease) both;
-  max-height: min(70vh, var(--radix-popover-content-available-height, 70vh));
-  max-width: min(24rem, calc(100vw - var(--inkra-space-8)));
+  max-height: min(70dvh, var(--radix-popover-content-available-height, 70dvh));
+  max-width: min(24rem, var(--radix-popover-content-available-width, calc(100dvw - var(--inkra-space-6))));
   outline: 0;
   transform-origin: var(--radix-popover-content-transform-origin);
   width: max-content;
@@ -146,6 +146,7 @@
   display: block;
   max-height: inherit;
   max-width: inherit;
+  min-width: 0;
 }
 
 .inkra-popover__content-body {
@@ -153,9 +154,16 @@
   max-height: inherit;
   max-width: inherit;
   overflow: auto;
+  overflow-wrap: anywhere;
   overscroll-behavior: contain;
   padding: var(--inkra-space-4);
   scrollbar-gutter: stable;
+}
+
+.inkra-popover__title,
+.inkra-popover__description {
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .inkra-popover__arrow {

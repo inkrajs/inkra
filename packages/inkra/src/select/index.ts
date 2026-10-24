@@ -18,6 +18,8 @@ export {
 } from './Select.js';
 export { SearchableSelect } from './SearchableSelect.js';
 export type { SearchableSelectProps, SearchableSelectOption } from './SearchableSelect.js';
+export { SelectStepper } from './StepperSelect.js';
+export type { SelectStepperItem, SelectStepperProps } from './StepperSelect.js';
 export type {
   SelectClearProps,
   SelectContentProps,

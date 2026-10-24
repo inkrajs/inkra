@@ -30,13 +30,16 @@ const Root = forwardRef<HTMLDivElement, TabsProps>(function TabsRoot(
 ) {
   const [internal, setInternal] = useState(defaultValue);
   const current = value === undefined ? internal : value;
-  const lastChange = useRef(current);
-  lastChange.current = current;
+  const pendingRequest = useRef<string | null>(null);
   return <ValueContext.Provider value={current}><AnimatedContext.Provider value={animated}><OrientationContext.Provider value={orientation}>
     <Primitive.Root {...props} orientation={orientation} ref={ref} data-size={size} className={['inkra-tabs', className].filter(Boolean).join(' ')} value={current ?? ''} onValueChange={next => {
-      // Pointer focus and pointer down can request the same tab before React renders.
-      if (lastChange.current === next) return;
-      lastChange.current = next;
+      // Radix pointer activation can request once from focus and once from pointer down.
+      // Deduplicate only that synchronous interaction so a rejected controlled value can retry.
+      if (pendingRequest.current === next) return;
+      pendingRequest.current = next;
+      queueMicrotask(() => {
+        if (pendingRequest.current === next) pendingRequest.current = null;
+      });
       if (value === undefined) setInternal(next);
       onValueChange?.(next);
     }} />

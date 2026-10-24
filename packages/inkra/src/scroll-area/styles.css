@@ -1,6 +1,6 @@
 .inkra-scroll-area {
-  --inkra-scroll-area-size: 10px;
-  --inkra-scroll-area-gap: 3px;
+  --inkra-scroll-area-size: 14px;
+  --inkra-scroll-area-gap: 2px;
   color: var(--inkra-ink);
   min-block-size: 0;
   min-inline-size: 0;
@@ -21,6 +21,7 @@
 .inkra-scroll-area__content { min-block-size: 100%; min-inline-size: 100%; }
 
 .inkra-scroll-area__scrollbar {
+  align-items: stretch;
   box-sizing: border-box;
   display: flex;
   opacity: 0;
@@ -30,10 +31,12 @@
   z-index: 2;
 }
 
-.inkra-scroll-area[data-type="always"] .inkra-scroll-area__scrollbar,
+.inkra-scroll-area[data-type="always"] .inkra-scroll-area__scrollbar { opacity: .76; pointer-events: auto; }
 .inkra-scroll-area:hover .inkra-scroll-area__scrollbar,
 .inkra-scroll-area:focus-within .inkra-scroll-area__scrollbar,
+.inkra-scroll-area__scrollbar[data-hovering],
 .inkra-scroll-area__scrollbar[data-scrolling] { opacity: 1; pointer-events: auto; }
+.inkra-scroll-area__scrollbar[data-scrolling] { transition-duration: 0ms; }
 
 .inkra-scroll-area__scrollbar[data-orientation="vertical"] {
   inset-block: 0;
@@ -51,25 +54,66 @@
 .inkra-scroll-area__thumb,
 .inkra-scroll-area__thumb-surface {
   display: block !important;
-  pointer-events: none;
   position: absolute !important;
 }
 
-.inkra-scroll-area__track { inset: 0; opacity: .55; }
-.inkra-scroll-area__thumb { cursor: grab; min-block-size: 18px; min-inline-size: 18px; pointer-events: auto; }
+.inkra-scroll-area__track,
+.inkra-scroll-area__thumb-surface {
+  pointer-events: none;
+  transition: opacity var(--inkra-motion-fast) var(--inkra-ease);
+}
+.inkra-scroll-area__track { opacity: .34; }
+.inkra-scroll-area__thumb { cursor: grab; pointer-events: auto; }
 .inkra-scroll-area__thumb:active { cursor: grabbing; }
-.inkra-scroll-area__thumb-surface { inset: var(--inkra-scroll-area-gap); }
-.inkra-scroll-area__scrollbar[data-orientation="horizontal"] .inkra-scroll-area__thumb { min-inline-size: 24px; }
+.inkra-scroll-area__thumb-surface { opacity: .82; }
+
+.inkra-scroll-area__scrollbar[data-orientation="vertical"] .inkra-scroll-area__track {
+  inset-block: var(--inkra-scroll-area-gap);
+  inset-inline: 4px;
+}
+.inkra-scroll-area__scrollbar[data-orientation="vertical"] .inkra-scroll-area__thumb {
+  inset-inline: var(--inkra-scroll-area-gap);
+  min-block-size: 28px;
+}
+.inkra-scroll-area__scrollbar[data-orientation="vertical"] .inkra-scroll-area__thumb-surface {
+  inset-block: 2px;
+  inset-inline: 1px;
+}
+.inkra-scroll-area__scrollbar[data-orientation="horizontal"] .inkra-scroll-area__track {
+  inset-block: 4px;
+  inset-inline: var(--inkra-scroll-area-gap);
+}
+.inkra-scroll-area__scrollbar[data-orientation="horizontal"] .inkra-scroll-area__thumb {
+  inset-block: var(--inkra-scroll-area-gap);
+  min-inline-size: 32px;
+}
+.inkra-scroll-area__scrollbar[data-orientation="horizontal"] .inkra-scroll-area__thumb-surface {
+  inset-block: 1px;
+  inset-inline: 2px;
+}
+
+.inkra-scroll-area:hover .inkra-scroll-area__track,
+.inkra-scroll-area:focus-within .inkra-scroll-area__track,
+.inkra-scroll-area__scrollbar[data-hovering] .inkra-scroll-area__track,
+.inkra-scroll-area__scrollbar[data-scrolling] .inkra-scroll-area__track { opacity: .5; }
+.inkra-scroll-area:hover .inkra-scroll-area__thumb-surface,
+.inkra-scroll-area:focus-within .inkra-scroll-area__thumb-surface,
+.inkra-scroll-area__scrollbar[data-hovering] .inkra-scroll-area__thumb-surface,
+.inkra-scroll-area__scrollbar[data-scrolling] .inkra-scroll-area__thumb-surface { opacity: 1; }
+.inkra-scroll-area__scrollbar[data-scrolling] .inkra-scroll-area__track { opacity: .62; }
 .inkra-scroll-area__corner { background: transparent; }
 
 @media (prefers-reduced-motion: reduce) {
-  .inkra-scroll-area__scrollbar { transition: none; }
+  .inkra-scroll-area__scrollbar,
+  .inkra-scroll-area__track,
+  .inkra-scroll-area__thumb-surface { transition: none; }
 }
 
 @media (forced-colors: active) {
   .inkra-scroll-area__scrollbar { opacity: 1; }
-  .inkra-scroll-area__track { background: Canvas; border: 1px solid CanvasText; }
-  .inkra-scroll-area__thumb-surface { background: ButtonText; border: 2px solid ButtonText; }
+  .inkra-scroll-area__track { background: Canvas; border: 1px solid CanvasText; opacity: 1; }
+  .inkra-scroll-area__thumb-surface { background: ButtonText; border: 1px solid ButtonText; opacity: 1; }
+  .inkra-scroll-area__viewport:focus-visible { outline: 2px solid Highlight; outline-offset: -2px; }
 }
 
 @media print {

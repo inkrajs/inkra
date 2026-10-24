@@ -11,7 +11,9 @@ import { Checkbox } from '../selection/Checkbox.js';
 import {
   moveTransferKeys,
   normalizeTargetKeys,
+  resolveTransferFocusIntent,
   splitTransferItems,
+  transferKeysEqual,
   uniqueTransferItems,
 } from './model.js';
 import type { TransferDirection, TransferSide } from './model.js';
@@ -20,7 +22,6 @@ const searchPaths = [
   { d: 'M 11 4 A 7 7 0 1 0 11 18 A 7 7 0 1 0 11 4 M 16 16 L 21 21' },
 ] as const;
 const rightPaths = [{ d: 'M 5 12 L 19 12 M 13 6 L 19 12 L 13 18' }] as const;
-const leftPaths = [{ d: 'M 19 12 L 5 12 M 11 6 L 5 12 L 11 18' }] as const;
 
 export interface TransferItem {
   id: string;
@@ -164,7 +165,13 @@ export const Transfer = forwardRef<HTMLDivElement, TransferProps>(function Trans
   const labels = { ...defaultLabels, ...labelOverrides };
   const [queries, setQueries] = useState<Record<TransferSide, string>>({ source: '', target: '' });
   const [selected, setSelected] = useState<Record<TransferSide, Set<string>>>(() => ({ source: new Set(), target: new Set() }));
-  const [pendingFocus, setPendingFocus] = useState<{ id: string; side: TransferSide } | null>(null);
+  const [pendingFocus, setPendingFocus] = useState<{
+    id: string;
+    side: TransferSide;
+    origin: HTMLElement | null;
+    previousTargetKeys: string[];
+    expectedTargetKeys: string[];
+  } | null>(null);
   const itemRefs = useRef(new Map<string, HTMLInputElement>());
   const panelRefs = useRef<Record<TransferSide, HTMLElement | null>>({ source: null, target: null });
 
@@ -187,13 +194,43 @@ export const Transfer = forwardRef<HTMLDivElement, TransferProps>(function Trans
 
   useEffect(() => {
     if (!pendingFocus) return;
-    const targetContainsItem = pendingFocus.side === 'target'
-      ? currentTargetKeys.includes(pendingFocus.id)
-      : !currentTargetKeys.includes(pendingFocus.id);
-    const control = targetContainsItem ? itemRefs.current.get(`${pendingFocus.side}:${pendingFocus.id}`) : null;
+    if (disabled || !uniqueItems.some(item => item.id === pendingFocus.id)) {
+      setPendingFocus(null);
+      return;
+    }
+    const valueResolution = transferKeysEqual(currentTargetKeys, pendingFocus.expectedTargetKeys)
+      ? 'accepted'
+      : transferKeysEqual(currentTargetKeys, pendingFocus.previousTargetKeys) ? 'unchanged' : 'mismatch';
+    const ownerDocument = pendingFocus.origin?.ownerDocument ?? document;
+    const activeElement = ownerDocument.activeElement;
+    const originStillOwnsFocus = activeElement === pendingFocus.origin;
+    const focusFellBackToDocument = activeElement === ownerDocument.body || activeElement === ownerDocument.documentElement;
+    const originUnavailable = pendingFocus.origin != null
+      && (!pendingFocus.origin.isConnected || pendingFocus.origin.matches(':disabled'))
+      && focusFellBackToDocument;
+    if (valueResolution !== 'accepted') {
+      if (resolveTransferFocusIntent(valueResolution, originStillOwnsFocus, originUnavailable) !== 'wait') {
+        setPendingFocus(null);
+        return;
+      }
+      const cancel = (event: FocusEvent) => {
+        const target = event.target;
+        const documentFallback = target === ownerDocument.body || target === ownerDocument.documentElement;
+        const unavailable = pendingFocus.origin != null
+          && (!pendingFocus.origin.isConnected || pendingFocus.origin.matches(':disabled'));
+        if (target !== pendingFocus.origin && !(documentFallback && unavailable)) setPendingFocus(null);
+      };
+      ownerDocument.addEventListener('focusin', cancel);
+      return () => ownerDocument.removeEventListener('focusin', cancel);
+    }
+    if (resolveTransferFocusIntent('accepted', originStillOwnsFocus, originUnavailable) !== 'focus') {
+      setPendingFocus(null);
+      return;
+    }
+    const control = itemRefs.current.get(`${pendingFocus.side}:${pendingFocus.id}`);
     (control ?? panelRefs.current[pendingFocus.side])?.focus({ preventScroll: true });
     setPendingFocus(null);
-  }, [pendingFocus, currentTargetKeys.join('\u0000')]);
+  }, [disabled, pendingFocus, currentTargetKeys.join('\u0000'), uniqueItems]);
 
   const setItemSelected = (side: TransferSide, id: string, checked: boolean) => {
     setSelected(current => {
@@ -215,7 +252,12 @@ export const Transfer = forwardRef<HTMLDivElement, TransferProps>(function Trans
     });
   };
 
-  const move = (keys: readonly string[], direction: TransferDirection, action: 'single' | 'batch') => {
+  const move = (
+    keys: readonly string[],
+    direction: TransferDirection,
+    action: 'single' | 'batch',
+    origin: HTMLElement | null,
+  ) => {
     const sourceSide: TransferSide = direction === 'to-target' ? 'source' : 'target';
     const destinationSide: TransferSide = direction === 'to-target' ? 'target' : 'source';
     const allowed = new Set(panels[sourceSide].filter(item => !item.disabled && !disabled).map(item => item.id));
@@ -228,7 +270,13 @@ export const Transfer = forwardRef<HTMLDivElement, TransferProps>(function Trans
       movedKeys.forEach(key => source.delete(key));
       return { ...current, [sourceSide]: source };
     });
-    setPendingFocus({ id: movedKeys[0], side: destinationSide });
+    setPendingFocus({
+      id: movedKeys[0],
+      side: destinationSide,
+      origin,
+      previousTargetKeys: [...currentTargetKeys],
+      expectedTargetKeys: next,
+    });
     onTargetKeysChange?.(next, {
       action,
       direction,
@@ -269,6 +317,9 @@ export const Transfer = forwardRef<HTMLDivElement, TransferProps>(function Trans
       tabIndex={-1}
       variant="paper"
     >
+      <PencilSurface<'span'> aria-hidden="true" as="span"
+        className="inkra-transfer__panel-focus" variant="outline"
+        seed={`inkra-transfer-${generatedId}-${side}-focus`} />
       <header className="inkra-transfer__header">
         <span className="inkra-transfer__title" id={titleId}>
           {typeof panelTitle === 'string' ? <PencilText>{panelTitle}</PencilText> : panelTitle}
@@ -319,13 +370,14 @@ export const Transfer = forwardRef<HTMLDivElement, TransferProps>(function Trans
             <Button
               aria-label={`${moveLabel}: ${typeof item.label === 'string' || typeof item.label === 'number' ? String(item.label) : item.searchText ?? item.id}`}
               disabled={itemDisabled}
-              onClick={() => move([item.id], direction, 'single')}
+              onClick={event => move([item.id], direction, 'single', event.currentTarget)}
               seed={`inkra-transfer-${generatedId}-${side}-${item.id}-move`}
               size="icon-sm"
               title={moveLabel}
               variant="ghost"
             >
-              <PencilIcon className="inkra-transfer__direction-icon" decorative paths={source ? rightPaths : leftPaths} size={18} sourceSize={24} />
+              <PencilIcon className="inkra-transfer__direction-icon" data-direction={direction}
+                decorative paths={rightPaths} size={18} sourceSize={24} />
             </Button>
           </li>;
         })}
@@ -343,28 +395,32 @@ export const Transfer = forwardRef<HTMLDivElement, TransferProps>(function Trans
     data-disabled={disabled || undefined}
     ref={ref}
   >
-    {renderPanel('source')}
-    <div className="inkra-transfer__actions" role="group" aria-label={labels.batchActions}>
-      <Button
-        aria-label={labels.moveSelectedToTarget}
-        disabled={disabled || sourceBatchKeys.length === 0}
-        onClick={() => move(sourceBatchKeys, 'to-target', 'batch')}
-        seed={`inkra-transfer-${generatedId}-batch-target`}
-        size="icon"
-        title={labels.moveSelectedToTarget}
-        variant="outline"
-      ><PencilIcon className="inkra-transfer__direction-icon" decorative paths={rightPaths} size={20} sourceSize={24} /></Button>
-      <Button
-        aria-label={labels.moveSelectedToSource}
-        disabled={disabled || targetBatchKeys.length === 0}
-        onClick={() => move(targetBatchKeys, 'to-source', 'batch')}
-        seed={`inkra-transfer-${generatedId}-batch-source`}
-        size="icon"
-        title={labels.moveSelectedToSource}
-        variant="outline"
-      ><PencilIcon className="inkra-transfer__direction-icon" decorative paths={leftPaths} size={20} sourceSize={24} /></Button>
+    <div className="inkra-transfer__layout">
+      {renderPanel('source')}
+      <div className="inkra-transfer__actions" role="group" aria-label={labels.batchActions}>
+        <Button
+          aria-label={labels.moveSelectedToTarget}
+          disabled={disabled || sourceBatchKeys.length === 0}
+          onClick={event => move(sourceBatchKeys, 'to-target', 'batch', event.currentTarget)}
+          seed={`inkra-transfer-${generatedId}-batch-target`}
+          size="icon"
+          title={labels.moveSelectedToTarget}
+          variant="outline"
+        ><PencilIcon className="inkra-transfer__direction-icon" data-direction="to-target"
+          decorative paths={rightPaths} size={20} sourceSize={24} /></Button>
+        <Button
+          aria-label={labels.moveSelectedToSource}
+          disabled={disabled || targetBatchKeys.length === 0}
+          onClick={event => move(targetBatchKeys, 'to-source', 'batch', event.currentTarget)}
+          seed={`inkra-transfer-${generatedId}-batch-source`}
+          size="icon"
+          title={labels.moveSelectedToSource}
+          variant="outline"
+        ><PencilIcon className="inkra-transfer__direction-icon" data-direction="to-source"
+          decorative paths={rightPaths} size={20} sourceSize={24} /></Button>
+      </div>
+      {renderPanel('target')}
     </div>
-    {renderPanel('target')}
   </div>;
 });
 

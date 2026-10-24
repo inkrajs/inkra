@@ -1,8 +1,24 @@
 export type TransferDirection = 'to-target' | 'to-source';
 export type TransferSide = 'source' | 'target';
+export type TransferFocusIntent = 'wait' | 'cancel' | 'focus';
+export type TransferValueResolution = 'unchanged' | 'accepted' | 'mismatch';
 
 export interface TransferIdentity {
   id: string;
+}
+
+export function resolveTransferFocusIntent(
+  valueResolution: TransferValueResolution,
+  originOwnsFocus: boolean,
+  originUnavailable: boolean,
+): TransferFocusIntent {
+  if (valueResolution === 'mismatch') return 'cancel';
+  if (valueResolution === 'unchanged') return originOwnsFocus || originUnavailable ? 'wait' : 'cancel';
+  return originOwnsFocus || originUnavailable ? 'focus' : 'cancel';
+}
+
+export function transferKeysEqual(left: readonly string[], right: readonly string[]): boolean {
+  return left.length === right.length && left.every((key, index) => key === right[index]);
 }
 
 export function uniqueTransferItems<Item extends TransferIdentity>(items: readonly Item[]): Item[] {

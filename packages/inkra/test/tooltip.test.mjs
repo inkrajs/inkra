@@ -35,6 +35,16 @@ test('Tooltip keeps Radix semantics outside selectable pencil visuals', () => {
   assert.match(tooltip, /surfaceRadius = 6/);
   assert.match(tooltip, /typeof children === 'string'[\s\S]*?<PencilText/);
   assert.match(styles, /\.inkra-tooltip__content-body\s*\{[\s\S]*?user-select: text/);
+  assert.match(tooltip, /collisionPadding = 8/);
+  assert.match(tooltip, /collisionPadding=\{collisionPadding\}/);
+  assert.doesNotMatch(tooltip, /addEventListener\(['"](?:keydown|pointerdown|click|focus|blur)/);
+});
+
+test('Tooltip bounds long selectable content to the available viewport', () => {
+  assert.match(styles, /--radix-tooltip-content-available-width/);
+  assert.match(styles, /--radix-tooltip-content-available-height/);
+  assert.match(styles, /max-height: min\(50dvh/);
+  assert.match(styles, /\.inkra-tooltip__content-body\s*\{[\s\S]*?max-height: inherit;[\s\S]*?overflow: auto;[\s\S]*?overflow-wrap: anywhere;[\s\S]*?overscroll-behavior: contain/);
 });
 
 test('Tooltip styling reserves solid boundaries for forced colors and reduces motion', () => {

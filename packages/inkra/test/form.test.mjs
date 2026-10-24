@@ -143,6 +143,8 @@ test('Form styles keep native controls borderless and reserve solid borders for 
   }
   assert.match(normal, /\.inkra-input__clear:focus-visible\s*\{[^}]*outline:\s*var\(--inkra-focus-width\)/);
   assert.match(normal, /data-pencil-editable-ready="true"[\s\S]*color: transparent/);
+  assert.match(normal, /\.inkra-editable-text\s*\{[^}]*display: none;/);
+  assert.match(normal, /\[data-pencil-editable-ready="true"\] \.inkra-editable-text\s*\{[^}]*display: block;/);
   assert.doesNotMatch(normal, /data-composing="true"/);
   assert.match(styles, /@media \(forced-colors: active\)[\s\S]*border: 1px solid CanvasText/);
   assert.match(styles, /@media \(forced-colors: active\)[\s\S]*display: none !important/);

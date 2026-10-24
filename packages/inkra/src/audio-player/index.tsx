@@ -51,6 +51,8 @@ export interface AudioPlayerControls {
 }
 
 export interface AudioPlayerLabels {
+  controls?: string;
+  audio?: string;
   play?: string;
   pause?: string;
   mute?: string;
@@ -87,7 +89,7 @@ export interface AudioPlayerProps extends Omit<HTMLAttributes<HTMLDivElement>, '
 }
 
 const DEFAULT_LABELS: Required<Omit<AudioPlayerLabels, 'time'>> = {
-  play: 'Play', pause: 'Pause', mute: 'Mute', unmute: 'Unmute', seek: 'Seek', volume: 'Volume', rate: 'Playback speed', loading: 'Loading audio', blocked: 'Playback was blocked. Press play to try again.', error: 'Audio failed to load.',
+  controls: 'Audio controls', audio: 'Audio', play: 'Play', pause: 'Pause', mute: 'Mute', unmute: 'Unmute', seek: 'Seek', volume: 'Volume', rate: 'Playback speed', loading: 'Loading audio', blocked: 'Playback was blocked. Press play to try again.', error: 'Audio failed to load.',
 };
 
 const rates = [0.75, 1, 1.25, 1.5, 2];
@@ -102,50 +104,103 @@ export const AudioPlayer = forwardRef<AudioPlayerControls, AudioPlayerProps>(fun
   const id = useId();
   const audioRef = useRef<HTMLAudioElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const requestedSourceRef = useRef(src);
+  requestedSourceRef.current = src;
   const [state, setState] = useState<AudioPlayerState>({ status: src ? 'loading' : 'idle', currentTime: 0, duration: 0, buffered: 0, volume: clamp(volume ?? defaultVolume, 0, 1), muted: muted ?? defaultMuted, playbackRate: clamp(playbackRate ?? defaultPlaybackRate, 0.25, 4), canPlay: false, error: null });
   const stateRef = useRef(state);
   stateRef.current = state;
+  const controlledRef = useRef({ volume, muted, playbackRate });
+  controlledRef.current = { volume, muted, playbackRate };
+  const callbacksRef = useRef({ onVolumeChange, onMutedChange, onPlaybackRateChange, onTimeChange, onStateChange, onError });
+  callbacksRef.current = { onVolumeChange, onMutedChange, onPlaybackRateChange, onTimeChange, onStateChange, onError };
   const mergedLabels = { ...DEFAULT_LABELS, ...labels };
   const update = useCallback((patch: Partial<AudioPlayerState>) => {
-    const next = { ...stateRef.current, ...patch };
+    const current = stateRef.current;
+    if (Object.entries(patch).every(([key, value]) => Object.is(current[key as keyof AudioPlayerState], value))) return;
+    const next = { ...current, ...patch };
     stateRef.current = next;
     setState(next);
-    onStateChange?.(next);
-  }, [onStateChange]);
+    callbacksRef.current.onStateChange?.(next);
+  }, []);
   const sync = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
     const buffered = audio.duration > 0 && audio.buffered.length ? audio.buffered.end(audio.buffered.length - 1) / audio.duration : 0;
     update({ currentTime: Number.isFinite(audio.currentTime) ? audio.currentTime : 0, duration: Number.isFinite(audio.duration) ? audio.duration : 0, buffered: clamp(buffered, 0, 1), volume: audio.volume, muted: audio.muted, playbackRate: audio.playbackRate, canPlay: audio.readyState >= 3 });
   }, [update]);
-  const play = useCallback(async () => { const audio = audioRef.current; if (!audio) return; try { await audio.play(); } catch (error) { update({ status: 'blocked' }); onError?.(error instanceof DOMException ? error : null); } }, [onError, update]);
+  const applyControlledSettings = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const controlled = controlledRef.current;
+    if (controlled.volume !== undefined) {
+      const value = clamp(controlled.volume, 0, 1);
+      if (audio.volume !== value) audio.volume = value;
+    }
+    if (controlled.muted !== undefined && audio.muted !== controlled.muted) audio.muted = controlled.muted;
+    if (controlled.playbackRate !== undefined) {
+      const value = clamp(controlled.playbackRate, 0.25, 4);
+      if (audio.defaultPlaybackRate !== value) audio.defaultPlaybackRate = value;
+      if (audio.playbackRate !== value) audio.playbackRate = value;
+    }
+  }, []);
+  const play = useCallback(async () => { const audio = audioRef.current; if (!audio) return; try { await audio.play(); } catch (error) { update({ status: 'blocked' }); callbacksRef.current.onError?.(error instanceof DOMException ? error : null); } }, [update]);
   const pause = useCallback(() => { audioRef.current?.pause(); }, []);
   const togglePlay = useCallback(async () => { const audio = audioRef.current; if (!audio) return; if (audio.paused) await play(); else pause(); }, [pause, play]);
-  const seek = useCallback((time: number) => { const audio = audioRef.current; if (!audio || !Number.isFinite(time)) return; audio.currentTime = clamp(time, 0, Number.isFinite(audio.duration) ? audio.duration : Math.max(0, time)); sync(); onTimeChange?.(audio.currentTime); }, [onTimeChange, sync]);
-  const setVolume = useCallback((next: number) => { const audio = audioRef.current; if (!audio) return; audio.volume = clamp(next, 0, 1); onVolumeChange?.(audio.volume); sync(); }, [onVolumeChange, sync]);
-  const setMuted = useCallback((next: boolean) => { const audio = audioRef.current; if (!audio) return; audio.muted = next; onMutedChange?.(next); sync(); }, [onMutedChange, sync]);
-  const setPlaybackRate = useCallback((next: number) => { const audio = audioRef.current; if (!audio) return; audio.playbackRate = clamp(next, 0.25, 4); onPlaybackRateChange?.(audio.playbackRate); sync(); }, [onPlaybackRateChange, sync]);
+  const seek = useCallback((time: number) => { const audio = audioRef.current; if (!audio || !Number.isFinite(time)) return; audio.currentTime = clamp(time, 0, Number.isFinite(audio.duration) ? audio.duration : Math.max(0, time)); sync(); callbacksRef.current.onTimeChange?.(audio.currentTime); }, [sync]);
+  const setVolume = useCallback((next: number) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const value = clamp(next, 0, 1);
+    const current = controlledRef.current.volume ?? stateRef.current.volume;
+    if (value === current) return;
+    if (controlledRef.current.volume === undefined) { audio.volume = value; sync(); }
+    callbacksRef.current.onVolumeChange?.(value);
+  }, [sync]);
+  const setMuted = useCallback((next: boolean) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const current = controlledRef.current.muted ?? stateRef.current.muted;
+    if (next === current) return;
+    if (controlledRef.current.muted === undefined) { audio.muted = next; sync(); }
+    callbacksRef.current.onMutedChange?.(next);
+  }, [sync]);
+  const setPlaybackRate = useCallback((next: number) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const value = clamp(next, 0.25, 4);
+    const current = controlledRef.current.playbackRate ?? stateRef.current.playbackRate;
+    if (value === current) return;
+    if (controlledRef.current.playbackRate === undefined) { audio.defaultPlaybackRate = value; audio.playbackRate = value; sync(); }
+    callbacksRef.current.onPlaybackRateChange?.(value);
+  }, [sync]);
   const focus = useCallback(() => { rootRef.current?.querySelector<HTMLElement>('[data-audio-player-control]')?.focus(); }, []);
   const controls: AudioPlayerControls = { audio: audioRef.current, state, play, pause, togglePlay, seek, setVolume, setMuted, setPlaybackRate, focus };
   useImperativeHandle(forwardedRef, () => controls, [state, play, pause, togglePlay, seek, setVolume, setMuted, setPlaybackRate, focus]);
 
-  useEffect(() => { const audio = audioRef.current; if (!audio) return; audio.volume = clamp(volume ?? defaultVolume, 0, 1); audio.muted = muted ?? defaultMuted; audio.playbackRate = clamp(playbackRate ?? defaultPlaybackRate, 0.25, 4); sync(); }, [defaultMuted, defaultPlaybackRate, defaultVolume, muted, playbackRate, src, volume, sync]);
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !src) return;
+    if (!audio) return;
     audio.pause();
-    audio.currentTime = 0;
-    update({ status: 'loading', currentTime: 0, duration: 0, buffered: 0, canPlay: false, error: null });
+    try { audio.currentTime = 0; } catch { /* Empty media has no seekable timeline. */ }
+    if (!src) audio.removeAttribute('src');
+    update({ status: src ? 'loading' : 'idle', currentTime: 0, duration: 0, buffered: 0, canPlay: false, error: null });
+    const current = stateRef.current;
+    audio.volume = clamp(controlledRef.current.volume ?? current.volume, 0, 1);
+    audio.muted = controlledRef.current.muted ?? current.muted;
+    const rate = clamp(controlledRef.current.playbackRate ?? current.playbackRate, 0.25, 4);
+    audio.defaultPlaybackRate = rate;
+    audio.playbackRate = rate;
     audio.load();
   }, [src, update]);
-  useEffect(() => { const audio = audioRef.current; if (!audio) return; const handlers: Partial<Record<keyof HTMLMediaElementEventMap, EventListener>> = {
-    loadstart: () => update({ status: 'loading', error: null, canPlay: false }), loadedmetadata: () => { sync(); update({ status: 'ready' }); }, canplay: () => { sync(); update({ canPlay: true, status: audio.paused ? 'paused' : 'playing' }); }, play: () => update({ status: 'playing' }), pause: () => update({ status: audio.ended ? 'ended' : 'paused' }), playing: () => update({ status: 'playing', canPlay: true }), waiting: () => update({ status: 'buffering' }), progress: sync, timeupdate: () => { sync(); onTimeChange?.(audio.currentTime); }, ratechange: sync, volumechange: () => { sync(); onVolumeChange?.(audio.volume); onMutedChange?.(audio.muted); }, ended: () => update({ status: 'ended', currentTime: audio.duration || audio.currentTime }), error: () => { const error = audio.error; update({ status: 'error', error }); onError?.(error); }, abort: () => update({ status: 'idle' }), };
+  useEffect(() => { applyControlledSettings(); sync(); }, [applyControlledSettings, muted, playbackRate, sync, volume]);
+  useEffect(() => { const audio = audioRef.current; if (!audio) return; const hasSource = () => Boolean(requestedSourceRef.current || audio.getAttribute('src')); const handlers: Partial<Record<keyof HTMLMediaElementEventMap, EventListener>> = {
+    loadstart: () => update({ status: hasSource() ? 'loading' : 'idle', error: null, canPlay: false }), loadedmetadata: () => { applyControlledSettings(); sync(); update({ status: 'ready' }); }, canplay: () => { sync(); update({ canPlay: true, status: audio.paused ? 'paused' : 'playing' }); }, play: () => update({ status: 'playing' }), pause: () => update({ status: hasSource() ? (audio.ended ? 'ended' : 'paused') : 'idle' }), playing: () => update({ status: 'playing', canPlay: true }), waiting: () => update({ status: 'buffering' }), progress: sync, timeupdate: () => { sync(); callbacksRef.current.onTimeChange?.(audio.currentTime); }, ratechange: () => { const previous = stateRef.current.playbackRate; applyControlledSettings(); sync(); if (controlledRef.current.playbackRate === undefined && previous !== audio.playbackRate) callbacksRef.current.onPlaybackRateChange?.(audio.playbackRate); }, volumechange: () => { const previous = stateRef.current; applyControlledSettings(); sync(); if (controlledRef.current.volume === undefined && previous.volume !== audio.volume) callbacksRef.current.onVolumeChange?.(audio.volume); if (controlledRef.current.muted === undefined && previous.muted !== audio.muted) callbacksRef.current.onMutedChange?.(audio.muted); }, ended: () => update({ status: 'ended', currentTime: audio.duration || audio.currentTime }), error: () => { if (!hasSource()) { update({ status: 'idle', error: null, canPlay: false }); return; } const error = audio.error; update({ status: 'error', error }); callbacksRef.current.onError?.(error); }, abort: () => update({ status: 'idle' }), emptied: () => { if (!hasSource()) update({ status: 'idle', currentTime: 0, duration: 0, buffered: 0, canPlay: false, error: null }); }, };
     Object.entries(handlers).forEach(([name, handler]) => audio.addEventListener(name, handler!));
     return () => Object.entries(handlers).forEach(([name, handler]) => audio.removeEventListener(name, handler!));
-  }, [onError, onMutedChange, onTimeChange, onVolumeChange, sync, src, update]);
+  }, [applyControlledSettings, sync, update]);
 
   const playLabel = state.status === 'playing' ? mergedLabels.pause : mergedLabels.play;
-  const defaultControls = <div className="inkra-audio-player__controls" role="group" aria-label="Audio controls">
+  const defaultControls = <div className="inkra-audio-player__controls" role="group" aria-label={mergedLabels.controls}>
     <Button data-audio-player-control data-tooltip={playLabel} type="button" size="icon-sm" variant="outline" aria-label={playLabel} onClick={() => void togglePlay()}><PencilIcon paths={state.status === 'playing' ? pausePaths : playPaths} size={20} sourceSize={24} /></Button>
     <div className="inkra-audio-player__seek"><Slider data-audio-player-control min={0} max={state.duration || 0} step={0.01} value={[state.currentTime]} onValueChange={values => seek(values[0] ?? 0)} disabled={!state.duration} aria-label={mergedLabels.seek} getValueLabel={value => labels?.time?.(value, state.duration) ?? `${formatTime(value)} / ${formatTime(state.duration)}`} size="sm" variant="inset" /></div>
     <PencilText as="span" className="inkra-audio-player__time" aria-live="off">{labels?.time?.(state.currentTime, state.duration) ?? `${formatTime(state.currentTime)} / ${formatTime(state.duration)}`}</PencilText>
@@ -159,7 +214,7 @@ export const AudioPlayer = forwardRef<AudioPlayerControls, AudioPlayerProps>(fun
     </div>
   </div>;
   return <PencilSurface ref={rootRef} {...props} className={['inkra-audio-player', className].filter(Boolean).join(' ')} variant="paper" radius={8} data-status={state.status} data-audio-player-id={id}>
-    <audio {...audioProps} ref={audioRef} aria-label={audioProps?.['aria-label'] ?? 'Audio'} autoPlay={autoPlay} crossOrigin={crossOrigin} muted={state.muted} preload={preload} src={src} />
+    <audio {...audioProps} ref={audioRef} aria-label={audioProps?.['aria-label'] ?? mergedLabels.audio} autoPlay={autoPlay} crossOrigin={crossOrigin} muted={state.muted} preload={preload} src={src} />
     {state.status === 'blocked' && <PencilText as="p" className="inkra-audio-player__message" role="status">{mergedLabels.blocked}</PencilText>}
     {state.status === 'error' && <PencilText as="p" className="inkra-audio-player__message" role="alert">{mergedLabels.error}</PencilText>}
     {renderControls ? renderControls(controls) : defaultControls}

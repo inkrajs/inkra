@@ -2,6 +2,7 @@ import { pencilPaper } from './paper.js';
 import { pencilStroke } from './stroke.js';
 import { drawPencilWash } from './wash.js';
 import { pencilRenderDefaults } from './renderTokens.js';
+import { releaseSurfaceBitmaps, resizeSurfaceBitmap, resolveSurfaceAllocation } from './surfaceBudget.js';
 
 export type PencilSurfaceVariant =
   | 'paper'
@@ -130,10 +131,19 @@ export function drawPencilSurface(
   radius?: number,
 ): Array<readonly [number, number]> | undefined {
   const bleed = variant === 'wash' ? 12 : 0;
-  canvas.width = Math.ceil((width + bleed * 2) * dpr);
-  canvas.height = Math.ceil((height + bleed * 2) * dpr);
+  const allocation = resolveSurfaceAllocation(width, height, dpr, bleed, borderCanvas ? 2 : 1);
+  if (!allocation.ok) {
+    releaseSurfaceBitmaps(canvas, borderCanvas);
+    throw new RangeError(`PencilSurface allocation rejected: ${allocation.reason}`);
+  }
+  const renderDpr = allocation.dpr;
+  resizeSurfaceBitmap(canvas, allocation.width, allocation.height);
   const context = canvas.getContext('2d');
-  if (!context) throw new Error('Canvas 2D is unavailable');
+  if (!context) {
+    releaseSurfaceBitmaps(canvas, borderCanvas);
+    throw new Error('Canvas 2D is unavailable');
+  }
+  if (borderCanvas) resizeSurfaceBitmap(borderCanvas, allocation.width, allocation.height);
   context.setTransform(
     canvas.width / (width + bleed * 2),
     0,
@@ -144,10 +154,6 @@ export function drawPencilSurface(
   );
 
   if (variant === 'wash') {
-    if (borderCanvas) {
-      borderCanvas.width = canvas.width;
-      borderCanvas.height = canvas.height;
-    }
     context.translate(bleed, bleed);
     drawPencilWash(context, { x: 0, y: 0, width, height }, theme.wash, seed, {
       strength: theme.washSettings?.strength ?? pencilRenderDefaults.washStrength / 0.48,
@@ -157,16 +163,12 @@ export function drawPencilSurface(
       inset: 2,
       radius: 8,
       edgeReach: 8,
-      dpr,
+      dpr: renderDpr,
     });
     return undefined;
   }
 
   if (variant === 'selection') {
-    if (borderCanvas) {
-      borderCanvas.width = canvas.width;
-      borderCanvas.height = canvas.height;
-    }
     drawPencilWash(context, { x: 0, y: 0, width, height }, theme.wash, seed, {
       strength: (theme.dark ? PENCIL_SELECTION_WASH.darkStrength : PENCIL_SELECTION_WASH.lightStrength) * (theme.washSettings?.strength ?? pencilRenderDefaults.washStrength / 0.48),
       spacing: theme.washSettings?.spacing ?? PENCIL_SELECTION_WASH.spacing,
@@ -175,25 +177,17 @@ export function drawPencilSurface(
       radius: PENCIL_SELECTION_WASH.radius,
       edgeReach: PENCIL_SELECTION_WASH.edgeReach,
       angle: theme.washSettings?.angle ?? PENCIL_SELECTION_WASH.angle,
-      dpr,
+      dpr: renderDpr,
     });
     return undefined;
   }
 
   if (variant === 'ghost') {
-    if (borderCanvas) {
-      borderCanvas.width = canvas.width;
-      borderCanvas.height = canvas.height;
-    }
     return undefined;
   }
 
   if (variant === 'full') {
-    if (borderCanvas) {
-      borderCanvas.width = canvas.width;
-      borderCanvas.height = canvas.height;
-    }
-    context.fillStyle = paperPattern(context, theme.paper, theme.dark, dpr);
+    context.fillStyle = paperPattern(context, theme.paper, theme.dark, renderDpr);
     context.fillRect(0, 0, width, height);
     return undefined;
   }
@@ -211,7 +205,7 @@ export function drawPencilSurface(
     for (const point of points.slice(1)) context.lineTo(...point);
     context.closePath();
     context.clip();
-    context.fillStyle = paperPattern(context, theme.paper, theme.dark, dpr);
+    context.fillStyle = paperPattern(context, theme.paper, theme.dark, renderDpr);
     context.fillRect(0, 0, width, height);
 
     if (strength) {
@@ -220,7 +214,7 @@ export function drawPencilSurface(
         ...theme.washSettings,
         strength: strength * (theme.washSettings?.strength ?? pencilRenderDefaults.washStrength / 0.48),
         radius: resolvedRadius,
-        dpr,
+        dpr: renderDpr,
       });
     }
     context.restore();
@@ -228,8 +222,6 @@ export function drawPencilSurface(
 
   let borderContext = context;
   if (borderCanvas) {
-    borderCanvas.width = canvas.width;
-    borderCanvas.height = canvas.height;
     const separateContext = borderCanvas.getContext('2d');
     if (separateContext) {
       separateContext.setTransform(canvas.width / width, 0, 0, canvas.height / height, 0, 0);

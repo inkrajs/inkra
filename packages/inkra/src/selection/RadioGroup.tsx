@@ -35,6 +35,7 @@ interface RadioGroupContextValue {
   defaultValue?: string;
   disabled: boolean;
   form?: string;
+  groupId: string;
   name: string;
   onItemChange: (event: ChangeEvent<HTMLInputElement>) => void;
   required: boolean;
@@ -100,30 +101,43 @@ export const RadioGroup = forwardRef<HTMLFieldSetElement, RadioGroupProps>(funct
   const descriptionId = description == null ? undefined : `inkra-radio-group-${generatedId}-description`;
   const rootRef = useRef<HTMLFieldSetElement>(null);
   const initialDefaultValueRef = useRef(defaultValue);
+  const currentValueRef = useRef(value);
   useImperativeHandle(forwardedRef, () => rootRef.current as HTMLFieldSetElement);
   const controlled = value !== undefined;
   const [uncontrolledValue, setUncontrolledValue] = useState(initialDefaultValueRef.current);
   const currentValue = controlled ? value : uncontrolledValue;
+  currentValueRef.current = value;
 
   useEffect(() => {
     const root = rootRef.current;
     const ownerForm = root?.form;
-    if (!root || !ownerForm || controlled) return undefined;
-    const handleReset = () => {
-      queueMicrotask(() => {
-        const checkedInput = root.querySelector<HTMLInputElement>('input[type="radio"]:checked');
-        setUncontrolledValue(checkedInput?.value);
-      });
+    if (!root || !ownerForm) return undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const handleReset = (event: Event) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        if (event.defaultPrevented) return;
+        const restored = controlled ? currentValueRef.current : initialDefaultValueRef.current;
+        root.querySelectorAll<HTMLInputElement>(`input[type="radio"][data-inkra-radio-group="${generatedId}"]`).forEach(input => {
+          if (input.form !== ownerForm || input.name !== name) return;
+          input.checked = input.value === restored;
+        });
+        if (!controlled) setUncontrolledValue(restored);
+      }, 0);
     };
     ownerForm.addEventListener('reset', handleReset);
-    return () => ownerForm.removeEventListener('reset', handleReset);
-  }, [controlled]);
+    return () => {
+      clearTimeout(timer);
+      ownerForm.removeEventListener('reset', handleReset);
+    };
+  }, [controlled, form, generatedId, name]);
 
   const context: RadioGroupContextValue = {
     controlled,
     defaultValue: initialDefaultValueRef.current,
     disabled,
     form,
+    groupId: generatedId,
     name,
     onItemChange(event) {
       if (!event.currentTarget.checked) return;
@@ -229,6 +243,7 @@ export const RadioGroupItem = forwardRef<HTMLInputElement, RadioGroupItemProps>(
         className="inkra-selection-control__input"
         defaultChecked={context.controlled ? undefined : context.defaultValue === value}
         disabled={itemDisabled}
+        data-inkra-radio-group={context.groupId}
         form={form ?? context.form}
         id={inputId}
         name={context.name}
@@ -243,6 +258,8 @@ export const RadioGroupItem = forwardRef<HTMLInputElement, RadioGroupItemProps>(
       />
       {context.variant === 'segmented' ? (
         <span className="inkra-radio-group__segment">
+          <PencilSurface as="span" aria-hidden="true" className="inkra-selection-control__focus-ring inkra-selection-control__focus-ring--inset"
+            seed={`${resolvedSeed}-focus`} variant="outline" />
           <PencilSurface
             aria-hidden="true"
             as="span"
@@ -265,6 +282,8 @@ export const RadioGroupItem = forwardRef<HTMLInputElement, RadioGroupItemProps>(
             aria-hidden="true"
             className="inkra-selection-control__mark inkra-radio-group__mark"
           >
+            <PencilSurface as="span" aria-hidden="true" className="inkra-selection-control__focus-ring"
+              seed={`${resolvedSeed}-focus`} variant="outline" />
             <PencilIcon
               className="inkra-selection-control__glyph"
               paths={selected ? selectedPaths : ringPaths}
