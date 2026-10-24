@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.1 - 2026-10-25
+## 0.4.2 - 2026-10-25
 
 - Add theme-aligned Markdown with pencil typography, task checkboxes, tables,
   content-seeded inline code, and language-labeled code cards with copy actions.
@@ -21,8 +21,11 @@
 - Keep Drawer actions inside short viewports with classic scrollbars; allow
   header/footer shrinkage and avoid reserving an unused footer scrollbar gutter.
 
-The 0.4.0 tagged candidate was not published after the Linux browser check found
-the Drawer overflow. Its immutable tag is retained; 0.4.1 supersedes it.
+- Center viewer thumbnails and tools without unused classic-scrollbar gutters.
+
+The 0.4.0 and 0.4.1 tagged candidates were not published after Linux browser
+checks found Drawer overflow and viewer gutter offsets. Their immutable tags
+are retained; 0.4.2 supersedes them.
 
 Publication is confirmed only after registry archive verification and the
 matching GitHub Release. Existing React 18 Calendar SSR and Next.js/RSC limits

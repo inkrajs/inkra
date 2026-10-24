@@ -90,6 +90,10 @@ test('ImageViewer owns stable viewport and thumbnail geometry across desktop and
 });
 
 test('ImageViewer keeps RTL tools physically centered and bounds short-view header/tools', () => {
+  for (const region of ['bottom', 'bottom-row', 'tools', 'thumbnails']) {
+    const rule = styles.match(new RegExp('\\.inkra-image-viewer__' + region + '\\s*\\{([^}]+)\\}'))?.[1];
+    assert.match(rule, /scrollbar-gutter: auto;/, region + ' does not reserve an unused side gutter');
+  }
   assert.doesNotMatch(styles, /\.inkra-image-viewer__tools\s*\{[\s\S]*?left: 50%/);
   assert.doesNotMatch(styles, /\.inkra-image-viewer \.inkra-overlay__header/);
   assert.match(styles, /\.inkra-image-viewer__bottom-row\s*\{[\s\S]*?justify-content: center/);
