@@ -139,13 +139,13 @@ export const DockablePanelWorkspace = forwardRef<HTMLDivElement, DockablePanelWo
     }, []);
 
     const activate = useCallback((id: string) => {
-      setOrder(current => promoteDockablePanel(current, id));
+      setOrder(current => current[current.length - 1] === id ? current : promoteDockablePanel(current, id));
       if (activeId === undefined) setUncontrolledActiveId(id);
       if (resolvedActiveId !== id) onActiveChange?.(id);
     }, [activeId, onActiveChange, resolvedActiveId]);
 
     useEffect(() => {
-      if (activeId != null) setOrder(current => promoteDockablePanel(current, activeId));
+      if (activeId != null) setOrder(current => current[current.length - 1] === activeId ? current : promoteDockablePanel(current, activeId));
     }, [activeId]);
 
     const register = useCallback((id: string) => {
@@ -166,6 +166,7 @@ export const DockablePanelWorkspace = forwardRef<HTMLDivElement, DockablePanelWo
       titleBarVisibility,
       width: size.width,
     }), [boundaryPadding, size.height, size.width, titleBarVisibility]);
+    const layers = useMemo(() => new Map(order.map((id, index) => [id, index])), [order]);
 
     const context = useMemo<WorkspaceContextValue>(() => ({
       activeId: resolvedActiveId,
@@ -173,12 +174,11 @@ export const DockablePanelWorkspace = forwardRef<HTMLDivElement, DockablePanelWo
       bounds,
       commitDrag,
       layer(id) {
-        const index = order.indexOf(id);
-        return baseZIndex + (resolvedActiveId === id ? order.length : Math.max(0, index));
+        return baseZIndex + (resolvedActiveId === id ? order.length : (layers.get(id) ?? 0));
       },
       register,
       snapThreshold,
-    }), [activate, baseZIndex, bounds, commitDrag, order, register, resolvedActiveId, snapThreshold]);
+    }), [activate, baseZIndex, bounds, commitDrag, layers, order.length, register, resolvedActiveId, snapThreshold]);
 
     function handleDragEnd(event: DragEndEvent) {
       const id = String(event.active.id);

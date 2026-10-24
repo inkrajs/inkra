@@ -4,6 +4,7 @@ import type { CanvasHTMLAttributes } from 'react';
 import {
   BoundedCache,
   PENCIL_RENDERER_VERSION,
+  boundedCanvasSize,
   canvasByteCost,
   canvasIsUsable,
   effectiveDpr,
@@ -12,7 +13,7 @@ import { observeCanvasRecovery } from './internal/recovery.js';
 import { seedToNumber } from './internal/random.js';
 import { pencilStroke } from './internal/stroke.js';
 import { maxStrokeRoughness, pencilRenderDefaults, readRenderToken } from './internal/renderTokens.js';
-import type { PencilPoint } from './internal/stroke.js';
+import { cachedPathParts } from './internal/iconGeometry.js';
 
 export interface PencilIconPath {
   d: string;
@@ -37,29 +38,7 @@ export interface PencilIconProps extends Omit<CanvasHTMLAttributes<HTMLCanvasEle
   decorative?: boolean;
 }
 
-const geometryCache = new BoundedCache<readonly PencilPoint[][]>(256, 180000);
 const imageCache = new BoundedCache<HTMLCanvasElement>(128, 24 * 1024 * 1024);
-
-function cachedPathParts(data: string): readonly PencilPoint[][] {
-  const key = `${PENCIL_RENDERER_VERSION}:${data}`;
-  const cached = geometryCache.get(key);
-  if (cached) return cached;
-  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  path.setAttribute('d', data);
-  const length = path.getTotalLength();
-  const count = Math.max(1, Math.ceil(length / 0.25));
-  const parts: PencilPoint[][] = [[]];
-
-  for (let index = 0; index <= count; index += 1) {
-    const point = path.getPointAtLength(length * index / count);
-    const activePart = parts[parts.length - 1];
-    const previous = activePart[activePart.length - 1];
-    if (previous && Math.hypot(point.x - previous[0], point.y - previous[1]) > 0.5) parts.push([]);
-    parts[parts.length - 1].push([point.x, point.y]);
-  }
-
-  return geometryCache.set(key, parts, parts.reduce((total, part) => total + part.length, 0));
-}
 
 function drawFallbackPath(
   context: CanvasRenderingContext2D,
@@ -90,17 +69,24 @@ function renderIcon(
   const { seed, size, sourceSize, active, color, dpr } = options;
   const weightScale = options.weightScale ?? 1;
   const roughnessScale = options.roughnessScale ?? 1;
+  const pixels = Math.round(size * dpr);
+  boundedCanvasSize(pixels, pixels, 1);
+  if (!Number.isFinite(sourceSize) || sourceSize <= 0 || sourceSize > 4096 || paths.length > 1024) {
+    throw new RangeError('Pencil icon exceeds the bounded geometry budget');
+  }
   const canvas = document.createElement('canvas');
-  canvas.width = Math.round(size * dpr);
-  canvas.height = Math.round(size * dpr);
+  canvas.width = pixels;
+  canvas.height = pixels;
   const context = canvas.getContext('2d');
   if (!context) return canvas;
   const coordinateScale = size / 40;
   context.scale(dpr * coordinateScale, dpr * coordinateScale);
   const offset = (40 - sourceSize) / 2;
   context.translate(offset, offset);
+  let sampledPoints = 0;
 
   paths.forEach((path, index) => {
+    if (path.d.length > 65536) return;
     const mode = path.mode ?? 'stroke';
     const pathSeed = seed + index * 137;
     if (mode === 'wash') {
@@ -129,7 +115,16 @@ function renderIcon(
     }
 
     try {
+      if (sampledPoints >= 65536) {
+        drawFallbackPath(context, path.d, color, mode, weightScale);
+        return;
+      }
       const parts = cachedPathParts(path.d);
+      sampledPoints += parts.reduce((total, part) => total + part.length, 0);
+      if (sampledPoints > 65536) {
+        drawFallbackPath(context, path.d, color, mode, weightScale);
+        return;
+      }
       for (const points of parts) {
         pencilStroke(
           context,
@@ -226,15 +221,19 @@ export const PencilIcon = forwardRef<HTMLCanvasElement, PencilIconProps>(functio
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const lastPaintRef = useRef('');
   useImperativeHandle(forwardedRef, () => canvasRef.current as HTMLCanvasElement);
-  const geometryKey = useMemo(() => JSON.stringify(paths), [paths]);
-  const badgeKey = useMemo(() => badge ? JSON.stringify(badge) : '', [badge]);
+  // Compare values, not caller object identity. Serializing each render also
+  // detects in-place edits; the effect receives a stable snapshot of that value.
+  const geometryKey = JSON.stringify(paths);
+  const badgeKey = badge ? JSON.stringify(badge) : '';
+  const stablePaths: readonly PencilIconPath[] = useMemo(() => JSON.parse(geometryKey), [geometryKey]);
+  const stableBadge: PencilIconBadge | undefined = useMemo(() => badgeKey ? JSON.parse(badgeKey) : undefined, [badgeKey]);
   const resolvedSeed = seedToNumber(seed ?? geometryKey);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return undefined;
     let disposed = false;
-    const paint = () => {
+    const render = () => {
       if (disposed) return;
       const dpr = effectiveDpr(3);
       const computed = getComputedStyle(canvas);
@@ -262,7 +261,7 @@ export const PencilIcon = forwardRef<HTMLCanvasElement, PencilIconProps>(functio
         image = undefined;
       }
       if (!image) {
-        image = renderIcon(paths, { seed: resolvedSeed, size, sourceSize, active, color, dpr, badge, rtl, weightScale, roughnessScale });
+        image = renderIcon(stablePaths, { seed: resolvedSeed, size, sourceSize, active, color, dpr, badge: stableBadge, rtl, weightScale, roughnessScale });
         imageCache.set(key, image, canvasByteCost(image));
       }
       canvas.width = image.width;
@@ -271,6 +270,15 @@ export const PencilIcon = forwardRef<HTMLCanvasElement, PencilIconProps>(functio
       if (!context || context.isContextLost?.()) return;
       context.drawImage(image, 0, 0);
       lastPaintRef.current = key;
+    };
+    const paint = () => {
+      try {
+        render();
+      } catch {
+        // Invalid/oversized decoration must not throw from a React effect.
+        canvas.width = canvas.height = 0;
+        lastPaintRef.current = '';
+      }
     };
     const inheritedColor = new MutationObserver(paint);
     for (let element: HTMLElement | null = canvas; element; element = element.parentElement) {
@@ -286,7 +294,7 @@ export const PencilIcon = forwardRef<HTMLCanvasElement, PencilIconProps>(functio
       inheritedColor.disconnect();
       colorScheme.removeEventListener('change', paint);
     };
-  }, [active, badge, badgeKey, geometryKey, paths, resolvedSeed, size, sourceSize]);
+  }, [active, stableBadge, badgeKey, geometryKey, stablePaths, resolvedSeed, size, sourceSize]);
 
   const accessibilityProps = decorative
     ? { 'aria-hidden': true }

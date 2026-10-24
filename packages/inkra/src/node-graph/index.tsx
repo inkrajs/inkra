@@ -124,7 +124,9 @@ export interface NodeGraphRootProps<
   NodeType extends NodeGraphNode = NodeGraphNode,
   EdgeType extends NodeGraphEdge = NodeGraphEdge,
 > extends Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'onError'> {
+  /** Immutable snapshots: replace the array and each changed node (including changed nested data). */
   nodes: NodeType[];
+  /** Immutable snapshots: replace the array and each changed edge (including changed nested data). */
   edges: EdgeType[];
   onNodesChange?: (changes: NodeGraphNodeChange<NodeType>[]) => void;
   onEdgesChange?: (changes: NodeGraphEdgeChange<EdgeType>[]) => void;
@@ -422,8 +424,6 @@ function PencilEdgeCanvas({ id, path, className, selected = false }: {
       frame = 0;
       if (disposed) return;
       try {
-        const points = sampleSvgPath(pathElement, bounds);
-        if (points.length < 2) throw new Error('NodeGraph edge has no drawable path');
         const style = getComputedStyle(canvas);
         const width = readRenderToken(style, '--inkra-stroke-width', pencilRenderDefaults.strokeWidth, 0.3, 3);
         const roughness = readRenderToken(style, '--inkra-stroke-amplitude', pencilRenderDefaults.strokeRoughness, 0, maxStrokeRoughness);
@@ -438,6 +438,8 @@ function PencilEdgeCanvas({ id, path, className, selected = false }: {
           image = undefined;
         }
         if (!image) {
+          const points = sampleSvgPath(pathElement, bounds);
+          if (points.length < 2) throw new Error('NodeGraph edge has no drawable path');
           image = document.createElement('canvas');
           image.width = budget.width;
           image.height = budget.height;
@@ -691,28 +693,50 @@ function NodeGraphRootInner<
     getViewport: () => instanceRef.current?.getViewport() ?? defaultViewport,
   }), [defaultViewport]);
 
-  const internalNodes = useMemo(() => nodes.map(node => ({
-    ...node,
-    type: 'inkra' as const,
-    ariaLabel: node.ariaLabel ?? readableLabel((node.data as NodeGraphNodeData).label, node.id),
-    data: {
-      __inkraRenderNode: renderNode,
-      __inkraReadOnly: readOnly,
-      __inkraData: node.data,
-    },
-  })) as InternalNode[], [nodes, readOnly, renderNode]);
-  const internalEdges = useMemo(() => edges.map(edge => ({
-    ...edge,
-    type: 'inkra' as const,
-    ariaLabel: edge.ariaLabel ?? `Edge from ${edge.source} to ${edge.target}`,
-    label: undefined,
-    data: {
-      ...edge.data,
-      __inkraEdge: edge,
-      __inkraRenderEdge: renderEdge,
-      __inkraRenderEdgeLabel: renderEdgeLabel,
-    },
-  })) as InternalEdge[], [edges, renderEdge, renderEdgeLabel]);
+  // Immutable node/edge updates should invalidate only the changed records. Weak
+  // keys release removed records and changing render configuration resets the cache.
+  const adaptNode = useMemo(() => {
+    const cache = new WeakMap<NodeType, InternalNode>();
+    return (node: NodeType): InternalNode => {
+      const cached = cache.get(node);
+      if (cached) return cached;
+      const adapted = {
+        ...node,
+        type: 'inkra' as const,
+        ariaLabel: node.ariaLabel ?? readableLabel((node.data as NodeGraphNodeData).label, node.id),
+        data: {
+          __inkraRenderNode: renderNode,
+          __inkraReadOnly: readOnly,
+          __inkraData: node.data,
+        },
+      } as InternalNode;
+      cache.set(node, adapted);
+      return adapted;
+    };
+  }, [readOnly, renderNode]);
+  const adaptEdge = useMemo(() => {
+    const cache = new WeakMap<EdgeType, InternalEdge>();
+    return (edge: EdgeType): InternalEdge => {
+      const cached = cache.get(edge);
+      if (cached) return cached;
+      const adapted = {
+        ...edge,
+        type: 'inkra' as const,
+        ariaLabel: edge.ariaLabel ?? `Edge from ${edge.source} to ${edge.target}`,
+        label: undefined,
+        data: {
+          ...edge.data,
+          __inkraEdge: edge,
+          __inkraRenderEdge: renderEdge,
+          __inkraRenderEdgeLabel: renderEdgeLabel,
+        },
+      } as InternalEdge;
+      cache.set(edge, adapted);
+      return adapted;
+    };
+  }, [renderEdge, renderEdgeLabel]);
+  const internalNodes = useMemo(() => nodes.map(adaptNode), [nodes, adaptNode]);
+  const internalEdges = useMemo(() => edges.map(adaptEdge), [edges, adaptEdge]);
   const rootStyle = { minHeight: 320, ...style } as CSSProperties;
 
   return <div

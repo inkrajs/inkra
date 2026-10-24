@@ -1,4 +1,4 @@
-import { createContext, useContext, type CSSProperties, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, type CSSProperties, type ReactNode } from 'react';
 import { CaptionLabel, Day, DayButton, DayPicker, Weekday, type CaptionLabelProps, type ChevronProps, type DayProps, type DayButtonProps, type DayPickerProps, type PreviousMonthButtonProps, type WeekdayProps } from 'react-day-picker';
 import { Button } from '../Button.js';
 import { PencilIcon } from '../PencilIcon.js';
@@ -14,13 +14,14 @@ export type CalendarProps = DayPickerProps & {
   renderDayAccessory?: (date: Date) => ReactNode;
   displayRange?: { from: Date; to: Date };
 };
+const emptyEvents: readonly CalendarEvent[] = [];
 const EventContext = createContext<{
-  events: readonly CalendarEvent[]; indicator: 'count' | 'dot' | 'none';
+  eventsByDay: ReadonlyMap<string, readonly CalendarEvent[]>; indicator: 'count' | 'dot' | 'none';
   appearance: 'itinerary' | 'picker'; onEventSelect?: (event: CalendarEvent) => void;
   renderDayAccessory?: (date: Date) => ReactNode;
-}>({ events: [], indicator: 'count', appearance: 'itinerary' });
-const matches = (event: CalendarEvent, date: Date) => event.date.getFullYear() === date.getFullYear()
-  && event.date.getMonth() === date.getMonth() && event.date.getDate() === date.getDate();
+}>({ eventsByDay: new Map(), indicator: 'count', appearance: 'itinerary' });
+// Match local calendar dates, not UTC dates, and retain input order within each day.
+const dayKey = (date: Date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 
 function CalendarCaption({ children, ...props }: CaptionLabelProps) {
   return <CaptionLabel {...props}>{typeof children === 'string' ? <PencilText>{children}</PencilText> : children}</CaptionLabel>;
@@ -39,9 +40,9 @@ function CalendarChevron({ className, orientation = 'left', size = 28 }: Chevron
 
 // The trip calendar uses a full-cell date target with sibling event buttons.
 function CalendarCell({ children, day, modifiers, ...props }: DayProps) {
-  const { events, appearance, onEventSelect, renderDayAccessory } = useContext(EventContext);
+  const { eventsByDay, appearance, onEventSelect, renderDayAccessory } = useContext(EventContext);
   if (appearance === 'picker') return <Day {...props} day={day} modifiers={modifiers}>{children}</Day>;
-  const entries = events.filter(event => matches(event, day.date));
+  const entries = eventsByDay.get(dayKey(day.date)) ?? emptyEvents;
   return <Day {...props} day={day} modifiers={modifiers}>
     <div className="inkra-calendar__day-card">
       <PencilSurface variant={modifiers.selected ? 'action' : 'quiet'} radius={8} className="inkra-calendar__day-paper" aria-hidden="true" seed={`day-${day.date.toISOString()}`} />
@@ -57,8 +58,8 @@ function CalendarCell({ children, day, modifiers, ...props }: DayProps) {
 }
 
 function CalendarDay({ children, modifiers, day, ...props }: DayButtonProps) {
-  const { events: allEvents, indicator, appearance } = useContext(EventContext);
-  const events = allEvents.filter(event => matches(event, day.date));
+  const { eventsByDay, indicator, appearance } = useContext(EventContext);
+  const events = eventsByDay.get(dayKey(day.date)) ?? emptyEvents;
   return <DayButton {...props} day={day} modifiers={modifiers}
     aria-label={[props['aria-label'], ...events.map(event => event.label)].filter(Boolean).join(', ')}>
     {modifiers.selected && appearance === 'picker' && <PencilSurface variant="selection" className="inkra-calendar__selection" aria-hidden="true" />}
@@ -67,9 +68,21 @@ function CalendarDay({ children, modifiers, day, ...props }: DayButtonProps) {
   </DayButton>;
 }
 
-export function Calendar({ events = [], eventIndicator = 'count', appearance = 'itinerary', onEventSelect, renderDayAccessory, displayRange, className, components, showOutsideDays = true, ...props }: CalendarProps) {
+export function Calendar({ events = emptyEvents, eventIndicator = 'count', appearance = 'itinerary', onEventSelect, renderDayAccessory, displayRange, className, components, showOutsideDays = true, ...props }: CalendarProps) {
+  const eventsByDay = useMemo(() => {
+    const index = new Map<string, CalendarEvent[]>();
+    for (const event of events) {
+      const key = dayKey(event.date);
+      const entries = index.get(key);
+      if (entries) entries.push(event);
+      else index.set(key, [event]);
+    }
+    return index;
+  }, [events]);
+  const context = useMemo(() => ({ eventsByDay, indicator: eventIndicator, appearance, onEventSelect, renderDayAccessory }),
+    [eventsByDay, eventIndicator, appearance, onEventSelect, renderDayAccessory]);
   const hidden = displayRange ? [...(Array.isArray(props.hidden) ? props.hidden : props.hidden ? [props.hidden] : []), { before: displayRange.from }, { after: displayRange.to }] : props.hidden;
-  return <EventContext.Provider value={{ events, indicator: eventIndicator, appearance, onEventSelect, renderDayAccessory }}><div className="inkra-calendar-scroll" data-appearance={appearance}>
+  return <EventContext.Provider value={context}><div className="inkra-calendar-scroll" data-appearance={appearance}>
     <DayPicker {...props} hidden={hidden} data-appearance={appearance} data-week-numbers={props.showWeekNumber || undefined} showOutsideDays={showOutsideDays} className={['inkra-calendar', className].filter(Boolean).join(' ')}
       components={{ CaptionLabel: CalendarCaption, Weekday: CalendarWeekday, Chevron: CalendarChevron, PreviousMonthButton: CalendarMonthButton, NextMonthButton: CalendarMonthButton, Day: CalendarCell, DayButton: CalendarDay, ...components }} />
   </div></EventContext.Provider>;

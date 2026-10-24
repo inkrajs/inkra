@@ -4,6 +4,7 @@ import type { CanvasHTMLAttributes } from 'react';
 import {
   BoundedCache,
   PENCIL_RENDERER_VERSION,
+  boundedCanvasSize,
   canvasByteCost,
   canvasIsUsable,
   effectiveDpr,
@@ -81,6 +82,13 @@ export const PencilLine = forwardRef<HTMLCanvasElement, PencilLineProps>(functio
       const height = canvas.clientHeight;
       if (!pencilLineHasDrawableSize(width, height, orientation)) return;
       const dpr = effectiveDpr(2);
+      try {
+        boundedCanvasSize(width, height, dpr);
+      } catch {
+        canvas.width = canvas.height = 0;
+        lastPaint = '';
+        return;
+      }
       const style = getComputedStyle(canvas);
       const color = style.color;
       const resolvedWeight = weight ?? readRenderToken(style, '--inkra-stroke-width', pencilRenderDefaults.strokeWidth, 0.3, 3);

@@ -4,6 +4,7 @@ export interface PencilPathOptions {
   seed: string | number;
   width?: number;
   height?: number;
+  /** Point count, clamped to 2-65,536. Non-finite values use the default (7). */
   points?: number;
   roughness?: number;
 }
@@ -40,11 +41,11 @@ export function createPencilPoints({
   roughness = 1,
 }: PencilPathOptions): PencilPoint[] {
   const random = createRandom(seed);
-  const safeWidth = Math.max(1, width);
-  const safeHeight = Math.max(1, height);
-  const pointCount = Math.max(2, Math.floor(points));
+  const safeWidth = Number.isFinite(width) ? Math.max(1, width) : 100;
+  const safeHeight = Number.isFinite(height) ? Math.max(1, height) : 8;
+  const pointCount = Number.isFinite(points) ? Math.max(2, Math.min(65_536, Math.floor(points))) : 7;
   const center = safeHeight / 2;
-  const amplitude = Math.min(safeHeight * 0.32, Math.max(0, roughness));
+  const amplitude = Math.min(safeHeight * 0.32, Math.max(0, Number.isFinite(roughness) ? roughness : 1));
 
   return Array.from({ length: pointCount }, (_, index) => {
     const progress = index / (pointCount - 1);

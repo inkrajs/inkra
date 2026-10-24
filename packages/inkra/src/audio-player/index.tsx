@@ -104,6 +104,7 @@ export const AudioPlayer = forwardRef<AudioPlayerControls, AudioPlayerProps>(fun
   const id = useId();
   const audioRef = useRef<HTMLAudioElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const sourceVersionRef = useRef(0);
   const requestedSourceRef = useRef(src);
   requestedSourceRef.current = src;
   const [state, setState] = useState<AudioPlayerState>({ status: src ? 'loading' : 'idle', currentTime: 0, duration: 0, buffered: 0, volume: clamp(volume ?? defaultVolume, 0, 1), muted: muted ?? defaultMuted, playbackRate: clamp(playbackRate ?? defaultPlaybackRate, 0.25, 4), canPlay: false, error: null });
@@ -116,10 +117,13 @@ export const AudioPlayer = forwardRef<AudioPlayerControls, AudioPlayerProps>(fun
   const mergedLabels = { ...DEFAULT_LABELS, ...labels };
   const update = useCallback((patch: Partial<AudioPlayerState>) => {
     const current = stateRef.current;
-    if (Object.entries(patch).every(([key, value]) => Object.is(current[key as keyof AudioPlayerState], value))) return;
-    const next = { ...current, ...patch };
-    stateRef.current = next;
-    setState(next);
+    const changed = (Object.keys(patch) as (keyof AudioPlayerState)[]).some(key => !Object.is(current[key], patch[key]));
+    const next = changed ? { ...current, ...patch } : current;
+    if (changed) {
+      stateRef.current = next;
+      setState(next);
+    }
+    // Native events remain observable without rendering identical media snapshots.
     callbacksRef.current.onStateChange?.(next);
   }, []);
   const sync = useCallback(() => {
@@ -143,7 +147,19 @@ export const AudioPlayer = forwardRef<AudioPlayerControls, AudioPlayerProps>(fun
       if (audio.playbackRate !== value) audio.playbackRate = value;
     }
   }, []);
-  const play = useCallback(async () => { const audio = audioRef.current; if (!audio) return; try { await audio.play(); } catch (error) { update({ status: 'blocked' }); callbacksRef.current.onError?.(error instanceof DOMException ? error : null); } }, [update]);
+  const play = useCallback(async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const sourceVersion = sourceVersionRef.current;
+    try {
+      await audio.play();
+    } catch (error) {
+      // Loading another source or unmounting can reject an earlier play request.
+      if (audioRef.current !== audio || sourceVersionRef.current !== sourceVersion) return;
+      update({ status: 'blocked' });
+      callbacksRef.current.onError?.(error instanceof DOMException ? error : null);
+    }
+  }, [update]);
   const pause = useCallback(() => { audioRef.current?.pause(); }, []);
   const togglePlay = useCallback(async () => { const audio = audioRef.current; if (!audio) return; if (audio.paused) await play(); else pause(); }, [pause, play]);
   const seek = useCallback((time: number) => { const audio = audioRef.current; if (!audio || !Number.isFinite(time)) return; audio.currentTime = clamp(time, 0, Number.isFinite(audio.duration) ? audio.duration : Math.max(0, time)); sync(); callbacksRef.current.onTimeChange?.(audio.currentTime); }, [sync]);
@@ -178,6 +194,7 @@ export const AudioPlayer = forwardRef<AudioPlayerControls, AudioPlayerProps>(fun
   useImperativeHandle(forwardedRef, () => controls, [state, play, pause, togglePlay, seek, setVolume, setMuted, setPlaybackRate, focus]);
 
   useEffect(() => {
+    sourceVersionRef.current += 1;
     const audio = audioRef.current;
     if (!audio) return;
     audio.pause();

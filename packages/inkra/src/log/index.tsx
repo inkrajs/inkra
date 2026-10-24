@@ -141,9 +141,11 @@ export const Log = forwardRef<HTMLDivElement, LogProps>(function Log(
   }, [items, levels]);
   const availableLevels = useMemo(() => new Set(resolvedLevels.map(level => level.value)), [resolvedLevels]);
   const [uncontrolledLevels, setUncontrolledLevels] = useState<readonly string[] | undefined>(defaultFilteredLevels);
-  const selectedLevels = (filteredLevels ?? uncontrolledLevels)?.filter(level => availableLevels.has(level));
+  const requestedLevels = filteredLevels ?? uncontrolledLevels;
+  const selectedLevels = useMemo(() => requestedLevels?.filter(level => availableLevels.has(level)), [requestedLevels, availableLevels]);
+  const selectedLevelSet = useMemo(() => selectedLevels === undefined ? undefined : new Set(selectedLevels), [selectedLevels]);
   const allLevelsSelected = selectedLevels == null
-    || (selectedLevels.length === resolvedLevels.length && resolvedLevels.every(level => selectedLevels.includes(level.value)));
+    || (selectedLevels.length === resolvedLevels.length && resolvedLevels.every(level => selectedLevelSet!.has(level.value)));
   const [uncontrolledPaused, setUncontrolledPaused] = useState(defaultPaused);
   const resolvedPaused = paused ?? uncontrolledPaused;
   const [nearBottom, setNearBottom] = useState(true);
@@ -153,11 +155,11 @@ export const Log = forwardRef<HTMLDivElement, LogProps>(function Log(
   const previousPausedRef = useRef(resolvedPaused);
   const nearBottomRef = useRef(true);
   const threshold = normalizedThreshold(nearBottomThreshold);
-  const visibleItems = selectedLevels == null
+  const visibleItems = useMemo(() => selectedLevelSet === undefined
     ? items
-    : items.filter(item => item.level != null && selectedLevels.includes(item.level));
-  const itemIds = items.map(item => item.id);
-  const visibleIds = visibleItems.map(item => item.id);
+    : items.filter(item => item.level != null && selectedLevelSet.has(item.level)), [items, selectedLevelSet]);
+  const itemIds = useMemo(() => items.map(item => item.id), [items]);
+  const visibleIds = useMemo(() => visibleItems.map(item => item.id), [visibleItems]);
 
   const scrollToLatest = useCallback((behavior: ScrollBehavior = 'smooth') => {
     const viewport = viewportRef.current;
@@ -188,7 +190,7 @@ export const Log = forwardRef<HTMLDivElement, LogProps>(function Log(
     previousItemIdsRef.current = itemIds;
     previousVisibleIdsRef.current = visibleIds;
     previousPausedRef.current = resolvedPaused;
-  }, [itemIds.join('\u0000'), resolvedPaused, scrollToLatest, visibleIds.join('\u0000')]);
+  }, [itemIds, resolvedPaused, scrollToLatest, visibleIds]);
 
   function changePaused(nextPaused: boolean) {
     if (paused === undefined) setUncontrolledPaused(nextPaused);
@@ -225,7 +227,7 @@ export const Log = forwardRef<HTMLDivElement, LogProps>(function Log(
   const viewportLabel = viewportProps?.['aria-label'] ?? ariaLabel ?? labels.list;
   const viewportClassName = classes('inkra-log__viewport', viewportProps?.className);
   const viewportTabIndex = viewportProps?.tabIndex ?? 0;
-  const levelMap = new Map(resolvedLevels.map(level => [level.value, level]));
+  const levelMap = useMemo(() => new Map(resolvedLevels.map(level => [level.value, level])), [resolvedLevels]);
   const showLatest = (!nearBottom || resolvedPaused) && visibleItems.length > 0;
 
   return (
@@ -249,7 +251,7 @@ export const Log = forwardRef<HTMLDivElement, LogProps>(function Log(
             {labels.allLevels}
           </Button>
           {resolvedLevels.map(level => {
-            const selected = allLevelsSelected || selectedLevels?.includes(level.value) === true;
+            const selected = allLevelsSelected || selectedLevelSet?.has(level.value) === true;
             return <Button
               aria-pressed={selected}
               data-level={level.value}

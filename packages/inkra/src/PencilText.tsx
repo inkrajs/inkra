@@ -7,7 +7,7 @@ import type {
   ReactElement,
 } from 'react';
 
-import { effectiveDpr } from './internal/cache.js';
+import { boundedCanvasSize, effectiveDpr } from './internal/cache.js';
 import { observeCanvasRecovery } from './internal/recovery.js';
 import { seedToNumber } from './internal/random.js';
 import { pencilLettering, renderPencilText } from './internal/textRenderer.js';
@@ -154,8 +154,9 @@ function paintText(
   const height = localHeight + padding * 2;
   const dpr = effectiveDpr(2);
   if (width * height * dpr ** 2 > 2 * 1024 * 1024 || !context || context.isContextLost?.()) return false;
-  canvas.width = Math.ceil(width * dpr);
-  canvas.height = Math.ceil(height * dpr);
+  const pixels = boundedCanvasSize(width, height, dpr);
+  canvas.width = pixels.width;
+  canvas.height = pixels.height;
   Object.assign(canvas.style, {
     left: `-${padding}px`,
     top: `-${padding}px`,
@@ -312,10 +313,14 @@ const PencilTextImplementation = forwardRef<HTMLElement, PencilTextImplementatio
         pending = null;
         if (!disposed && visible && dirty) {
           try {
-            if (paintText(node, source, canvas, text, resolvedSeed, glyphSeed)) lastAppearance = appearanceKey();
+            paintText(node, source, canvas, text, resolvedSeed, glyphSeed);
           } catch {
             delete node.dataset.pencilReady;
           }
+          // Remember fallback appearances too. An oversized/unsupported label
+          // must not retry expensive measurement for unrelated ancestor styles.
+          // Theme/font/size changes and explicit canvas recovery still retry.
+          lastAppearance = appearanceKey();
           dirty = false;
         }
       };

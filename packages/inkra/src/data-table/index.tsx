@@ -17,7 +17,7 @@ import type {
   TableOptions,
   Updater,
 } from '@tanstack/react-table';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
 
 import { Button } from '../Button.js';
@@ -163,7 +163,10 @@ export function DataTable<TData>({
   const resolvedSorting = sorting ?? internalSorting;
   const resolvedPagination = paginationState ?? internalPagination;
   const resolvedSelection = rowSelection ?? internalSelection;
-  const initialPagination = normalizeDataTablePagination(resolvedPagination, data.length);
+  const initialPagination = useMemo(
+    () => normalizeDataTablePagination(resolvedPagination, data.length),
+    [resolvedPagination.pageIndex, resolvedPagination.pageSize, data.length],
+  );
 
   const handleSorting: OnChangeFn<SortingState> = updater => {
     if (sorting === undefined) setInternalSorting(current => resolve(updater, current));

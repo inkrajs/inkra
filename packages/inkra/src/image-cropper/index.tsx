@@ -274,7 +274,10 @@ export const ImageCropper = forwardRef<ImageCropperHandle, ImageCropperProps>(fu
     if (!stage || typeof ResizeObserver === 'undefined') return undefined;
     const update = () => {
       const rect = stage.getBoundingClientRect();
-      if (rect.width > 0 && rect.height > 0) setStageSize({ width: rect.width, height: rect.height });
+      if (rect.width > 0 && rect.height > 0) {
+        setStageSize(current => current.width === rect.width && current.height === rect.height
+          ? current : { width: rect.width, height: rect.height });
+      }
     };
     update();
     const observer = new ResizeObserver(update);

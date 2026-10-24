@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import type { CSSProperties } from 'react';
-import { BoundedCache, PENCIL_RENDERER_VERSION, canvasByteCost, canvasIsUsable, effectiveDpr } from '../internal/cache.js';
+import { BoundedCache, PENCIL_RENDERER_VERSION, boundedCanvasSize, canvasByteCost, canvasIsUsable, effectiveDpr } from '../internal/cache.js';
 import { observeCanvasRecovery } from '../internal/recovery.js';
 import { seedToNumber } from '../internal/random.js';
 import { maxStrokeRoughness, pencilRenderDefaults, readRenderToken } from '../internal/renderTokens.js';
@@ -93,13 +93,16 @@ export function ProgressRing({ diameter, thickness, percent, seed }: {
         const weight = readRenderToken(style, '--inkra-stroke-width', pencilRenderDefaults.strokeWidth, 0.3, 3);
         const roughness = readRenderToken(style, '--inkra-stroke-amplitude', pencilRenderDefaults.strokeRoughness, 0, maxStrokeRoughness);
         const dpr = effectiveDpr(2);
+        const size = boundedCanvasSize(width, width, dpr);
         const key = JSON.stringify([PENCIL_RENDERER_VERSION, diameter, thickness, width, dpr, style.color, weight, roughness, seed]);
         if (key === lastPaint && canvasIsUsable(canvas)) return;
         let image = ringCache.get(key);
         if (image && !canvasIsUsable(image)) { ringCache.delete(key); image = undefined; }
         if (!image) {
           image = document.createElement('canvas');
-          image.width = image.height = Math.ceil(width * dpr);
+          image.width = size.width;
+          image.height = size.height;
+          image.addEventListener('contextlost', () => ringCache.delete(key), { once: true });
           const context = image.getContext('2d');
           if (!context) throw new Error('Canvas unavailable');
           context.scale(image.width / diameter, image.height / diameter);
@@ -119,6 +122,7 @@ export function ProgressRing({ diameter, thickness, percent, seed }: {
         canvas.dataset.ready = 'true';
         lastPaint = key;
       } catch {
+        canvas.width = canvas.height = 0;
         delete canvas.dataset.ready;
         lastPaint = '';
       }
@@ -134,7 +138,7 @@ export function ProgressRing({ diameter, thickness, percent, seed }: {
     const scheme = matchMedia('(prefers-color-scheme: dark)');
     scheme.addEventListener('change', paint);
     window.addEventListener('resize', paint);
-    const stopRecovery = observeCanvasRecovery(paint);
+    const stopRecovery = observeCanvasRecovery(() => { lastPaint = ''; paint(); });
     paint();
     return () => {
       observer.disconnect();

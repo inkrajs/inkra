@@ -240,7 +240,7 @@ function SortableContainer<Item>({
     id: engineContainerId(container.id),
     data: { type: 'inkra-sortable-container', containerId: container.id, disabled } satisfies SortableEngineData,
   });
-  const ids = container.items.map((item) => engineItemId(getItemId(item)));
+  const ids = useMemo(() => container.items.map((item) => engineItemId(getItemId(item))), [container.items, getItemId]);
   const layout = container.layout ?? 'list';
   const acceptingOver = isOver && !disabled;
   return <PencilSurface
@@ -408,7 +408,7 @@ export function Sortable<Item>({
     useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 8 } } satisfies TouchSensorOptions),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates } satisfies KeyboardSensorOptions),
   );
-  const visibleContainers = projected ?? cloneSortableContainers(containers);
+  const visibleContainers = projected ?? containers;
   const activeLocation = activeId === null ? null : findSortableLocation(visibleContainers, activeId, getItemId);
   const activeContainer = activeLocation === null
     ? null
@@ -489,12 +489,14 @@ export function Sortable<Item>({
   function handleDragOver(event: DragOverEvent) {
     const overData = getEngineData(event.over);
     if (!event.over || overData?.disabled) {
+      if (sortableContainersEqual(projectedRef.current, initialRef.current, getItemId)) return;
       const restored = cloneSortableContainers(initialRef.current);
       projectedRef.current = restored;
       setProjected(restored);
       return;
     }
     const next = getDropProjection(projectedRef.current, event, getItemId);
+    if (sortableContainersEqual(projectedRef.current, next, getItemId)) return;
     projectedRef.current = next;
     setProjected(next);
   }

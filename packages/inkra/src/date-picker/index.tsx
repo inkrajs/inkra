@@ -190,6 +190,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
   const captionFormatter = useMemo(() => new Intl.DateTimeFormat(locale, {
     month: 'long', year: 'numeric',
   }), [locale]);
+  const dayFormatter = useMemo(() => new Intl.NumberFormat(locale), [locale]);
   const weekdayFormatter = useMemo(() => new Intl.DateTimeFormat(locale, { weekday: 'short' }), [locale]);
   const displayValue = singleValue
     ? formatter.format(singleValue)
@@ -233,7 +234,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
   const { disabled: disabledDays, formatters, labels, defaultMonth, ...restCalendarProps } = calendarProps;
   const localizedFormatters: NonNullable<CalendarProps['formatters']> = {
     formatCaption: date => captionFormatter.format(date),
-    formatDay: date => new Intl.NumberFormat(locale).format(date.getDate()),
+    formatDay: date => dayFormatter.format(date.getDate()),
     formatWeekdayName: date => weekdayFormatter.format(date),
     ...formatters,
   };

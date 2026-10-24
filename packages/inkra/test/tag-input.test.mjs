@@ -55,7 +55,7 @@ test('TagInput source exposes separate controlled tag and draft state with valid
   assert.match(componentSource, /validateTag\?\.\(candidate, context\)/);
   assert.match(componentSource, /createTag \? createTag\(candidate, context\) : createDefaultTag/);
   assert.match(componentSource, /working\.length >= limit/);
-  assert.match(componentSource, /hasTagValue\(working, candidate, getTagValueKey\)/);
+  assert.match(componentSource, /valueKeys\.has\(getTagValueKey\(candidate\)\)/);
   assert.match(componentSource, /role="alert"/);
   assert.match(componentSource, /aria-errormessage=\{state\.errorMessage\}/);
   assert.match(componentSource, /inputRef\.current\?\.focus\(\{ preventScroll: true \}\)/);
@@ -131,7 +131,8 @@ test('TagInput SSR keeps native input, semantic tag list, labels, hidden values 
   assert.match(markup, /<ul[^>]*aria-label="Selected tags"/);
   assert.match(markup, /data-tag-id="frontend"/);
   assert.match(markup, />Frontend</);
-  assert.match(markup, /<input[^>]*readonly=""/);
+  // HTML attribute names are case-insensitive; React may emit readOnly.
+  assert.match(markup, /<input[^>]*readonly=""/i);
   assert.equal((markup.match(/type="hidden"/g) ?? []).length, 2);
   assert.match(markup, /name="tags"[^>]*value="fe"/);
   assert.doesNotMatch(markup, /inkra-tag-input__remove|inkra-tag-input__clear/);

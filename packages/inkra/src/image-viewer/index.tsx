@@ -284,6 +284,12 @@ export const ImageViewerContent = forwardRef<
   const thumbnailsRef = useRef<HTMLDivElement>(null);
   const thumbnailRefs = useRef(new Map<string, HTMLButtonElement>());
   const panZoomRef = useRef<PanZoomRef>(null);
+  const focusFrameRef = useRef<number | null>(null);
+  const fitFrameRef = useRef<number | null>(null);
+  useEffect(() => () => {
+    if (focusFrameRef.current !== null) cancelAnimationFrame(focusFrameRef.current);
+    if (fitFrameRef.current !== null) cancelAnimationFrame(fitFrameRef.current);
+  }, []);
   const [failedResources, setFailedResources] = useState<Set<string>>(() => new Set());
   const [attempts, setAttempts] = useState<Record<string, number>>({});
   const [rotation, setRotation] = useState(0);
@@ -291,6 +297,8 @@ export const ImageViewerContent = forwardRef<
   const atStart = activeIndex <= 0;
   const atEnd = activeIndex >= total - 1;
   const activeItemKey = activeItem ? JSON.stringify([activeItem.id, activeItem.src]) : undefined;
+  const activeResourceRef = useRef(activeItemKey);
+  activeResourceRef.current = activeItemKey;
 
   useEffect(() => {
     const thumbnail = activeItem ? thumbnailRefs.current.get(activeItem.id) : undefined;
@@ -327,7 +335,11 @@ export const ImageViewerContent = forwardRef<
   const selectThumbnail = (index: number, reason: ImageViewerChangeReason = 'thumbnail') => {
     selectIndex(index, reason);
     const item = items[index];
-    if (item) requestAnimationFrame(() => thumbnailRefs.current.get(item.id)?.focus());
+    if (focusFrameRef.current !== null) cancelAnimationFrame(focusFrameRef.current);
+    focusFrameRef.current = item ? requestAnimationFrame(() => {
+      focusFrameRef.current = null;
+      thumbnailRefs.current.get(item.id)?.focus();
+    }) : null;
   };
 
   const renderDefaultImage = (item: ImageViewerItem, { key, ...imageProps }: ImageViewerImageRenderProps) => (
@@ -435,7 +447,12 @@ export const ImageViewerContent = forwardRef<
                 </> : null}
                 {rotatable ? <Button aria-label={labels.rotate} onClick={() => {
                   setRotation(current => (current + 90) % 360);
-                  requestAnimationFrame(() => void panZoomRef.current?.fit({ mode: 'contain' }));
+                  if (fitFrameRef.current !== null) cancelAnimationFrame(fitFrameRef.current);
+                  const resourceKey = activeItemKey;
+                  fitFrameRef.current = requestAnimationFrame(() => {
+                    fitFrameRef.current = null;
+                    if (activeResourceRef.current === resourceKey) void panZoomRef.current?.fit({ mode: 'contain' });
+                  });
                 }} size="icon-sm" variant="outline">
                   <PencilIcon decorative paths={rotatePaths} size={24} sourceSize={24} />
                 </Button> : null}

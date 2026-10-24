@@ -1,5 +1,6 @@
 import {
   forwardRef,
+  memo,
   useEffect,
   useImperativeHandle,
   useMemo,
@@ -55,6 +56,22 @@ function usePrefersReducedMotion(): boolean {
 function safeDuration(value: number): number {
   return Number.isFinite(value) ? Math.max(0, value) : 0;
 }
+
+const TypewriterGrapheme = memo(function TypewriterGrapheme({ grapheme, index, revealed: isRevealed }: {
+  grapheme: string;
+  index: number;
+  revealed: boolean;
+}) {
+  if (grapheme === '\n') return <br />;
+  if (/^\s+$/u.test(grapheme)) {
+    return <span className="inkra-typewriter__space" data-revealed={isRevealed}>{grapheme}</span>;
+  }
+  return <PencilText
+    className="inkra-typewriter__grapheme"
+    data-revealed={isRevealed}
+    seed={`typewriter-${index}-${grapheme}`}
+  >{grapheme}</PencilText>;
+});
 
 export const Typewriter = forwardRef<TypewriterHandle, TypewriterProps>(function Typewriter(
   {
@@ -153,19 +170,12 @@ export const Typewriter = forwardRef<TypewriterHandle, TypewriterProps>(function
     data-total={graphemes.length}
   >
     <span aria-hidden="true" className="inkra-typewriter__visual">
-      {graphemes.map((grapheme, index) => {
-        const isRevealed = index < revealed;
-        if (grapheme === '\n') return <br key={`line-${index}`} />;
-        if (/^\s+$/u.test(grapheme)) {
-          return <span className="inkra-typewriter__space" data-revealed={isRevealed} key={`space-${index}`}>{grapheme}</span>;
-        }
-        return <PencilText
-          className="inkra-typewriter__grapheme"
-          data-revealed={isRevealed}
-          key={`${index}-${grapheme}`}
-          seed={`typewriter-${index}-${grapheme}`}
-        >{grapheme}</PencilText>;
-      })}
+      {graphemes.map((grapheme, index) => <TypewriterGrapheme
+        grapheme={grapheme}
+        index={index}
+        revealed={index < revealed}
+        key={`${index}-${grapheme}`}
+      />)}
     </span>
     <span className="inkra-typewriter__accessible">{children}</span>
   </span>;
