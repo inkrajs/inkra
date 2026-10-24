@@ -3,6 +3,12 @@ export type PencilPoint = readonly [x: number, y: number];
 export interface StrokeSettings {
   variation?: number;
   breaks?: number;
+  continuousBreaks?: boolean;
+  /** Maximum gaps per path; short paths reduce the actual count. */
+  breakCount?: number;
+  /** Display pixels per path unit, excluding device pixel ratio. */
+  breakScale?: number;
+  fitPressure?: boolean;
   grain?: number;
   taperLength?: number;
   scale?: number;
@@ -36,16 +42,50 @@ export function strokeProfile(at: number, total: number, seed: number, settings:
   const variation = settings.variation ?? 1;
   const breaks = settings.breaks ?? 0.8;
   const grainValue = settings.grain ?? 0.7;
-  const force = clamp(0.12 + noise(at / 19, seed + 17) * 0.97
+  let force = clamp(0.12 + noise(at / 19, seed + 17) * 0.97
     + (noise(at / 5.3, seed + 39) - 0.5) * 0.3);
+  if (settings.fitPressure && total > 0 && total < 48) {
+    // Short icon paths need a full pressure gesture, not a nearly flat slice
+    // of the long-stroke noise. Blend back to the original profile by 48 units.
+    const phase = (at / total + hash(0, seed + 61)) * Math.PI * 2;
+    const gesture = 0.25 + (1 - Math.cos(phase)) * 0.35
+      + (noise(at / 5.3, seed + 39) - 0.5) * 0.08;
+    const blend = clamp((48 - total) / 24);
+    force = force * (1 - blend) + gesture * blend;
+  }
   const pressure = clamp(0.72 * (1 - variation) + force * variation);
   let contact = 1;
-  const cell = Math.floor(at / 37);
+  let gapDistance = Infinity;
+  // Reserve at least 12 CSS pixels per gap, measured over the full path.
+  // Display size affects density, but device pixel ratio must not affect it.
+  const breakScale = Number.isFinite(settings.breakScale) && settings.breakScale! > 0 ? settings.breakScale! : 1;
+  const gapCount = Number.isFinite(settings.breakCount)
+    ? Math.max(0, Math.min(12, Math.floor(settings.breakCount!), Math.floor(total * breakScale / 12)))
+    : undefined;
+  const gapSpacing = settings.continuousBreaks
+    ? gapCount ? total / gapCount : Math.min(37, Math.max(1, total))
+    : 37;
+  const cell = Math.floor(at / gapSpacing);
 
   // A fixed iteration count also terminates for out-of-range numeric input.
   for (let offset = -1; offset <= 1; offset += 1) {
     const index = cell + offset;
-    if (hash(index, seed + 277) > breaks * 0.9) continue;
+    if (!settings.continuousBreaks && hash(index, seed + 277) > breaks * 0.9) continue;
+    if (settings.continuousBreaks) {
+      if (gapCount !== undefined && (index < 0 || index >= gapCount)) continue;
+      const amount = clamp(breaks);
+      if (!amount) continue;
+      // Fixed locations with linearly growing gap and feather widths avoid
+      // switching an entire gap on when a slider crosses a random threshold.
+      const middle = gapSpacing * (index + (gapCount === undefined
+        ? 0.2 + hash(index, seed + 283) * 0.6
+        : 0.3 + hash(index, seed + 283) * 0.4));
+      const gapScale = Math.min(1, gapSpacing / 24);
+      const halfGap = (1.1 + hash(index, seed + 293) * 3.6) * amount * gapScale;
+      gapDistance = Math.min(gapDistance, Math.abs(at - middle) - halfGap - 2.1 * amount * gapScale);
+      contact = Math.min(contact, clamp((Math.abs(at - middle) - halfGap) / (2.1 * amount * gapScale)));
+      continue;
+    }
     const middle = index * 37 + 5 + hash(index, seed + 283) * 27;
     const halfGap = (1.1 + hash(index, seed + 293) * 3.6) * breaks;
     contact = Math.min(contact, clamp((Math.abs(at - middle) - halfGap) / 2.1));
@@ -54,7 +94,7 @@ export function strokeProfile(at: number, total: number, seed: number, settings:
   const tooth = noise(at * 1.6, seed + 401);
   const deposit = clamp((tooth - grainValue * 0.22) / Math.max(0.2, 1 - grainValue * 0.22));
   const taper = 0.2 + 0.8 * clamp(Math.min(at, total - at) / (settings.taperLength ?? 3));
-  return { pressure, contact, deposit, taper };
+  return { pressure, contact, deposit, taper, gapDistance };
 }
 
 export function pencilStroke(
@@ -150,6 +190,8 @@ export function pencilStroke(
       const opacity = Math.pow(pressure, 1.4) * contact * deposit * material * a.taper;
       if (opacity < 0.012) continue;
       const nib = width * (0.3 + pressure * 1.65) * Math.pow(scale, 0.32);
+      // Round segment caps must not paint back across intentional short gaps.
+      context.lineCap = Math.min(a.gapDistance, b.gapDistance) < nib / 2 + step ? 'butt' : 'round';
       const drift = pass ? (noise(a.at / 6, seed + pass * 107) - 0.5) * width * 1.1 : 0;
       context.globalAlpha = Math.min(1, inheritedAlpha * opacity * (pass ? 0.56 : 1.2)
         * (settings.gain ?? 1));

@@ -65,7 +65,7 @@ test('ColorPicker reset contract restores only uncontrolled state without callba
 
 test('ColorPicker canonical input commits once and remains safe during IME or disabled state', () => {
   assert.match(source, /if \(disabled \|\| composingRef\.current\) return/);
-  assert.match(source, /if \(next === currentValue\) \{[\s\S]*setDraft\(currentValue\);[\s\S]*return/);
+  assert.match(source, /if \(JSON\.stringify\(next\) === JSON\.stringify\(currentValue\)\) \{[\s\S]*setDraft\(currentColor\);[\s\S]*return/);
   assert.match(source, /event\.nativeEvent\.isComposing \|\| event\.nativeEvent\.keyCode === 229/);
   assert.match(source, /skipNextBlurRef\.current = true;[\s\S]*submitDraft\(\)/);
   assert.match(source, /if \(skipNextBlurRef\.current\) \{[\s\S]*skipNextBlurRef\.current = false;[\s\S]*return/);
@@ -74,9 +74,11 @@ test('ColorPicker canonical input commits once and remains safe during IME or di
 });
 
 test('ColorPicker palette and presets use the shared pencil focus surface', () => {
-  assert.equal((source.match(/className="inkra-color-picker__focus"/g) ?? []).length, 2);
+  assert.equal((source.match(/className="inkra-color-picker__focus"/g) ?? []).length, 1);
+  assert.match(source, /<ColorSwatch/);
   assert.match(styles, /\.inkra-color-picker__focus \{[\s\S]*--inkra-accent-strong: var\(--inkra-focus\)/);
   assert.match(styles, /focus-within \.inkra-color-picker__focus/);
-  assert.match(styles, /focus-visible \.inkra-color-picker__focus/);
+  const swatch = readFileSync(new URL('../src/color-swatch/index.tsx', import.meta.url), 'utf8');
+  assert.match(swatch, /<Button/);
   assert.match(styles, /forced-colors: active[\s\S]*outline: var\(--inkra-focus-width\) solid Highlight/);
 });

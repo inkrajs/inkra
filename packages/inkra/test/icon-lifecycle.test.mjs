@@ -6,11 +6,15 @@ import { PencilIcon } from '../dist/PencilIcon.js';
 
 function installEnvironment() {
   const previous = Object.fromEntries(['document', 'window', 'MutationObserver', 'getComputedStyle', 'requestAnimationFrame', 'cancelAnimationFrame', 'IS_REACT_ACT_ENVIRONMENT'].map(key => [key, globalThis[key]]));
-  const stats = { created: 0, active: 0, media: 0, document: 0, window: 0 };
+  const stats = { created: 0, active: 0, media: 0, document: 0, window: 0, canvas: 0 };
   const context = () => new Proxy({ globalAlpha: 1, isContextLost: () => false }, {
     get(target, key) { return key in target ? target[key] : () => {}; },
   });
-  const canvas = () => { const ctx = context(); return { width: 0, height: 0, parentElement: null, getContext: () => ctx }; };
+  const canvas = () => {
+    const ctx = context();
+    return { width: 0, height: 0, dataset: {}, parentElement: null, getContext: () => ctx,
+      addEventListener() { stats.canvas++; }, removeEventListener() { stats.canvas--; } };
+  };
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   globalThis.document = {
     visibilityState: 'visible',
@@ -58,6 +62,7 @@ test('same-value icon props do not recreate observers, and mutated values still 
     assert.equal(env.stats.media, 0);
     assert.equal(env.stats.document, 0);
     assert.equal(env.stats.window, 0);
+    assert.equal(env.stats.canvas, 0);
     env.restore();
   }
 });
@@ -74,6 +79,7 @@ test('StrictMode batches of icons leave no observer or recovery listeners after 
       assert.equal(env.stats.media, 0);
       assert.equal(env.stats.document, 0);
       assert.equal(env.stats.window, 0);
+      assert.equal(env.stats.canvas, 0);
     }
   } finally { env.restore(); }
 });

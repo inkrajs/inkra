@@ -1,13 +1,15 @@
 import { forwardRef, useEffect, useId, useImperativeHandle, useRef, useState } from 'react';
-import type { TextareaHTMLAttributes } from 'react';
+import type { ReactNode, TextareaHTMLAttributes } from 'react';
 
 import { PencilSurface } from '../PencilSurface.js';
+import { PencilLine } from '../PencilLine.js';
 import { PencilText } from '../PencilText.js';
 import { PencilIcon } from '../PencilIcon.js';
 import { Button } from '../Button.js';
 import { Progress } from '../display/index.js';
 import { useResolvedControlProps } from './controlProps.js';
 import { EditablePencilText } from './EditablePencilText.js';
+import { InputAction } from './InputAction.js';
 import type { FieldControlStateProps } from './types.js';
 
 export interface TextareaCountDetails {
@@ -19,6 +21,8 @@ export interface TextareaCountDetails {
 export interface TextareaProps
   extends TextareaHTMLAttributes<HTMLTextAreaElement>,
     FieldControlStateProps {
+  variant?: 'outline' | 'underline';
+  endAction?: ReactNode;
   countMode?: 'remaining' | 'fraction' | 'progress' | 'none';
   countDisplay?: 'auto' | 'always';
   /** Ratio of maxLength at which the automatic counter appears. */
@@ -45,6 +49,8 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
     required,
     seed,
     size = 'md',
+    variant = 'outline',
+    endAction,
     countMode = 'remaining',
     countDisplay = 'auto',
     countThreshold = 0.8,
@@ -119,11 +125,13 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
       data-invalid={state.invalid || undefined}
       data-readonly={state.readOnly || undefined}
       data-size={size}
+      data-variant={variant}
+      data-end-action={endAction != null || undefined}
     >
       <PencilSurface
         className="inkra-field-control inkra-field-control--textarea"
         seed={resolvedSeed}
-        variant={state.invalid ? 'danger' : 'outline'}
+        variant={variant === 'underline' ? 'ghost' : state.invalid ? 'danger' : 'outline'}
       >
         <textarea
           {...props}
@@ -150,6 +158,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
           seed={`${resolvedSeed}-editable`}
           value={props.value}
         />
+        {endAction != null && <div className="inkra-textarea__end-action">
+          <InputAction disabled={Boolean(state.disabled)} seed={`${resolvedSeed}-action`}>{endAction}</InputAction>
+        </div>}
         {(hasCount || resize === 'vertical') && <div className="inkra-textarea__footer">
           {hasCount && <div className="inkra-textarea__count" id={countId}
             data-visible={showCount} data-limit={remaining <= 0 ? 'reached' : 'near'}
@@ -189,6 +200,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
             <PencilIcon paths={resizePaths} size={22} />
           </Button>}
         </div>}
+        {variant === 'underline' && <PencilLine className="inkra-textarea__underline" seed={`${resolvedSeed}-underline`} />}
       </PencilSurface>
     </div>
   );

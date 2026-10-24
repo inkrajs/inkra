@@ -1,21 +1,30 @@
 import { Toast as BaseToast } from '@base-ui/react/toast';
-import type { ToastManager as BaseToastManager } from '@base-ui/react/toast';
+import { createContext, useContext, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import type { ReactNode } from 'react';
 
 import { Button } from '../Button.js';
 import { PencilIcon } from '../PencilIcon.js';
 import { PencilSurface } from '../PencilSurface.js';
 import { PencilText } from '../PencilText.js';
+import { useBrowserLayoutEffect } from '../internal/useBrowserLayoutEffect.js';
 import {
   PortalThemeBridge,
   PortalThemeProvider,
   usePortalTriggerRef,
 } from '../overlay/themeBridge.js';
 
-export type ToastPlacement = 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end';
+import { createToastManager, getToastRouter, toastPlacements } from './manager.js';
+import type { ToastManager, ToastObject, ToastPlacement, ToastVariant } from './manager.js';
+import { useToastNavigation } from './useToastNavigation.js';
+export { createToastManager } from './manager.js';
+export type { ToastManager, ToastObject, ToastPlacement, ToastVariant, ToastAddOptions, ToastUpdateOptions, ToastPromiseOptions } from './manager.js';
+
 export type ToastTone = 'neutral' | 'success' | 'warning' | 'danger' | 'info';
 export type ToastSwipeDirection = 'up' | 'down' | 'left' | 'right';
-export type ToastManager<Data extends object = any> = BaseToastManager<Data>;
+
+const ManagerContext = createContext<ToastManager | null>(null);
+const emptyToasts: ToastObject[] = [];
+const getServerSnapshot = () => emptyToasts;
 
 export interface ToastProviderProps {
   children?: ReactNode;
@@ -23,9 +32,12 @@ export interface ToastProviderProps {
   limit?: number;
   toastManager?: ToastManager;
   placement?: ToastPlacement;
+  variant?: ToastVariant;
+  /** Per-position overrides; limit otherwise applies independently to every queue. */
+  limits?: Partial<Record<ToastPlacement, number>>;
   swipeDirection?: ToastSwipeDirection | ToastSwipeDirection[];
   closeLabel?: string;
-  viewportLabel?: string;
+  viewportLabel?: string | ((placement: ToastPlacement) => string);
   viewportClassName?: string;
 }
 
@@ -39,6 +51,7 @@ function text(content: ReactNode) {
 }
 
 function toneOf(type: string | undefined): ToastTone {
+  if (type === 'error') return 'danger';
   return type === 'success' || type === 'warning' || type === 'danger' || type === 'info'
     ? type
     : 'neutral';
@@ -49,41 +62,64 @@ function ToastThemeAnchor() {
   return <span aria-hidden="true" className="inkra-toast__theme-anchor" ref={ref} />;
 }
 
+function ToastDefaults({ manager, placement, variant }: { manager: ToastManager; placement: ToastPlacement; variant: ToastVariant }) {
+  const router = getToastRouter(manager);
+  useBrowserLayoutEffect(() => { router.defaults = { placement, variant }; }, [router, placement, variant]);
+  return null;
+}
+
 function ToastQueue({
   closeLabel,
   placement,
   swipeDirection,
   viewportClassName,
   viewportLabel,
-}: Required<Pick<ToastProviderProps, 'closeLabel' | 'placement' | 'swipeDirection' | 'viewportLabel'>>
-  & Pick<ToastProviderProps, 'viewportClassName'>) {
-  const { toasts } = BaseToast.useToastManager();
+  manager,
+}: Required<Pick<ToastProviderProps, 'closeLabel' | 'placement' | 'viewportLabel'>>
+  & Pick<ToastProviderProps, 'viewportClassName' | 'swipeDirection'> & { manager: ToastManager }) {
+  const controller = BaseToast.useToastManager();
+  const { toasts } = controller;
+  const router = getToastRouter(manager);
+  useBrowserLayoutEffect(() => { router.controllers.set(placement, controller); }, [router, placement, controller]);
+  useBrowserLayoutEffect(() => () => { router.controllers.delete(placement); }, [router, placement]);
+  useBrowserLayoutEffect(() => { router.report(placement, toasts); }, [router, placement, toasts]);
+  useEffect(() => () => { router.report(placement, emptyToasts); }, [router, placement]);
+  const directions = swipeDirection ?? (placement.startsWith('top') ? ['up', 'left', 'right'] : placement.startsWith('bottom') ? ['down', 'left', 'right'] : ['left', 'right']) as ToastSwipeDirection[];
 
+  if (!toasts.length) return null;
   return (
     <BaseToast.Portal>
       <PortalThemeBridge>
         <BaseToast.Viewport
-          aria-label={viewportLabel}
+          ref={element => { if (element) router.viewports.set(placement, element); else router.viewports.delete(placement); }}
+          aria-label={typeof viewportLabel === 'function' ? viewportLabel(placement) : viewportLabel}
           className={['inkra-toast__viewport', viewportClassName].filter(Boolean).join(' ')}
           data-placement={placement}
         >
-          {toasts.map((toastItem) => {
+          {(toasts as ToastObject[]).map((toastItem) => {
             const tone = toneOf(toastItem.type);
+            const variant = !toastItem.variant || toastItem.variant === 'auto'
+              ? (/^(top|bottom)-(start|end)$/.test(placement) ? 'card' : 'compact')
+              : toastItem.variant;
             return (
               <BaseToast.Root
                 className="inkra-toast__root"
                 data-tone={tone}
+                data-variant={variant}
+                data-toast-id={toastItem.id}
                 key={toastItem.id}
-                swipeDirection={swipeDirection}
+                swipeDirection={directions}
                 toast={toastItem}
               >
                 <PencilSurface
                   aria-hidden="true"
                   as="span"
                   className="inkra-toast__surface"
-                  seed={`toast-${toastItem.id}-${toastItem.updateKey ?? 0}`}
-                  variant={tone === 'neutral' ? 'paper' : 'quiet'}
+                  seed={`toast-${toastItem.id}`}
+                  variant={variant === 'compact' ? 'full' : tone === 'neutral' ? 'paper' : 'quiet'}
                 />
+                {variant === 'compact' && <PencilSurface aria-hidden="true" as="span" className="inkra-toast__wash" seed={`toast-wash-${toastItem.id}`} variant="selection" />}
+                <PencilSurface aria-hidden="true" as="span" className="inkra-toast__focus" seed={`toast-focus-${toastItem.id}`} variant="outline" />
                 <BaseToast.Content className="inkra-toast__content">
                   <div className="inkra-toast__copy">
                     {toastItem.title != null && (
@@ -126,30 +162,48 @@ function Provider({
   children,
   closeLabel = 'Close notification',
   limit,
+  limits,
   placement = 'bottom-end',
-  swipeDirection = ['down', 'right'],
+  variant = 'auto',
+  swipeDirection,
   timeout,
   toastManager,
   viewportClassName,
   viewportLabel = 'Notifications',
 }: ToastProviderProps) {
+  const [localManager] = useState(() => createToastManager());
+  const manager = toastManager ?? localManager;
+  const router = getToastRouter(manager);
+  useToastNavigation(manager);
   return (
     <PortalThemeProvider>
-      <BaseToast.Provider limit={limit} timeout={timeout} toastManager={toastManager}>
+      <ManagerContext.Provider value={manager}>
+        <ToastDefaults manager={manager} placement={placement} variant={variant} />
         <ToastThemeAnchor />
+        {/* Bind native queues before consumers can notify from mount effects. */}
+        {toastPlacements.map(position => (
+          <BaseToast.Provider key={position} limit={limits?.[position] ?? limit} timeout={timeout} toastManager={router.queues[position]}>
+            <ToastQueue
+              manager={manager}
+              closeLabel={closeLabel}
+              placement={position}
+              swipeDirection={swipeDirection}
+              viewportClassName={viewportClassName}
+              viewportLabel={viewportLabel}
+            />
+          </BaseToast.Provider>
+        ))}
         {children}
-        <ToastQueue
-          closeLabel={closeLabel}
-          placement={placement}
-          swipeDirection={swipeDirection}
-          viewportClassName={viewportClassName}
-          viewportLabel={viewportLabel}
-        />
-      </BaseToast.Provider>
+      </ManagerContext.Provider>
     </PortalThemeProvider>
   );
 }
 
-export const useToastManager = BaseToast.useToastManager;
-export const createToastManager = BaseToast.createToastManager;
+export function useToastManager<Data extends object = any>() {
+  const manager = useContext(ManagerContext);
+  if (!manager) throw new Error('useToastManager must be used within Toast.Provider.');
+  const router = getToastRouter(manager);
+  const toasts = useSyncExternalStore(router.subscribe, router.getSnapshot, getServerSnapshot) as ToastObject<Data>[];
+  return useMemo(() => ({ ...manager as ToastManager<Data>, toasts }), [manager, toasts]);
+}
 export const Toast = { Provider, useToastManager, createToastManager };

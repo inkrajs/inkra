@@ -348,7 +348,18 @@ All examples use public sample data.
 
 `PencilText` keeps its string in the DOM for selection, copy, search, and assistive technology. Browser enhancement paints the same glyph geometry with the traced C lettering preset; unavailable canvas or font loading leaves the readable DOM fallback visible.
 
-`PencilIcon` accepts familiar SVG path data and deposits pigment along sampled geometry. See `docs/pencil-contract.md` in the workspace for the current alpha contract.
+`PencilIcon` accepts familiar SVG path data and deposits pigment along sampled geometry.
+Use `size` for the displayed canvas size (default 40px), `strokeWidth` (0.3-3,
+default 1.5), `intensity` (0-1, default 1), `breaks` (0-1, default 0.18),
+`pressureVariation` (0-1, default 0.82), and `breakCount` (integer 0-12, default 1).
+The gap count is a maximum: short displayed paths use fewer or no gaps, while
+larger icons can use more up to that limit. Device pixel ratio does not change
+the count. Zero breaks or zero breakCount removes intentional gaps; zero pressure
+variation keeps constant pressure without removing the grain or endpoint taper.
+The matching inherited tokens are `--inkra-icon-stroke-width`,
+`--inkra-icon-intensity`, `--inkra-icon-breaks`, `--inkra-icon-pressure-variation`
+and `--inkra-icon-break-count`. Finite explicit props override those tokens.
+See `docs/pencil-contract.md` in the workspace for the material contract.
 
 `PencilLine` is an aria-hidden canvas decoration using the same pressure, grain, breaks, and repeated-pass renderer as surfaces and icons. It defaults to horizontal and supports a native vertical stroke without rotating a horizontal bitmap:
 
@@ -367,8 +378,9 @@ text within that scope without changing layout, selectable text, or labels.
 
 `PencilLine` reads `--inkra-stroke-width` (0.3-3) and
 `--inkra-stroke-amplitude` (0-4) when `weight` or `roughness` is omitted.
-Explicit props take precedence. These tokens also scale surface outlines and icon
-strokes relative to their original presets, including button/card/input borders.
+Explicit props take precedence. These tokens also scale surface outlines,
+including button/card/input borders. Icon weight uses its independent token;
+the general amplitude token still controls icon roughness.
 The default values are 2 and 1.5. They do not change layout or text lettering.
 
 Surface fills read `--inkra-wash-strength` (0-1, default 0.8),

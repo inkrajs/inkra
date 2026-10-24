@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.4.0 - 2026-10-25
+
+- Add theme-aligned Markdown with pencil typography, task checkboxes, tables,
+  content-seeded inline code, and language-labeled code cards with copy actions.
+- Add reusable ColorSwatch and ColorPicker presentations, including opt-in
+  structured linear, radial, conic and repeating gradients.
+- Extend Editable with built-in Input, Textarea and Select editors and integrated
+  confirm/cancel actions; preserve keyboard, composition and async-save behavior.
+- Make ImageViewer a full-viewport resource viewer with bottom thumbnails and
+  tools, video support and a MediaViewer alias; soften PanZoom wheel zoom.
+- Add Tabs overflow menus/buttons, independently queued Toast positions and
+  compact/card appearances, Empty illustrations and borderless Skeleton fills.
+- Add icon weight, intensity, pressure and break controls. Gap count is an upper
+  bound based on displayed stroke length; the default icon weight is now 1.5.
+- Improve bounded geometry/collection rendering, visibility-aware pencil work,
+  frame scheduling and package-level JavaScript/CSS entry points.
+- Simplify primary documentation previews, extend the icon catalog and expose
+  a 16-128px size slider with a responsive nine-icon preview.
+
+Publication is confirmed only after registry archive verification and the
+matching GitHub Release. Existing React 18 Calendar SSR and Next.js/RSC limits
+remain; automated browser checks do not certify the full catalog on real devices.
+
 ## 0.3.0 - 2026-10-23
 
 - Extend NumberTicker to exact bigint and decimal-string values, configurable

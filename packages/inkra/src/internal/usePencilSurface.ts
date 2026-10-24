@@ -11,7 +11,9 @@ import { maxStrokeRoughness, pencilRenderDefaults, readRenderToken } from './ren
 import type { PencilSurfaceVariant } from './surfaceRenderer.js';
 
 function token(style: CSSStyleDeclaration, name: string, fallback: string): string {
-  return style.getPropertyValue(name).trim() || fallback;
+  const value = style.getPropertyValue(name).trim() || fallback;
+  // Offscreen material canvases have no inherited DOM foreground.
+  return value.toLowerCase() === 'currentcolor' ? style.color : value;
 }
 
 export function usePencilSurface(

@@ -3,6 +3,18 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const source = await readFile(new URL('../src/PencilText.tsx', import.meta.url), 'utf8');
+const renderer = await readFile(new URL('../src/internal/textRenderer.ts', import.meta.url), 'utf8');
+
+test('PencilText measures, paints and invalidates for weight and style without sharing mismatched glyphs', () => {
+  assert.match(source, /weight: style.fontWeight/);
+  assert.match(source, /style: style.fontStyle/);
+  assert.match(source, /'font-weight', 'font-style'/);
+  assert.doesNotMatch(source, /`400 \$/);
+  assert.match(renderer, /options.style \?\? 'normal'/);
+  assert.match(renderer, /options.weight \?\? '400'/);
+  assert.match(renderer, /const key =[\s\S]*?\n    font,/);
+  assert.match(renderer, /const glyphKey =[\s\S]*?size, font, color/);
+});
 
 test('PencilText measures paint geometry in local layout coordinates', () => {
   assert.match(source, /function localBorderBox/);

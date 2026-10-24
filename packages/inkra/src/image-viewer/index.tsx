@@ -1,6 +1,7 @@
 import { __iconData as chevronLeftIcon } from 'lucide-react/dist/esm/icons/chevron-left.mjs';
 import { __iconData as chevronRightIcon } from 'lucide-react/dist/esm/icons/chevron-right.mjs';
 import { __iconData as imageOffIcon } from 'lucide-react/dist/esm/icons/image-off.mjs';
+import { __iconData as playIcon } from 'lucide-react/dist/esm/icons/play.mjs';
 import { __iconData as rotateIcon } from 'lucide-react/dist/esm/icons/rotate-cw.mjs';
 import { __iconData as zoomInIcon } from 'lucide-react/dist/esm/icons/zoom-in.mjs';
 import { __iconData as zoomOutIcon } from 'lucide-react/dist/esm/icons/zoom-out.mjs';
@@ -29,9 +30,9 @@ import { PanZoom } from '../pan-zoom/index.js';
 import type { PanZoomRef, PanZoomWheelMode } from '../pan-zoom/index.js';
 import {
   OverlayBackdrop,
+  OverlayCloseButton,
   OverlayContent,
   OverlayDescription,
-  OverlayHeader,
   OverlayPortal,
   OverlayRoot,
   OverlayTitle,
@@ -44,10 +45,13 @@ import type {
 } from '../overlay/index.js';
 import { lucideNodesToPencilPaths } from './lucideGeometry.js';
 import { nextImageViewerIndex, resolveImageViewerSelection } from './model.js';
+import { VideoResource } from './VideoResource.js';
+import type { VideoResourceLabels } from './VideoResource.js';
 
 const chevronLeftPaths = lucideNodesToPencilPaths(chevronLeftIcon.node);
 const chevronRightPaths = lucideNodesToPencilPaths(chevronRightIcon.node);
 const imageOffPaths = lucideNodesToPencilPaths(imageOffIcon.node);
+const playPaths = lucideNodesToPencilPaths(playIcon.node);
 const rotatePaths = lucideNodesToPencilPaths(rotateIcon.node);
 const zoomInPaths = lucideNodesToPencilPaths(zoomInIcon.node);
 const zoomOutPaths = lucideNodesToPencilPaths(zoomOutIcon.node);
@@ -56,6 +60,8 @@ export interface ImageViewerItem {
   id: string;
   src: string;
   alt: string;
+  type?: 'image' | 'video';
+  poster?: string;
   thumbnailSrc?: string;
   thumbnailAlt?: string;
   width?: number;
@@ -91,6 +97,7 @@ interface ImageViewerContextValue {
   activeItem: ImageViewerItem | null;
   activeIndex: number;
   loop: boolean;
+  open: boolean;
   selectIndex: (index: number, reason: ImageViewerChangeReason) => void;
   step: (direction: -1 | 1) => void;
 }
@@ -162,9 +169,10 @@ export function ImageViewerRoot({
     activeItem: selection.index < 0 ? null : items[selection.index],
     activeIndex: selection.index,
     loop,
+    open: openControlled ? Boolean(open) : internalOpen,
     selectIndex,
     step,
-  }), [items, loop, selectIndex, selection.index, step]);
+  }), [internalOpen, items, loop, open, openControlled, selectIndex, selection.index, step]);
 
   return (
     <ImageViewerContext.Provider value={context}>
@@ -252,6 +260,7 @@ export interface ImageViewerContentProps extends Omit<OverlayContentProps, 'chil
   minScale?: number;
   maxScale?: number;
   wheel?: PanZoomWheelMode;
+  videoLabels?: Partial<VideoResourceLabels>;
 }
 
 function directionFor(node: HTMLElement): 'ltr' | 'rtl' {
@@ -273,12 +282,13 @@ export const ImageViewerContent = forwardRef<
     zoomable = true,
     minScale = 0.5,
     maxScale = 6,
+    videoLabels,
     wheel = 'modifier',
     ...props
   },
   forwardedRef,
 ) {
-  const { activeIndex, activeItem, items, loop, selectIndex, step } = useImageViewerContext();
+  const { activeIndex, activeItem, items, loop, open, selectIndex, step } = useImageViewerContext();
   const labels = { ...defaultLabels, ...labelOverrides };
   const stageRef = useRef<HTMLDivElement>(null);
   const thumbnailsRef = useRef<HTMLDivElement>(null);
@@ -296,7 +306,8 @@ export const ImageViewerContent = forwardRef<
   const total = items.length;
   const atStart = activeIndex <= 0;
   const atEnd = activeIndex >= total - 1;
-  const activeItemKey = activeItem ? JSON.stringify([activeItem.id, activeItem.src]) : undefined;
+  const activeItemType = activeItem?.type ?? 'image';
+  const activeItemKey = activeItem ? JSON.stringify([activeItemType, activeItem.id, activeItem.src]) : undefined;
   const activeResourceRef = useRef(activeItemKey);
   activeResourceRef.current = activeItemKey;
 
@@ -347,7 +358,7 @@ export const ImageViewerContent = forwardRef<
   );
 
   const failed = activeItemKey ? failedResources.has(activeItemKey) : false;
-  const imageProps: ImageViewerImageRenderProps | null = activeItem && activeItemKey ? (() => {
+  const imageProps: ImageViewerImageRenderProps | null = activeItem && activeItemKey && activeItemType === 'image' ? (() => {
     const resourceKey = activeItemKey;
     return {
       alt: activeItem.alt,
@@ -380,18 +391,18 @@ export const ImageViewerContent = forwardRef<
           stageRef.current?.focus();
         }}
         ref={forwardedRef}
-        surfaceRadius={8}
+        surfaceRadius={0}
+        surfaceVariant="ghost"
       >
-        <OverlayHeader closeLabel={labels.close}>
-          <OverlayTitle>{labels.title}</OverlayTitle>
-          <OverlayDescription className="inkra-image-viewer__description">{labels.description}</OverlayDescription>
-          {total > 0 ? <PencilText as="span" className="inkra-image-viewer__counter">
-            {labels.imagePosition(activeIndex + 1, total)}
-          </PencilText> : null}
-        </OverlayHeader>
+        <OverlayTitle className="inkra-image-viewer__accessible-label">{labels.title}</OverlayTitle>
+        <OverlayDescription className="inkra-image-viewer__accessible-label">{labels.description}</OverlayDescription>
+        <div className="inkra-image-viewer__close-control">
+          <PencilSurface aria-hidden="true" className="inkra-image-viewer__close-paper" radius={8} seed="image-viewer-close-paper" variant="paper" />
+          <OverlayCloseButton className="inkra-image-viewer__close" label={labels.close} />
+        </div>
 
         <div className="inkra-image-viewer__body">
-          {activeItem && imageProps ? <>
+          {activeItem && activeItemKey ? <>
             <div
               aria-label={activeItem.alt}
               className="inkra-image-viewer__stage"
@@ -414,7 +425,20 @@ export const ImageViewerContent = forwardRef<
                   });
                   setAttempts(current => ({ ...current, [failedKey]: (current[failedKey] ?? 0) + 1 }));
                 }}>{labels.retry}</Button>
-              </div> : <PanZoom
+              </div> : activeItemType === 'video' && open ? <VideoResource
+                alt={activeItem.alt}
+                key={activeItemKey}
+                labels={videoLabels}
+                onError={() => setFailedResources(current => new Set(current).add(activeItemKey))}
+                onLoad={() => setFailedResources(current => {
+                  if (!current.has(activeItemKey)) return current;
+                  const next = new Set(current);
+                  next.delete(activeItemKey);
+                  return next;
+                })}
+                poster={activeItem.poster}
+                src={activeItem.src}
+              /> : imageProps ? <PanZoom
                 aria-label={labels.panZoom(activeItem)}
                 centerOnInit
                 className="inkra-image-viewer__pan-zoom"
@@ -432,33 +456,9 @@ export const ImageViewerContent = forwardRef<
                 <div className="inkra-image-viewer__image-transform" style={{ transform: `rotate(${rotation}deg)` }}>
                   {(renderImage ?? renderDefaultImage)(activeItem, imageProps)}
                 </div>
-              </PanZoom>}
+              </PanZoom> : null}
 
-              {!failed && (zoomable || rotatable) ? <div className="inkra-image-viewer__tools" role="group" aria-label={labels.panZoom(activeItem)} data-pan-zoom-no-drag>
-                <PencilSurface aria-hidden="true" className="inkra-image-viewer__tools-paper" radius={8} seed={`image-viewer-tools-${activeItem.id}`} variant="paper" />
-                {zoomable ? <>
-                  <Button aria-label={labels.zoomOut} onClick={() => void panZoomRef.current?.zoomOut()} size="icon-sm" variant="outline">
-                    <PencilIcon decorative paths={zoomOutPaths} size={24} sourceSize={24} />
-                  </Button>
-                  <Button aria-label={labels.resetZoom} onClick={() => void panZoomRef.current?.reset()} size="sm" variant="outline">100%</Button>
-                  <Button aria-label={labels.zoomIn} onClick={() => void panZoomRef.current?.zoomIn()} size="icon-sm" variant="outline">
-                    <PencilIcon decorative paths={zoomInPaths} size={24} sourceSize={24} />
-                  </Button>
-                </> : null}
-                {rotatable ? <Button aria-label={labels.rotate} onClick={() => {
-                  setRotation(current => (current + 90) % 360);
-                  if (fitFrameRef.current !== null) cancelAnimationFrame(fitFrameRef.current);
-                  const resourceKey = activeItemKey;
-                  fitFrameRef.current = requestAnimationFrame(() => {
-                    fitFrameRef.current = null;
-                    if (activeResourceRef.current === resourceKey) void panZoomRef.current?.fit({ mode: 'contain' });
-                  });
-                }} size="icon-sm" variant="outline">
-                  <PencilIcon decorative paths={rotatePaths} size={24} sourceSize={24} />
-                </Button> : null}
-              </div> : null}
-
-              {total > 1 ? <div className="inkra-image-viewer__navigation">
+              {total > 1 && activeItemType === 'image' ? <div className="inkra-image-viewer__navigation">
                 <Button aria-label={labels.previous} className="inkra-image-viewer__previous" disabled={!loop && atStart} onClick={() => step(-1)} size="icon" variant="secondary">
                   <PencilIcon decorative paths={chevronLeftPaths} size={30} sourceSize={24} />
                 </Button>
@@ -477,12 +477,49 @@ export const ImageViewerContent = forwardRef<
           </div>}
         </div>
 
-        {showThumbnails && total > 1 ? <div
-          aria-label={labels.thumbnails}
-          className="inkra-image-viewer__thumbnails"
-          ref={thumbnailsRef}
-          role="listbox"
-        >
+        {(activeItem || (showThumbnails && total > 1)) ? <div className="inkra-image-viewer__bottom">
+          <div className="inkra-image-viewer__bottom-row">
+            {total > 0 ? <PencilText as="span" className="inkra-image-viewer__counter" dir="auto">
+              {labels.imagePosition(activeIndex + 1, total)}
+            </PencilText> : null}
+            {activeItem && activeItemType === 'image' && !failed && (zoomable || rotatable) ? <div className="inkra-image-viewer__tools" role="group" aria-label={labels.panZoom(activeItem)} data-pan-zoom-no-drag>
+              <PencilSurface aria-hidden="true" className="inkra-image-viewer__tools-paper" radius={8} seed={`image-viewer-tools-${activeItem.id}`} variant="paper" />
+              {zoomable ? <>
+                <Button aria-label={labels.zoomOut} onClick={() => void panZoomRef.current?.zoomOut()} size="icon-sm" variant="outline">
+                  <PencilIcon decorative paths={zoomOutPaths} size={24} sourceSize={24} />
+                </Button>
+                <Button aria-label={labels.resetZoom} onClick={() => void panZoomRef.current?.reset()} size="sm" variant="outline">100%</Button>
+                <Button aria-label={labels.zoomIn} onClick={() => void panZoomRef.current?.zoomIn()} size="icon-sm" variant="outline">
+                  <PencilIcon decorative paths={zoomInPaths} size={24} sourceSize={24} />
+                </Button>
+              </> : null}
+              {rotatable ? <Button aria-label={labels.rotate} onClick={() => {
+                setRotation(current => (current + 90) % 360);
+                if (fitFrameRef.current !== null) cancelAnimationFrame(fitFrameRef.current);
+                const resourceKey = activeItemKey;
+                fitFrameRef.current = requestAnimationFrame(() => {
+                  fitFrameRef.current = null;
+                  if (activeResourceRef.current === resourceKey) void panZoomRef.current?.fit({ mode: 'contain' });
+                });
+              }} size="icon-sm" variant="outline">
+                <PencilIcon decorative paths={rotatePaths} size={24} sourceSize={24} />
+              </Button> : null}
+            </div> : null}
+            {activeItem && activeItemType === 'video' && total > 1 ? <div className="inkra-image-viewer__video-navigation" role="group" aria-label={labels.thumbnails}>
+              <Button aria-label={labels.previous} disabled={!loop && atStart} onClick={() => step(-1)} size="icon-sm" variant="secondary">
+                <PencilIcon decorative paths={chevronLeftPaths} size={24} sourceSize={24} />
+              </Button>
+              <Button aria-label={labels.next} disabled={!loop && atEnd} onClick={() => step(1)} size="icon-sm" variant="secondary">
+                <PencilIcon decorative paths={chevronRightPaths} size={24} sourceSize={24} />
+              </Button>
+            </div> : null}
+          </div>
+          {showThumbnails && total > 1 ? <div
+            aria-label={labels.thumbnails}
+            className="inkra-image-viewer__thumbnails"
+            ref={thumbnailsRef}
+            role="listbox"
+          >
           {items.map((item, index) => {
             const selected = index === activeIndex;
             return <button
@@ -511,11 +548,17 @@ export const ImageViewerContent = forwardRef<
               type="button"
             >
               <PencilSurface as="span" className="inkra-image-viewer__thumbnail-surface" radius={6} variant={selected ? 'selection' : 'outline'}>
-                <img alt="" className="inkra-image-viewer__thumbnail-image" draggable={false} src={item.thumbnailSrc ?? item.src} />
+                {(item.thumbnailSrc ?? item.poster ?? (item.type === 'video' ? undefined : item.src))
+                  ? <img alt="" className="inkra-image-viewer__thumbnail-image" draggable={false} src={item.thumbnailSrc ?? item.poster ?? item.src} />
+                  : <PencilIcon decorative paths={item.type === 'video' ? playPaths : imageOffPaths} size={30} sourceSize={24} />}
               </PencilSurface>
+              {item.type === 'video' ? <PencilSurface as="span" aria-hidden="true" className="inkra-image-viewer__thumbnail-video" radius={6} variant="paper">
+                <PencilIcon decorative paths={playPaths} size={18} sourceSize={24} />
+              </PencilSurface> : null}
               <PencilSurface as="span" aria-hidden="true" className="inkra-image-viewer__thumbnail-focus" radius={6} variant="outline" />
             </button>;
           })}
+          </div> : null}
         </div> : null}
       </OverlayContent>
     </OverlayPortal>
@@ -527,6 +570,13 @@ export const ImageViewer = /* @__PURE__ */ Object.freeze({
   Trigger: ImageViewerTrigger,
   Content: ImageViewerContent,
 });
+
+export const MediaViewer = ImageViewer;
+export type MediaViewerItem = ImageViewerItem;
+export type MediaViewerLabels = ImageViewerLabels;
+export type MediaViewerRootProps = ImageViewerRootProps;
+export type MediaViewerContentProps = ImageViewerContentProps;
+export type { VideoResourceLabels } from './VideoResource.js';
 
 export { nextImageViewerIndex, resolveImageViewerSelection } from './model.js';
 export type { ImageViewerIdentifiable, ImageViewerSelection } from './model.js';

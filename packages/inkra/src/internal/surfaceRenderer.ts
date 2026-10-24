@@ -187,7 +187,7 @@ function paintPencilSurface(
       spacing: theme.washSettings?.spacing ?? PENCIL_SELECTION_WASH.spacing,
       roughness: theme.washSettings?.roughness ?? PENCIL_SELECTION_WASH.roughness,
       inset: PENCIL_SELECTION_WASH.inset,
-      radius: PENCIL_SELECTION_WASH.radius,
+      radius: radius !== undefined && Number.isFinite(radius) ? Math.max(0, Math.min(radius, 8)) : PENCIL_SELECTION_WASH.radius,
       edgeReach: PENCIL_SELECTION_WASH.edgeReach,
       angle: theme.washSettings?.angle ?? PENCIL_SELECTION_WASH.angle,
       dpr: renderDpr,

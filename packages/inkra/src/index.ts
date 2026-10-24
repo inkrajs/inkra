@@ -38,6 +38,7 @@ export * from './audio-player/index.js';
 export * from './carousel/index.js';
 export * from './choice-grid/index.js';
 export * from './color-picker/index.js';
+export * from './color-swatch/index.js';
 export * from './context-menu/index.js';
 export * from './dockable-panel/index.js';
 export * from './editable/index.js';
@@ -62,6 +63,7 @@ export * from './transfer/index.js';
 export * from './tree-select/index.js';
 export * from './typewriter/index.js';
 export * from './virtual-list/index.js';
+export * from './markdown/index.js';
 export type {
   ButtonGroupOrientation,
   ButtonAlign,

@@ -38,10 +38,15 @@
 }
 
 .inkra-skeleton {
+  --inkra-selection-pigment: var(--inkra-ink-muted);
   block-size: 16px;
   inline-size: 100%;
   max-inline-size: 100%;
   min-inline-size: 8px;
+}
+.inkra-skeleton[data-pencil-fallback="true"] {
+  background: color-mix(in srgb, var(--inkra-ink-muted) 18%, transparent);
+  border: 0;
 }
 .inkra-skeleton[data-animation="pulse"] { animation: inkra-skeleton-pulse calc(var(--inkra-motion-slow) * 4) var(--inkra-ease) infinite; }
 @keyframes inkra-skeleton-pulse {
@@ -278,9 +283,16 @@
   .inkra-progress__segment-outline { border: 1px solid CanvasText; }
   .inkra-progress__segment-fill { background: Highlight; border: 0; }
 
-  .inkra-skeleton {
-    outline: 1px solid CanvasText;
+  .inkra-skeleton.inkra-pencil-surface {
+    background: CanvasText;
+    border: 0;
+    forced-color-adjust: none;
+    opacity: .18;
   }
+}
+
+@media print {
+  .inkra-skeleton.inkra-pencil-surface { background: color-mix(in srgb, currentColor 18%, transparent); border: 0; }
 }
 
 @media print {

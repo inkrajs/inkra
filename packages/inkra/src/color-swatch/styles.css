@@ -1,0 +1,47 @@
+.inkra-color-swatch {
+  flex: none;
+}
+
+.inkra-color-swatch__background {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  border-radius: 3px;
+  forced-color-adjust: none;
+}
+
+.inkra-color-swatch__pigment,
+.inkra-color-swatch__wash {
+  display: block;
+  inline-size: 28px;
+  block-size: 28px;
+  pointer-events: none;
+}
+
+.inkra-color-swatch[data-swatch-size="sm"] .inkra-color-swatch__pigment,
+.inkra-color-swatch[data-swatch-size="sm"] .inkra-color-swatch__wash {
+  inline-size: 20px;
+  block-size: 20px;
+}
+
+.inkra-color-swatch[data-swatch-size="lg"] .inkra-color-swatch__pigment,
+.inkra-color-swatch[data-swatch-size="lg"] .inkra-color-swatch__wash {
+  inline-size: 32px;
+  block-size: 32px;
+}
+
+.inkra-color-swatch__wash[data-pencil-fallback="true"] {
+  background: currentColor;
+  border: 0;
+}
+
+@media (forced-colors: active) {
+  .inkra-color-swatch__pigment {
+    background: currentColor;
+    forced-color-adjust: none;
+  }
+  .inkra-color-swatch[aria-pressed="true"] {
+    outline: 2px solid Highlight;
+    outline-offset: -3px;
+  }
+}

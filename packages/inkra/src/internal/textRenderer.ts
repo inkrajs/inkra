@@ -94,6 +94,8 @@ export function renderPencilText(
   options: {
     size: number;
     family?: string;
+    weight?: string;
+    style?: string;
     color: string;
     seed: number;
     dpr: number;
@@ -110,13 +112,13 @@ export function renderPencilText(
     throw new RangeError('Pencil text exceeds the bounded renderer input');
   }
   const resolution = Math.max(2, Math.min(4, Math.ceil(dpr * 2)));
-  const font = `400 ${size}px ${family}`;
+  const font = `${options.style ?? 'normal'} ${options.weight ?? '400'} ${size}px ${family}`;
   const fontReady = document.fonts?.check(font, text) ?? false;
   const key = cache ? JSON.stringify([
     PENCIL_RENDERER_VERSION,
     text,
     size,
-    family,
+    font,
     color,
     seed,
     dpr,
@@ -164,7 +166,7 @@ export function renderPencilText(
         const characterSeed = (options.glyphSeed! ^ Math.imul(character.charCodeAt(0), 16777619)
           ^ Math.imul(index % 3, 374761393)) >>> 0;
         const glyphKey = JSON.stringify([
-          PENCIL_RENDERER_VERSION, character, size, family, color, characterSeed,
+          PENCIL_RENDERER_VERSION, character, size, font, color, characterSeed,
           resolution, settings, document.fonts?.check(font, character),
         ]);
         let glyph = glyphCache.get(glyphKey);

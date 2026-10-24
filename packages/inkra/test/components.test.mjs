@@ -321,7 +321,7 @@ test('Composite icons expose one semantic image without leaking badge props to D
   const paths = [{ d: 'M 2 12 H 22' }];
   const markup = renderToStaticMarkup(createElement(PencilIcon, {
     paths, badge: { paths, scale: 0.55, position: 'bottom-end' },
-    decorative: false, 'aria-label': 'Add folder', dir: 'rtl', size: 48,
+    decorative: false, 'aria-label': 'Add folder', dir: 'rtl', size: 48, strokeWidth: 1.2, intensity: 0.5, breaks: 0.8, breakCount: 3, pressureVariation: 0.6,
   }));
   assert.equal((markup.match(/<canvas/g) ?? []).length, 1);
   assert.match(markup, /role="img"/);
@@ -329,7 +329,7 @@ test('Composite icons expose one semantic image without leaking badge props to D
   assert.match(markup, /data-composite="true"/);
   assert.match(markup, /dir="rtl"/);
   assert.match(markup, /width:48px;height:48px/);
-  assert.doesNotMatch(markup, / badge=| paths=| scale=| position=|aria-hidden/);
+  assert.doesNotMatch(markup, / badge=| paths=| scale=| position=|strokeWidth=|intensity=|breaks=|breakCount=|pressureVariation=|aria-hidden/);
   const empty = renderToStaticMarkup(createElement(PencilIcon, { paths, badge: { paths: [] } }));
   assert.doesNotMatch(empty, /data-composite/);
   assert.match(empty, /aria-hidden="true"/);
