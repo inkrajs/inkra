@@ -20,7 +20,7 @@ test('AudioPlayer exposes accessible custom controls and no default autoplay', (
   assert.match(source, /autoPlay\?\: boolean/);
   assert.match(source, /autoPlay = false/);
   assert.match(source, /<Slider/);
-  assert.match(source, /<Select\.Root/);
+  assert.match(source, /<SelectRoot/);
   assert.match(source, /aria-label=\{mergedLabels\.seek\}/);
   assert.match(source, /renderControls\?: \(controls: AudioPlayerControls\)/);
   assert.match(source, /<PencilText as="span" className="inkra-audio-player__time"/);

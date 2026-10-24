@@ -77,3 +77,26 @@ normalizes to at least one). Nonfinite/omitted bounds retain full output. Expand
 an enormous collection still incurs its full rendering cost; use paging or an
 appropriate data view when all-at-once expansion is unsuitable. Form hidden values
 and caller-created React option elements still grow with input size.
+
+## Package boundaries and optional CSS
+
+Public family subpaths (for example `@inkra/react/tag-input`,
+`@inkra/react/select`, `@inkra/react/select/stepper`, and `@inkra/react/Button`)
+retain the exact root-exported component identities. Static frozen compound API
+objects are explicitly pure, so retaining a flat named component does not require
+an unused compound object and every sibling. The compound API itself remains
+unchanged, including its single/multiple/selectable engines. AudioPlayer imports
+only the select parts it actually renders; its controls and native semantics stay
+the same.
+
+The established `@inkra/react/styles.css` remains the complete stylesheet. Expert
+consumers can instead choose `@inkra/react/styles/base.css` plus the required
+family CSS. Button needs the base; a Select consumer typically adds `form.css`,
+`selection.css`, `overlay.css`, then `select.css` in that order. AudioPlayer also
+needs `slider.css` and `audio-player.css`. Add CSS for any custom slotted content.
+JourneyMap maps need `journey-map.css` and `leaflet.css`; Leaflet remains lazy.
+Tokens, font and Leaflet image paths are rebased for nested CSS entry points.
+CSS remains side-effectful; these are explicit files, not automatic unused-rule
+purging. The full multilingual font is preserved rather than silently deleting
+characters with a global subset. Byte savings are measured separately from real
+network downloads and page experience.

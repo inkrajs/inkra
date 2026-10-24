@@ -92,7 +92,7 @@ export const TooltipContent = forwardRef<
   );
 });
 
-export const Tooltip = Object.freeze({
+export const Tooltip = /* @__PURE__ */ Object.freeze({
   Provider: TooltipProvider,
   Root: TooltipRoot,
   Trigger: TooltipTrigger,

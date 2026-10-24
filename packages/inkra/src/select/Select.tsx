@@ -634,7 +634,7 @@ export const SelectClear = forwardRef<HTMLButtonElement, SelectClearProps>(funct
     }}>{children ?? 'Clear'}</Button>;
 });
 
-export const Select = Object.freeze({
+export const Select = /* @__PURE__ */ Object.freeze({
   Searchable: SearchableSelect,
   Stepper: SelectStepper,
   Root: SelectRoot,

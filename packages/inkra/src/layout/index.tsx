@@ -150,7 +150,7 @@ const LayoutContent = forwardRef<HTMLElement, LayoutContentProps>(function Layou
   return <Box as={Element} {...props} ref={ref} className={classes('inkra-layout__content', className)}
     style={{ padding: space(padding), ...style }} />;
 });
-export const Layout = Object.freeze({
+export const Layout = /* @__PURE__ */ Object.freeze({
   Root: LayoutRoot, Header: LayoutHeader, Body: LayoutBody,
   Sidebar: LayoutSidebar, Content: LayoutContent, Footer: LayoutFooter,
 });

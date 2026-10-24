@@ -4,7 +4,7 @@ import { Button } from '../Button.js';
 import { PencilIcon } from '../PencilIcon.js';
 import { PencilSurface } from '../PencilSurface.js';
 import { PencilText } from '../PencilText.js';
-import { Select } from '../select/index.js';
+import { SelectRoot, SelectTrigger, SelectValue, SelectPortal, SelectContent, SelectViewport, SelectItem, SelectItemText, SelectItemIndicator } from '../select/Select.js';
 import { Slider } from '../slider/index.js';
 
 const pausePaths = [
@@ -224,10 +224,10 @@ export const AudioPlayer = forwardRef<AudioPlayerControls, AudioPlayerProps>(fun
     <div className="inkra-audio-player__settings">
       <Button data-audio-player-control data-tooltip={state.muted ? mergedLabels.unmute : mergedLabels.mute} type="button" size="icon-sm" variant="ghost" aria-label={state.muted ? mergedLabels.unmute : mergedLabels.mute} onClick={() => setMuted(!state.muted)}><PencilIcon paths={state.muted ? mutePaths : volumePaths} size={20} sourceSize={24} /></Button>
       <div className="inkra-audio-player__volume"><Slider data-audio-player-control min={0} max={1} step={0.01} value={[state.muted ? 0 : state.volume]} onValueChange={values => { setMuted(false); setVolume(values[0] ?? 0); }} aria-label={mergedLabels.volume} getValueLabel={value => `${Math.round(value * 100)}%`} size="sm" variant="inset" /></div>
-      <Select.Root value={String(state.playbackRate)} onValueChange={value => setPlaybackRate(Number(value))}>
-        <Select.Trigger data-audio-player-control aria-label={mergedLabels.rate} fullWidth={false} size="sm"><Select.Value /></Select.Trigger>
-        <Select.Portal><Select.Content position="popper" sideOffset={4}><Select.Viewport>{rates.map(rate => <Select.Item key={rate} value={String(rate)}><Select.ItemText>{`${rate}x`}</Select.ItemText><Select.ItemIndicator /></Select.Item>)}</Select.Viewport></Select.Content></Select.Portal>
-      </Select.Root>
+      <SelectRoot value={String(state.playbackRate)} onValueChange={value => setPlaybackRate(Number(value))}>
+        <SelectTrigger data-audio-player-control aria-label={mergedLabels.rate} fullWidth={false} size="sm"><SelectValue /></SelectTrigger>
+        <SelectPortal><SelectContent position="popper" sideOffset={4}><SelectViewport>{rates.map(rate => <SelectItem key={rate} value={String(rate)}><SelectItemText>{`${rate}x`}</SelectItemText><SelectItemIndicator /></SelectItem>)}</SelectViewport></SelectContent></SelectPortal>
+      </SelectRoot>
     </div>
   </div>;
   return <PencilSurface ref={rootRef} {...props} className={['inkra-audio-player', className].filter(Boolean).join(' ')} variant="paper" radius={8} data-status={state.status} data-audio-player-id={id}>

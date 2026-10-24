@@ -208,7 +208,7 @@ export const DrawerFooter = forwardRef<HTMLDivElement, DrawerFooterProps>(
   },
 );
 
-export const Drawer = Object.freeze({
+export const Drawer = /* @__PURE__ */ Object.freeze({
   Root: DrawerRoot,
   Trigger: DrawerTrigger,
   Portal: DrawerPortal,
