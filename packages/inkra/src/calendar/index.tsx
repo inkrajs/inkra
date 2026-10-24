@@ -62,7 +62,7 @@ function CalendarCell({ children, day, modifiers, ...props }: DayProps) {
         style={event.color ? { '--inkra-accent-soft': event.color } as CSSProperties : undefined}
         aria-label={`${event.label}${event.description ? `, ${event.description}` : ''}`} title={event.description ?? event.label}
         onClick={click => { click.stopPropagation(); onEventSelect?.(event); }}><PencilText ellipsis>{event.label}</PencilText></PencilSurface>)}
-        {entries.length > limit && <Button size="sm" variant="ghost" aria-expanded={expanded} onClick={click => { click.stopPropagation(); setExpandedDay(expanded ? undefined : dayKey(day.date)); }}>
+        {entries.length > limit && <Button className="inkra-calendar__events-toggle" size="sm" variant="ghost" aria-expanded={expanded} onClick={click => { click.stopPropagation(); setExpandedDay(expanded ? undefined : dayKey(day.date)); }}>
           {showDayEventsLabel?.(day.date, entries.length, expanded) ?? (expanded ? 'Show fewer events' : `Show all ${entries.length} events`)}
         </Button>}
       </div>
@@ -96,7 +96,8 @@ export function Calendar({ events = emptyEvents, eventIndicator = 'count', appea
   const context = useMemo(() => ({ eventsByDay, indicator: eventIndicator, appearance, onEventSelect, renderDayAccessory, maxEventsPerDay, showDayEventsLabel }),
     [eventsByDay, eventIndicator, appearance, onEventSelect, renderDayAccessory, maxEventsPerDay, showDayEventsLabel]);
   const hidden = displayRange ? [...(Array.isArray(props.hidden) ? props.hidden : props.hidden ? [props.hidden] : []), { before: displayRange.from }, { after: displayRange.to }] : props.hidden;
-  return <EventContext.Provider value={context}><div className="inkra-calendar-scroll" data-appearance={appearance}>
+  return <EventContext.Provider value={context}><div className="inkra-calendar-scroll" data-appearance={appearance}
+    data-event-summary={maxEventsPerDay !== undefined && Number.isFinite(maxEventsPerDay) || undefined}>
     <DayPicker {...props} hidden={hidden} data-appearance={appearance} data-week-numbers={props.showWeekNumber || undefined} showOutsideDays={showOutsideDays} className={['inkra-calendar', className].filter(Boolean).join(' ')}
       components={{ CaptionLabel: CalendarCaption, Weekday: CalendarWeekday, Chevron: CalendarChevron, PreviousMonthButton: CalendarMonthButton, NextMonthButton: CalendarMonthButton, Day: CalendarCell, DayButton: CalendarDay, ...components }} />
   </div></EventContext.Provider>;
