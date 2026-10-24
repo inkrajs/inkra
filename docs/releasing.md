@@ -1,7 +1,7 @@
 # React Package Releases
 
 Repository: inkrajs/inkra. Package: @inkra/react. First release: 0.1.0.
-Version 0.3.0 is published and registry-verified. Future source versions remain
+Version 0.4.3 is published and registry-verified. Future source versions remain
 candidates until their own registry verification passes.
 Website deployment does not publish an npm package.
 
@@ -42,6 +42,24 @@ validated the trusted publisher through a successful OIDC publication.
 - Earlier run 39944246310 stopped at a Tree browser measurement during entrance
   motion, before publication. The docs test was corrected to measure after the
   animation; no component assertion was removed and the source tag was unchanged.
+
+## Version 0.4.3 Record
+
+- Source/tag: 0f9cdc5ace22dc62bcc65875f3c925216572e826 / react-v0.4.3.
+- Release run: 40136234346, successful on 2026-10-25 (Asia/Shanghai).
+- Validation docs: 04ee219dfee981320b220753ed7941d7b59f57e1.
+- OIDC publication, public archive comparison and clean React 18/19 installations passed.
+- GitHub Release was created only after registry verification succeeded.
+- Public archive SHA-256:
+  2232f51a5aa9b91013fcd949c4585b541290b70df7d7fc5494a9eac244adb664.
+- Registry docs consumer: 90251371184904cbad96fbc68bc5ac8f8255c5e2.
+- npm initially reported that the package was still processing. The one-minute
+  verification window expired before public availability; only failed verification
+  jobs were rerun. No duplicate publication occurred.
+- Versions 0.4.0 and 0.4.1 were not published after Linux browser checks found
+  Drawer overflow and viewer scrollbar offsets. Version 0.4.2 remained unpublished
+  after validation reached its 25-minute limit. All three tags are retained unchanged.
+  Version 0.4.3 preserves the checks with a 45-minute validation limit.
 
 ## Pipeline
 

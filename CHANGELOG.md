@@ -29,8 +29,10 @@ are retained. The 0.4.2 release also remained unpublished: its final run reached
 the 25-minute validation limit. Version 0.4.3 retains all checks with a 45-minute
 validation budget and supersedes those candidates.
 
-Publication is confirmed only after registry archive verification and the
-matching GitHub Release. Existing React 18 Calendar SSR and Next.js/RSC limits
+Published as `@inkra/react@0.4.3` with the `latest` npm dist-tag and the
+`react-v0.4.3` GitHub Release. The public archive matches the approved candidate;
+clean registry installations passed with React 18 and 19.
+Existing React 18 Calendar SSR and Next.js/RSC limits
 remain; automated browser checks do not certify the full catalog on real devices.
 
 ## 0.3.0 - 2026-10-23
