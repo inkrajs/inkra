@@ -61,6 +61,12 @@ export interface DataTableProps<TData> extends Omit<HTMLAttributes<HTMLDivElemen
   defaultSorting?: SortingState;
   onSortingChange?: OnChangeFn<SortingState>;
   pagination?: boolean;
+  /** Supply only the current server page in data. rowCount is the known total. */
+  manualPagination?: boolean;
+  rowCount?: number;
+  /** Server owns sorting/filtering; callbacks still report the requested state. */
+  manualSorting?: boolean;
+  manualFiltering?: boolean;
   paginationState?: PaginationState;
   defaultPagination?: PaginationState;
   onPaginationChange?: OnChangeFn<PaginationState>;
@@ -133,6 +139,10 @@ export function DataTable<TData>({
   defaultSorting = [],
   onSortingChange,
   pagination = false,
+  manualPagination = false,
+  rowCount,
+  manualSorting = false,
+  manualFiltering = false,
   paginationState,
   defaultPagination = { pageIndex: 0, pageSize: 10 },
   onPaginationChange,
@@ -163,9 +173,12 @@ export function DataTable<TData>({
   const resolvedSorting = sorting ?? internalSorting;
   const resolvedPagination = paginationState ?? internalPagination;
   const resolvedSelection = rowSelection ?? internalSelection;
+  const paginationRowCount = manualPagination && pagination && rowCount !== undefined
+    ? (Number.isFinite(rowCount) ? Math.max(0, Math.floor(rowCount)) : data.length)
+    : data.length;
   const initialPagination = useMemo(
-    () => normalizeDataTablePagination(resolvedPagination, data.length),
-    [resolvedPagination.pageIndex, resolvedPagination.pageSize, data.length],
+    () => normalizeDataTablePagination(resolvedPagination, paginationRowCount),
+    [resolvedPagination.pageIndex, resolvedPagination.pageSize, paginationRowCount],
   );
 
   const handleSorting: OnChangeFn<SortingState> = updater => {
@@ -174,7 +187,7 @@ export function DataTable<TData>({
   };
   const handlePagination: OnChangeFn<PaginationState> = updater => {
     const normalizedUpdater: Updater<PaginationState> = current => {
-      const rowCount = table.getPrePaginationRowModel().rows.length;
+      const rowCount = manualPagination ? paginationRowCount : table.getPrePaginationRowModel().rows.length;
       return normalizeDataTablePagination(resolve(updater, normalizeDataTablePagination(current, rowCount)), rowCount);
     };
     if (paginationState === undefined) setInternalPagination(normalizedUpdater);
@@ -194,6 +207,10 @@ export function DataTable<TData>({
     data,
     columns,
     getRowId,
+    manualPagination: pagination && manualPagination,
+    rowCount: pagination && manualPagination ? paginationRowCount : undefined,
+    manualSorting,
+    manualFiltering,
     state: {
       globalFilter: resolvedFilter,
       sorting: resolvedSorting,
@@ -214,7 +231,7 @@ export function DataTable<TData>({
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: pagination ? getPaginationRowModel() : undefined,
   });
-  const filteredRowCount = table.getPrePaginationRowModel().rows.length;
+  const filteredRowCount = pagination && manualPagination ? paginationRowCount : table.getPrePaginationRowModel().rows.length;
   const effectivePagination = useMemo(
     () => normalizeDataTablePagination(initialPagination, filteredRowCount),
     [initialPagination, filteredRowCount],

@@ -52,6 +52,8 @@ export interface TransferLabels {
   moveSelectedToTarget?: string;
   moveSelectedToSource?: string;
   batchActions?: string;
+  previousPage?: string;
+  nextPage?: string;
 }
 
 export interface TransferCountDetails {
@@ -86,6 +88,9 @@ export interface TransferProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onC
   filterItem?: (item: TransferItem, query: string, side: TransferSide) => boolean;
   renderItem?: (item: TransferItem, state: TransferItemRenderState) => ReactNode;
   formatCount?: (details: TransferCountDetails) => ReactNode;
+  /** Opt-in panel pagination. All items remain searchable and movable. */
+  pageSize?: number;
+  pageLabel?: (page: number, pageCount: number) => ReactNode;
 }
 
 const defaultLabels: Required<TransferLabels> = {
@@ -108,6 +113,8 @@ const defaultLabels: Required<TransferLabels> = {
   moveSelectedToTarget: 'Move selected visible items to selected',
   moveSelectedToSource: 'Move selected visible items to available',
   batchActions: 'Transfer selected visible items',
+  previousPage: 'Previous page',
+  nextPage: 'Next page',
 };
 
 function searchableText(item: TransferItem): string {
@@ -157,6 +164,8 @@ export const Transfer = forwardRef<HTMLDivElement, TransferProps>(function Trans
     items,
     labels: labelOverrides,
     onTargetKeysChange,
+    pageSize,
+    pageLabel = (page, count) => `${page} / ${count}`,
     renderItem,
     searchable = true,
     targetKeys,
@@ -175,6 +184,8 @@ export const Transfer = forwardRef<HTMLDivElement, TransferProps>(function Trans
   const panels = useMemo(() => splitTransferItems(uniqueItems, currentTargetKeys), [uniqueItems, currentTargetKeys]);
   const labels = { ...defaultLabels, ...labelOverrides };
   const [queries, setQueries] = useState<Record<TransferSide, string>>({ source: '', target: '' });
+  const [pages, setPages] = useState<Record<TransferSide, number>>({ source: 0, target: 0 });
+  const pageLength = pageSize !== undefined && Number.isFinite(pageSize) ? Math.max(1, Math.floor(pageSize)) : undefined;
   const [selected, setSelected] = useState<Record<TransferSide, Set<string>>>(() => ({ source: new Set(), target: new Set() }));
   const [pendingFocus, setPendingFocus] = useState<{
     id: string;
@@ -194,7 +205,12 @@ export const Transfer = forwardRef<HTMLDivElement, TransferProps>(function Trans
     () => filterPanelItems(panels.target, queries.target, 'target', filterItem),
     [panels.target, queries.target, filterItem],
   );
-  const visibleItems = { source: visibleSource, target: visibleTarget };
+  const pageIndex = (side: TransferSide, count: number) => pageLength === undefined ? 0 : Math.min(pages[side], Math.max(0, Math.ceil(count / pageLength) - 1));
+  const sourcePage = pageIndex('source', visibleSource.length);
+  const targetPage = pageIndex('target', visibleTarget.length);
+  const shownSource = useMemo(() => pageLength === undefined ? visibleSource : visibleSource.slice(sourcePage * pageLength, (sourcePage + 1) * pageLength), [visibleSource, sourcePage, pageLength]);
+  const shownTarget = useMemo(() => pageLength === undefined ? visibleTarget : visibleTarget.slice(targetPage * pageLength, (targetPage + 1) * pageLength), [visibleTarget, targetPage, pageLength]);
+  const visibleItems = { source: shownSource, target: shownTarget };
 
   useEffect(() => {
     setSelected(current => {
@@ -240,10 +256,19 @@ export const Transfer = forwardRef<HTMLDivElement, TransferProps>(function Trans
       setPendingFocus(null);
       return;
     }
+    if (pageLength !== undefined) {
+      const matching = pendingFocus.side === 'source' ? visibleSource : visibleTarget;
+      const index = matching.findIndex(item => item.id === pendingFocus.id);
+      const nextPage = index < 0 ? undefined : Math.floor(index / pageLength);
+      if (nextPage !== undefined && nextPage !== pages[pendingFocus.side]) {
+        setPages(current => ({ ...current, [pendingFocus.side]: nextPage }));
+        return;
+      }
+    }
     const control = itemRefs.current.get(`${pendingFocus.side}:${pendingFocus.id}`);
     (control ?? panelRefs.current[pendingFocus.side])?.focus({ preventScroll: true });
     setPendingFocus(null);
-  }, [disabled, pendingFocus, currentTargetKeys, itemsById]);
+  }, [disabled, pendingFocus, currentTargetKeys, itemsById, pageLength, pages, visibleSource, visibleTarget]);
 
   const setItemSelected = (side: TransferSide, id: string, checked: boolean) => {
     setSelected(current => {
@@ -346,7 +371,10 @@ export const Transfer = forwardRef<HTMLDivElement, TransferProps>(function Trans
         clearable
         clearButtonLabel={clearSearchLabel}
         disabled={disabled}
-        onValueChange={value => setQueries(current => ({ ...current, [side]: value }))}
+        onValueChange={value => {
+          setQueries(current => ({ ...current, [side]: value }));
+          setPages(current => ({ ...current, [side]: 0 }));
+        }}
         placeholder={searchPlaceholder}
         startIcon={<PencilIcon decorative paths={searchPaths} size={18} sourceSize={24} />}
         type="search"
@@ -396,6 +424,14 @@ export const Transfer = forwardRef<HTMLDivElement, TransferProps>(function Trans
           </li>;
         })}
       </ul>
+      {pageLength !== undefined && <nav aria-label={typeof panelTitle === 'string' ? panelTitle : undefined}>
+        <Button size="sm" variant="ghost" aria-label={labels.previousPage} disabled={disabled || pageIndex(side, (source ? visibleSource : visibleTarget).length) === 0}
+          onClick={() => setPages(current => ({ ...current, [side]: pageIndex(side, (source ? visibleSource : visibleTarget).length) - 1 }))}>{labels.previousPage}</Button>
+        <span aria-live="polite">{pageLabel((source ? visibleSource : visibleTarget).length === 0 ? 0 : pageIndex(side, (source ? visibleSource : visibleTarget).length) + 1,
+          Math.ceil((source ? visibleSource : visibleTarget).length / pageLength))}</span>
+        <Button size="sm" variant="ghost" aria-label={labels.nextPage} disabled={disabled || (pageIndex(side, (source ? visibleSource : visibleTarget).length) + 1) * pageLength >= (source ? visibleSource : visibleTarget).length}
+          onClick={() => setPages(current => ({ ...current, [side]: pageIndex(side, (source ? visibleSource : visibleTarget).length) + 1 }))}>{labels.nextPage}</Button>
+      </nav>}
     </PencilSurface>;
   };
 
