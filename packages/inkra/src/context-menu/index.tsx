@@ -429,7 +429,7 @@ export const ContextMenuSubContent = forwardRef<HTMLDivElement, ContextMenuSubCo
   },
 );
 
-export const ContextMenu = Object.freeze({
+export const ContextMenu = /* @__PURE__ */ Object.freeze({
   Root: ContextMenuRoot,
   Trigger: ContextMenuTrigger,
   Portal: ContextMenuPortal,

@@ -273,7 +273,7 @@ export const HoverCardDescription = PopoverDescription;
 export type HoverCardCloseProps = PopoverCloseProps;
 export const HoverCardClose = PopoverClose;
 
-export const HoverCard = Object.freeze({
+export const HoverCard = /* @__PURE__ */ Object.freeze({
   Root: HoverCardRoot,
   Trigger: HoverCardTrigger,
   Content: HoverCardContent,

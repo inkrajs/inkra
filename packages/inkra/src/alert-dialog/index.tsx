@@ -339,7 +339,7 @@ export const AlertDialogAction = forwardRef<HTMLButtonElement, AlertDialogAction
   },
 );
 
-export const AlertDialog = Object.freeze({
+export const AlertDialog = /* @__PURE__ */ Object.freeze({
   Root: AlertDialogRoot,
   Trigger: AlertDialogTrigger,
   Portal: AlertDialogPortal,

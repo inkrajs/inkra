@@ -230,7 +230,7 @@ export const AccordionContent = forwardRef<
   );
 });
 
-export const Accordion = Object.freeze({
+export const Accordion = /* @__PURE__ */ Object.freeze({
   Root: AccordionRoot,
   Item: AccordionItem,
   Header: AccordionHeader,

@@ -238,7 +238,7 @@ export const OverlayFooter = forwardRef<HTMLDivElement, OverlayFooterProps>(
   },
 );
 
-export const Overlay = Object.freeze({
+export const Overlay = /* @__PURE__ */ Object.freeze({
   Root: OverlayRoot,
   Trigger: OverlayTrigger,
   Portal: OverlayPortal,

@@ -145,7 +145,7 @@ function ResizableHandle({
   </ResizableSeparatorPrimitive>;
 }
 
-export const Resizable = Object.freeze({
+export const Resizable = /* @__PURE__ */ Object.freeze({
   Root: ResizableRoot,
   Panel: ResizablePanel,
   Handle: ResizableHandle,

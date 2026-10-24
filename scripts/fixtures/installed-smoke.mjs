@@ -3,6 +3,15 @@ import { existsSync, readFileSync } from 'node:fs';
 import { createElement as h } from 'react';
 import { renderToString } from 'react-dom/server';
 import * as Inkra from '@inkra/react';
+import { Button as SubpathButton } from '@inkra/react/Button';
+import { SelectStepper as SubpathStepper } from '@inkra/react/select/stepper';
+import { TagInput as SubpathTagInput } from '@inkra/react/tag-input';
+assert.equal(SubpathButton, Inkra.Button);
+assert.equal(SubpathStepper, Inkra.Select.Stepper);
+assert.equal(SubpathTagInput, Inkra.TagInput);
+for (const path of ['@inkra/react/styles/base.css', '@inkra/react/styles/select.css', '@inkra/react/styles/leaflet.css']) {
+  assert(existsSync(new URL(import.meta.resolve(path))), `Missing optional style entry: ${path}`);
+}
 
 console.error = (...args) => { throw new Error(args.join(' ')); };
 console.warn = console.error;

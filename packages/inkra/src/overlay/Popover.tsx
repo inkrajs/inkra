@@ -158,7 +158,7 @@ export const PopoverClose = forwardRef<
 
 export type PopoverArrowProps = ComponentPropsWithoutRef<typeof PopoverPrimitive.Arrow>;
 
-export const Popover = Object.freeze({
+export const Popover = /* @__PURE__ */ Object.freeze({
   Root: PopoverRoot,
   Anchor: PopoverAnchor,
   Trigger: PopoverTrigger,

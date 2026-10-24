@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 
 await mkdir(new URL('../dist/assets', import.meta.url), { recursive: true });
 
@@ -35,3 +35,15 @@ const expansionStyles = await Promise.all([
 await writeFile(new URL('../dist/styles.css', import.meta.url), [...styles, leafletStyles, ...travelStyles, ...expansionStyles].join('\n'));
 await mkdir(new URL('../dist/images', import.meta.url), { recursive: true });
 await Promise.all(['layers.png', 'layers-2x.png', 'marker-icon.png'].map(name => copyFile(new URL(`../../../node_modules/leaflet/dist/images/${name}`, import.meta.url), new URL(`../dist/images/${name}`, import.meta.url))));
+
+// Optional CSS entry points. The established all-in-one stylesheet above stays
+// byte-for-byte concatenated in the same order. Nested URLs are rebased here.
+await mkdir(new URL('../dist/styles', import.meta.url), { recursive: true });
+const baseStyles = await readFile(new URL('../src/styles.css', import.meta.url), 'utf8');
+await writeFile(new URL('../dist/styles/base.css', import.meta.url), baseStyles.replaceAll('./tokens.css', '../tokens.css').replaceAll('./assets/', '../assets/'));
+const stylePaths = (await readdir(new URL('../src/', import.meta.url), { recursive: true })).filter(path => path.endsWith('/styles.css') || path === 'selection/selection.css');
+for (const path of stylePaths) {
+  const name = path.split('/')[0];
+  await writeFile(new URL(`../dist/styles/${name}.css`, import.meta.url), await readFile(new URL(`../src/${path}`, import.meta.url), 'utf8'));
+}
+await writeFile(new URL('../dist/styles/leaflet.css', import.meta.url), leafletStyles.replaceAll('url(images/', 'url(../images/'));

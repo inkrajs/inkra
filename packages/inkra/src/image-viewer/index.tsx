@@ -522,7 +522,7 @@ export const ImageViewerContent = forwardRef<
   );
 });
 
-export const ImageViewer = Object.freeze({
+export const ImageViewer = /* @__PURE__ */ Object.freeze({
   Root: ImageViewerRoot,
   Trigger: ImageViewerTrigger,
   Content: ImageViewerContent,
