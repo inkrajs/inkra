@@ -198,7 +198,7 @@
   overflow: auto;
   overscroll-behavior: contain;
   padding-block-end: env(safe-area-inset-bottom);
-  scrollbar-gutter: stable;
+  scrollbar-gutter: auto;
 }
 
 .inkra-image-viewer__bottom-row {
@@ -211,7 +211,7 @@
   overflow-x: auto;
   overscroll-behavior-inline: contain;
   padding: var(--inkra-space-2) var(--inkra-space-4);
-  scrollbar-gutter: stable;
+  scrollbar-gutter: auto;
 }
 
 .inkra-image-viewer__tools {
@@ -225,7 +225,7 @@
   overscroll-behavior-inline: contain;
   padding: var(--inkra-focus-offset);
   position: relative;
-  scrollbar-gutter: stable;
+  scrollbar-gutter: auto;
 }
 
 .inkra-image-viewer__video-navigation {
@@ -253,7 +253,7 @@
   overflow-x: auto;
   overscroll-behavior-inline: contain;
   padding: var(--inkra-space-2) var(--inkra-space-4) var(--inkra-space-3);
-  scrollbar-gutter: stable;
+  scrollbar-gutter: auto;
 }
 
 .inkra-image-viewer__thumbnail {
