@@ -100,3 +100,17 @@ CSS remains side-effectful; these are explicit files, not automatic unused-rule
 purging. The full multilingual font is preserved rather than silently deleting
 characters with a global subset. Byte savings are measured separately from real
 network downloads and page experience.
+
+## Viewport-aware decorative surface scheduling
+
+A production Chromium trace exposed substantial cold mount work in complete lists:
+`PencilSurface` synchronously painted every mounted surface, including rows well
+outside the viewport. The follow-up keeps visible surfaces and a 240px prewarm
+band synchronous, defers more distant decorative paint with one shared viewport
+observer per document, and retains every DOM node, input and interaction. New
+unpainted canvases release their implicit blank bitmap. Previously painted
+surfaces retain valid pixels when scrolling out; latest geometry/theme/seed is
+rechecked when returning. Missing/unavailable IntersectionObserver falls back to
+the existing eager behavior. Observer targets and pending frames detach on
+unmount. Invisible focus/selection layers inside the prewarm band remain painted
+so CSS-only hover, checked and keyboard focus changes never reveal an empty ring.
