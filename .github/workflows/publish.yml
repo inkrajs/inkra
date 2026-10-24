@@ -29,7 +29,7 @@ env:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 45
     outputs:
       version: ${{ steps.source.outputs.version }}
     steps:
