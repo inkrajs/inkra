@@ -97,6 +97,7 @@ needs `slider.css` and `audio-player.css`. Add CSS for any custom slotted conten
 JourneyMap maps need `journey-map.css` and `leaflet.css`; Leaflet remains lazy.
 Tokens, font and Leaflet image paths are rebased for nested CSS entry points.
 CSS remains side-effectful; these are explicit files, not automatic unused-rule
-purging. The full multilingual font is preserved rather than silently deleting
-characters with a global subset. Byte savings are measured separately from real
+purging. The existing handwritten web font is already a 706-character subset
+(documented in design-standard and third-party notices). Its current glyph
+coverage is preserved; further universal subsetting would remove supported text. Byte savings are measured separately from real
 network downloads and page experience.

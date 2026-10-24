@@ -97,10 +97,14 @@
       "title": "小规模首次挂载回退/比较开销",
       "source": "优化 HTML 完整阶段对照",
       "initialDisposition": "measure",
-      "status": "pending",
+      "status": "implementation-under-validation",
       "plan": "固定 1k/10k 与基线串行重复，保留回退",
-      "evidence": [],
-      "outcome": null
+      "evidence": [
+        "PR-I-result.json",
+        "I-surface-comparison/surface-comparison.json",
+        "I-visible-input-final/visible-input-results.json"
+      ],
+      "outcome": "PR #11 default-path visible-surface scheduling merged; same-DOM mount faster but cold reveal regresses. Small-N renderer repeat and final metric refresh remain."
     },
     {
       "id": "D06",
@@ -112,9 +116,11 @@
       "evidence": [
         "PR #5–7",
         "C-check.log",
-        "E-check.log"
+        "E-check.log",
+        "I-surface-check.log",
+        "I-docs-browser/docs-browser-results.json"
       ],
-      "outcome": "Previously delivered in #5–7; latest integrated runtime/SSR regressions pass, browser follow-up continues."
+      "outcome": "Covered by merged #5–7; current 653/653 opt-in regression tests and relevant browser interactions pass. Coverage is scoped to fixtures, not every possible application."
     },
     {
       "id": "D07",
@@ -158,24 +164,27 @@
       "evidence": [
         "PR #5–7",
         "C-check.log",
-        "E-check.log"
+        "E-check.log",
+        "I-surface-check.log",
+        "I-docs-browser/docs-browser-results.json"
       ],
-      "outcome": "Previously delivered in #5–7; latest integrated runtime/SSR regressions pass, browser follow-up continues."
+      "outcome": "Covered by merged #5–7; current 653/653 opt-in regression tests and relevant browser interactions pass. Coverage is scoped to fixtures, not every possible application."
     },
     {
       "id": "E01",
       "title": "Select/AudioPlayer 入口闭包",
       "source": "REPORT.md P2.6; bundle-analysis",
       "initialDisposition": "implement",
-      "status": "implementation-under-validation",
+      "status": "implemented-verified-merged",
       "plan": "独立可消费子路径/引擎边界，真实生产包体对照",
       "evidence": [
-        "F-bundles-before",
+        "F-check.log",
         "F-bundles-after",
         "F-bundles-after-named",
-        "F-check.log"
+        "G-styles/style-comparison.json",
+        "PR-F-result.json"
       ],
-      "outcome": null,
+      "outcome": "PR #10 merged 5a45fba; actual package import/SSR/types and 650 local tests passed. Flat and compound import shapes are reported separately; optional CSS preserves default full stylesheet.",
       "pr": "https://github.com/inkrajs/inkra/pull/10"
     },
     {
@@ -183,15 +192,16 @@
       "title": "全局 CSS 初始负担",
       "source": "bundle-analysis CSS",
       "initialDisposition": "implement",
-      "status": "implementation-under-validation",
+      "status": "implemented-verified-merged",
       "plan": "可选基础/按族样式；默认 styles.css 完整保持",
       "evidence": [
-        "F-bundles-before",
+        "F-check.log",
         "F-bundles-after",
         "F-bundles-after-named",
-        "F-check.log"
+        "G-styles/style-comparison.json",
+        "PR-F-result.json"
       ],
-      "outcome": null,
+      "outcome": "PR #10 merged 5a45fba; actual package import/SSR/types and 650 local tests passed. Flat and compound import shapes are reported separately; optional CSS preserves default full stylesheet.",
       "pr": "https://github.com/inkrajs/inkra/pull/10"
     },
     {
@@ -199,35 +209,42 @@
       "title": "JourneyMap 可选 Leaflet 懒加载",
       "source": "bundle-analysis JourneyMap",
       "initialDisposition": "covered",
-      "status": "pending",
+      "status": "covered-by-merged-upstream",
       "plan": "已有 lazy chunk；复核 entry/closure 与网络请求",
-      "evidence": [],
-      "outcome": null
+      "evidence": [
+        "F-bundles-after"
+      ],
+      "outcome": "JourneyMap already lazy-loads Leaflet; production emitted graphs retain a separate lazy chunk. Complete closure includes that chunk, initial transfer does not automatically include it."
     },
     {
       "id": "E04",
       "title": "字体按需/子集",
       "source": "bundle-analysis font subsetting",
       "initialDisposition": "investigate",
-      "status": "pending",
+      "status": "covered-by-merged-upstream",
       "plan": "核对实际请求与字符覆盖；不得删除任意语言字形",
-      "evidence": [],
-      "outcome": null
+      "evidence": [
+        "docs/design-standard.md",
+        "packages/inkra/THIRD_PARTY_NOTICES.md",
+        "G-styles/style-comparison.json"
+      ],
+      "outcome": "Existing handwritten web font is already a 706-character subset documented in design-standard and THIRD_PARTY_NOTICES. Further universal removal would reduce supported glyphs; keep current coverage and expose optional CSS loading instead."
     },
     {
       "id": "E05",
       "title": "命名别名/tree shaking",
       "source": "bundle-analysis paired aliases",
       "initialDisposition": "measure",
-      "status": "implementation-under-validation",
+      "status": "implemented-verified-merged",
       "plan": "已反证仅改导入拼写无效；验证子路径和未使用导出",
       "evidence": [
-        "F-bundles-before",
+        "F-check.log",
         "F-bundles-after",
         "F-bundles-after-named",
-        "F-check.log"
+        "G-styles/style-comparison.json",
+        "PR-F-result.json"
       ],
-      "outcome": null,
+      "outcome": "PR #10 merged 5a45fba; actual package import/SSR/types and 650 local tests passed. Flat and compound import shapes are reported separately; optional CSS preserves default full stylesheet.",
       "pr": "https://github.com/inkrajs/inkra/pull/10"
     },
     {
@@ -235,39 +252,39 @@
       "title": "13 个真实 DOM 运行时缺口",
       "source": "REPORT.md 明确运行时缺口",
       "initialDisposition": "measure",
-      "status": "measurement-in-progress",
+      "status": "measured-verified",
       "plan": "逐身份有效 portal/overflow 场景与断言，不能封闭壳计时",
       "evidence": [
-        "scripts/browser/measure-browser.mjs",
-        "G-browser/browser-results.json"
+        "G-corrected-gaps/browser-results.json"
       ],
-      "outcome": null
+      "outcome": "All 13 formerly DOM-dependent identities executed with actual portals/overflow and positive assertions; initial submenu fixture error preserved separately."
     },
     {
       "id": "F02",
       "title": "真实大数据 DOM/键盘/滚动",
       "source": "REPORT.md P1.1; Word 操作表",
       "initialDisposition": "measure",
-      "status": "measurement-in-progress",
+      "status": "measured-with-limits",
       "plan": "1k/10k 安全上限，N/V/R、选择/搜索/输入到绘制",
       "evidence": [
-        "scripts/browser/measure-browser.mjs",
-        "G-browser/browser-results.json"
+        "G-browser/browser-results.json",
+        "I-surface-comparison/surface-comparison.json",
+        "H-scroll/scroll-results.json"
       ],
-      "outcome": null
+      "outcome": "60 browser timing cases measured plus four guarded full-output cases, with two narrow cases above the old nominal budget retained as failures. Explicit hard-deadline comparison added. VirtualList 1k/10k native scroll and End-key reachability pass all four profiles."
     },
     {
       "id": "F03",
       "title": "长任务/布局/绘制/帧",
       "source": "Word 交互布局绘制",
       "initialDisposition": "measure",
-      "status": "measurement-in-progress",
+      "status": "measured-with-limits",
       "plan": "浏览器 trace、longtask、layout/paint 与原始样本",
       "evidence": [
-        "scripts/browser/measure-browser.mjs",
-        "G-browser/browser-results.json"
+        "G-browser",
+        "H-scroll/scroll-results.json"
       ],
-      "outcome": null
+      "outcome": "Representative raw Chromium long-task/layout/paint traces and VirtualList frame samples captured. Interaction wall time is not field INP; aggregate observer windows include context loading. No universal frame-rate claim."
     },
     {
       "id": "F04",
@@ -300,49 +317,51 @@
       "title": "真实用户 RUM/设备/网络分组",
       "source": "Word 页面加载 RUM",
       "initialDisposition": "investigate",
-      "status": "pending",
+      "status": "blocked-data-source",
       "plan": "无生产发布授权/采样源；保留具体数据缺口与可行采集方法",
-      "evidence": [],
-      "outcome": null
+      "evidence": [
+        "User prohibition on deployment",
+        "scripts/browser/measure-loads.mjs"
+      ],
+      "outcome": "No authorized production RUM source or user samples are available; deployment is explicitly prohibited. Lab cold/warm and interaction observations are the available alternative; field p75 INP and device/network distributions cannot be invented."
     },
     {
       "id": "F07",
       "title": "多轮生命周期 retained heap",
       "source": "REPORT.md P2.7; Word heap 表",
       "initialDisposition": "measure",
-      "status": "measurement-in-progress",
+      "status": "measured-with-limits",
       "plan": "100 轮开关/挂载/卸载，GC/DOM/快照，关注列出的 timeline/heatmap/toggle/calendar 等",
       "evidence": [
-        "scripts/browser/measure-browser.mjs",
-        "G-browser/browser-results.json"
+        "G-corrected-lifecycle/browser-results.json"
       ],
-      "outcome": null
+      "outcome": "Ten component families completed 100 real-browser mount/unmount cycles. GC heap trends include runtime/caches and are not component-only retainers or proof of leak freedom."
     },
     {
       "id": "F08",
       "title": "监听器/observer/RAF/定时器/媒体",
       "source": "REPORT.original 未完成验收",
       "initialDisposition": "measure",
-      "status": "measurement-in-progress",
+      "status": "measured-with-limits",
       "plan": "实际浏览器创建/销毁计数及残留证据",
       "evidence": [
-        "scripts/browser/measure-browser.mjs",
-        "G-browser/browser-results.json"
+        "I-resources/resource-results.json"
       ],
-      "outcome": null
+      "outcome": "Eight component types completed 100 cycles with instrumented cleanup. Final global listeners stable at 14, one shared document MutationObserver, no pending RAF/interval/timeout. Probe weak bookkeeping was pruned, so earlier and later probe heaps must not be compared as a product speedup."
     },
     {
       "id": "F09",
       "title": "偶发崩溃可控压力复现",
       "source": "原报告结论与风险",
       "initialDisposition": "measure",
-      "status": "measurement-in-progress",
+      "status": "measured-not-reproduced",
       "plan": "有界串行压力，记录崩溃/超时/资源上限，不等同原始故障",
       "evidence": [
-        "scripts/browser/measure-browser.mjs",
-        "G-browser/browser-results.json"
+        "G-browser/browser-results.json",
+        "D-paged-results.json",
+        "I-surface-comparison/surface-comparison.json"
       ],
-      "outcome": null
+      "outcome": "Bounded large-surface and repeated-canvas pressure completed; original intermittent crash was not reproduced. Artificial heap-cap failures and hard timeouts remain explicit boundary evidence."
     },
     {
       "id": "F10",
@@ -364,19 +383,25 @@
       "evidence": [
         "PR #5–7",
         "C-check.log",
-        "E-check.log"
+        "E-check.log",
+        "I-surface-check.log",
+        "I-docs-browser/docs-browser-results.json"
       ],
-      "outcome": "Previously delivered in #5–7; latest integrated runtime/SSR regressions pass, browser follow-up continues."
+      "outcome": "Covered by merged #5–7; current 653/653 opt-in regression tests and relevant browser interactions pass. Coverage is scoped to fixtures, not every possible application."
     },
     {
       "id": "F12",
       "title": "持续回归与预算/来源一致",
       "source": "Word 持续回归; 每提交证据",
       "initialDisposition": "implement",
-      "status": "pending",
+      "status": "implemented-validation-pending",
       "plan": "版本/输入/构建/原始样本/节点/失败状态记录；避免噪声毫秒阈值",
-      "evidence": [],
-      "outcome": null
+      "evidence": [
+        "scripts/browser/run-docs-checks.mjs",
+        "scripts/browser/compare-surface-scheduling.mjs",
+        "scripts/benchmark-provenance.mjs"
+      ],
+      "outcome": "Serial child-process budgets and hard browser context/process deadlines implemented, with raw samples and source hashes; final full inventory run remains."
     },
     {
       "id": "F13",
@@ -393,104 +418,128 @@
       "title": "原子展示/主题尺寸/长文本",
       "source": "Word 各类适用场景",
       "initialDisposition": "measure",
-      "status": "measurement-in-progress",
+      "status": "measured-with-limits",
       "plan": "复用全组件 fixture + 关键浏览器主题/尺寸",
       "evidence": [
-        "scripts/browser/measure-browser.mjs",
-        "G-browser/browser-results.json"
+        "I-surface-check.log",
+        "I-docs-browser/docs-browser-results.json",
+        "G-corrected-gaps/browser-results.json",
+        "I-resources/resource-results.json",
+        "I-docs-baseline/results.json"
       ],
-      "outcome": null
+      "outcome": "Current source/runtime tests and applicable consumer browser scripts exercised the report category. Full docs queue: 75/77 pass; narrow Tooltip and Sortable control-panel failures both reproduced at the same assertions on the #10 baseline. Not an exhaustive browser benchmark of every identity."
     },
     {
       "id": "G02",
       "title": "输入表单/校验/异步竞态",
       "source": "Word 各类适用场景",
       "initialDisposition": "measure",
-      "status": "measurement-in-progress",
+      "status": "measured-with-limits",
       "plan": "连续输入/受控回写/IME/焦点与错误状态",
       "evidence": [
-        "scripts/browser/measure-browser.mjs",
-        "G-browser/browser-results.json"
+        "I-surface-check.log",
+        "I-docs-browser/docs-browser-results.json",
+        "G-corrected-gaps/browser-results.json",
+        "I-resources/resource-results.json",
+        "I-docs-baseline/results.json"
       ],
-      "outcome": null
+      "outcome": "Current source/runtime tests and applicable consumer browser scripts exercised the report category. Full docs queue: 75/77 pass; narrow Tooltip and Sortable control-panel failures both reproduced at the same assertions on the #10 baseline. Not an exhaustive browser benchmark of every identity."
     },
     {
       "id": "G03",
       "title": "选择器开闭/搜索/匹配/导航",
       "source": "Word 各类适用场景",
       "initialDisposition": "measure",
-      "status": "measurement-in-progress",
+      "status": "measured-with-limits",
       "plan": "搜索与 portal/overflow 实际打开场景",
       "evidence": [
-        "scripts/browser/measure-browser.mjs",
-        "G-browser/browser-results.json"
+        "I-surface-check.log",
+        "I-docs-browser/docs-browser-results.json",
+        "G-corrected-gaps/browser-results.json",
+        "I-resources/resource-results.json",
+        "I-docs-baseline/results.json"
       ],
-      "outcome": null
+      "outcome": "Current source/runtime tests and applicable consumer browser scripts exercised the report category. Full docs queue: 75/77 pass; narrow Tooltip and Sortable control-panel failures both reproduced at the same assertions on the #10 baseline. Not an exhaustive browser benchmark of every identity."
     },
     {
       "id": "G04",
       "title": "表格树列表排序过滤滚动",
       "source": "Word 各类适用场景",
       "initialDisposition": "measure",
-      "status": "measurement-in-progress",
+      "status": "measured-with-limits",
       "plan": "总N/可见V/渲染R；模型/输出分别记录",
       "evidence": [
-        "scripts/browser/measure-browser.mjs",
-        "G-browser/browser-results.json"
+        "I-surface-check.log",
+        "I-docs-browser/docs-browser-results.json",
+        "G-corrected-gaps/browser-results.json",
+        "I-resources/resource-results.json",
+        "I-docs-baseline/results.json"
       ],
-      "outcome": null
+      "outcome": "Current source/runtime tests and applicable consumer browser scripts exercised the report category. Full docs queue: 75/77 pass; narrow Tooltip and Sortable control-panel failures both reproduced at the same assertions on the #10 baseline. Not an exhaustive browser benchmark of every identity."
     },
     {
       "id": "G05",
       "title": "浮层定位/resize/滚动",
       "source": "Word 各类适用场景",
       "initialDisposition": "measure",
-      "status": "measurement-in-progress",
+      "status": "measured-with-limits",
       "plan": "真实弹层定位与重复清理",
       "evidence": [
-        "scripts/browser/measure-browser.mjs",
-        "G-browser/browser-results.json"
+        "I-surface-check.log",
+        "I-docs-browser/docs-browser-results.json",
+        "G-corrected-gaps/browser-results.json",
+        "I-resources/resource-results.json",
+        "I-docs-baseline/results.json"
       ],
-      "outcome": null
+      "outcome": "Current source/runtime tests and applicable consumer browser scripts exercised the report category. Full docs queue: 75/77 pass; narrow Tooltip and Sortable control-panel failures both reproduced at the same assertions on the #10 baseline. Not an exhaustive browser benchmark of every identity."
     },
     {
       "id": "G06",
       "title": "Tabs 隐藏子树/forceMount",
       "source": "Word 各类适用场景",
       "initialDisposition": "measure",
-      "status": "measurement-in-progress",
+      "status": "measured-with-limits",
       "plan": "保留/卸载策略各自证据，hidden 工作不擅自丢状态",
       "evidence": [
-        "scripts/browser/measure-browser.mjs",
-        "G-browser/browser-results.json"
+        "I-surface-check.log",
+        "I-docs-browser/docs-browser-results.json",
+        "G-corrected-gaps/browser-results.json",
+        "I-resources/resource-results.json",
+        "I-docs-baseline/results.json"
       ],
-      "outcome": null
+      "outcome": "Current source/runtime tests and applicable consumer browser scripts exercised the report category. Full docs queue: 75/77 pass; narrow Tooltip and Sortable control-panel failures both reproduced at the same assertions on the #10 baseline. Not an exhaustive browser benchmark of every identity."
     },
     {
       "id": "G07",
       "title": "Provider 上下文扇出",
       "source": "Word 各类适用场景",
       "initialDisposition": "measure",
-      "status": "measurement-in-progress",
+      "status": "measured-with-limits",
       "plan": "稳定/新 value 与局部更新的消费者工作",
       "evidence": [
-        "scripts/browser/measure-browser.mjs",
-        "G-browser/browser-results.json"
+        "I-surface-check.log",
+        "I-docs-browser/docs-browser-results.json",
+        "G-corrected-gaps/browser-results.json",
+        "I-resources/resource-results.json",
+        "I-docs-baseline/results.json"
       ],
-      "outcome": null
+      "outcome": "Current source/runtime tests and applicable consumer browser scripts exercised the report category. Full docs queue: 75/77 pass; narrow Tooltip and Sortable control-panel failures both reproduced at the same assertions on the #10 baseline. Not an exhaustive browser benchmark of every identity."
     },
     {
       "id": "G08",
       "title": "媒体图表画布/动画持续任务",
       "source": "Word 各类适用场景",
       "initialDisposition": "measure",
-      "status": "measurement-in-progress",
+      "status": "measured-with-limits",
       "plan": "资源/RAF/媒体请求/缩放尺寸与卸载，音频解码另记",
       "evidence": [
-        "scripts/browser/measure-browser.mjs",
-        "G-browser/browser-results.json"
+        "I-surface-check.log",
+        "I-docs-browser/docs-browser-results.json",
+        "G-corrected-gaps/browser-results.json",
+        "I-resources/resource-results.json",
+        "I-docs-baseline/results.json"
       ],
-      "outcome": null
+      "outcome": "Current source/runtime tests and applicable consumer browser scripts exercised the report category. Full docs queue: 75/77 pass; narrow Tooltip and Sortable control-panel failures both reproduced at the same assertions on the #10 baseline. Not an exhaustive browser benchmark of every identity."
     }
   ],
   "componentInventory": "component-performance-inventory.json"
