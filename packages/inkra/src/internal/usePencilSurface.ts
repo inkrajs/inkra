@@ -6,6 +6,7 @@ import { observeCanvasRecovery } from './recovery.js';
 import { seedToNumber } from './random.js';
 import { drawPencilSurface } from './surfaceRenderer.js';
 import { releaseSurfaceBitmaps } from './surfaceBudget.js';
+import { observeSurfaceViewport, surfaceIsNearViewport } from './surfaceVisibility.js';
 import { maxStrokeRoughness, pencilRenderDefaults, readRenderToken } from './renderTokens.js';
 import type { PencilSurfaceVariant } from './surfaceRenderer.js';
 
@@ -29,10 +30,17 @@ export function usePencilSurface(
     let frame = 0;
     let lastPaint = '';
     let disposed = false;
+    let deferOffscreen = false;
 
     const paint = () => {
       frame = 0;
       if (disposed) return;
+      if (deferOffscreen && !surfaceIsNearViewport(root)) {
+        // A new canvas otherwise retains its implicit 300x150 blank bitmap.
+        // Keep valid painted pixels when merely scrolling out of view.
+        if (!lastPaint) releaseSurfaceBitmaps(canvas, borderRef.current);
+        return;
+      }
       const width = root.clientWidth;
       const height = root.clientHeight;
       if (width < 6 || height < 6) return;
@@ -112,6 +120,8 @@ export function usePencilSurface(
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(paint);
     };
+    const stopViewport = observeSurfaceViewport(root, schedule);
+    deferOffscreen = stopViewport !== undefined;
     const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(schedule);
     resize?.observe(root);
     window.addEventListener('resize', schedule, { passive: true });
@@ -130,6 +140,7 @@ export function usePencilSurface(
     return () => {
       disposed = true;
       stopRecovery();
+      stopViewport?.();
       resize?.disconnect();
       inheritedStyle.disconnect();
       colorScheme.removeEventListener('change', schedule);
