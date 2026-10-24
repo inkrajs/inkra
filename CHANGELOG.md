@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.0 - 2026-10-25
+## 0.4.1 - 2026-10-25
 
 - Add theme-aligned Markdown with pencil typography, task checkboxes, tables,
   content-seeded inline code, and language-labeled code cards with copy actions.
@@ -18,6 +18,11 @@
   frame scheduling and package-level JavaScript/CSS entry points.
 - Simplify primary documentation previews, extend the icon catalog and expose
   a 16-128px size slider with a responsive nine-icon preview.
+- Keep Drawer actions inside short viewports with classic scrollbars; allow
+  header/footer shrinkage and avoid reserving an unused footer scrollbar gutter.
+
+The 0.4.0 tagged candidate was not published after the Linux browser check found
+the Drawer overflow. Its immutable tag is retained; 0.4.1 supersedes it.
 
 Publication is confirmed only after registry archive verification and the
 matching GitHub Release. Existing React 18 Calendar SSR and Next.js/RSC limits

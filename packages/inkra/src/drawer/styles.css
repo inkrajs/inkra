@@ -60,7 +60,7 @@
 .inkra-drawer__body,
 .inkra-drawer__footer { box-sizing: border-box; gap: var(--inkra-space-3); min-width: 0; padding: var(--inkra-space-5); position: relative; }
 .inkra-drawer__header,
-.inkra-drawer__footer { flex: none; }
+.inkra-drawer__footer { flex: 0 1 auto; min-height: 0; }
 .inkra-drawer__header {
   align-items: center;
   display: flex;
@@ -72,8 +72,8 @@
 .inkra-drawer__heading { display: grid; flex: 1 1 auto; gap: var(--inkra-space-2); min-width: 0; overflow-wrap: anywhere; }
 .inkra-drawer__header-actions { align-items: center; display: flex; flex: none; flex-wrap: wrap; gap: var(--inkra-space-2); justify-content: flex-end; max-inline-size: 100%; min-width: 0; overflow: auto; overscroll-behavior: contain; }
 .inkra-drawer__close-button { flex: none; }
-.inkra-drawer__body { flex: 1 1 auto; min-height: 0; min-width: 0; overflow: auto; overscroll-behavior: contain; padding: var(--inkra-space-5); scrollbar-gutter: stable; }
-.inkra-drawer__footer { align-items: center; display: flex; flex-wrap: wrap; justify-content: flex-end; max-block-size: 40%; overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
+.inkra-drawer__body { flex: 1 1 0; min-height: 0; min-width: 0; overflow: auto; overscroll-behavior: contain; padding: var(--inkra-space-5); scrollbar-gutter: stable; }
+.inkra-drawer__footer { align-items: center; display: flex; flex-wrap: wrap; justify-content: flex-end; max-block-size: 40%; overflow: auto; overscroll-behavior: contain; scrollbar-gutter: auto; }
 .inkra-drawer__footer[data-align="start"] { justify-content: flex-start; }
 .inkra-drawer__footer[data-align="center"] { justify-content: center; }
 .inkra-drawer__footer > .inkra-button { max-width: 100%; }
