@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId, useMemo } from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
 
 import { PencilText } from '../PencilText.js';
@@ -42,16 +42,18 @@ export function Field({
   const errorId = hasError ? `${controlId}-error` : undefined;
   const classes = ['inkra-field', className].filter(Boolean).join(' ');
 
+  const context = useMemo(() => ({
+    controlId,
+    descriptionId,
+    errorId,
+    required,
+    invalid: resolvedInvalid,
+    disabled,
+    readOnly,
+  }), [controlId, descriptionId, errorId, required, resolvedInvalid, disabled, readOnly]);
+
   return (
-    <FieldContext.Provider value={{
-      controlId,
-      descriptionId,
-      errorId,
-      required,
-      invalid: resolvedInvalid,
-      disabled,
-      readOnly,
-    }}>
+    <FieldContext.Provider value={context}>
       <div
         {...props}
         className={classes}

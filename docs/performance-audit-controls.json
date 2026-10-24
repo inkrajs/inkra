@@ -1,0 +1,638 @@
+{
+  "baseline": "7bd08e47b05c9d61a226bbbfd3d5d620ce93962a",
+  "group": "controls",
+  "count": 26,
+  "status_definitions": {
+    "fixed_runtime_tested": "Changed implementation, measured regression coverage passed. Browser acceptance remains separately open.",
+    "source_reviewed_shared_fix_runtime_tested": "No separate component rewrite; tested reduction comes from a fixed shared provider.",
+    "source_reviewed_no_warranted_change": "Source and existing tests inspected; no additional safe material change established."
+  },
+  "report": "docs/performance/form-controls-audit.md",
+  "components": [
+    {
+      "component": "Button",
+      "aliases": [
+        "Button"
+      ],
+      "source": "packages/inkra/src/Button.tsx",
+      "module": "Button.tsx",
+      "group": "controls",
+      "status": "source_reviewed_shared_fix_runtime_tested",
+      "findings": [
+        "Fixed-size native-button visual tree. Rendering depends on disabled/loading, group settings, action context, labels, and icons; those semantic updates remain live. No local timers, collection traversal, or drawing cache was added. Stable group children now avoid unrelated context broadcasts."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/components.test.mjs",
+        "Existing suite passed: packages/inkra/test/input.test.mjs",
+        "Focused runtime regression passed: packages/inkra/test/form-control-performance.test.mjs; baseline replay demonstrates redundant work.",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Inspected; benefits from fixed group context",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced."
+      ]
+    },
+    {
+      "component": "ButtonGroup",
+      "aliases": [
+        "ButtonGroup"
+      ],
+      "source": "packages/inkra/src/Button.tsx",
+      "module": "Button.tsx",
+      "group": "controls",
+      "status": "fixed_runtime_tested",
+      "findings": [
+        "Provider previously allocated a new value for every class/style/children update and forced consumers to render even when group settings were identical. Memoized the four semantic context fields; changes to size/orientation/variant/disabled still propagate."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/components.test.mjs",
+        "Focused runtime regression passed: packages/inkra/test/form-control-performance.test.mjs; baseline replay demonstrates redundant work.",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Fixed",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced."
+      ]
+    },
+    {
+      "component": "ButtonLink",
+      "aliases": [
+        "ButtonLink"
+      ],
+      "source": "packages/inkra/src/Button.tsx",
+      "module": "Button.tsx",
+      "group": "controls",
+      "status": "source_reviewed_no_warranted_change",
+      "findings": [
+        "Same visual tree and group dependency as Button. Disabled/loading guards still cover click, auxiliary click, keyboard activation, href, and tab order. No separate broad component memoization was introduced, which could obscure fresh handlers/children."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/components.test.mjs",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Inspected; benefits from fixed group context",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced."
+      ]
+    },
+    {
+      "component": "Calendar",
+      "aliases": [
+        "Calendar"
+      ],
+      "source": "packages/inkra/src/calendar/index.tsx",
+      "module": "calendar",
+      "group": "controls",
+      "status": "fixed_runtime_tested",
+      "findings": [
+        "Removed repeated full-event filtering from both day-cell and day-button rendering. A single local-date index is shared through stable context. Runtime test verifies event order, accessible names, event identity, and stopPropagation; index invalidates on replacement events.",
+        "Memoization contract: event/date edits must replace the events array. Same-reference in-place collection mutations are intentionally not observed by the indexed paths."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/travel.test.mjs",
+        "Focused runtime regression passed: packages/inkra/test/form-control-performance.test.mjs; baseline replay demonstrates redundant work.",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Fixed",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced."
+      ]
+    },
+    {
+      "component": "ColorPicker",
+      "aliases": [
+        "ColorPicker"
+      ],
+      "source": "packages/inkra/src/color-picker/index.tsx",
+      "module": "color-picker",
+      "group": "controls",
+      "status": "source_reviewed_no_warranted_change",
+      "findings": [
+        "Preset normalization is already memoized by preset collection; palette uses a native color input and alpha uses the shared Slider. Text draft remains separate from committed value so incomplete input is preserved. No custom 2D drag listener or conversion loop. Large preset collections remain explicit render output rather than silently truncated."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/color-picker.test.mjs",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Inspected, no additional justified change",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced."
+      ]
+    },
+    {
+      "component": "DatePicker",
+      "aliases": [
+        "DatePicker"
+      ],
+      "source": "packages/inkra/src/date-picker/index.tsx",
+      "module": "date-picker",
+      "group": "controls",
+      "status": "fixed_runtime_tested",
+      "findings": [
+        "Day labels constructed a fresh `Intl.NumberFormat` per cell, unlike its already memoized date formatters. Added the corresponding locale-keyed number formatter. Tests verify locale changes and cell formatting while existing single/range/form tests pass."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/expansion-dates.test.mjs",
+        "Focused runtime regression passed: packages/inkra/test/form-control-performance.test.mjs; baseline replay demonstrates redundant work.",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Fixed",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced."
+      ]
+    },
+    {
+      "component": "Editable",
+      "aliases": [
+        "Editable"
+      ],
+      "source": "packages/inkra/src/editable/index.tsx",
+      "module": "editable",
+      "group": "controls",
+      "status": "source_reviewed_no_warranted_change",
+      "findings": [
+        "One editor is mounted only while editing. Focus-on-edit animation frame has cleanup; validation/save work is interaction-triggered rather than per-render. Retained async error/value behavior and IME guards. The finish-focus callback already dereferences the live ref; native focus/async race acceptance still needs a browser, not an SSR assertion."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/editable.test.mjs",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Inspected, no additional justified change",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced."
+      ]
+    },
+    {
+      "component": "Field",
+      "aliases": [
+        "Field"
+      ],
+      "source": "packages/inkra/src/form/Field.tsx",
+      "module": "form",
+      "group": "controls",
+      "status": "fixed_runtime_tested",
+      "findings": [
+        "Provider recreated its context for label/description text changes although the control IDs and state stayed identical. Memoized exact ID/state fields. Tests verify disabled/required/error/description-presence changes still reach consumers and update ARIA relationships."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/form.test.mjs",
+        "Focused runtime regression passed: packages/inkra/test/form-control-performance.test.mjs; baseline replay demonstrates redundant work.",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Fixed",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced."
+      ]
+    },
+    {
+      "component": "Input",
+      "aliases": [
+        "Input"
+      ],
+      "source": "packages/inkra/src/form/Input.tsx",
+      "module": "form",
+      "group": "controls",
+      "status": "source_reviewed_no_warranted_change",
+      "findings": [
+        "Uncontrolled value synchronization, clear eligibility, focus/composition state, form reset timer, and native listener cleanup inspected. Its updates drive clear affordance and editable drawing; blindly suppressing them risks stale uncontrolled/autofill/change-event behavior. Controlled native values and native callbacks retained. Existing input/form tests pass."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/input.test.mjs",
+        "Existing suite passed: packages/inkra/test/form.test.mjs",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Inspected, no additional justified change",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced.",
+        "Native editable lettering, autofill, complex wrapping, scrolling and IME require real-browser measurement before more aggressive scheduling changes."
+      ]
+    },
+    {
+      "component": "Textarea",
+      "aliases": [
+        "Textarea"
+      ],
+      "source": "packages/inkra/src/form/Textarea.tsx",
+      "module": "form",
+      "group": "controls",
+      "status": "source_reviewed_no_warranted_change",
+      "findings": [
+        "UTF-16 counter, threshold modes, native value, resize observer, pointer capture, keyboard resizing, form-reset frame cancellation inspected. Pointer work is local; resize observer is only installed for vertical resize. Retained counter/drawing synchronization rather than speculatively removing keystroke updates without browser IME/resize measurement."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/textarea-counter.test.mjs",
+        "Existing suite passed: packages/inkra/test/form.test.mjs",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Inspected, no additional justified change",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced.",
+        "Native editable lettering, autofill, complex wrapping, scrolling and IME require real-browser measurement before more aggressive scheduling changes."
+      ]
+    },
+    {
+      "component": "Hotkey",
+      "aliases": [
+        "Hotkey"
+      ],
+      "source": "packages/inkra/src/hotkey/index.tsx",
+      "module": "hotkey",
+      "group": "controls",
+      "status": "source_reviewed_no_warranted_change",
+      "findings": [
+        "Modifier/key formatting is bounded by one shortcut, not a growing collection. Auto-platform detection is effect-based to preserve SSR hydration, with no global key listener. Retained detection semantics rather than reading browser platform in the initial server-compatible render."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/hotkey.test.mjs",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Inspected, no additional justified change",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced."
+      ]
+    },
+    {
+      "component": "HotkeyInput",
+      "aliases": [
+        "HotkeyInput"
+      ],
+      "source": "packages/inkra/src/hotkey/index.tsx",
+      "module": "hotkey",
+      "group": "controls",
+      "status": "source_reviewed_no_warranted_change",
+      "findings": [
+        "Capture stays on the native focused input. IME, modifier-only, Tab, Escape, clear, validation, and conflict paths inspected. No document/window recording listener or polling loop. Constant-size normalization is not the dominant drawing cost."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/hotkey.test.mjs",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Inspected, no additional justified change",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced."
+      ]
+    },
+    {
+      "component": "InputNumber",
+      "aliases": [
+        "InputNumber"
+      ],
+      "source": "packages/inkra/src/input-number/index.tsx",
+      "module": "input-number",
+      "group": "controls",
+      "status": "fixed_runtime_tested",
+      "findings": [
+        "Six global hold listeners were installed for every mounted control, even when no gesture was active. Install synchronously when a hold starts, remove on stop, and preserve repeat timers, live modifiers, pointer-ID guards, capture fallback, latest step callback, and form reset. StrictMode/runtime tests cover pointer up/cancel, unrelated pointer, blur, hidden document, disable, and unmount cleanup."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/input-number.test.mjs",
+        "Existing suite passed: packages/inkra/test/input-number-model.test.mjs",
+        "Focused runtime regression passed: packages/inkra/test/form-control-performance.test.mjs; baseline replay demonstrates redundant work.",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Fixed",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced."
+      ]
+    },
+    {
+      "component": "Keypad",
+      "aliases": [
+        "Keypad"
+      ],
+      "source": "packages/inkra/src/keypad/index.tsx",
+      "module": "keypad",
+      "group": "controls",
+      "status": "source_reviewed_no_warranted_change",
+      "findings": [
+        "State is local and a value ref preserves consecutive presses. Only actual value changes publish onValueChange. Layout traversal is proportional to caller-defined keys; labels and disabled-at-limit behavior must stay current. No listeners/timers outside native buttons. Arbitrarily large custom layouts still intentionally render all supplied keys."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/keypad.test.mjs",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Inspected, no additional justified change",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced."
+      ]
+    },
+    {
+      "component": "RangeSlider",
+      "aliases": [
+        "RangeSlider"
+      ],
+      "source": "packages/inkra/src/range-slider/index.tsx",
+      "module": "range-slider",
+      "group": "controls",
+      "status": "source_reviewed_no_warranted_change",
+      "findings": [
+        "Thin two-value wrapper. Endpoint normalization and minimum-step calculation are constant-time and preserve already-ordered array identity. Existing crossed-value, RTL, disabled, and callback-shape tests pass; memoizing these trivial calculations would add complexity without demonstrated benefit."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/range-slider.test.mjs",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Inspected, no additional justified change",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced."
+      ]
+    },
+    {
+      "component": "Rating",
+      "aliases": [
+        "Rating"
+      ],
+      "source": "packages/inkra/src/rating/index.tsx",
+      "module": "rating",
+      "group": "controls",
+      "status": "source_reviewed_no_warranted_change",
+      "findings": [
+        "Preview callback already rejects duplicate preview values; symbol indices are memoized; native reset timer is cancelled. Rendering scales with caller-requested symbol count and custom renderSymbol state. Did not cap count or virtualize interactive symbols, because either changes the public visual/accessibility contract."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/rating.test.mjs",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Inspected, no additional justified change",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced."
+      ]
+    },
+    {
+      "component": "Checkbox",
+      "aliases": [
+        "Checkbox"
+      ],
+      "source": "packages/inkra/src/selection/Checkbox.tsx",
+      "module": "selection",
+      "group": "controls",
+      "status": "source_reviewed_no_warranted_change",
+      "findings": [
+        "Uses native checked/defaultChecked state and a constant-size visual tree. Controlled updates avoid redundant internal checked writes; uncontrolled changes synchronize the visual. Indeterminate behavior and native reset cleanup were inspected. No global per-checkbox input listeners or collection computations found."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/selection.test.mjs",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Inspected, no additional justified change",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced."
+      ]
+    },
+    {
+      "component": "RadioGroup",
+      "aliases": [
+        "RadioGroup"
+      ],
+      "source": "packages/inkra/src/selection/RadioGroup.tsx",
+      "module": "selection",
+      "group": "controls",
+      "status": "fixed_runtime_tested",
+      "findings": [
+        "Provider recreated a handler and context on every parent rerender. Memoized all relevant context values, including the callback, current selection, disabled/required/form/name/variant. Runtime tests check fresh callback and selection/state propagation."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/selection.test.mjs",
+        "Focused runtime regression passed: packages/inkra/test/form-control-performance.test.mjs; baseline replay demonstrates redundant work.",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Fixed",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced."
+      ]
+    },
+    {
+      "component": "RadioGroupItem",
+      "aliases": [
+        "RadioGroupItem"
+      ],
+      "source": "packages/inkra/src/selection/RadioGroup.tsx",
+      "module": "selection",
+      "group": "controls",
+      "status": "source_reviewed_shared_fix_runtime_tested",
+      "findings": [
+        "Every selection change must at least resolve checked state. Group-level unrelated updates no longer force stable children to render. Kept native radio grouping, item-specific callbacks, selected drawing, and descriptions intact; no custom selector-store or rewritten radio interaction model."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/selection.test.mjs",
+        "Focused runtime regression passed: packages/inkra/test/form-control-performance.test.mjs; baseline replay demonstrates redundant work.",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Inspected; benefits from fixed provider",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced."
+      ]
+    },
+    {
+      "component": "Switch",
+      "aliases": [
+        "Switch"
+      ],
+      "source": "packages/inkra/src/selection/Switch.tsx",
+      "module": "selection",
+      "group": "controls",
+      "status": "source_reviewed_no_warranted_change",
+      "findings": [
+        "Same native checked helper; fixed glyph geometry and state-dependent track. Existing cached primitives own drawing. No repeated global listener or growing work queue in this wrapper."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/selection.test.mjs",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Inspected, no additional justified change",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced."
+      ]
+    },
+    {
+      "component": "Select.Stepper",
+      "aliases": [
+        "Select.Stepper",
+        "SelectStepper"
+      ],
+      "source": "packages/inkra/src/select/StepperSelect.tsx",
+      "module": "select",
+      "group": "controls",
+      "status": "source_reviewed_no_warranted_change",
+      "findings": [
+        "Supplemental source review for upstream a7a526b: Select.Stepper and SelectStepper are the same public component identity. It did not exist in the historical 230-identity performance report; that report supplies no timing or bundle evidence for this component.",
+        "The visible previous/value/next control is fixed-size, but every supplied item is emitted as a native select option. Current-value lookup, adjacent enabled-item lookup and native-value validation are linear scans; missing-value reverse navigation and End can copy/reverse the items. No option-count bound or virtualization is claimed, and no measured performance rewrite is asserted.",
+        "Controlled and uncontrolled values retain native form projection. The single form-reset listener is keyed by controlled mode/form, reads current item/default/value refs, and removes the listener and pending timeout on cleanup. Disabled/read-only guards, skipped disabled options, loop boundaries and RTL key mapping were reviewed."
+      ],
+      "verification": [
+        "packages/inkra/test/select-stepper.test.mjs: public source contracts and executable navigation/native-value model cases; not real DOM interaction.",
+        "packages/inkra/test/select-stepper-audit.test.mjs: exact built export aliases, ledger accounting, three-option SSR output and untimed test-renderer fixture mount/same-value update/changed-value update/unmount.",
+        "scripts/check-component-audit.mjs: reconciles current public exports and component identities against the source-review ledgers."
+      ],
+      "disposition": "Supplemental source review with focused non-browser coverage; no measured bottleneck or additional implementation change established. New fixture measurements must be reported separately from the historical 230-identity report.",
+      "browser_only_gaps": [
+        "Null DOM refs do not exercise native form submission/reset/validation, focus, computed RTL direction, layout, canvas drawing or real-browser accessibility. No browser acceptance or large-option responsiveness claim is made.",
+        "The controls ledger package_verification section and earlier rows record the original audit run, not verification of this newly added component."
+      ],
+      "introduced_by": "a7a526b"
+    },
+    {
+      "component": "Slider",
+      "aliases": [
+        "Slider"
+      ],
+      "source": "packages/inkra/src/slider/index.tsx",
+      "module": "slider",
+      "group": "controls",
+      "status": "source_reviewed_no_warranted_change",
+      "findings": [
+        "Delegates gesture/form mechanics to Radix; uses stable full-size painted surfaces with CSS clipping for range changes. The ancestor-direction observer has cleanup and is omitted for explicit direction. Per-value work scales with the requested thumbs, not the numeric range. No second gesture engine or visual throttling added."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/slider.test.mjs",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Inspected, no additional justified change",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced."
+      ]
+    },
+    {
+      "component": "TimePicker",
+      "aliases": [
+        "TimePicker"
+      ],
+      "source": "packages/inkra/src/time-picker/index.tsx",
+      "module": "time-picker",
+      "group": "controls",
+      "status": "fixed_runtime_tested",
+      "findings": [
+        "Memoized localized display formatter, fixed option arrays, and memoized option columns with stable callbacks. Minute/second edits now leave other columns untouched. Callbacks read the latest draft, preserve AM/PM, and invalidate for constraints/cycle/localization changes. Runtime test commits 21:30:15 after separate minute/second/period/hour edits. Native validation remains authoritative."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/expansion-dates.test.mjs",
+        "Focused runtime regression passed: packages/inkra/test/form-control-performance.test.mjs; baseline replay demonstrates redundant work.",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Fixed",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced.",
+        "Detached native validity and portal-focus behavior still require real-browser acceptance; runtime tests use a validity stub and actual column elements without the portal host."
+      ]
+    },
+    {
+      "component": "ToggleGroup.Item",
+      "aliases": [
+        "ToggleGroup.Item"
+      ],
+      "source": "packages/inkra/src/toggle-group/index.tsx",
+      "module": "toggle-group",
+      "group": "controls",
+      "status": "source_reviewed_no_warranted_change",
+      "findings": [
+        "Fixed-size surfaces and label/icons; primitive orientation dependency. Preserved Base UI state-derived class functions and value behavior rather than adding a custom comparator around arbitrary render/interaction props."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/expansion-feedback.test.mjs",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Inspected, no additional justified change",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced."
+      ]
+    },
+    {
+      "component": "ToggleGroup.Root",
+      "aliases": [
+        "ToggleGroup.Root"
+      ],
+      "source": "packages/inkra/src/toggle-group/index.tsx",
+      "module": "toggle-group",
+      "group": "controls",
+      "status": "source_reviewed_no_warranted_change",
+      "findings": [
+        "Interaction/state delegation remains with Base UI. Inkra's orientation context is already a primitive, so it does not create object-identity broadcasts. Frame and selection visuals use shared renderer caches."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/expansion-feedback.test.mjs",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Inspected, no additional justified change",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced."
+      ]
+    },
+    {
+      "component": "Upload",
+      "aliases": [
+        "Upload"
+      ],
+      "source": "packages/inkra/src/upload/index.tsx",
+      "module": "upload",
+      "group": "controls",
+      "status": "fixed_runtime_tested",
+      "findings": [
+        "Progress updated one item but reconstructed every row's expensive control/surface subtree. Extracted a memoized row and stabilized labels/actions while retaining latest callbacks via existing refs. Tests cover unrelated rows, same item identity, every progress notification, cancellation/late callbacks, and disabled/label changes. The parent still traverses the file list for ordered immutable updates.",
+        "Changed Upload items must replace the changed item objects, normally in a replacement files array; same-reference in-place item mutation is intentionally unsupported by memoized rows. Individual label override values are dependencies, so same-object label edits/deletion and new-but-equivalent override objects remain supported and runtime-tested."
+      ],
+      "verification": [
+        "Existing suite passed: packages/inkra/test/expansion-flows.test.mjs",
+        "Focused runtime regression passed: packages/inkra/test/form-control-performance.test.mjs; baseline replay demonstrates redundant work.",
+        "TypeScript build and full library suite passed (426 passed, 6 pre-existing skips, 0 failed)."
+      ],
+      "disposition": "Fixed",
+      "browser_only_gaps": [
+        "Browser-based visual/native interaction and sustained heap/paint profiles were not run; browser launch is blocked in this environment. Original intermittent crash not reproduced."
+      ]
+    }
+  ],
+  "internal_helpers": [
+    {
+      "component": "InputAction",
+      "source": "packages/inkra/src/form/InputAction.tsx",
+      "status": "source_reviewed_no_warranted_change",
+      "findings": [
+        "Hover/focus state is local to the action; disabled clears both. Primitive boolean action context and selection-drawing cleanup inspected. The focus-containment guard prevents needless blur changes within the action."
+      ]
+    },
+    {
+      "component": "EditablePencilText",
+      "source": "packages/inkra/src/form/EditablePencilText.tsx",
+      "status": "source_reviewed_browser_measurement_blocked",
+      "findings": [
+        "Existing per-editor bounded 128-entry/4 MiB glyph cache, 4,096-character total bound, 256-character line bound, appearance-key deduplication, native numeric-draft fallback, IME handling, and observer/font/reset cleanup inspected. Textarea line measurement still performs native range geometry reads. Further measurement-cache or paint-scheduling changes require actual wrapping/scroll/font/IME evidence; no unverified layout shortcut was added."
+      ]
+    }
+  ],
+  "package_verification": {
+    "build": "passed",
+    "library_tests": {
+      "total": 432,
+      "passed": 426,
+      "skipped": 6,
+      "failed": 0
+    },
+    "focused_runtime_tests": {
+      "total": 11,
+      "passed": 11
+    },
+    "baseline_replay": {
+      "total": 11,
+      "expected_performance_failures": 10,
+      "behavior_preservation_passes": 1
+    },
+    "release_tests": {
+      "total": 5,
+      "passed": 5
+    },
+    "repository_portability": "passed",
+    "pack": {
+      "entries": 273,
+      "status": "passed"
+    },
+    "installed_tarball": "SSR/import/type passed with React 19.3.1",
+    "browser": "not run; launch blocked in current environment"
+  },
+  "supplemental_review": {
+    "upstream_commit": "a7a526b",
+    "components": [
+      "Select.Stepper"
+    ],
+    "scope": "The historical report and package_verification below covered the original 25 controls. This supplemental source-review entry raises current control coverage to 26; it does not backfill historical benchmark results."
+  }
+}

@@ -12,7 +12,6 @@ import {
   useId,
   useImperativeHandle,
   useRef,
-  useState,
 } from 'react';
 
 import { PencilSurface } from '../PencilSurface.js';
@@ -169,11 +168,12 @@ function PanZoomRoot(
   const resolvedMaxScale = Math.max(Number.isFinite(maxScale) ? maxScale : 8, resolvedMinScale);
   const controlled = value !== undefined;
   const initialTransform = normalizedTransform(value ?? defaultValue, resolvedMinScale, resolvedMaxScale);
-  const [uncontrolledTransform, setUncontrolledTransform] = useState(initialTransform);
-  const visibleTransform = normalizedTransform(value ?? uncontrolledTransform, resolvedMinScale, resolvedMaxScale);
   const engineRef = useRef<ReactZoomPanPinchRef>(null);
   const instructionsId = useId();
+  // The engine owns the live DOM transform. Keep its snapshot for imperative reads,
+  // rather than rerendering the complete content subtree on every gesture frame.
   const committedRef = useRef(initialTransform);
+  const visibleTransform = normalizedTransform(value ?? committedRef.current, resolvedMinScale, resolvedMaxScale);
   const programmaticRef = useRef(false);
   const pointerBlocksPanRef = useRef(false);
   const wheelTargetBlocksZoomRef = useRef(false);
@@ -320,7 +320,6 @@ function PanZoomRoot(
         onTransform={(_, state) => {
           const next = normalizedTransform({ x: state.positionX, y: state.positionY, scale: state.scale }, resolvedMinScale, resolvedMaxScale);
           committedRef.current = next;
-          if (!controlled) setUncontrolledTransform(next);
           onTransformChange?.(next, { reason: programmaticRef.current ? 'programmatic' : 'gesture' });
         }}
       >

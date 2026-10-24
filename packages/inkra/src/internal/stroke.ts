@@ -42,7 +42,9 @@ export function strokeProfile(at: number, total: number, seed: number, settings:
   let contact = 1;
   const cell = Math.floor(at / 37);
 
-  for (let index = cell - 1; index <= cell + 1; index += 1) {
+  // A fixed iteration count also terminates for out-of-range numeric input.
+  for (let offset = -1; offset <= 1; offset += 1) {
+    const index = cell + offset;
     if (hash(index, seed + 277) > breaks * 0.9) continue;
     const middle = index * 37 + 5 + hash(index, seed + 283) * 27;
     const halfGap = (1.1 + hash(index, seed + 293) * 3.6) * breaks;
@@ -66,9 +68,17 @@ export function pencilStroke(
   closed = false,
   settings: StrokeSettings = {},
 ): void {
-  if (points.length < 2) return;
+  const pointCount = points.length;
+  if (pointCount < 2 || pointCount > 65536) return;
+  // Validate the coordinates we retain, without scanning then cloning them again.
+  const line: [number, number][] = [];
+  for (let index = 0; index < pointCount; index += 1) {
+    const point = points[index];
+    const x = point[0], y = point[1];
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+    line.push([x, y]);
+  }
   const scale = Math.max(0.4, settings.scale ?? 1);
-  const line = points.map(point => [...point] as [number, number]);
   const lastPoint = line[line.length - 1];
   if (closed && Math.hypot(line[0][0] - lastPoint[0], line[0][1] - lastPoint[1]) > 0.01) {
     line.push(line[0]);
@@ -89,6 +99,12 @@ export function pencilStroke(
   const distanceOffset = settings.distanceOffset ?? 0;
   const totalDistance = settings.totalDistance ?? distanceOffset + total;
   const step = settings.step ?? (settings.detail === 'fill' ? 2.1 : 1.05);
+  // Stop invalid steps and huge geometry before entering the sampling loop.
+  if (!Number.isFinite(total) || !Number.isFinite(step) || step <= 0 || total / step > 65536
+    || !Number.isFinite(distanceOffset) || Math.abs(distanceOffset) > Number.MAX_SAFE_INTEGER
+    || !Number.isFinite(totalDistance) || Math.abs(totalDistance) > Number.MAX_SAFE_INTEGER
+    || !Number.isFinite(passes) || passes < 0 || passes > 16
+    || !Number.isFinite(settings.filaments ?? 3) || (settings.filaments ?? 3) > 16) return;
   const samples = [];
   let segmentIndex = 0;
 

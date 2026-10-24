@@ -1,4 +1,4 @@
-import { createContext, forwardRef, useContext, useId } from 'react';
+import { createContext, forwardRef, useContext, useId, useMemo } from 'react';
 import type {
   AnchorHTMLAttributes,
   ButtonHTMLAttributes,
@@ -294,9 +294,10 @@ export const ButtonGroup = forwardRef<HTMLDivElement, ButtonGroupProps>(function
 ) {
   const classes = ['inkra-button-group', className].filter(Boolean).join(' ');
   const id = useId();
+  const context = useMemo(() => ({ orientation, size, variant, disabled }), [orientation, size, variant, disabled]);
 
   return (
-    <ButtonGroupContext.Provider value={{ orientation, size, variant, disabled }}><PencilSurface
+    <ButtonGroupContext.Provider value={context}><PencilSurface
       {...props}
       className={classes}
       data-orientation={orientation}

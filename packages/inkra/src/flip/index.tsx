@@ -1,6 +1,7 @@
 import {
   createContext,
   forwardRef,
+  useCallback,
   useContext,
   useImperativeHandle,
   useRef,
@@ -105,19 +106,28 @@ export const Tilt = forwardRef<HTMLDivElement, TiltProps>(function Tilt(
   forwardedRef,
 ) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const reset = () => {
+  const frameRef = useRef<number | null>(null);
+  const pointerRef = useRef<{ root: HTMLDivElement; clientX: number; clientY: number; axis: TiltAxis; maxAngle: number } | null>(null);
+  const cancelFrame = useCallback(() => {
+    if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+    frameRef.current = null;
+    pointerRef.current = null;
+  }, []);
+  const reset = useCallback(() => {
+    cancelFrame();
     const root = rootRef.current;
     if (!root) return;
     root.style.setProperty('--inkra-tilt-rotate-x', '0deg');
     root.style.setProperty('--inkra-tilt-rotate-y', '0deg');
     root.removeAttribute('data-tilting');
-  };
+  }, [cancelFrame]);
   const reducedMotion = useReducedMotion(reset);
   useImperativeHandle(forwardedRef, () => rootRef.current as HTMLDivElement);
 
   useBrowserLayoutEffect(() => {
     if (disabled) reset();
-  }, [disabled]);
+  }, [disabled, reset]);
+  useBrowserLayoutEffect(() => cancelFrame, [cancelFrame]);
 
   const canTrack = (event: ReactPointerEvent<HTMLDivElement>) => (
     !disabled && !reducedMotion.current && event.pointerType === 'mouse' && event.isPrimary
@@ -130,16 +140,24 @@ export const Tilt = forwardRef<HTMLDivElement, TiltProps>(function Tilt(
   const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
     onPointerMove?.(event);
     if (event.defaultPrevented || !canTrack(event)) return;
-    const { rotateX, rotateY } = calculateTiltRotation(
-      event.clientX,
-      event.clientY,
-      event.currentTarget.getBoundingClientRect(),
-      maxAngle,
-      axis,
-    );
-    event.currentTarget.style.setProperty('--inkra-tilt-rotate-x', `${rotateX}deg`);
-    event.currentTarget.style.setProperty('--inkra-tilt-rotate-y', `${rotateY}deg`);
-    event.currentTarget.setAttribute('data-tilting', 'true');
+    pointerRef.current = { root: event.currentTarget, clientX: event.clientX, clientY: event.clientY, maxAngle, axis };
+    if (frameRef.current !== null) return;
+    frameRef.current = requestAnimationFrame(() => {
+      frameRef.current = null;
+      const pointer = pointerRef.current;
+      pointerRef.current = null;
+      if (!pointer) return;
+      const { rotateX, rotateY } = calculateTiltRotation(
+        pointer.clientX,
+        pointer.clientY,
+        pointer.root.getBoundingClientRect(),
+        pointer.maxAngle,
+        pointer.axis,
+      );
+      pointer.root.style.setProperty('--inkra-tilt-rotate-x', `${rotateX}deg`);
+      pointer.root.style.setProperty('--inkra-tilt-rotate-y', `${rotateY}deg`);
+      pointer.root.setAttribute('data-tilting', 'true');
+    });
   };
   const handlePointerLeave = (event: ReactPointerEvent<HTMLDivElement>) => {
     onPointerLeave?.(event);

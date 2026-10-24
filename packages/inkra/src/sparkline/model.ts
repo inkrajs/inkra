@@ -10,10 +10,16 @@ export function normalizeSparklineData(data: readonly SparklineDatum[]): Sparkli
 }
 
 export function sparklineDomain(points: readonly SparklinePoint[]): [number, number] {
-  const values = points.flatMap(point => point.value === null ? [] : [point.value]);
-  if (values.length === 0) return [0, 1];
-  const min = Math.min(...values);
-  const max = Math.max(...values);
+  let min = Infinity;
+  let max = -Infinity;
+  let hasValue = false;
+  for (const point of points) {
+    if (point.value === null) continue;
+    hasValue = true;
+    min = Math.min(min, point.value);
+    max = Math.max(max, point.value);
+  }
+  if (!hasValue) return [0, 1];
   if (min === max) {
     const pad = Math.abs(min) * 0.12 || 1;
     return [min - pad, max + pad];

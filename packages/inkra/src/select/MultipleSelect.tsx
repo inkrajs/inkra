@@ -47,11 +47,13 @@ export function MultipleSelectRoot({
   const isControlled = value !== undefined;
   const contentEvents = useRef<Pick<RadixSelect.SelectContentProps, 'onEscapeKeyDown' | 'onPointerDownOutside'>>({});
   const labels = useMemo(() => new Map(items?.map(item => [item.value, item.label])), [items]);
-  const change = (next: string[]) => {
+  const change = useCallback((next: string[]) => {
     if (disabled || readOnly) return;
-    if (value === undefined) setUncontrolled(next);
+    if (!isControlled) setUncontrolled(next);
     onValueChange?.(next);
-  };
+  }, [disabled, readOnly, isControlled, onValueChange]);
+  const context = useMemo(() => ({ values, labels, disabled, readOnly, change, triggerRef, contentEvents }),
+    [values, labels, disabled, readOnly, change]);
 
   useEffect(() => {
     if (isControlled) return;
@@ -68,7 +70,7 @@ export function MultipleSelectRoot({
   }, [isControlled, props.form]);
 
   return (
-    <MultipleSelectContext.Provider value={{ values, labels, disabled, readOnly, change, triggerRef, contentEvents }}>
+    <MultipleSelectContext.Provider value={context}>
       <DirectionProvider direction={dir}>
         <BaseSelect.Root<string, true>
           {...props}

@@ -88,9 +88,12 @@ export const InputNumber = forwardRef<HTMLInputElement, InputNumberProps>(functi
   } | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const suppressClickRef = useRef(false);
+  const removeHoldListeners = useRef<(() => void) | undefined>(undefined);
   const stopHolding = useCallback(() => {
     clearTimeout(timerRef.current);
     timerRef.current = undefined;
+    removeHoldListeners.current?.();
+    removeHoldListeners.current = undefined;
     const hold = holdRef.current;
     holdRef.current = null;
     if (hold?.button.hasPointerCapture?.(hold.pointerId)) {
@@ -98,7 +101,8 @@ export const InputNumber = forwardRef<HTMLInputElement, InputNumberProps>(functi
     }
   }, []);
 
-  useEffect(() => {
+  // Idle controls do not need global pointer, keyboard or visibility listeners.
+  const listenWhileHolding = () => {
     const onVisibilityChange = () => { if (document.hidden) stopHolding(); };
     const onPointerEnd = (event: globalThis.PointerEvent) => {
       if (event.pointerId === holdRef.current?.pointerId) stopHolding();
@@ -114,8 +118,7 @@ export const InputNumber = forwardRef<HTMLInputElement, InputNumberProps>(functi
     window.addEventListener('keydown', updateModifiers);
     window.addEventListener('keyup', updateModifiers);
     document.addEventListener('visibilitychange', onVisibilityChange);
-    return () => {
-      stopHolding();
+    removeHoldListeners.current = () => {
       window.removeEventListener('blur', stopHolding);
       window.removeEventListener('pointerup', onPointerEnd);
       window.removeEventListener('pointercancel', onPointerEnd);
@@ -123,7 +126,8 @@ export const InputNumber = forwardRef<HTMLInputElement, InputNumberProps>(functi
       window.removeEventListener('keyup', updateModifiers);
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
-  }, [stopHolding]);
+  };
+  useEffect(() => stopHolding, [stopHolding]);
 
   useBrowserLayoutEffect(() => {
     if (isControlled && currentValue !== finiteValue(value)) setDraft(format(value));
@@ -188,6 +192,7 @@ export const InputNumber = forwardRef<HTMLInputElement, InputNumberProps>(functi
     const button = event.currentTarget;
     if (!button.isConnected || button.disabled) return;
     holdRef.current = { button, pointerId: event.pointerId, direction, modifiers };
+    listenWhileHolding();
     try { button.setPointerCapture(event.pointerId); } catch { /* Window listeners retain release handling. */ }
     const repeat = () => {
       const hold = holdRef.current;

@@ -71,10 +71,22 @@ export const Sparkline = forwardRef<HTMLDivElement, SparklineProps>(function Spa
     [max, min, points],
   );
   const geometry = useMemo(() => createSparklineGeometry(boundedPoints, width, height), [boundedPoints, height, width]);
-  const [activeIndex, setActiveIndex] = useState<number | null>(values.length ? [...points].reverse().find(point => point.value !== null)?.index ?? null : null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(() => {
+    for (let index = points.length - 1; index >= 0; index--) if (points[index].value !== null) return index;
+    return null;
+  });
   const activePoint = activeIndex === null ? null : points[activeIndex] ?? null;
   const effectiveShowPoints = showPoints || values.length === 1;
-  const summary = values.length === 0 ? 'No data' : `Current ${values[values.length - 1]}, min ${Math.min(...values)}, max ${Math.max(...values)}`;
+  const summary = useMemo(() => {
+    if (!values.length) return 'No data';
+    let minimum = values[0];
+    let maximum = values[0];
+    for (let index = 1; index < values.length; index++) {
+      minimum = Math.min(minimum, values[index]);
+      maximum = Math.max(maximum, values[index]);
+    }
+    return `Current ${values[values.length - 1]}, min ${minimum}, max ${maximum}`;
+  }, [values]);
   const onKeyDown = (event: KeyboardEvent<SVGSVGElement>) => {
     if (!points.length || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();

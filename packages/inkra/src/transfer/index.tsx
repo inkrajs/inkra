@@ -120,8 +120,16 @@ function searchableText(item: TransferItem): string {
   return parts.filter(Boolean).join(' ').toLocaleLowerCase();
 }
 
-function defaultFilter(item: TransferItem, query: string): boolean {
-  return searchableText(item).includes(query.trim().toLocaleLowerCase());
+function filterPanelItems(
+  items: TransferItem[],
+  query: string,
+  side: TransferSide,
+  filterItem: TransferProps['filterItem'],
+): TransferItem[] {
+  if (query.length === 0) return items;
+  if (filterItem) return items.filter(item => filterItem(item, query, side));
+  const needle = query.trim().toLocaleLowerCase();
+  return items.filter(item => searchableText(item).includes(needle));
 }
 
 function defaultCount({ visible, total, selected }: TransferCountDetails): ReactNode {
@@ -160,8 +168,11 @@ export const Transfer = forwardRef<HTMLDivElement, TransferProps>(function Trans
   const controlled = targetKeys !== undefined;
   const uniqueItems = useMemo(() => uniqueTransferItems(items), [items]);
   const [uncontrolledTargetKeys, setUncontrolledTargetKeys] = useState(() => normalizeTargetKeys(items, defaultTargetKeys));
-  const currentTargetKeys = normalizeTargetKeys(uniqueItems, controlled ? targetKeys : uncontrolledTargetKeys);
-  const panels = splitTransferItems(uniqueItems, currentTargetKeys);
+  const requestedTargetKeys = controlled ? targetKeys : uncontrolledTargetKeys;
+  const currentTargetKeys = useMemo(() => normalizeTargetKeys(uniqueItems, requestedTargetKeys), [uniqueItems, requestedTargetKeys]);
+  const currentTargetSet = useMemo(() => new Set(currentTargetKeys), [currentTargetKeys]);
+  const itemsById = useMemo(() => new Map(uniqueItems.map(item => [item.id, item])), [uniqueItems]);
+  const panels = useMemo(() => splitTransferItems(uniqueItems, currentTargetKeys), [uniqueItems, currentTargetKeys]);
   const labels = { ...defaultLabels, ...labelOverrides };
   const [queries, setQueries] = useState<Record<TransferSide, string>>({ source: '', target: '' });
   const [selected, setSelected] = useState<Record<TransferSide, Set<string>>>(() => ({ source: new Set(), target: new Set() }));
@@ -175,26 +186,28 @@ export const Transfer = forwardRef<HTMLDivElement, TransferProps>(function Trans
   const itemRefs = useRef(new Map<string, HTMLInputElement>());
   const panelRefs = useRef<Record<TransferSide, HTMLElement | null>>({ source: null, target: null });
 
-  const visible = (side: TransferSide) => panels[side].filter(item => {
-    const query = queries[side];
-    return query.length === 0 || (filterItem ? filterItem(item, query, side) : defaultFilter(item, query));
-  });
-
-  const visibleItems = { source: visible('source'), target: visible('target') };
+  const visibleSource = useMemo(
+    () => filterPanelItems(panels.source, queries.source, 'source', filterItem),
+    [panels.source, queries.source, filterItem],
+  );
+  const visibleTarget = useMemo(
+    () => filterPanelItems(panels.target, queries.target, 'target', filterItem),
+    [panels.target, queries.target, filterItem],
+  );
+  const visibleItems = { source: visibleSource, target: visibleTarget };
 
   useEffect(() => {
-    const valid = new Set(uniqueItems.map(item => item.id));
     setSelected(current => {
-      const source = new Set([...current.source].filter(key => valid.has(key) && !currentTargetKeys.includes(key)));
-      const target = new Set([...current.target].filter(key => valid.has(key) && currentTargetKeys.includes(key)));
+      const source = new Set([...current.source].filter(key => itemsById.has(key) && !currentTargetSet.has(key)));
+      const target = new Set([...current.target].filter(key => itemsById.has(key) && currentTargetSet.has(key)));
       if (source.size === current.source.size && target.size === current.target.size) return current;
       return { source, target };
     });
-  }, [items, currentTargetKeys.join('\u0000')]);
+  }, [itemsById, currentTargetSet]);
 
   useEffect(() => {
     if (!pendingFocus) return;
-    if (disabled || !uniqueItems.some(item => item.id === pendingFocus.id)) {
+    if (disabled || !itemsById.has(pendingFocus.id)) {
       setPendingFocus(null);
       return;
     }
@@ -230,10 +243,11 @@ export const Transfer = forwardRef<HTMLDivElement, TransferProps>(function Trans
     const control = itemRefs.current.get(`${pendingFocus.side}:${pendingFocus.id}`);
     (control ?? panelRefs.current[pendingFocus.side])?.focus({ preventScroll: true });
     setPendingFocus(null);
-  }, [disabled, pendingFocus, currentTargetKeys.join('\u0000'), uniqueItems]);
+  }, [disabled, pendingFocus, currentTargetKeys, itemsById]);
 
   const setItemSelected = (side: TransferSide, id: string, checked: boolean) => {
     setSelected(current => {
+      if (current[side].has(id) === checked) return current;
       const next = new Set(current[side]);
       if (checked) next.add(id);
       else next.delete(id);
@@ -261,7 +275,7 @@ export const Transfer = forwardRef<HTMLDivElement, TransferProps>(function Trans
     const sourceSide: TransferSide = direction === 'to-target' ? 'source' : 'target';
     const destinationSide: TransferSide = direction === 'to-target' ? 'target' : 'source';
     const allowed = new Set(panels[sourceSide].filter(item => !item.disabled && !disabled).map(item => item.id));
-    const movedKeys = keys.filter((key, index) => allowed.has(key) && keys.indexOf(key) === index);
+    const movedKeys = [...new Set(keys)].filter(key => allowed.has(key));
     if (movedKeys.length === 0) return;
     const next = moveTransferKeys(uniqueItems, currentTargetKeys, movedKeys, direction);
     if (!controlled) setUncontrolledTargetKeys(next);
@@ -281,7 +295,7 @@ export const Transfer = forwardRef<HTMLDivElement, TransferProps>(function Trans
       action,
       direction,
       movedKeys,
-      movedItems: movedKeys.map(key => uniqueItems.find(item => item.id === key)).filter((item): item is TransferItem => item !== undefined),
+      movedItems: movedKeys.map(key => itemsById.get(key)).filter((item): item is TransferItem => item !== undefined),
     });
   };
 

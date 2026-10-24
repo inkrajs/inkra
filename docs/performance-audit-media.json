@@ -1,0 +1,510 @@
+{
+  "baseline": "7bd08e47b05c9d61a226bbbfd3d5d620ce93962a",
+  "scope": "Media, visualization, motion and day agenda; all22 exported component identities, including aliases. Internal helpers inspected with owning export.",
+  "verification_environment": "Node/React test renderer, actual dependency hooks with deterministic host/engine adapters where noted, SSR and source/model checks. Browser execution was unavailable under the sandbox; no browser/device/performance/crash claim.",
+  "immutable_inputs": "NodeGraph nodes/edges and changed item/data objects must be replaced together; Radar axes/series and nested changed records/data must be replaced; DayAgenda events must be replaced. In-place mutation is not an invalidation signal. Public prop comments and docs/performance-media.md record this explicitly.",
+  "components": [
+    {
+      "component": "AudioPlayer",
+      "aliases": [
+        "AudioPlayer"
+      ],
+      "source": "packages/inkra/src/audio-player/index.tsx",
+      "module": "audio-player",
+      "group": "media",
+      "status": "fixed",
+      "findings": [
+        "Callback identity previously propagated into source loading, so replacing onStateChange reloaded and paused the same audio. Latest-callback refs now preserve native listener and source-effect lifetime.",
+        "Identical native snapshots no longer enqueue React state; every native event still delivers its callback. Source-version and detached-element checks ignore stale play rejection after source replacement/unmount.",
+        "Inspected native listener removal, source resets, pending play rejection, controlled controls/renderControls and imperative callbacks."
+      ],
+      "verification": [
+        "packages/inkra/test/media-performance.test.mjs: callback replacement, identical snapshot, stale play rejection/source/unmount cases",
+        "Baseline callback-only update loaded source twice; candidate loads once."
+      ],
+      "disposition": "optimized-with-regression-coverage",
+      "browser_only_gaps": [
+        "Native decoding, autoplay policy, browser buffering/error ordering and actual media playback remain browser-only."
+      ]
+    },
+    {
+      "component": "Carousel",
+      "aliases": [
+        "Carousel"
+      ],
+      "source": "packages/inkra/src/carousel/index.tsx",
+      "module": "carousel",
+      "group": "media",
+      "status": "fixed",
+      "findings": [
+        "Controlled selection previously changed Embla startIndex options and rebuilt the engine. Options are now memoized on actual engine configuration/plugins; selection is synchronized with scrollTo.",
+        "Genuine option/plugin reInit takes the latest desired selection, avoiding reset to the mount index.",
+        "Inspected Embla delegated resize/slides/drag, direction observer cleanup, autoplay hover/focus/reduced-motion stop/resume and destroy lifecycle."
+      ],
+      "verification": [
+        "packages/inkra/test/carousel-performance.test.mjs: real Embla React hook plus deterministic engine/plugin adapters; three controlled changes cause zero reInit versus three on baseline; align/loop/plugin changes retain index2",
+        "packages/inkra/test/carousel.test.mjs: SSR, keyboard/RTL, autoplay source contracts",
+        "scripts/verify-media-equivalence.mjs: exact SSR parity"
+      ],
+      "disposition": "optimized-with-regression-coverage",
+      "browser_only_gaps": [
+        "Browser inertia, snapping geometry, touch/RTL, autoplay timing and visibility/resize behavior are not exercised by adapters."
+      ]
+    },
+    {
+      "component": "DayAgenda",
+      "aliases": [
+        "DayAgenda"
+      ],
+      "source": "packages/inkra/src/day-agenda/index.tsx",
+      "module": "day-agenda",
+      "group": "media",
+      "status": "fixed",
+      "findings": [
+        "Stable event/locale/config snapshots now reuse interval normalization, sort/layout, ticks, labels, date and time formatters. Selection-only rerenders do not reconstruct geometry.",
+        "Lane allocation uses occupied-end and lowest-available-lane heaps; occupancy uses a sorted sweep, and position uses binary search. Lowest lane, id ties, grouping and point placement remain unchanged.",
+        "Inspected time zone/locale/day clipping, point/untimed events, selection semantics, accessible summary and navigation; no animation or global subscription in this component."
+      ],
+      "verification": [
+        "packages/inkra/test/media-performance.test.mjs: twenty-event mount uses two Intl formatters versus66 on baseline; selection adds zero constructors/interval reads",
+        "packages/inkra/test/agenda-layout-performance.test.mjs:150 seeded original-algorithm equivalence cases,1000-interval endpoint reads reduced from1501500 to5996,20000 overlaps",
+        "scripts/verify-media-equivalence.mjs: locales, hour cycles, density, point/cross-day/untimed SSR parity"
+      ],
+      "disposition": "optimized-with-regression-coverage",
+      "browser_only_gaps": [
+        "Actual card/text geometry and scrolling at large event counts require browser profiling; full accessible content remains mounted."
+      ]
+    },
+    {
+      "component": "Flip",
+      "aliases": [
+        "Flip"
+      ],
+      "source": "packages/inkra/src/flip/index.tsx",
+      "module": "flip",
+      "group": "media",
+      "status": "inspected",
+      "findings": [
+        "Inspected CSS-driven face rotation, controlled/uncontrolled state, focus transfer on changed face and inactive face inert/aria-hidden.",
+        "No custom animation loop or timer; rerender on flipped/enabled state is semantic. No direct change justified; composition benefits from Tilt coalescing."
+      ],
+      "verification": [
+        "packages/inkra/test/flip.test.mjs",
+        "scripts/verify-media-equivalence.mjs: both controlled faces match baseline SSR"
+      ],
+      "disposition": "no-justified-change",
+      "browser_only_gaps": [
+        "Actual focus transfer, inert support, reduced-motion and 3D compositing need browser validation."
+      ]
+    },
+    {
+      "component": "FlipToggle",
+      "aliases": [
+        "FlipToggle"
+      ],
+      "source": "packages/inkra/src/flip/index.tsx",
+      "module": "flip",
+      "group": "media",
+      "status": "inspected",
+      "findings": [
+        "Inspected button semantics, caller onClick/defaultPrevented, explicit target state, disabled/enabled and aria-pressed context updates.",
+        "No loops/listeners/large derived collection. Context changes are required for pressed state; no independent optimization justified."
+      ],
+      "verification": [
+        "packages/inkra/test/flip.test.mjs: source/SSR semantic contracts"
+      ],
+      "disposition": "no-justified-change",
+      "browser_only_gaps": [
+        "Keyboard/focus behavior with real nested controls remains browser-only."
+      ]
+    },
+    {
+      "component": "Tilt",
+      "aliases": [
+        "Tilt"
+      ],
+      "source": "packages/inkra/src/flip/index.tsx",
+      "module": "flip",
+      "group": "media",
+      "status": "fixed",
+      "findings": [
+        "Coalesces accepted pointer samples to one animation frame, using latest coordinates and one layout measurement/style update. Consumer pointer handlers still receive every event.",
+        "Cancels pending work on leave, cancel, disabled, reduced motion and unmount. Stable reset callback avoids unnecessary reduced-motion listener replacement."
+      ],
+      "verification": [
+        "packages/inkra/test/media-performance.test.mjs:101 pointer events yield one layout read versus101 on baseline; latest coordinates/caller count/reset/cancellation/listener cleanup asserted",
+        "scripts/verify-media-equivalence.mjs: unchanged SSR"
+      ],
+      "disposition": "optimized-with-regression-coverage",
+      "browser_only_gaps": [
+        "Actual pointer-to-paint latency, CSS transitions and GPU/compositor behavior require browser measurements."
+      ]
+    },
+    {
+      "component": "Heatmap",
+      "aliases": [
+        "Heatmap"
+      ],
+      "source": "packages/inkra/src/heatmap/index.tsx",
+      "module": "heatmap",
+      "group": "media",
+      "status": "inspected",
+      "findings": [
+        "Inspected memoized key lookup, matrix, finite extrema and D3 scales, missing values/typed keys, hover/focus/click semantics and full accessible table.",
+        "No custom animation loop/global listener; extrema already iterative. No measured redundant lifecycle or derivation requiring a safe change.",
+        "Matrix DOM and interaction render work remain proportional to rows times columns. Virtualization would change table/accessibility semantics and was not introduced without evidence."
+      ],
+      "verification": [
+        "packages/inkra/test/heatmap.test.mjs: source/model/SSR contract coverage",
+        "Source inspection of packages/inkra/src/heatmap/index.tsx"
+      ],
+      "disposition": "no-justified-change",
+      "browser_only_gaps": [
+        "Dense-matrix hover/render/paint cost and assistive-technology experience still require browser profiling."
+      ]
+    },
+    {
+      "component": "ImageCropper",
+      "aliases": [
+        "ImageCropper"
+      ],
+      "source": "packages/inkra/src/image-cropper/index.tsx",
+      "module": "image-cropper",
+      "group": "media",
+      "status": "fixed",
+      "findings": [
+        "Repeated identical ResizeObserver stage measurements previously allocated state and rerendered; updater now reuses equal width/height state.",
+        "Inspected object URL replacement/revocation, source reset, engine gesture callbacks, export buffer caps and finally-zeroed canvas; kept output format and crop behavior unchanged."
+      ],
+      "verification": [
+        "packages/inkra/test/media-performance.test.mjs: five repeated same-size observer callbacks add zero commits versus five on baseline; changed size adds one; observer disconnect asserted",
+        "packages/inkra/test/image-cropper.test.mjs",
+        "scripts/verify-media-equivalence.mjs: empty/free crop SSR parity"
+      ],
+      "disposition": "optimized-with-regression-coverage",
+      "browser_only_gaps": [
+        "Image decode, EXIF orientation, native file loading, crop gestures, cross-origin taint, memory pressure and real output pixels require browser checks."
+      ]
+    },
+    {
+      "component": "ImageViewer.Content",
+      "aliases": [
+        "ImageViewer.Content",
+        "ImageViewerContent"
+      ],
+      "source": "packages/inkra/src/image-viewer/index.tsx",
+      "module": "image-viewer",
+      "group": "media",
+      "status": "fixed",
+      "findings": [
+        "Coalesces rotate-fit and thumbnail-focus requests to at most one pending frame each and cancels them at unmount.",
+        "Fit callback verifies active image identity so a queued rotation cannot fit the newly selected image.",
+        "Inspected image-key remount, retry/error states, keyboard navigation, thumbnail refs and PanZoom integration; no arbitrary image preload expansion."
+      ],
+      "verification": [
+        "packages/inkra/test/media-performance.test.mjs: ten rotations retain one pending fit frame versus ten; focus/fit queues and unmount cleanup asserted",
+        "packages/inkra/test/image-viewer.test.mjs"
+      ],
+      "disposition": "optimized-with-regression-coverage",
+      "browser_only_gaps": [
+        "Portal opening/focus trap, actual image decoding, thumbnail focus and zoom/rotation geometry need browser validation; test renderer inspects closed-portal element props."
+      ]
+    },
+    {
+      "component": "ImageViewer.Root",
+      "aliases": [
+        "ImageViewer.Root",
+        "ImageViewerRoot"
+      ],
+      "source": "packages/inkra/src/image-viewer/index.tsx",
+      "module": "image-viewer",
+      "group": "media",
+      "status": "inspected",
+      "findings": [
+        "Inspected memoized context, controlled/uncontrolled open/selection, missing-item repair guard, item changes and select callback dependencies.",
+        "No custom loop or native subscription. Selection lookup is linear but no safe measured bottleneck established; no change justified."
+      ],
+      "verification": [
+        "packages/inkra/test/image-viewer.test.mjs: selection/model/source/SSR contracts",
+        "packages/inkra/test/media-performance.test.mjs: Content lifecycle mounted through Root"
+      ],
+      "disposition": "no-justified-change",
+      "browser_only_gaps": [
+        "Portal/open-close/focus behavior and controlled parent interaction need real browser coverage."
+      ]
+    },
+    {
+      "component": "ImageViewer.Trigger",
+      "aliases": [
+        "ImageViewer.Trigger",
+        "ImageViewerTrigger"
+      ],
+      "source": "packages/inkra/src/image-viewer/index.tsx",
+      "module": "image-viewer",
+      "group": "media",
+      "status": "inspected",
+      "findings": [
+        "Thin forwarded OverlayTrigger composition; inspected prop/ref forwarding and semantic delegated behavior.",
+        "No local animation, observer, collection computation or state; no independent optimization justified."
+      ],
+      "verification": [
+        "packages/inkra/test/image-viewer.test.mjs",
+        "Source inspection of ImageViewerTrigger"
+      ],
+      "disposition": "no-justified-change",
+      "browser_only_gaps": [
+        "Actual focus restoration and trigger keyboard interaction depend on Overlay browser integration."
+      ]
+    },
+    {
+      "component": "JourneyMap",
+      "aliases": [
+        "JourneyMap"
+      ],
+      "source": "packages/inkra/src/journey-map/index.tsx",
+      "module": "journey-map",
+      "group": "media",
+      "status": "fixed",
+      "findings": [
+        "Terrain bounds now scan nested rings instead of flattening and passing entire coordinate collections to Math.min/max; large polygon input no longer exceeds JavaScript argument limits.",
+        "Inspected dynamic-import cancellation, map removal, stationary paint frame coalescing, transform-during-pan raster strategy, terrain scale bounds, resize/style/scheme observer cleanup and internal MapScale."
+      ],
+      "verification": [
+        "packages/inkra/test/media-performance.test.mjs:200000-vertex offscreen polygon processes without RangeError; baseline throws",
+        "packages/inkra/test/travel.test.mjs",
+        "scripts/verify-media-equivalence.mjs: unchanged map SSR"
+      ],
+      "disposition": "optimized-with-regression-coverage",
+      "browser_only_gaps": [
+        "Leaflet map mount, tile loading, real map pan/zoom, canvas pixels, geographic projection and device-memory behavior require browser validation."
+      ]
+    },
+    {
+      "component": "NodeGraph.Controls",
+      "aliases": [
+        "NodeGraph.Controls"
+      ],
+      "source": "packages/inkra/src/node-graph/index.tsx",
+      "module": "node-graph",
+      "group": "media",
+      "status": "inspected",
+      "findings": [
+        "Three fixed semantic buttons delegate zoom/fit to React Flow. Inspected labels, fit options, native button semantics and no local loop/listener.",
+        "Only trivial action allocations; no evidence justifies changing callback or context behavior."
+      ],
+      "verification": [
+        "packages/inkra/test/node-graph.test.mjs",
+        "Source inspection of NodeGraphControls"
+      ],
+      "disposition": "no-justified-change",
+      "browser_only_gaps": [
+        "Real viewport animation and focus interaction remain browser-only."
+      ]
+    },
+    {
+      "component": "NodeGraph.Edge",
+      "aliases": [
+        "NodeGraph.Edge"
+      ],
+      "source": "packages/inkra/src/node-graph/index.tsx",
+      "module": "node-graph",
+      "group": "media",
+      "status": "fixed",
+      "findings": [
+        "SVG path sampling now occurs only after a raster cache miss, rather than before checking unchanged paint/cached raster.",
+        "Inspected bounded96-entry/24MiB cache, canvas dimension/pixel/sample caps, SVG fallback, recovery invalidation, scheduling cancellation and observer cleanup; retained keys, seeds and hit target."
+      ],
+      "verification": [
+        "packages/inkra/test/media-performance.test.mjs: unchanged paint and cached remount do not resample SVG; unmount cancels queued repaint",
+        "packages/inkra/test/node-graph.test.mjs"
+      ],
+      "disposition": "optimized-with-regression-coverage",
+      "browser_only_gaps": [
+        "Native SVG path metrics, canvas pixels/fallback, drag visual continuity and browser recovery need browser verification."
+      ]
+    },
+    {
+      "component": "NodeGraph.Node",
+      "aliases": [
+        "NodeGraph.Node"
+      ],
+      "source": "packages/inkra/src/node-graph/index.tsx",
+      "module": "node-graph",
+      "group": "media",
+      "status": "inspected",
+      "findings": [
+        "Inspected label/description/content, read-only port connectability and selected/dragging styling. Internal DefaultNodeRenderer already memoized.",
+        "No local loop/listener. Preserving wrapper identity in Root lets existing renderer memoization work; no direct node markup change justified."
+      ],
+      "verification": [
+        "packages/inkra/test/node-graph.test.mjs",
+        "packages/inkra/test/media-performance.test.mjs: Root unchanged node identity and render/readOnly invalidation"
+      ],
+      "disposition": "no-justified-change",
+      "browser_only_gaps": [
+        "Real drag/select/readOnly focus and accessibility behavior depend on React Flow browser integration."
+      ]
+    },
+    {
+      "component": "NodeGraph.Port",
+      "aliases": [
+        "NodeGraph.Port"
+      ],
+      "source": "packages/inkra/src/node-graph/index.tsx",
+      "module": "node-graph",
+      "group": "media",
+      "status": "inspected",
+      "findings": [
+        "Inspected React Flow Handle forwarding and viewport-zoom subscription. Inverse zoom scale intentionally keeps the hit target usable.",
+        "Zoom-driven update is semantic; no custom loop or observer and no safe change justified."
+      ],
+      "verification": [
+        "packages/inkra/test/node-graph.test.mjs",
+        "Source inspection of NodeGraphPort"
+      ],
+      "disposition": "no-justified-change",
+      "browser_only_gaps": [
+        "Real connection gestures, inverse-scale hit testing and zoom behavior require browser validation."
+      ]
+    },
+    {
+      "component": "NodeGraph.Root",
+      "aliases": [
+        "NodeGraph.Root"
+      ],
+      "source": "packages/inkra/src/node-graph/index.tsx",
+      "module": "node-graph",
+      "group": "media",
+      "status": "fixed",
+      "findings": [
+        "WeakMap adapters reuse untouched input-node/edge wrappers across immutable single-record edits, instead of rebuilding every wrapper/data payload.",
+        "Weak keys do not retain removed input records; readOnly/renderNode/renderEdge/renderEdgeLabel configuration changes replace relevant adapter caches.",
+        "Inspected provider/SSR handover, imperative viewport refs, controlled nodes/edges/viewport, event forwarding and engine visibility options. Inputs must be immutable snapshots, now documented on public props."
+      ],
+      "verification": [
+        "packages/inkra/test/media-performance.test.mjs: one replaced node/edge changes only its wrapper; sibling identity and readOnly/render callback invalidation asserted",
+        "packages/inkra/test/node-graph.test.mjs"
+      ],
+      "disposition": "optimized-with-regression-coverage",
+      "browser_only_gaps": [
+        "Actual engine node reconciliation, large graph dragging/viewport churn and heap retention need browser profiling. Mutating an existing item in place is not supported by the new per-record cache."
+      ]
+    },
+    {
+      "component": "NumberTicker",
+      "aliases": [
+        "NumberTicker"
+      ],
+      "source": "packages/inkra/src/number-ticker/index.tsx",
+      "module": "number-ticker",
+      "group": "media",
+      "status": "fixed",
+      "findings": [
+        "Exact-decimal-string Intl support is now probed once per module rather than constructing another formatter on each decimal animation frame.",
+        "Inspected frame ownership, rapid retarget continuation, duration/end state, reduced-motion cleanup, delta timer, formatter memoization, digit limits and512-digit animation cutoff."
+      ],
+      "verification": [
+        "packages/inkra/test/media-performance.test.mjs: ten decimal formatting calls create zero capability-probe formatters after warmup versus ten on baseline; retarget/reduced-motion/unmount retain/cancel one frame",
+        "packages/inkra/test/number-ticker.test.mjs and related precision/format suites",
+        "scripts/verify-media-equivalence.mjs: numeric/decimal/bigint/compact SSR parity"
+      ],
+      "disposition": "optimized-with-regression-coverage",
+      "browser_only_gaps": [
+        "Real Intl compatibility on supported browser engines, intermediate visual text, announcements and paint performance require browser/device checks."
+      ]
+    },
+    {
+      "component": "PanZoom",
+      "aliases": [
+        "PanZoom"
+      ],
+      "source": "packages/inkra/src/pan-zoom/index.tsx",
+      "module": "pan-zoom",
+      "group": "media",
+      "status": "fixed",
+      "findings": [
+        "Removed unused uncontrolled React state updates from every engine transform; committedRef retains imperative value while the engine owns DOM transforms.",
+        "Inspected native engine cleanup, callbacks/reasons, controlled value synchronization, gesture-end reconciliation, bounds and imperative transforms; no engine API changes."
+      ],
+      "verification": [
+        "packages/inkra/test/media-performance.test.mjs: ten engine frames add zero wrapper commits versus ten on baseline; callbacks and imperative snapshot preserved; explicit external controlled change/four refused gesture ends/latest callback/maxScale checks",
+        "packages/inkra/test/pan-zoom.test.mjs",
+        "scripts/verify-media-equivalence.mjs: unchanged controlled/uncontrolled SSR"
+      ],
+      "disposition": "optimized-with-regression-coverage",
+      "browser_only_gaps": [
+        "Real pan/wheel/pinch, ResizeObserver geometry, focus and engine animation need browser verification."
+      ]
+    },
+    {
+      "component": "Radar",
+      "aliases": [
+        "Radar"
+      ],
+      "source": "packages/inkra/src/radar/index.tsx",
+      "module": "radar",
+      "group": "media",
+      "status": "fixed",
+      "findings": [
+        "Memoized visible series, angles, per-axis scales and shared point geometry eliminate repeated derivation and canvas-effect churn on selection/unrelated renders.",
+        "Indexed first-point lookup retains duplicate-first behavior and distinguishes string/number keys; NaN keys retain original strict-equality behavior. Canvas/SVG/summary/table share geometry.",
+        "Iterative extrema replace unbounded argument spreads; inspected canvas fallback, cache key, resize/inherited-style/scheme/recovery cleanup and selected-series accessibility."
+      ],
+      "verification": [
+        "packages/inkra/test/media-performance.test.mjs: selection/unrelated rerenders add zero value reads versus48 on baseline; immutable data replacement invalidates;200000-value series avoids RangeError",
+        "scripts/verify-media-equivalence.mjs: duplicate/typed/NaN keys, axes, domains, hidden series and selection match baseline SSR",
+        "packages/inkra/test/radar.test.mjs"
+      ],
+      "disposition": "optimized-with-regression-coverage",
+      "browser_only_gaps": [
+        "Canvas pixel parity, SVG fallback switching, real observer delivery and large axis/series DOM scale require browser validation."
+      ]
+    },
+    {
+      "component": "Sparkline",
+      "aliases": [
+        "Sparkline"
+      ],
+      "source": "packages/inkra/src/sparkline/index.tsx",
+      "module": "sparkline",
+      "group": "media",
+      "status": "fixed",
+      "findings": [
+        "Domain and summary extrema now use loops rather than unbounded spreads. Initial active-index reverse search is lazy and does not copy/reverse data on each render.",
+        "Memoized summary preserves no-data and accessible numeric text. Inspected existing normalization/geometry memoization, keyboard/pointer state, missing-point handling and canvas fallback cleanup."
+      ],
+      "verification": [
+        "packages/inkra/test/media-performance.test.mjs:200000-point domain succeeds where baseline throws RangeError",
+        "packages/inkra/test/sparkline.test.mjs",
+        "scripts/verify-media-equivalence.mjs: line/bar/empty/missing/constant values match baseline SSR"
+      ],
+      "disposition": "optimized-with-regression-coverage",
+      "browser_only_gaps": [
+        "Actual pointer hit-testing, canvas/pencil pixels, resize recovery and data-size memory/paint costs need browser validation; full normalization still scales with input."
+      ]
+    },
+    {
+      "component": "Typewriter",
+      "aliases": [
+        "Typewriter"
+      ],
+      "source": "packages/inkra/src/typewriter/index.tsx",
+      "module": "typewriter",
+      "group": "media",
+      "status": "fixed",
+      "findings": [
+        "Memoized private grapheme leaf prevents unchanged PencilText leaves from rerendering on each reveal while preserving all mounted graphemes, seeds and selectable/assistive content.",
+        "Inspected single timer lifecycle, pause/resume/restart/replacement/completion/unmount and reduced-motion behavior; parent mapping remains linear in grapheme count."
+      ],
+      "verification": [
+        "packages/inkra/test/media-performance.test.mjs: revealing one of six graphemes changes only that leaf props; timer lifecycle and cleanup asserted",
+        "packages/inkra/test/typewriter.test.mjs",
+        "scripts/verify-media-equivalence.mjs: Unicode/grapheme/newline/space/empty SSR parity"
+      ],
+      "disposition": "optimized-with-regression-coverage",
+      "browser_only_gaps": [
+        "Actual timer-to-paint cadence, selection continuity, font shaping and assistive announcements require browser validation."
+      ]
+    }
+  ]
+}

@@ -50,10 +50,13 @@ export function paintTerrain(ctx: CanvasRenderingContext2D, data: GeoJsonObject,
     const [fill, ink] = palette[kind] ?? palette.land;
     for (const [polygonIndex, polygon] of polygons.entries()) {
       const rings = polygon.map(ring => ring.map(project));
-      const points = rings.flat();
-      if (!points.length) continue;
-      const left = Math.max(0, Math.min(...points.map(p => p[0]))), right = Math.min(width, Math.max(...points.map(p => p[0])));
-      const top = Math.max(0, Math.min(...points.map(p => p[1]))), bottom = Math.min(height, Math.max(...points.map(p => p[1])));
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (const ring of rings) for (const [x, y] of ring) {
+        minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+      }
+      const left = Math.max(0, minX), right = Math.min(width, maxX);
+      const top = Math.max(0, minY), bottom = Math.min(height, maxY);
       if (left >= right || top >= bottom) continue;
       ctx.save(); ctx.beginPath();
       for (const ring of rings) { ring.forEach(([x, y], index) => index ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.closePath(); }

@@ -87,6 +87,11 @@ const SearchableControl = forwardRef<HTMLDivElement, SearchableSelectProps>(func
   const lookup = useMemo(() => new Map(items.map(item => [item.value, item])), [items]);
   const values = useMemo(() => items.map(item => item.value), [items]);
   const { contains } = Combobox.useFilter({ sensitivity: 'base' });
+  const itemToStringLabel = useCallback((item: string) => lookup.get(item)?.label ?? item, [lookup]);
+  const filter = useCallback((item: string, query: string) => {
+    const option = lookup.get(item);
+    return contains(`${option?.label ?? item} ${option?.keywords ?? ''}`, query);
+  }, [contains, lookup]);
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return undefined;
@@ -161,8 +166,8 @@ const SearchableControl = forwardRef<HTMLDivElement, SearchableSelectProps>(func
       open={resolvedReadOnly || resolvedDisabled ? false : open}
       defaultOpen={resetVersion === 0 ? defaultOpen : false}
       onOpenChange={(next, details) => { if (resolvedReadOnly || resolvedDisabled) details.cancel(); else onOpenChange?.(next); }}
-      itemToStringLabel={item => lookup.get(item)?.label ?? item}
-      filter={(item, query) => contains(`${lookup.get(item)?.label ?? item} ${lookup.get(item)?.keywords ?? ''}`, query)}
+      itemToStringLabel={itemToStringLabel}
+      filter={filter}
       onValueChange={next => {
         if (resolvedDisabled || resolvedReadOnly) return;
         if (props.multiple) props.onValueChange?.(Array.isArray(next) ? next : []);

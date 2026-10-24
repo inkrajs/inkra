@@ -77,7 +77,8 @@ test('Log controlled filter and pause requests do not mutate controlled state lo
   assert.match(source, /if \(paused === undefined\) setUncontrolledPaused\(nextPaused\)/);
   assert.match(source, /if \(filteredLevels === undefined\) setUncontrolledLevels\(nextLevels\)/);
   assert.match(source, /const resolvedPaused = paused \?\? uncontrolledPaused/);
-  assert.match(source, /const selectedLevels = \(filteredLevels \?\? uncontrolledLevels\)/);
+  assert.match(source, /const requestedLevels = filteredLevels \?\? uncontrolledLevels/);
+  assert.match(source, /const selectedLevels = useMemo\(\(\) => requestedLevels\?\.filter\(level => availableLevels\.has\(level\)\), \[requestedLevels, availableLevels\]\)/);
   assert.doesNotMatch(source, /setUncontrolledPaused\(nextPaused\)[\s\S]{0,80}else/);
 });
 

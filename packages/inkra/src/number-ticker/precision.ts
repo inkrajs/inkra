@@ -54,6 +54,15 @@ function roundedDecimal(value: Decimal, options: Intl.ResolvedNumberFormatOption
   return { value: rounded, decimals };
 }
 
+let exactDecimalStringsSupported: boolean | undefined;
+function supportsExactDecimalStrings(): boolean {
+  if (exactDecimalStringsSupported === undefined) {
+    const probe = new Intl.NumberFormat('en-US', { useGrouping: false });
+    exactDecimalStringsSupported = (probe.format as unknown as (value: string) => string)('9007199254740993') === '9007199254740993';
+  }
+  return exactDecimalStringsSupported;
+}
+
 // Intl accepts exact decimal strings in modern engines, but some engines still
 // turn strings beyond Number.MAX_VALUE into Infinity. BigInt bypasses that path.
 export function formatExactParts(formatter: Intl.NumberFormat, value: NumberTickerValue | Decimal): Intl.NumberFormatPart[] {
@@ -64,8 +73,7 @@ export function formatExactParts(formatter: Intl.NumberFormat, value: NumberTick
   if (decimal.isInteger()) return formatter.formatToParts(BigInt(decimal.toFixed(0)));
   if (decimal.e < 308) {
     const exactFormat = formatter.formatToParts as unknown as (value: string) => Intl.NumberFormatPart[];
-    const probe = new Intl.NumberFormat('en-US', { useGrouping: false });
-    if ((probe.format as unknown as (value: string) => string)('9007199254740993') !== '9007199254740993') {
+    if (!supportsExactDecimalStrings()) {
       throw new RangeError('NumberTicker decimal strings require exact Intl.NumberFormat string support');
     }
     return exactFormat.call(formatter, decimal.toString());

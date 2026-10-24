@@ -2,6 +2,8 @@ import {
   createContext,
   forwardRef,
   useContext,
+  useCallback,
+  useMemo,
   useId,
   useImperativeHandle,
   useRef,
@@ -75,8 +77,8 @@ interface ChoiceGridContextValue {
   form?: string;
   mode: 'single' | 'multiple';
   name: string;
-  values?: readonly string[];
-  defaultValues?: readonly string[];
+  values?: ReadonlySet<string>;
+  defaultValues?: ReadonlySet<string>;
   onMultipleChange?: (value: string, checked: boolean) => void;
 }
 
@@ -147,6 +149,22 @@ export const ChoiceGrid = forwardRef<HTMLFieldSetElement, ChoiceGridProps>(funct
   const invalid = Boolean(error) || rest['aria-invalid'] === true || rest['aria-invalid'] === 'true';
   const rootRef = useRef<HTMLFieldSetElement>(null);
   useImperativeHandle(forwardedRef, () => rootRef.current as HTMLFieldSetElement);
+  const multipleValues = props.type === 'multiple' ? props.values : undefined;
+  const multipleDefaults = props.type === 'multiple' ? props.defaultValues : undefined;
+  const onValuesChange = props.type === 'multiple' ? props.onValuesChange : undefined;
+  const values = useMemo(() => multipleValues === undefined ? undefined : new Set(multipleValues), [multipleValues]);
+  const defaultValues = useMemo(() => multipleDefaults === undefined ? undefined : new Set(multipleDefaults), [multipleDefaults]);
+  const onMultipleChange = useCallback((optionValue: string, checked: boolean) => {
+    if (!onValuesChange) return;
+    const selected = Array.from(
+      rootRef.current?.querySelectorAll<HTMLInputElement>('input[type="checkbox"][data-choice-grid-value]') ?? [],
+    ).filter(input => input.value === optionValue ? checked : input.checked)
+      .map(input => input.value);
+    onValuesChange(selected);
+  }, [onValuesChange]);
+  const context = useMemo<ChoiceGridContextValue>(() => ({
+    defaultValues, disabled, form, mode: type, name, onMultipleChange, values,
+  }), [defaultValues, disabled, form, type, name, onMultipleChange, values]);
 
   if (type === 'single') {
     const single = props as SingleChoiceGridProps;
@@ -165,7 +183,7 @@ export const ChoiceGrid = forwardRef<HTMLFieldSetElement, ChoiceGridProps>(funct
         data-type="single"
         style={gridStyle(style, columns, minItemWidth)}
       >
-        <ChoiceGridContext.Provider value={{ disabled, form, mode: 'single', name }}>
+        <ChoiceGridContext.Provider value={context}>
           <RadioGroup
             {...singleFieldsetProps}
             aria-describedby={describedBy}
@@ -190,30 +208,12 @@ export const ChoiceGrid = forwardRef<HTMLFieldSetElement, ChoiceGridProps>(funct
     );
   }
 
-  const multiple = props as MultipleChoiceGridProps;
   const {
     defaultValues: _defaultValues,
     onValuesChange: _onValuesChange,
     values: _values,
     ...multipleFieldsetProps
   } = rest as typeof rest & Pick<MultipleChoiceGridProps, 'defaultValues' | 'onValuesChange' | 'values'>;
-  const onMultipleChange = (optionValue: string, checked: boolean) => {
-    if (!multiple.onValuesChange) return;
-    const selected = Array.from(
-      rootRef.current?.querySelectorAll<HTMLInputElement>('input[type="checkbox"][data-choice-grid-value]') ?? [],
-    ).filter(input => input.value === optionValue ? checked : input.checked)
-      .map(input => input.value);
-    multiple.onValuesChange(selected);
-  };
-  const context: ChoiceGridContextValue = {
-    defaultValues: multiple.defaultValues,
-    disabled,
-    form,
-    mode: 'multiple',
-    name,
-    onMultipleChange,
-    values: multiple.values,
-  };
 
   return (
     <fieldset
@@ -312,10 +312,10 @@ export const ChoiceGridOption = forwardRef<HTMLInputElement, ChoiceGridOptionPro
   ) : (
     <Checkbox
       {...props}
-      checked={context.values === undefined ? undefined : context.values.includes(value)}
+      checked={context.values === undefined ? undefined : context.values.has(value)}
       className="inkra-choice-grid__control"
       data-choice-grid-value=""
-      defaultChecked={context.values === undefined ? context.defaultValues?.includes(value) : undefined}
+      defaultChecked={context.values === undefined ? context.defaultValues?.has(value) : undefined}
       description={description}
       disabled={itemDisabled}
       form={form ?? context.form}

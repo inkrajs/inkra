@@ -23,6 +23,12 @@ export class BoundedCache<Value> {
   }
 
   set(key: string, value: Value, cost: number): Value {
+    // A one-off oversized image must not flush every useful cached control.
+    // Invalid accounting must never disable the byte budget (NaN) either.
+    if (!Number.isFinite(cost) || cost < 0 || cost > this.maxCost || this.maxEntries < 1) {
+      this.delete(key);
+      return value;
+    }
     const previous = this.entries.get(key);
     if (previous) {
       this.totalCost -= previous.cost;
@@ -34,7 +40,7 @@ export class BoundedCache<Value> {
 
     while (this.entries.size > this.maxEntries || this.totalCost > this.maxCost) {
       const oldestKey = this.entries.keys().next().value as string | undefined;
-      if (!oldestKey) break;
+      if (oldestKey === undefined) break;
       const oldest = this.entries.get(oldestKey);
       this.entries.delete(oldestKey);
       this.totalCost -= oldest?.cost ?? 0;
@@ -49,6 +55,18 @@ export class BoundedCache<Value> {
     this.entries.delete(key);
     this.totalCost -= entry.cost;
   }
+}
+
+// Cache limits apply after drawing. Check allocation limits before asking the
+// browser for a backing store, including transient canvases that are not cached.
+export function boundedCanvasSize(width: number, height: number, dpr: number): { width: number; height: number } {
+  const pixelWidth = Math.ceil(width * dpr);
+  const pixelHeight = Math.ceil(height * dpr);
+  if (![width, height, dpr].every(value => Number.isFinite(value) && value > 0)
+    || pixelWidth > 8192 || pixelHeight > 8192 || pixelWidth * pixelHeight > 4 * 1024 * 1024) {
+    throw new RangeError('Pencil canvas exceeds the bounded pixel budget');
+  }
+  return { width: pixelWidth, height: pixelHeight };
 }
 
 export function canvasByteCost(canvas: HTMLCanvasElement): number {

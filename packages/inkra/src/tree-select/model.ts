@@ -25,22 +25,38 @@ export interface FilteredTreeSelectNodes {
   expandedIds: ReadonlySet<string>;
 }
 
-function normalizeCopy(
-  nodes: readonly TreeSelectNode[],
-  seen: Set<string>,
-): TreeSelectNode[] {
-  const result: TreeSelectNode[] = [];
-  for (const node of nodes) {
-    if (!node.id || seen.has(node.id)) continue;
-    seen.add(node.id);
-    const children = normalizeCopy(node.children ?? [], seen);
-    result.push({ ...node, children: children.length ? children : undefined });
-  }
-  return result;
+interface TreeSelectSelectionOptions {
+  multiple: boolean;
+  branchSelection: TreeSelectBranchSelection;
+  selectionPropagation: TreeSelectSelectionPropagation;
 }
 
 export function normalizeTreeSelectNodes(nodes: readonly TreeSelectNode[]): readonly TreeSelectNode[] {
-  return normalizeCopy(nodes, new Set());
+  const result: TreeSelectNode[] = [];
+  const seen = new Set<string>();
+  const stack: Array<{
+    nodes: readonly TreeSelectNode[];
+    position: number;
+    result: TreeSelectNode[];
+    parent?: TreeSelectNode;
+  }> = [{ nodes, position: 0, result }];
+
+  // Preserve preorder duplicate handling without using the JavaScript call stack.
+  while (stack.length) {
+    const frame = stack[stack.length - 1];
+    if (frame.position === frame.nodes.length) {
+      if (frame.parent && frame.result.length) frame.parent.children = frame.result;
+      stack.pop();
+      continue;
+    }
+    const node = frame.nodes[frame.position++];
+    if (!node.id || seen.has(node.id)) continue;
+    seen.add(node.id);
+    const copy: TreeSelectNode = { ...node, children: undefined };
+    frame.result.push(copy);
+    if (node.children?.length) stack.push({ nodes: node.children, position: 0, result: [], parent: copy });
+  }
+  return result;
 }
 
 export function indexTreeSelectNodes(nodes: readonly TreeSelectNode[]): TreeSelectIndex {
@@ -50,62 +66,91 @@ export function indexTreeSelectNodes(nodes: readonly TreeSelectNode[]): TreeSele
   const parentById = new Map<string, string | null>();
   const branchIds = new Set<string>();
   const disabledIds = new Set<string>();
+  const stack = normalized.map(node => ({ node, parentId: null as string | null })).reverse();
 
-  const visit = (items: readonly TreeSelectNode[], parentId: string | null) => {
-    for (const node of items) {
-      orderedIds.push(node.id);
-      byId.set(node.id, node);
-      parentById.set(node.id, parentId);
-      if (node.disabled) disabledIds.add(node.id);
-      if (node.children?.length) {
-        branchIds.add(node.id);
-        visit(node.children, node.id);
+  while (stack.length) {
+    const { node, parentId } = stack.pop()!;
+    orderedIds.push(node.id);
+    byId.set(node.id, node);
+    parentById.set(node.id, parentId);
+    if (node.disabled) disabledIds.add(node.id);
+    if (node.children?.length) {
+      branchIds.add(node.id);
+      for (let position = node.children.length - 1; position >= 0; position--) {
+        stack.push({ node: node.children[position], parentId: node.id });
       }
     }
-  };
-  visit(normalized, null);
+  }
   return { nodes: normalized, orderedIds, byId, parentById, branchIds, disabledIds };
 }
 
-function addVisibleSubtree(node: TreeSelectNode, visibleIds: Set<string>, expandedIds: Set<string>) {
-  visibleIds.add(node.id);
-  if (node.children?.length) {
-    expandedIds.add(node.id);
-    for (const child of node.children) addVisibleSubtree(child, visibleIds, expandedIds);
+function addVisibleSubtree(node: TreeSelectNode, visibleIds: Set<string>, expandedIds?: Set<string>) {
+  const stack = [node];
+  while (stack.length) {
+    const current = stack.pop()!;
+    visibleIds.add(current.id);
+    if (current.children?.length) {
+      expandedIds?.add(current.id);
+      for (let position = current.children.length - 1; position >= 0; position--) {
+        stack.push(current.children[position]);
+      }
+    }
   }
+}
+
+function filterNormalizedTreeSelectNodes(
+  nodes: readonly TreeSelectNode[],
+  query: string,
+): FilteredTreeSelectNodes {
+  const needle = query.trim().toLocaleLowerCase();
+  const visibleIds = new Set<string>();
+  const expandedIds = new Set<string>();
+  if (!needle) {
+    for (const node of nodes) addVisibleSubtree(node, visibleIds);
+    return { nodes, visibleIds, expandedIds };
+  }
+
+  const result: TreeSelectNode[] = [];
+  const stack: Array<{
+    node: TreeSelectNode;
+    destination: TreeSelectNode[];
+    children?: TreeSelectNode[];
+  }> = nodes.map(node => ({ node, destination: result })).reverse();
+  while (stack.length) {
+    const { node, destination, children } = stack.pop()!;
+    if (children) {
+      if (children.length) {
+        visibleIds.add(node.id);
+        expandedIds.add(node.id);
+        destination.push({ ...node, children });
+      }
+      continue;
+    }
+    const haystack = `${node.label} ${node.keywords ?? ''}`.toLocaleLowerCase();
+    if (haystack.includes(needle)) {
+      addVisibleSubtree(node, visibleIds, expandedIds);
+      destination.push(node);
+    } else if (node.children?.length) {
+      const matches: TreeSelectNode[] = [];
+      stack.push({ node, destination, children: matches });
+      for (let position = node.children.length - 1; position >= 0; position--) {
+        stack.push({ node: node.children[position], destination: matches });
+      }
+    }
+  }
+  return { nodes: result, visibleIds, expandedIds };
 }
 
 export function filterTreeSelectNodes(
   nodes: readonly TreeSelectNode[],
   query: string,
 ): FilteredTreeSelectNodes {
-  const normalized = normalizeTreeSelectNodes(nodes);
-  const needle = query.trim().toLocaleLowerCase();
-  const visibleIds = new Set<string>();
-  const expandedIds = new Set<string>();
-  if (!needle) {
-    for (const node of normalized) addVisibleSubtree(node, visibleIds, new Set());
-    return { nodes: normalized, visibleIds, expandedIds };
-  }
+  return filterNormalizedTreeSelectNodes(normalizeTreeSelectNodes(nodes), query);
+}
 
-  const visit = (node: TreeSelectNode): TreeSelectNode | null => {
-    const haystack = `${node.label} ${node.keywords ?? ''}`.toLocaleLowerCase();
-    if (haystack.includes(needle)) {
-      addVisibleSubtree(node, visibleIds, expandedIds);
-      return node;
-    }
-    const children = (node.children ?? []).map(visit).filter((child): child is TreeSelectNode => child !== null);
-    if (!children.length) return null;
-    visibleIds.add(node.id);
-    expandedIds.add(node.id);
-    return { ...node, children };
-  };
-
-  return {
-    nodes: normalized.map(visit).filter((node): node is TreeSelectNode => node !== null),
-    visibleIds,
-    expandedIds,
-  };
+/** Reuse the component's index instead of cloning every node on each search. */
+export function filterTreeSelectNodesFromIndex(index: TreeSelectIndex, query: string): FilteredTreeSelectNodes {
+  return filterNormalizedTreeSelectNodes(index.nodes, query);
 }
 
 function isSelectable(
@@ -118,23 +163,9 @@ function isSelectable(
     && (branchSelection === 'all' || !index.branchIds.has(id));
 }
 
-function descendants(index: TreeSelectIndex, id: string): string[] {
-  const node = index.byId.get(id);
-  if (!node?.children?.length) return [];
-  const result: string[] = [];
-  const visit = (items: readonly TreeSelectNode[]) => {
-    for (const child of items) {
-      result.push(child.id);
-      if (child.children?.length) visit(child.children);
-    }
-  };
-  visit(node.children);
-  return result;
-}
-
 function orderedSelection(index: TreeSelectIndex, selected: ReadonlySet<string>, previous: readonly string[]) {
   const known = index.orderedIds.filter(id => selected.has(id));
-  const unknown = previous.filter((id, position) => !index.byId.has(id) && previous.indexOf(id) === position);
+  const unknown = [...new Set(previous)].filter(id => !index.byId.has(id));
   return [...known, ...unknown];
 }
 
@@ -143,39 +174,56 @@ export function updateTreeSelectSelection(
   current: readonly string[],
   toggledId: string,
   selected: boolean,
-  options: {
-    multiple: boolean;
-    branchSelection: TreeSelectBranchSelection;
-    selectionPropagation: TreeSelectSelectionPropagation;
-  },
+  options: TreeSelectSelectionOptions,
 ): string[] {
-  const index = indexTreeSelectNodes(nodes);
+  return updateTreeSelectSelectionFromIndex(indexTreeSelectNodes(nodes), current, toggledId, selected, options);
+}
+
+/** Reuse the component's index for selection and aggregate each subtree once. */
+export function updateTreeSelectSelectionFromIndex(
+  index: TreeSelectIndex,
+  current: readonly string[],
+  toggledId: string,
+  selected: boolean,
+  options: TreeSelectSelectionOptions,
+): string[] {
   if (!isSelectable(index, toggledId, options.branchSelection)) return [...current];
   if (!options.multiple) return selected ? [toggledId] : [];
 
   const next = new Set(current);
-  const affected = [toggledId];
-  if (options.selectionPropagation !== 'none' && index.branchIds.has(toggledId)) {
-    affected.push(...descendants(index, toggledId));
-  }
-  for (const id of affected) {
-    if (!isSelectable(index, id, options.branchSelection)) continue;
-    if (selected) next.add(id);
-    else next.delete(id);
+  const stack = [index.byId.get(toggledId)!];
+  while (stack.length) {
+    const node = stack.pop()!;
+    if (isSelectable(index, node.id, options.branchSelection)) {
+      if (selected) next.add(node.id);
+      else next.delete(node.id);
+    }
+    if (options.selectionPropagation !== 'none' && node.children?.length) {
+      for (const child of node.children) stack.push(child);
+    }
   }
 
   if (options.selectionPropagation === 'both' && options.branchSelection === 'all') {
-    const branches = index.orderedIds.filter(id => index.branchIds.has(id)).reverse();
-    for (const branchId of branches) {
-      if (index.disabledIds.has(branchId)) continue;
-      const selectableDescendants = descendants(index, branchId)
-        .filter(id => isSelectable(index, id, options.branchSelection));
-      if (!selectableDescendants.length) continue;
-      if (selectableDescendants.every(id => next.has(id))) next.add(branchId);
-      else next.delete(branchId);
+    const summaries = new Map<string, { count: number; unselected: number }>();
+    // Reverse preorder visits children before parents. Include descendants under
+    // disabled branches, but never count a disabled node itself as selectable.
+    for (let position = index.orderedIds.length - 1; position >= 0; position--) {
+      const id = index.orderedIds[position];
+      const summary = summaries.get(id) ?? { count: 0, unselected: 0 };
+      const enabled = !index.disabledIds.has(id);
+      if (enabled && summary.count > 0) {
+        if (summary.unselected === 0) next.add(id);
+        else next.delete(id);
+      }
+      const parentId = index.parentById.get(id);
+      if (parentId != null) {
+        const parent = summaries.get(parentId) ?? { count: 0, unselected: 0 };
+        parent.count += summary.count + (enabled ? 1 : 0);
+        parent.unselected += summary.unselected + (enabled && !next.has(id) ? 1 : 0);
+        summaries.set(parentId, parent);
+      }
     }
   }
 
   return orderedSelection(index, next, current);
 }
-
