@@ -47,3 +47,33 @@ The harness runs serial child processes, each limited to 768 MiB old-space and
 default-current and explicitly paged-current separately, host nodes, row-ID calls,
 raw wall-time samples and process peak RSS. Failed resource-limited cases remain
 failed records, never a fabricated per-operation duration or browser crash.
+
+## Explicit collection and itinerary display bounds
+
+- `TagInput.maxVisibleTags` bounds the initially mounted tag rows; all native
+  hidden form values are retained. The localized `showAllTagsLabel(count)` /
+  `showFewerTagsLabel` disclosure reveals every tag. Arrow navigation to a hidden
+  tag first expands it; ordinary draft editing does not mount hidden tags.
+- `ChoiceGrid.pageSize` pages **controlled direct ChoiceGridOption children**.
+  Off-page selected values retain hidden native inputs in original option order,
+  including option-specific form association/disabled state. Selection callbacks
+  retain the full collection. Native keyboard selection operates within the
+  current page; localized previous/next controls expose every page. Uncontrolled,
+  required, fragment/custom/composed children retain the complete original output
+  instead of silently changing native validation or unknown descendant behavior.
+- `Calendar.maxEventsPerDay` optionally summarizes itinerary event cards per day.
+  The per-day disclosure (`showDayEventsLabel(date,total,expanded)`) reveals every
+  event and keeps the date target separate. Default date labels still include all
+  event labels; summarized dates have a count rather than a potentially enormous
+  accessible name. Custom Day overrides remain caller-owned.
+- `DayAgenda.maxVisibleEvents` limits initial card output only. Layout, timeline
+  scale and lanes still use the complete input; an externally selected event is
+  always retained even beyond the limit. The localized all/fewer disclosure
+  reveals every timed and untimed event. This does not accelerate full layout
+  indexing or claim that 10k simultaneous overlapping cards become usable.
+
+All bounds are opt-in and finite values normalize to nonnegative counts (paging
+normalizes to at least one). Nonfinite/omitted bounds retain full output. Expanding
+an enormous collection still incurs its full rendering cost; use paging or an
+appropriate data view when all-at-once expansion is unsuitable. Form hidden values
+and caller-created React option elements still grow with input size.

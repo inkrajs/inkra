@@ -20,6 +20,7 @@ import type {
 } from 'react';
 
 import { PencilIcon } from '../PencilIcon.js';
+import { Button } from '../Button.js';
 import { PencilLine } from '../PencilLine.js';
 import { PencilSurface } from '../PencilSurface.js';
 import { PencilText } from '../PencilText.js';
@@ -96,6 +97,10 @@ export interface TagInputProps
   getTagValueKey?: (value: string) => string;
   delimiters?: readonly string[];
   maxTags?: number;
+  /** Opt-in initial display bound. Every value remains submitted and can be expanded. */
+  maxVisibleTags?: number;
+  showAllTagsLabel?: (count: number) => string;
+  showFewerTagsLabel?: string;
   disabled?: boolean;
   readOnly?: boolean;
   required?: boolean;
@@ -229,6 +234,9 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
     invalid = false,
     labels,
     maxTags,
+    maxVisibleTags,
+    showAllTagsLabel = count => `Show all ${count} tags`,
+    showFewerTagsLabel = 'Show fewer tags',
     name,
     onClick,
     onInputValueChange,
@@ -258,6 +266,8 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
   const [localValidationMessage, setLocalValidationMessage] = useState<string>();
   const [focusWithin, setFocusWithin] = useState(false);
   const [pendingFocus, setPendingFocus] = useState<PendingFocus>(null);
+  const [expandedTags, setExpandedTags] = useState(false);
+  const tagDisplayLimit = maxVisibleTags !== undefined && Number.isFinite(maxVisibleTags) ? Math.max(0, Math.floor(maxVisibleTags)) : Infinity;
   const tagsControlled = value !== undefined;
   const draftControlled = inputValue !== undefined;
   const currentTags = tagsControlled ? value : uncontrolledTags;
@@ -295,12 +305,16 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
 
   useEffect(() => {
     if (!pendingFocus) return;
+    if ('tagId' in pendingFocus && !expandedTags && currentTags.findIndex(tag => tag.id === pendingFocus.tagId) >= tagDisplayLimit) {
+      setExpandedTags(true);
+      return;
+    }
     const target = 'input' in pendingFocus
       ? inputRef.current
       : removeRefs.current.get(pendingFocus.tagId) ?? inputRef.current;
     target?.focus({ preventScroll: true });
     setPendingFocus(null);
-  }, [currentTags, pendingFocus]);
+  }, [currentTags, pendingFocus, expandedTags, tagDisplayLimit]);
 
   useEffect(() => {
     const input = inputRef.current;
@@ -430,8 +444,11 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
 
   const focusRemoveButton = useCallback((index: number) => {
     const tag = currentTags[index];
-    if (tag) removeRefs.current.get(tag.id)?.focus({ preventScroll: true });
-  }, [currentTags]);
+    if (tag) {
+      if (!expandedTags && index >= tagDisplayLimit) setPendingFocus({ tagId: tag.id });
+      else removeRefs.current.get(tag.id)?.focus({ preventScroll: true });
+    }
+  }, [currentTags, expandedTags, tagDisplayLimit]);
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     inputProps.onChange?.(event);
@@ -510,7 +527,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
 
   // Stable rows survive immutable edits to other tags. Parent event handlers
   // remain fresh instead of hiding a changing callback behind a memo comparator.
-  const tagRows = useMemo(() => currentTags.map((tag, index) => <TagInputTagRow
+  const tagRows = useMemo(() => (expandedTags || tagDisplayLimit >= currentTags.length ? currentTags : currentTags.slice(0, tagDisplayLimit)).map((tag, index) => <TagInputTagRow
     className={classNames.tag}
     disabled={state.disabled}
     index={index}
@@ -520,7 +537,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
     removeRefs={removeRefs}
     seed={resolvedSeed}
     tag={tag}
-  />), [currentTags, state.disabled, state.readOnly, copy.removeTag, classNames.tag, resolvedSeed]);
+  />), [currentTags, state.disabled, state.readOnly, copy.removeTag, classNames.tag, resolvedSeed, expandedTags, tagDisplayLimit]);
   const formValues = useMemo(() => name ? currentTags.map((tag, index) => (
     <input disabled={state.disabled} form={form} key={`${tag.id}-${index}`} name={name} type="hidden" value={tag.value} />
   )) : null, [currentTags, state.disabled, form, name]);
@@ -573,7 +590,8 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
             const target = tagRemoveTarget(event, currentTags.length);
             if (target) handleTagKeyDown(event, target.index, target.button);
           }}
-        >{tagRows}</ul>
+        >{tagRows}{currentTags.length > tagDisplayLimit && <li><Button type="button" size="sm" variant="ghost" aria-expanded={expandedTags}
+          onClick={() => setExpandedTags(current => !current)}>{expandedTags ? showFewerTagsLabel : showAllTagsLabel(currentTags.length)}</Button></li>}</ul>
         <input
           {...inputProps}
           aria-describedby={state.describedBy}

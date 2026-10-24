@@ -1,4 +1,4 @@
-import { useId, useMemo, type CSSProperties, type HTMLAttributes, type ReactNode } from 'react';
+import { useId, useMemo, useState, type CSSProperties, type HTMLAttributes, type ReactNode } from 'react';
 import { TravelIcon } from '../internal/travelIcons.js';
 import { Button } from '../Button.js';
 import { createAgendaScale, layoutAgendaCards } from './layout.js';
@@ -37,6 +37,10 @@ export interface DayAgendaProps extends Omit<HTMLAttributes<HTMLElement>, 'onSel
   onPreviousDay?: () => void;
   onNextDay?: () => void;
   navigationLabels?: { previous: string; next: string };
+  /** Opt-in initial summary. Layout uses every event and all can be revealed. */
+  maxVisibleEvents?: number;
+  showAllEventsLabel?: (count: number) => string;
+  showFewerEventsLabel?: string;
 }
 function formatAgendaMinute(minute: number, formatter?: Intl.DateTimeFormat): string {
   const value = Math.max(0, Math.min(1440, Math.floor(minute)));
@@ -59,8 +63,11 @@ export function agendaInterval(event: AgendaEvent) {
   return { start: Math.max(0, event.startMinute), end: Math.min(1440, end ?? event.startMinute), before: event.startMinute < 0, after: (end ?? 0) > 1440 };
 }
 
-export function DayAgenda({ date, events, selectedEvent, onEventSelect, locale = 'en', timeZoneLabel, emptyLabel = 'No events', untimedLabel = 'Time pending', showOverview = true, hourCycle = 'h23', density = 'comfortable', showDescriptions = true, divided = true, disabled = false, onPreviousDay, onNextDay, navigationLabels = { previous: 'Previous day', next: 'Next day' }, className, ...props }: DayAgendaProps) {
+export function DayAgenda({ date, events, selectedEvent, onEventSelect, locale = 'en', timeZoneLabel, emptyLabel = 'No events', untimedLabel = 'Time pending', showOverview = true, hourCycle = 'h23', density = 'comfortable', showDescriptions = true, divided = true, disabled = false, onPreviousDay, onNextDay, navigationLabels = { previous: 'Previous day', next: 'Next day' }, maxVisibleEvents, showAllEventsLabel = count => `Show all ${count} events`, showFewerEventsLabel = 'Show fewer events', className, ...props }: DayAgendaProps) {
   const id = useId();
+  const [expandedDate, setExpandedDate] = useState<string>();
+  const displayLimit = maxVisibleEvents !== undefined && Number.isFinite(maxVisibleEvents) ? Math.max(0, Math.floor(maxVisibleEvents)) : Infinity;
+  const expanded = expandedDate === date;
   const title = useMemo(() => {
     const validDate = /^\d{4}-\d{2}-\d{2}$/.test(date) ? new Date(`${date}T12:00:00Z`) : new Date(NaN);
     return Number.isFinite(validDate.getTime()) ? new Intl.DateTimeFormat(locale, { timeZone: 'UTC', month: 'long', day: 'numeric', weekday: 'short' }).format(validDate) : date;
@@ -87,6 +94,10 @@ export function DayAgenda({ date, events, selectedEvent, onEventSelect, locale =
       .map(minute => ({ minute, label: formatTime(minute) }));
     return { ordered, pending, scale, cards, ticks };
   }, [density, events, timeFormatter]);
+  const shownIds = useMemo(() => expanded || displayLimit >= ordered.length ? null
+    : new Set([...ordered.slice(0, displayLimit).map(event => event.id), ...(selectedEvent ? [selectedEvent] : [])]), [expanded, displayLimit, ordered, selectedEvent]);
+  const visibleCards = shownIds === null ? cards : cards.filter(row => shownIds.has(row.id));
+  const visiblePending = shownIds === null ? pending : pending.filter(event => shownIds.has(event.id));
   const renderCard = (event: AgendaEvent, time: string) => <PencilSurface variant="quiet" radius={6} className="inkra-agenda__card" data-selected={selectedEvent === event.id}
     style={{ '--inkra-accent-soft': event.color ?? (event.kind === 'stay' ? '#c8c38f' : event.kind === 'travel' ? '#87bbc0' : '#a7c7ad') } as CSSProperties}>
     {onEventSelect && <button type="button" className="inkra-agenda__hit" disabled={disabled || event.disabled} aria-label={`${time}, ${event.title}`} aria-pressed={selectedEvent === event.id} onClick={() => onEventSelect(event)} />}
@@ -103,7 +114,7 @@ export function DayAgenda({ date, events, selectedEvent, onEventSelect, locale =
           {ticks.map(({ minute, label }) => <div key={minute} className="inkra-agenda__tick" style={{ top: scale.position(minute) + 12 }}>
             <span><PencilText>{label}</PencilText></span>{divided && <PencilLine />}
           </div>)}
-          <ol className="inkra-agenda__lanes">{cards.map(row => {
+          <ol className="inkra-agenda__lanes">{visibleCards.map(row => {
             const time = row.time;
             return <li key={row.id} data-kind={row.event.kind} style={{ top: row.top + 14, height: Math.max(44, row.height - 4), insetInlineStart: `${row.lane / row.lanes * 100}%`, width: `${100 / row.lanes}%` }}>
               {renderCard(row.event, time)}<span className="inkra-agenda__accessible-time">{time}</span>
@@ -111,7 +122,9 @@ export function DayAgenda({ date, events, selectedEvent, onEventSelect, locale =
           })}</ol>
         </div>
       </div>
-      {pending.length > 0 && <div className="inkra-agenda__pending"><PencilText>{untimedLabel}</PencilText>{pending.map(event => <div key={event.id}>{renderCard(event, untimedLabel)}</div>)}</div>}
+      {visiblePending.length > 0 && <div className="inkra-agenda__pending"><PencilText>{untimedLabel}</PencilText>{visiblePending.map(event => <div key={event.id}>{renderCard(event, untimedLabel)}</div>)}</div>}
+      {ordered.length > displayLimit && <Button size="sm" variant="ghost" aria-expanded={expanded}
+        onClick={() => setExpandedDate(expanded ? undefined : date)}>{expanded ? showFewerEventsLabel : showAllEventsLabel(ordered.length)}</Button>}
     </>}
     {(onPreviousDay || onNextDay) && <footer className="inkra-agenda__navigation"><PencilLine /><Button variant="ghost" size="icon" aria-label={navigationLabels.previous} title={navigationLabels.previous} disabled={!onPreviousDay} onClick={onPreviousDay}><TravelIcon name="previous" /></Button><Button variant="ghost" size="icon" aria-label={navigationLabels.next} title={navigationLabels.next} disabled={!onNextDay} onClick={onNextDay}><TravelIcon name="next" /></Button></footer>}
   </section>;

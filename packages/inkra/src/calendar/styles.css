@@ -52,3 +52,11 @@
   .inkra-calendar[data-appearance="itinerary"] .rdp-month_grid { border-spacing: 2px 6px; }
   .inkra-calendar__accessory { top: 46px; inset-inline: 0; margin: auto; max-width: 100%; }
 }
+
+/* Opt-in summaries remain operable at every width. The legacy responsive
+   clipping must not hide a disclosure or events the user explicitly revealed. */
+.inkra-calendar__events-toggle { pointer-events: auto; min-width: 0; max-width: 100%; white-space: normal; }
+.inkra-calendar__events-toggle .inkra-button__label { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+.inkra-calendar-scroll[data-event-summary] .inkra-calendar__events { display: grid; }
+.inkra-calendar-scroll[data-event-summary] .inkra-calendar__event-card:nth-child(n + 3) { display: block; }
+.inkra-calendar-scroll[data-event-summary] .inkra-calendar__day-card { padding: 44px 5px 8px; }
