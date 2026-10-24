@@ -65,6 +65,8 @@ test('Drawer supports four directions, explicit sizing, sections and focus primi
 });
 
 test('Drawer keeps long headings, actions and footers reachable in short viewports', () => {
+  assert.match(drawerStyles, /\.inkra-drawer__header,\s*\.inkra-drawer__footer \{ flex: 0 1 auto; min-height: 0/);
+  assert.match(drawerStyles, /\.inkra-drawer__footer \{[^}]*scrollbar-gutter: auto/);
   assert.match(drawerStyles, /\.inkra-drawer__header,[\s\S]*?\.inkra-drawer__body,[\s\S]*?\.inkra-drawer__footer \{ box-sizing: border-box/);
   assert.match(drawer, /const hasActions = Boolean\(action \|\| showClose\)/);
   assert.match(drawer, /data-actions=\{hasActions \|\| undefined\}/);
@@ -78,6 +80,6 @@ test('Drawer keeps long headings, actions and footers reachable in short viewpor
   assert.doesNotMatch(drawerStyles, /\.inkra-drawer__header\[data-actions\][^{]*\{[^}]*flex-direction: column/);
   assert.doesNotMatch(drawerStyles, /max-inline-size: min\(50%, 12rem\)/);
   assert.match(drawerStyles, /\.inkra-drawer__footer \{[\s\S]*?max-block-size: 40%;[\s\S]*?overflow: auto/);
-  assert.match(drawerStyles, /\.inkra-drawer__body \{[\s\S]*?flex: 1 1 auto;[\s\S]*?min-height: 0;[\s\S]*?overflow: auto/);
+  assert.match(drawerStyles, /\.inkra-drawer__body \{[\s\S]*?flex: 1 1 0;[\s\S]*?min-height: 0;[\s\S]*?overflow: auto/);
   assert.doesNotMatch(drawer, /addEventListener\(['"](?:keydown|pointerdown|click|focus|blur)/);
 });
