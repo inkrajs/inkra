@@ -97,8 +97,9 @@ needs `slider.css` and `audio-player.css`. Add CSS for any custom slotted conten
 JourneyMap maps need `journey-map.css` and `leaflet.css`; Leaflet remains lazy.
 Tokens, font and Leaflet image paths are rebased for nested CSS entry points.
 CSS remains side-effectful; these are explicit files, not automatic unused-rule
-purging. The full multilingual font is preserved rather than silently deleting
-characters with a global subset. Byte savings are measured separately from real
+purging. The existing handwritten web font is already a 706-character subset
+(documented in design-standard and third-party notices). Its current glyph
+coverage is preserved; further universal subsetting would remove supported text. Byte savings are measured separately from real
 network downloads and page experience.
 
 ## Viewport-aware decorative surface scheduling
@@ -114,3 +115,27 @@ rechecked when returning. Missing/unavailable IntersectionObserver falls back to
 the existing eager behavior. Observer targets and pending frames detach on
 unmount. Invisible focus/selection layers inside the prewarm band remain painted
 so CSS-only hover, checked and keyboard focus changes never reveal an empty ring.
+
+
+## Final local measurement snapshot
+
+The final snapshot is `performance-final-metrics.json`. It maps every one of the
+231 identities to a production consumer closure and verified shared runtime/SSR
+fixture evidence. Full raw files are separately archived by SHA-256; fixture
+totals are never divided into fictitious isolated component costs. Source code
+was unchanged between main 3a646fa and the measured tool commit 10f3f1d.
+
+The complete docs browser queue passed 75/77 scripts. The narrow Tooltip and
+Sortable configuration failures reproduce at the same assertions on the #10
+package baseline. They are retained as existing failures, not silently skipped.
+
+Cold reveal is a measured tradeoff of viewport surface scheduling: in a serial
+three-sample desktop TagInput 1k test, mount+jump+focus falls from 5842.13 to
+3046.46 ms, but jump plus awaited paint rises from 128.78 to 1166.80 ms.
+Small renderer mounts also retain regressions. These observations do not justify
+a universal speedup claim or a threshold that remounts component subtrees.
+
+Production RUM has no authorized sample source and deployment is prohibited.
+Original intermittent crash was not reproduced under bounded pressure. Phone
+real-device work was explicitly excluded by the user, so no device settings or
+permissions are pending.
