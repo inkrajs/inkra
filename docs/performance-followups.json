@@ -33,48 +33,64 @@
       "title": "DataTable 不可变数组全行模型",
       "source": "REPORT.md P1.4; Word 大数据/模型",
       "initialDisposition": "implement",
-      "status": "implementation-under-validation",
+      "status": "implemented-verified-merged",
       "plan": "可选 manualPagination/rowCount/manualSorting/manualFiltering；默认模型不变",
       "evidence": [
-        "scripts/benchmark-paged-collections.mjs",
-        "packages/inkra/test/paged-collections-runtime.test.mjs",
-        "packages/inkra/test/data-table-model-contract.test.mjs"
+        "PR #8 actual-head CI 40109805366",
+        "643/643 opt-in tests",
+        "D-paged-results.json",
+        "D-browser.log"
       ],
-      "outcome": null
+      "outcome": "Explicit server processing / panel paging delivered; defaults unchanged.",
+      "pr": "https://github.com/inkrajs/inkra/pull/8"
     },
     {
       "id": "D02",
       "title": "Transfer 全量挂载及 10k/50k 边界",
       "source": "REPORT.md P1.1; large-data-results",
       "initialDisposition": "investigate",
-      "status": "implementation-under-validation",
+      "status": "implemented-verified-merged",
       "plan": "项级复用、显式分页；搜索/批量/焦点保持",
       "evidence": [
-        "scripts/benchmark-paged-collections.mjs",
-        "packages/inkra/test/paged-collections-runtime.test.mjs",
-        "packages/inkra/test/data-table-model-contract.test.mjs"
+        "PR #8 actual-head CI 40109805366",
+        "643/643 opt-in tests",
+        "D-paged-results.json",
+        "D-browser.log"
       ],
-      "outcome": null
+      "outcome": "Explicit server processing / panel paging delivered; defaults unchanged.",
+      "pr": "https://github.com/inkrajs/inkra/pull/8"
     },
     {
       "id": "D03",
       "title": "TagInput 全量标签及 50k 超时",
       "source": "REPORT.md P1.1",
       "initialDisposition": "investigate",
-      "status": "pending",
+      "status": "implemented-verified-merged",
       "plan": "可选折叠可展开标签，完整表单值和删除/键盘保持",
-      "evidence": [],
-      "outcome": null
+      "evidence": [
+        "PR #9 actual-head CI 40110913275",
+        "648/648 opt-in tests",
+        "E-final-bounded-results.json",
+        "E-browser.log"
+      ],
+      "outcome": "Opt-in bounded output retains all data, forms and explicit access; browser-found calendar disclosure issue fixed.",
+      "pr": "https://github.com/inkrajs/inkra/pull/9"
     },
     {
       "id": "D04",
       "title": "ChoiceGrid 全量选项/单项状态传播",
       "source": "REPORT.md P1.1–2",
       "initialDisposition": "investigate",
-      "status": "pending",
+      "status": "implemented-verified-merged",
       "plan": "按项订阅/显式分页方案，原生单选/多选/重置保持",
-      "evidence": [],
-      "outcome": null
+      "evidence": [
+        "PR #9 actual-head CI 40110913275",
+        "648/648 opt-in tests",
+        "E-final-bounded-results.json",
+        "E-browser.log"
+      ],
+      "outcome": "Opt-in bounded output retains all data, forms and explicit access; browser-found calendar disclosure issue fixed.",
+      "pr": "https://github.com/inkrajs/inkra/pull/9"
     },
     {
       "id": "D05",
@@ -91,60 +107,92 @@
       "title": "TreeSelect 关闭整树构造",
       "source": "REPORT.md P1.3",
       "initialDisposition": "covered",
-      "status": "pending",
+      "status": "covered-by-merged-upstream",
       "plan": "已由 #7 延迟构造；补打开/搜索/深层边界浏览器证据",
-      "evidence": [],
-      "outcome": null
+      "evidence": [
+        "PR #5–7",
+        "C-check.log",
+        "E-check.log"
+      ],
+      "outcome": "Previously delivered in #5–7; latest integrated runtime/SSR regressions pass, browser follow-up continues."
     },
     {
       "id": "D07",
       "title": "Calendar 密集事件输出",
       "source": "REPORT.md P1.5",
       "initialDisposition": "investigate",
-      "status": "pending",
+      "status": "implemented-verified-merged",
       "plan": "索引已 #5；调查每格溢出摘要是否已有并量化",
-      "evidence": [],
-      "outcome": null
+      "evidence": [
+        "PR #9 actual-head CI 40110913275",
+        "648/648 opt-in tests",
+        "E-final-bounded-results.json",
+        "E-browser.log"
+      ],
+      "outcome": "Opt-in bounded output retains all data, forms and explicit access; browser-found calendar disclosure issue fixed.",
+      "pr": "https://github.com/inkrajs/inkra/pull/9"
     },
     {
       "id": "D08",
       "title": "DayAgenda 密集布局/输出",
       "source": "REPORT.md P1.5",
       "initialDisposition": "investigate",
-      "status": "pending",
+      "status": "implemented-verified-merged",
       "plan": "堆扫描已 #5；调查输出上限/可见量，不删除事件",
-      "evidence": [],
-      "outcome": null
+      "evidence": [
+        "PR #9 actual-head CI 40110913275",
+        "648/648 opt-in tests",
+        "E-final-bounded-results.json",
+        "E-browser.log"
+      ],
+      "outcome": "Opt-in bounded output retains all data, forms and explicit access; browser-found calendar disclosure issue fixed.",
+      "pr": "https://github.com/inkrajs/inkra/pull/9"
     },
     {
       "id": "D09",
       "title": "模型选择/过滤/粘贴 Map Set",
       "source": "Word 常规优化/算法增长",
       "initialDisposition": "covered",
-      "status": "pending",
+      "status": "covered-by-merged-upstream",
       "plan": "已 #5，复测真实模型计数与规模",
-      "evidence": [],
-      "outcome": null
+      "evidence": [
+        "PR #5–7",
+        "C-check.log",
+        "E-check.log"
+      ],
+      "outcome": "Previously delivered in #5–7; latest integrated runtime/SSR regressions pass, browser follow-up continues."
     },
     {
       "id": "E01",
       "title": "Select/AudioPlayer 入口闭包",
       "source": "REPORT.md P2.6; bundle-analysis",
       "initialDisposition": "implement",
-      "status": "pending",
+      "status": "implementation-under-validation",
       "plan": "独立可消费子路径/引擎边界，真实生产包体对照",
-      "evidence": [],
-      "outcome": null
+      "evidence": [
+        "F-bundles-before",
+        "F-bundles-after",
+        "F-bundles-after-named",
+        "F-check.log"
+      ],
+      "outcome": null,
+      "pr": "https://github.com/inkrajs/inkra/pull/10"
     },
     {
       "id": "E02",
       "title": "全局 CSS 初始负担",
       "source": "bundle-analysis CSS",
       "initialDisposition": "implement",
-      "status": "pending",
+      "status": "implementation-under-validation",
       "plan": "可选基础/按族样式；默认 styles.css 完整保持",
-      "evidence": [],
-      "outcome": null
+      "evidence": [
+        "F-bundles-before",
+        "F-bundles-after",
+        "F-bundles-after-named",
+        "F-check.log"
+      ],
+      "outcome": null,
+      "pr": "https://github.com/inkrajs/inkra/pull/10"
     },
     {
       "id": "E03",
@@ -171,19 +219,28 @@
       "title": "命名别名/tree shaking",
       "source": "bundle-analysis paired aliases",
       "initialDisposition": "measure",
-      "status": "pending",
+      "status": "implementation-under-validation",
       "plan": "已反证仅改导入拼写无效；验证子路径和未使用导出",
-      "evidence": [],
-      "outcome": null
+      "evidence": [
+        "F-bundles-before",
+        "F-bundles-after",
+        "F-bundles-after-named",
+        "F-check.log"
+      ],
+      "outcome": null,
+      "pr": "https://github.com/inkrajs/inkra/pull/10"
     },
     {
       "id": "F01",
       "title": "13 个真实 DOM 运行时缺口",
       "source": "REPORT.md 明确运行时缺口",
       "initialDisposition": "measure",
-      "status": "pending",
+      "status": "measurement-in-progress",
       "plan": "逐身份有效 portal/overflow 场景与断言，不能封闭壳计时",
-      "evidence": [],
+      "evidence": [
+        "scripts/browser/measure-browser.mjs",
+        "G-browser/browser-results.json"
+      ],
       "outcome": null
     },
     {
@@ -191,9 +248,12 @@
       "title": "真实大数据 DOM/键盘/滚动",
       "source": "REPORT.md P1.1; Word 操作表",
       "initialDisposition": "measure",
-      "status": "pending",
+      "status": "measurement-in-progress",
       "plan": "1k/10k 安全上限，N/V/R、选择/搜索/输入到绘制",
-      "evidence": [],
+      "evidence": [
+        "scripts/browser/measure-browser.mjs",
+        "G-browser/browser-results.json"
+      ],
       "outcome": null
     },
     {
@@ -201,9 +261,12 @@
       "title": "长任务/布局/绘制/帧",
       "source": "Word 交互布局绘制",
       "initialDisposition": "measure",
-      "status": "pending",
+      "status": "measurement-in-progress",
       "plan": "浏览器 trace、longtask、layout/paint 与原始样本",
-      "evidence": [],
+      "evidence": [
+        "scripts/browser/measure-browser.mjs",
+        "G-browser/browser-results.json"
+      ],
       "outcome": null
     },
     {
@@ -211,9 +274,12 @@
       "title": "冷暖加载/瀑布/覆盖率",
       "source": "Word 页面加载方法",
       "initialDisposition": "measure",
-      "status": "pending",
+      "status": "measurement-in-progress",
       "plan": "文档/重集合/编辑浮层页面，固定构建网络条件",
-      "evidence": [],
+      "evidence": [
+        "scripts/browser/measure-browser.mjs",
+        "G-browser/browser-results.json"
+      ],
       "outcome": null
     },
     {
@@ -221,9 +287,12 @@
       "title": "实验室 LCP/CLS/Event Timing",
       "source": "Word CWV 方法",
       "initialDisposition": "measure",
-      "status": "pending",
+      "status": "measurement-in-progress",
       "plan": "真实页面采样；不伪造线上 p75 INP 或 RUM",
-      "evidence": [],
+      "evidence": [
+        "scripts/browser/measure-browser.mjs",
+        "G-browser/browser-results.json"
+      ],
       "outcome": null
     },
     {
@@ -241,9 +310,12 @@
       "title": "多轮生命周期 retained heap",
       "source": "REPORT.md P2.7; Word heap 表",
       "initialDisposition": "measure",
-      "status": "pending",
+      "status": "measurement-in-progress",
       "plan": "100 轮开关/挂载/卸载，GC/DOM/快照，关注列出的 timeline/heatmap/toggle/calendar 等",
-      "evidence": [],
+      "evidence": [
+        "scripts/browser/measure-browser.mjs",
+        "G-browser/browser-results.json"
+      ],
       "outcome": null
     },
     {
@@ -251,9 +323,12 @@
       "title": "监听器/observer/RAF/定时器/媒体",
       "source": "REPORT.original 未完成验收",
       "initialDisposition": "measure",
-      "status": "pending",
+      "status": "measurement-in-progress",
       "plan": "实际浏览器创建/销毁计数及残留证据",
-      "evidence": [],
+      "evidence": [
+        "scripts/browser/measure-browser.mjs",
+        "G-browser/browser-results.json"
+      ],
       "outcome": null
     },
     {
@@ -261,9 +336,12 @@
       "title": "偶发崩溃可控压力复现",
       "source": "原报告结论与风险",
       "initialDisposition": "measure",
-      "status": "pending",
+      "status": "measurement-in-progress",
       "plan": "有界串行压力，记录崩溃/超时/资源上限，不等同原始故障",
-      "evidence": [],
+      "evidence": [
+        "scripts/browser/measure-browser.mjs",
+        "G-browser/browser-results.json"
+      ],
       "outcome": null
     },
     {
@@ -271,20 +349,24 @@
       "title": "真机触摸/后台恢复/GPU",
       "source": "原审计兼容风险; 当前 HTML",
       "initialDisposition": "investigate",
-      "status": "pending",
+      "status": "excluded-from-current-scope",
       "plan": "本机 Chromium 可测模拟，真实设备/GPU 回收缺口单列",
       "evidence": [],
-      "outcome": null
+      "outcome": "User explicitly paused real-device discussion; no device testing or permissions are pending. Existing desktop browser responsive checks continue."
     },
     {
       "id": "F11",
       "title": "不可变输入/回调新鲜度",
       "source": "原审计兼容风险",
       "initialDisposition": "covered",
-      "status": "pending",
+      "status": "covered-by-merged-upstream",
       "plan": "保留 immutable 契约及上下文/ref/重置回归",
-      "evidence": [],
-      "outcome": null
+      "evidence": [
+        "PR #5–7",
+        "C-check.log",
+        "E-check.log"
+      ],
+      "outcome": "Previously delivered in #5–7; latest integrated runtime/SSR regressions pass, browser follow-up continues."
     },
     {
       "id": "F12",
@@ -311,9 +393,12 @@
       "title": "原子展示/主题尺寸/长文本",
       "source": "Word 各类适用场景",
       "initialDisposition": "measure",
-      "status": "pending",
+      "status": "measurement-in-progress",
       "plan": "复用全组件 fixture + 关键浏览器主题/尺寸",
-      "evidence": [],
+      "evidence": [
+        "scripts/browser/measure-browser.mjs",
+        "G-browser/browser-results.json"
+      ],
       "outcome": null
     },
     {
@@ -321,9 +406,12 @@
       "title": "输入表单/校验/异步竞态",
       "source": "Word 各类适用场景",
       "initialDisposition": "measure",
-      "status": "pending",
+      "status": "measurement-in-progress",
       "plan": "连续输入/受控回写/IME/焦点与错误状态",
-      "evidence": [],
+      "evidence": [
+        "scripts/browser/measure-browser.mjs",
+        "G-browser/browser-results.json"
+      ],
       "outcome": null
     },
     {
@@ -331,9 +419,12 @@
       "title": "选择器开闭/搜索/匹配/导航",
       "source": "Word 各类适用场景",
       "initialDisposition": "measure",
-      "status": "pending",
+      "status": "measurement-in-progress",
       "plan": "搜索与 portal/overflow 实际打开场景",
-      "evidence": [],
+      "evidence": [
+        "scripts/browser/measure-browser.mjs",
+        "G-browser/browser-results.json"
+      ],
       "outcome": null
     },
     {
@@ -341,9 +432,12 @@
       "title": "表格树列表排序过滤滚动",
       "source": "Word 各类适用场景",
       "initialDisposition": "measure",
-      "status": "pending",
+      "status": "measurement-in-progress",
       "plan": "总N/可见V/渲染R；模型/输出分别记录",
-      "evidence": [],
+      "evidence": [
+        "scripts/browser/measure-browser.mjs",
+        "G-browser/browser-results.json"
+      ],
       "outcome": null
     },
     {
@@ -351,9 +445,12 @@
       "title": "浮层定位/resize/滚动",
       "source": "Word 各类适用场景",
       "initialDisposition": "measure",
-      "status": "pending",
+      "status": "measurement-in-progress",
       "plan": "真实弹层定位与重复清理",
-      "evidence": [],
+      "evidence": [
+        "scripts/browser/measure-browser.mjs",
+        "G-browser/browser-results.json"
+      ],
       "outcome": null
     },
     {
@@ -361,9 +458,12 @@
       "title": "Tabs 隐藏子树/forceMount",
       "source": "Word 各类适用场景",
       "initialDisposition": "measure",
-      "status": "pending",
+      "status": "measurement-in-progress",
       "plan": "保留/卸载策略各自证据，hidden 工作不擅自丢状态",
-      "evidence": [],
+      "evidence": [
+        "scripts/browser/measure-browser.mjs",
+        "G-browser/browser-results.json"
+      ],
       "outcome": null
     },
     {
@@ -371,9 +471,12 @@
       "title": "Provider 上下文扇出",
       "source": "Word 各类适用场景",
       "initialDisposition": "measure",
-      "status": "pending",
+      "status": "measurement-in-progress",
       "plan": "稳定/新 value 与局部更新的消费者工作",
-      "evidence": [],
+      "evidence": [
+        "scripts/browser/measure-browser.mjs",
+        "G-browser/browser-results.json"
+      ],
       "outcome": null
     },
     {
@@ -381,9 +484,12 @@
       "title": "媒体图表画布/动画持续任务",
       "source": "Word 各类适用场景",
       "initialDisposition": "measure",
-      "status": "pending",
+      "status": "measurement-in-progress",
       "plan": "资源/RAF/媒体请求/缩放尺寸与卸载，音频解码另记",
-      "evidence": [],
+      "evidence": [
+        "scripts/browser/measure-browser.mjs",
+        "G-browser/browser-results.json"
+      ],
       "outcome": null
     }
   ],
