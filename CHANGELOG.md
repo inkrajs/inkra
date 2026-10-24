@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.2 - 2026-10-25
+## 0.4.3 - 2026-10-25
 
 - Add theme-aligned Markdown with pencil typography, task checkboxes, tables,
   content-seeded inline code, and language-labeled code cards with copy actions.
@@ -25,7 +25,9 @@
 
 The 0.4.0 and 0.4.1 tagged candidates were not published after Linux browser
 checks found Drawer overflow and viewer gutter offsets. Their immutable tags
-are retained; 0.4.2 supersedes them.
+are retained. The 0.4.2 release also remained unpublished: its final run reached
+the 25-minute validation limit. Version 0.4.3 retains all checks with a 45-minute
+validation budget and supersedes those candidates.
 
 Publication is confirmed only after registry archive verification and the
 matching GitHub Release. Existing React 18 Calendar SSR and Next.js/RSC limits
