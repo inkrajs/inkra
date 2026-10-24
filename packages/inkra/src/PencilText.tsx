@@ -166,7 +166,7 @@ function paintText(
     height: `${height}px`,
   });
   context.scale(dpr, dpr);
-  context.font = `400 ${size}px ${style.fontFamily}`;
+  context.font = `${style.fontStyle} ${style.fontWeight} ${size}px ${style.fontFamily}`;
   context.fontKerning = 'none';
   const ascent = context.measureText(text).fontBoundingBoxAscent ?? size;
   const lines = measureLocalTextLines(element, source, text, localWidth, localHeight);
@@ -180,6 +180,8 @@ function paintText(
       glyphSeed,
       color: style.color,
       family: style.fontFamily,
+      weight: style.fontWeight,
+      style: style.fontStyle,
       dpr,
       settings: {
         variation: readRenderToken(style, '--inkra-letter-variation', pencilLettering.variation, 0, 1),
@@ -234,7 +236,7 @@ const PencilTextImplementation = forwardRef<HTMLElement, PencilTextImplementatio
         const style = getComputedStyle(node);
         const context = canvas.getContext('2d');
         if (!context || context.isContextLost?.()) return;
-        context.font = `400 ${style.fontSize} ${style.fontFamily}`;
+        context.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
         context.fontKerning = 'none';
         const measure = (value: string) => context.measureText(value).width;
         if (measure(children) <= width) {
@@ -301,8 +303,8 @@ const PencilTextImplementation = forwardRef<HTMLElement, PencilTextImplementatio
         return JSON.stringify([
           localBox.width, localBox.height, effectiveDpr(2),
           style.fontSize && style.fontFamily
-            ? document.fonts?.check(`400 ${style.fontSize} ${style.fontFamily}`, text) : false,
-          ...['color', 'font-family', 'font-size', 'line-height', 'text-align', 'text-indent',
+            ? document.fonts?.check(`${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`, text) : false,
+          ...['color', 'font-family', 'font-size', 'font-weight', 'font-style', 'line-height', 'text-align', 'text-indent',
             'letter-spacing', 'white-space', 'word-break', 'overflow-wrap', 'direction',
             'padding-top', 'padding-left', 'padding-right', 'padding-bottom',
             '--inkra-letter-variation', '--inkra-letter-breaks', '--inkra-letter-outline',

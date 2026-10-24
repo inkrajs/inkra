@@ -35,6 +35,16 @@ export interface PencilIconProps extends Omit<CanvasHTMLAttributes<HTMLCanvasEle
   size?: number;
   sourceSize?: number;
   active?: boolean;
+  /** Overrides icon/theme stroke weight. Clamped to 0.3-3. */
+  strokeWidth?: number;
+  /** Pigment opacity, clamped to 0-1. Defaults to the icon intensity token or 1. */
+  intensity?: number;
+  /** Stroke gap amount, clamped to 0-1. Zero disables gaps, not pigment grain. */
+  breaks?: number;
+  /** Maximum gaps per continuous path, limited by displayed length; floored/clamped to 0-12, default 1. */
+  breakCount?: number;
+  /** Pressure-driven stroke width variation, clamped to 0-1. Defaults to 0.82. */
+  pressureVariation?: number;
   decorative?: boolean;
 }
 
@@ -64,11 +74,15 @@ function drawFallbackPath(
 
 function renderIcon(
   paths: readonly PencilIconPath[],
-  options: { seed: number; size: number; sourceSize: number; active: boolean; color: string; dpr: number; badge?: PencilIconBadge; rtl?: boolean; weightScale?: number; roughnessScale?: number },
+  options: { seed: number; size: number; sourceSize: number; active: boolean; color: string; dpr: number; badge?: PencilIconBadge; rtl?: boolean; weightScale?: number; roughnessScale?: number; breaks?: number; breakCount?: number; pressureVariation?: number },
 ): HTMLCanvasElement {
   const { seed, size, sourceSize, active, color, dpr } = options;
   const weightScale = options.weightScale ?? 1;
   const roughnessScale = options.roughnessScale ?? 1;
+  const breaks = options.breaks ?? pencilRenderDefaults.iconBreaks;
+  const breakCount = options.breakCount ?? pencilRenderDefaults.iconBreakCount;
+  const pressureVariation = options.pressureVariation ?? pencilRenderDefaults.iconPressureVariation;
+  const variationScale = pressureVariation / pencilRenderDefaults.iconPressureVariation;
   const pixels = Math.round(size * dpr);
   boundedCanvasSize(pixels, pixels, 1);
   if (!Number.isFinite(sourceSize) || sourceSize <= 0 || sourceSize > 4096 || paths.length > 1024) {
@@ -99,12 +113,12 @@ function renderIcon(
             context,
             [[sourceSize * 0.15, y + 3], [sourceSize * 0.85, y - 3]],
             color,
-            1.1,
+            1.1 * weightScale / (pencilRenderDefaults.strokeWidth / 1.2),
             pathSeed + Math.round(y * 17),
             0.25,
             2,
             false,
-            { variation: 0.85, breaks: 0.25, grain: 0.7, gain: 2.2, step: 0.35 },
+            { variation: Math.min(1, 0.85 * variationScale), fitPressure: true, breaks, breakCount, breakScale: coordinateScale, continuousBreaks: true, grain: 0.7, gain: 2.2, step: 0.35 },
           );
         }
         context.restore();
@@ -136,8 +150,12 @@ function renderIcon(
           mode === 'scuff' ? 1 : 3,
           false,
           {
-            variation: 0.82,
-            breaks: 0.18,
+            variation: pressureVariation,
+            fitPressure: true,
+            breaks,
+            breakCount,
+            breakScale: coordinateScale,
+            continuousBreaks: true,
             grain: 0.68,
             gain: mode === 'scuff' ? 1.5 : 3,
             step: 0.35,
@@ -160,7 +178,7 @@ function renderIcon(
       0.25 * roughnessScale,
       3,
       false,
-      { variation: 0.8, breaks: 0.25, grain: 0.7, gain: 2.8, step: 0.35 },
+      { variation: 0.8 * variationScale, fitPressure: true, breaks, breakCount, breakScale: coordinateScale, continuousBreaks: true, grain: 0.7, gain: 2.8, step: 0.35 },
     );
   }
   if (options.badge?.paths.length) {
@@ -174,7 +192,7 @@ function renderIcon(
     const y = position.startsWith('top') ? 0 : 40 - extent;
     const badgeImage = renderIcon(badge.paths, {
       seed: seed + 1543, size: size * scale, sourceSize: badgeSourceSize, active: false, color, dpr,
-      weightScale: weightScale / scale, roughnessScale,
+      weightScale: weightScale / scale, roughnessScale, breaks, breakCount, pressureVariation,
     });
     const mask = document.createElement('canvas');
     mask.width = badgeImage.width;
@@ -214,6 +232,11 @@ export const PencilIcon = forwardRef<HTMLCanvasElement, PencilIconProps>(functio
     seed,
     size = 40,
     sourceSize = 32,
+    strokeWidth,
+    intensity,
+    breaks,
+    breakCount,
+    pressureVariation,
     ...props
   },
   forwardedRef,
@@ -233,16 +256,30 @@ export const PencilIcon = forwardRef<HTMLCanvasElement, PencilIconProps>(functio
     const canvas = canvasRef.current;
     if (!canvas) return undefined;
     let disposed = false;
-    const render = () => {
+    const paintIcon = () => {
       if (disposed) return;
       const dpr = effectiveDpr(3);
       const computed = getComputedStyle(canvas);
       const color = computed.color;
       const rtl = computed.direction === 'rtl';
-      const weightScale = readRenderToken(computed, '--inkra-stroke-width', pencilRenderDefaults.strokeWidth, 0.3, 3) / 1.2;
+      const iconWeight = readRenderToken(computed, '--inkra-icon-stroke-width', pencilRenderDefaults.iconStrokeWidth, 0.3, 3);
+      const weightScale = (typeof strokeWidth === 'number' && Number.isFinite(strokeWidth) ? Math.min(3, Math.max(0.3, strokeWidth)) : iconWeight) / 1.2;
+      const pigmentOpacity = typeof intensity === 'number' && Number.isFinite(intensity)
+        ? Math.min(1, Math.max(0, intensity))
+        : readRenderToken(computed, '--inkra-icon-intensity', 1, 0, 1);
       const roughnessScale = readRenderToken(computed, '--inkra-stroke-amplitude', pencilRenderDefaults.strokeRoughness, 0, maxStrokeRoughness) / 0.6;
+      const strokeBreaks = typeof breaks === 'number' && Number.isFinite(breaks)
+        ? Math.min(1, Math.max(0, breaks))
+        : readRenderToken(computed, '--inkra-icon-breaks', pencilRenderDefaults.iconBreaks, 0, 1);
+      const strokeVariation = typeof pressureVariation === 'number' && Number.isFinite(pressureVariation)
+        ? Math.min(1, Math.max(0, pressureVariation))
+        : readRenderToken(computed, '--inkra-icon-pressure-variation', pencilRenderDefaults.iconPressureVariation, 0, 1);
+      const strokeBreakCount = Math.floor(typeof breakCount === 'number' && Number.isFinite(breakCount)
+        ? Math.min(12, Math.max(0, breakCount))
+        : readRenderToken(computed, '--inkra-icon-break-count', pencilRenderDefaults.iconBreakCount, 0, 12));
       const key = JSON.stringify([
         PENCIL_RENDERER_VERSION,
+        'icon-path-pressure-gaps-v4',
         geometryKey,
         badgeKey,
         rtl,
@@ -252,34 +289,44 @@ export const PencilIcon = forwardRef<HTMLCanvasElement, PencilIconProps>(functio
         active,
         color,
         dpr,
-        weightScale, roughnessScale,
+        weightScale, roughnessScale, strokeBreaks, strokeBreakCount, strokeVariation,
       ]);
-      if (key === lastPaintRef.current && canvasIsUsable(canvas)) return;
+      const paintKey = `${key}:${pigmentOpacity}`;
+      if (paintKey === lastPaintRef.current && canvasIsUsable(canvas)) return;
+      delete canvas.dataset.pencilIconReady;
       let image = imageCache.get(key);
       if (image && !canvasIsUsable(image)) {
         imageCache.delete(key);
         image = undefined;
       }
       if (!image) {
-        image = renderIcon(stablePaths, { seed: resolvedSeed, size, sourceSize, active, color, dpr, badge: stableBadge, rtl, weightScale, roughnessScale });
+        image = renderIcon(stablePaths, { seed: resolvedSeed, size, sourceSize, active, color, dpr, badge: stableBadge, rtl, weightScale, roughnessScale, breaks: strokeBreaks, breakCount: strokeBreakCount, pressureVariation: strokeVariation });
         imageCache.set(key, image, canvasByteCost(image));
       }
       canvas.width = image.width;
       canvas.height = image.height;
       const context = canvas.getContext('2d');
       if (!context || context.isContextLost?.()) return;
+      // Composite once so overlapping strokes and badges share the same intensity.
+      context.save();
+      context.globalAlpha = pigmentOpacity;
       context.drawImage(image, 0, 0);
-      lastPaintRef.current = key;
+      context.restore();
+      lastPaintRef.current = paintKey;
+      canvas.dataset.pencilIconReady = 'true';
     };
     const paint = () => {
       try {
-        render();
+        paintIcon();
       } catch {
         // Invalid/oversized decoration must not throw from a React effect.
         canvas.width = canvas.height = 0;
         lastPaintRef.current = '';
+        delete canvas.dataset.pencilIconReady;
       }
     };
+    const onContextLost = () => { delete canvas.dataset.pencilIconReady; lastPaintRef.current = ''; };
+    canvas.addEventListener('contextlost', onContextLost);
     const inheritedColor = new MutationObserver(paint);
     for (let element: HTMLElement | null = canvas; element; element = element.parentElement) {
       inheritedColor.observe(element, { attributes: true, attributeFilter: ['style', 'class', 'dir', 'data-theme', 'data-inkra-theme'] });
@@ -290,11 +337,12 @@ export const PencilIcon = forwardRef<HTMLCanvasElement, PencilIconProps>(functio
     paint();
     return () => {
       disposed = true;
+      canvas.removeEventListener('contextlost', onContextLost);
       stopRecovery();
       inheritedColor.disconnect();
       colorScheme.removeEventListener('change', paint);
     };
-  }, [active, stableBadge, badgeKey, geometryKey, stablePaths, resolvedSeed, size, sourceSize]);
+  }, [active, stableBadge, badgeKey, geometryKey, stablePaths, resolvedSeed, size, sourceSize, strokeWidth, intensity, breaks, breakCount, pressureVariation]);
 
   const accessibilityProps = decorative
     ? { 'aria-hidden': true }

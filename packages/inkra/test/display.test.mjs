@@ -58,7 +58,7 @@ test('Separator keeps native separator semantics and decorative opt-out', () => 
   assert.doesNotMatch(decorative, /role="separator"|aria-orientation=/);
 });
 
-test('Skeleton is static, hidden and accepts consumer dimensions', () => {
+test('Skeleton uses borderless pencil fill, is static, hidden and accepts consumer dimensions', () => {
   const markup = renderToStaticMarkup(createElement(Skeleton, {
     className: 'consumer-skeleton',
     style: { height: 28, width: '12rem' },
@@ -66,8 +66,8 @@ test('Skeleton is static, hidden and accepts consumer dimensions', () => {
 
   assert.match(markup, /^<div/);
   assert.match(markup, /aria-hidden="true"/);
-  assert.match(markup, /inkra-pencil-surface--quiet/);
-  assert.match(markup, /class="inkra-pencil-surface inkra-pencil-surface--quiet inkra-skeleton consumer-skeleton"/);
+  assert.match(markup, /class="inkra-pencil-surface inkra-pencil-surface--selection inkra-skeleton consumer-skeleton"/);
+  assert.doesNotMatch(markup, /inkra-pencil-surface--quiet|inkra-pencil-surface__border/);
   assert.match(markup, /width:12rem/);
   assert.match(markup, /height:28px/);
   assert.match(markup, /data-animation="none"/);

@@ -65,3 +65,22 @@ test('Tabs exposes size, alignment, full-width and decorative icon slots without
   assert.equal((html.match(/class="inkra-tabs__icon" aria-hidden="true"/g) ?? []).length, 2);
   assert.doesNotMatch(html, / animated=| fullWidth=| startIcon=| endIcon=/);
 });
+
+test('Tabs overflow modes preserve tab semantics and default to native scrolling before measurement', () => {
+  for (const overflow of ['scroll', 'menu', 'buttons']) {
+    const html = renderToStaticMarkup(h(Tabs.Root, { defaultValue: 'one' },
+      h(Tabs.List, { overflow, moreLabel: 'More pages', scrollPreviousLabel: 'Previous pages', scrollNextLabel: 'Next pages', 'aria-label': 'Pages' },
+        h(Tabs.Trigger, { value: 'one', overflowLabel: 'First page' }, h('strong', null, 'One')),
+        h(Tabs.Trigger, { value: 'two' }, 'Two')),
+      h(Tabs.Content, { value: 'one' }, 'First')));
+    assert.match(html, new RegExp(`data-overflow="${overflow}"`));
+    assert.equal((html.match(/role="tablist"/g) ?? []).length, 1);
+    assert.equal((html.match(/role="tab"/g) ?? []).length, 2);
+    assert.match(html, /data-overflow-label="First page"/);
+    assert.doesNotMatch(html, / overflow=| moreLabel=| scrollPreviousLabel=| scrollNextLabel=| overflowLabel=/);
+    assert.doesNotMatch(html, /data-overflow-hidden|aria-haspopup="menu"/);
+  }
+  const vertical = renderToStaticMarkup(h(Tabs.Root, { orientation: 'vertical' }, h(Tabs.List, { overflow: 'menu' }, h(Tabs.Trigger, { value: 'one' }, 'One'))));
+  assert.match(vertical, /data-overflow="scroll"/);
+  assert.doesNotMatch(vertical, /inkra-tabs__overflow/);
+});

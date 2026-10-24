@@ -23,10 +23,27 @@ import { PencilText } from '../PencilText.js';
 import { Input } from '../form/Input.js';
 import { Textarea } from '../form/Textarea.js';
 import { Tooltip } from '../tooltip/Tooltip.js';
+import { Select } from '../select/index.js';
+import type { SearchableSelectOption } from '../select/index.js';
 import type { InputProps } from '../form/Input.js';
 import type { TextareaProps } from '../form/Textarea.js';
 
 export type EditableBlurBehavior = 'ignore' | 'save' | 'cancel';
+export type EditableEditorType = 'input' | 'textarea' | 'select';
+export interface EditableSelectProps {
+  items: readonly SearchableSelectOption[];
+  mode?: 'dropdown' | 'searchable' | 'stepper';
+  size?: 'sm' | 'md' | 'lg';
+  dir?: 'ltr' | 'rtl';
+  searchPlaceholder?: string;
+  emptyContent?: ReactNode;
+  clearable?: boolean;
+  clearLabel?: string;
+  openLabel?: string;
+  previousLabel?: string;
+  nextLabel?: string;
+  loop?: boolean;
+}
 export type EditableSaveResult = boolean | string | void | null | undefined;
 export type EditableSaveHandler = (value: string, previousValue: string) => EditableSaveResult | Promise<EditableSaveResult>;
 export type EditableValidateHandler = (value: string, previousValue: string) => EditableSaveResult | Promise<EditableSaveResult>;
@@ -61,6 +78,8 @@ export interface EditableProps extends Omit<HTMLAttributes<HTMLDivElement>, 'chi
   onCancel?: (value: string) => void;
   display?: ReactNode | ((value: string) => ReactNode);
   editor?: EditableEditor;
+  editorType?: EditableEditorType;
+  selectProps?: EditableSelectProps;
   multiline?: boolean;
   inputProps?: Omit<InputProps, 'value' | 'defaultValue' | 'onValueChange' | 'onChange'>;
   textareaProps?: Omit<TextareaProps, 'value' | 'defaultValue' | 'onChange'>;
@@ -85,7 +104,6 @@ export interface EditableHandle {
 
 const classes = (...values: (string | false | undefined)[]) => values.filter(Boolean).join(' ');
 const interactiveSelector = 'button, a, input, textarea, select, option, [contenteditable="true"], [data-editable-ignore]';
-const pencilIcon = [{ d: 'M12 20h9' }, { d: 'M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z' }];
 const checkIcon = [{ d: 'm20 6-11 11-5-5' }];
 const cancelIcon = [{ d: 'M18 6 6 18' }, { d: 'm6 6 12 12' }];
 
@@ -113,6 +131,7 @@ export const Editable = forwardRef<EditableHandle, EditableProps>(function Edita
     disabled = false,
     display,
     editor,
+    editorType,
     editing,
     id,
     inputProps,
@@ -129,7 +148,8 @@ export const Editable = forwardRef<EditableHandle, EditableProps>(function Edita
     cancelLabel = 'Cancel',
     startEditingLabel = 'Edit value',
     seed,
-    submitOnEnter = !multiline,
+    selectProps,
+    submitOnEnter = true,
     textareaProps,
     validate,
     value,
@@ -143,6 +163,8 @@ export const Editable = forwardRef<EditableHandle, EditableProps>(function Edita
   const editButtonRef = useRef<HTMLButtonElement>(null);
   const blurFrameRef = useRef<number | undefined>(undefined);
   const savingRef = useRef(false);
+  const popupOpenRef = useRef(false);
+  const popupFrameRef = useRef<number | undefined>(undefined);
   const controlledValue = value !== undefined;
   const controlledEditing = editing !== undefined;
   const [localValue, setLocalValue] = useState(String(value ?? defaultValue));
@@ -154,7 +176,9 @@ export const Editable = forwardRef<EditableHandle, EditableProps>(function Edita
   const isEditing = controlledEditing ? Boolean(editing) : localEditing;
   const resolvedSeed = seed ?? `inkra-editable-${id ?? generatedId}`;
   const resolvedId = id ?? `inkra-editable-${generatedId}`;
-  const resolvedSize = multiline ? (textareaProps?.size ?? 'md') : (inputProps?.size ?? 'md');
+  const resolvedEditorType = editorType ?? (multiline ? 'textarea' : 'input');
+  const isMultiline = resolvedEditorType === 'textarea';
+  const resolvedSize = resolvedEditorType === 'select' ? (selectProps?.size ?? 'md') : isMultiline ? (textareaProps?.size ?? 'md') : (inputProps?.size ?? 'md');
   const actionSize = resolvedSize === 'sm' ? 'icon-sm' : resolvedSize === 'lg' ? 'icon-lg' : 'icon';
   const actionIconSize = resolvedSize === 'sm' ? 18 : resolvedSize === 'lg' ? 24 : 20;
 
@@ -170,12 +194,16 @@ export const Editable = forwardRef<EditableHandle, EditableProps>(function Edita
 
   useEffect(() => {
     if (!isEditing || disabled || readOnly) return;
-    const frame = requestAnimationFrame(() => editorRef.current?.focus({ preventScroll: true }));
+    const frame = requestAnimationFrame(() => {
+      const control = editorRef.current ?? rootRef.current?.querySelector<HTMLElement>('[data-editable-editor] input:not([type="hidden"]), [data-editable-editor] textarea, [data-editable-editor] [role="combobox"], [data-editable-editor] [role="spinbutton"]');
+      control?.focus({ preventScroll: true });
+    });
     return () => cancelAnimationFrame(frame);
   }, [disabled, isEditing, readOnly]);
 
   useEffect(() => () => {
     if (blurFrameRef.current !== undefined) cancelAnimationFrame(blurFrameRef.current);
+    if (popupFrameRef.current !== undefined) cancelAnimationFrame(popupFrameRef.current);
   }, []);
 
   const setEditing = useCallback((next: boolean) => {
@@ -196,6 +224,7 @@ export const Editable = forwardRef<EditableHandle, EditableProps>(function Edita
   }, [currentValue, disabled, isEditing, readOnly, setEditing]);
 
   const finish = useCallback((restoreFocus = true) => {
+    popupOpenRef.current = false;
     setEditing(false);
     if (restoreFocus) requestAnimationFrame(() => editButtonRef.current?.focus({ preventScroll: true }));
   }, [setEditing]);
@@ -261,23 +290,24 @@ export const Editable = forwardRef<EditableHandle, EditableProps>(function Edita
       cancel();
       return;
     }
-    if (event.key === 'Enter' && submitOnEnter && (!multiline || event.ctrlKey || event.metaKey)) {
+    if (event.key === 'Enter' && submitOnEnter && (!isMultiline || event.ctrlKey || event.metaKey)) {
       event.preventDefault();
       void save();
     }
   };
   const handleEditorBlur = (event: FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLDivElement>) => {
-    if (event.defaultPrevented || rootRef.current?.contains(event.relatedTarget as Node | null)) return;
+    if (event.defaultPrevented || popupOpenRef.current || rootRef.current?.contains(event.relatedTarget as Node | null)) return;
     if (blurFrameRef.current !== undefined) cancelAnimationFrame(blurFrameRef.current);
     blurFrameRef.current = requestAnimationFrame(() => {
       blurFrameRef.current = undefined;
-      if (rootRef.current?.contains(document.activeElement) || savingRef.current || blurBehavior === 'ignore') return;
+      if (popupOpenRef.current || rootRef.current?.contains(document.activeElement) || savingRef.current || blurBehavior === 'ignore') return;
       if (blurBehavior === 'cancel') cancel(false);
       else void save(false);
     });
   };
+  const displayValue = resolvedEditorType === 'select' ? (selectProps?.items.find(item => item.value === currentValue)?.label ?? currentValue) : currentValue;
   const displayContent = display == null
-    ? <PencilText seed={`${resolvedSeed}-display-text`}>{currentValue || placeholder}</PencilText>
+    ? <PencilText seed={`${resolvedSeed}-display-text`}>{displayValue || placeholder}</PencilText>
     : typeof display === 'function' ? display(currentValue) : display;
   const editorProps: EditableEditorProps = {
     value: currentValue,
@@ -296,9 +326,61 @@ export const Editable = forwardRef<EditableHandle, EditableProps>(function Edita
   };
   const inputDescription = mergeIds(inputProps?.['aria-describedby'], error ? `${resolvedId}-error` : undefined);
   const textareaDescription = mergeIds(textareaProps?.['aria-describedby'], error ? `${resolvedId}-error` : undefined);
-  const defaultEditor = multiline
+  const actions = <Tooltip.Provider><span aria-label={`${saveLabel}, ${cancelLabel}`} className="inkra-editable__actions" role="group">
+    <Tooltip.Root><Tooltip.Trigger asChild><Button aria-label={saveLabel} className="inkra-editable__action" disabled={disabled || readOnly} loading={saving} onClick={() => void save()} size={actionSize} title={saveLabel} type="button" variant="ghost"><PencilIcon decorative paths={checkIcon} seed={`${resolvedSeed}-save-icon`} size={actionIconSize} sourceSize={24} /></Button></Tooltip.Trigger><Tooltip.Portal><Tooltip.Content>{saveLabel}</Tooltip.Content></Tooltip.Portal></Tooltip.Root>
+    <Tooltip.Root><Tooltip.Trigger asChild><Button aria-label={cancelLabel} className="inkra-editable__action" disabled={disabled || saving} onClick={() => cancel()} size={actionSize} title={cancelLabel} type="button" variant="ghost"><PencilIcon decorative paths={cancelIcon} seed={`${resolvedSeed}-cancel-icon`} size={actionIconSize} sourceSize={24} /></Button></Tooltip.Trigger><Tooltip.Portal><Tooltip.Content>{cancelLabel}</Tooltip.Content></Tooltip.Portal></Tooltip.Root>
+  </span></Tooltip.Provider>;
+  const changePopupOpen = (open: boolean) => {
+    if (popupFrameRef.current !== undefined) cancelAnimationFrame(popupFrameRef.current);
+    if (open) popupOpenRef.current = true;
+    else popupFrameRef.current = requestAnimationFrame(() => {
+      popupOpenRef.current = false;
+      if (!rootRef.current || rootRef.current.contains(document.activeElement) || document.activeElement === document.body || savingRef.current) return;
+      if (blurBehavior === 'cancel') cancel(false);
+      else if (blurBehavior === 'save') void save(false);
+    });
+  };
+  const items = selectProps?.items ?? [];
+  const selectState = {
+    value: currentValue,
+    onValueChange: (next: string | null) => updateValue(next ?? ''),
+    disabled: disabled || saving,
+    readOnly,
+    size: resolvedSize,
+    dir: selectProps?.dir,
+    placeholder,
+    'aria-label': ariaLabel ?? startEditingLabel,
+    'aria-describedby': error ? `${resolvedId}-error` : undefined,
+    'aria-errormessage': error ? `${resolvedId}-error` : undefined,
+    invalid: invalid || Boolean(error),
+  };
+  const selectEditor = <div className="inkra-editable__select-row" onKeyDown={event => {
+    if (event.defaultPrevented || popupOpenRef.current || event.target !== event.currentTarget.ownerDocument.activeElement) return;
+    if (event.key === 'Escape' && !event.nativeEvent.isComposing) { event.preventDefault(); cancel(); }
+  }}>
+    {selectProps?.mode === 'searchable' ? <Select.Searchable {...selectState} items={items}
+      searchPlaceholder={selectProps.searchPlaceholder} emptyContent={selectProps.emptyContent}
+      clearable={selectProps.clearable ?? false} clearLabel={selectProps.clearLabel} openLabel={selectProps.openLabel}
+      onOpenChange={changePopupOpen} />
+      : selectProps?.mode === 'stepper' ? <Select.Stepper {...selectState} items={items}
+          loop={selectProps.loop} previousLabel={selectProps.previousLabel} nextLabel={selectProps.nextLabel} />
+      : <Select.Root value={currentValue} onValueChange={updateValue} disabled={disabled || saving} readOnly={readOnly} dir={selectProps?.dir} onOpenChange={changePopupOpen}>
+          <Select.Trigger aria-label={ariaLabel ?? startEditingLabel} aria-describedby={selectState['aria-describedby']} aria-errormessage={selectState['aria-errormessage']} invalid={selectState.invalid} size={resolvedSize}>
+            <Select.Value placeholder={placeholder} />
+          </Select.Trigger>
+          <Select.Portal><Select.Content><Select.Viewport>
+            {items.filter(item => item.value !== '').map(item => <Select.Item key={item.value} value={item.value} disabled={item.disabled}>
+              <Select.ItemText>{item.label}</Select.ItemText><Select.ItemIndicator />
+            </Select.Item>)}
+          </Select.Viewport></Select.Content></Select.Portal>
+        </Select.Root>}
+    {actions}
+  </div>;
+  const defaultEditor = resolvedEditorType === 'select' ? selectEditor : isMultiline
     ? <Textarea
+        variant="underline"
         {...textareaProps}
+        endAction={<>{textareaProps?.endAction}{actions}</>}
         aria-describedby={textareaDescription}
         aria-errormessage={error ? `${resolvedId}-error` : textareaProps?.['aria-errormessage']}
         aria-invalid={invalid || Boolean(error) || textareaProps?.['aria-invalid']}
@@ -322,7 +404,9 @@ export const Editable = forwardRef<EditableHandle, EditableProps>(function Edita
         value={currentValue}
       />
     : <Input
+        variant="underline"
         {...inputProps}
+        endAction={<>{inputProps?.endAction}{actions}</>}
         aria-describedby={inputDescription}
         aria-errormessage={error ? `${resolvedId}-error` : inputProps?.['aria-errormessage']}
         aria-invalid={invalid || Boolean(error) || inputProps?.['aria-invalid']}
@@ -346,24 +430,21 @@ export const Editable = forwardRef<EditableHandle, EditableProps>(function Edita
         value={currentValue}
       />;
 
-  return <div {...props} className={classes('inkra-editable', className)} data-disabled={disabled || undefined} data-editing={isEditing || undefined} data-saving={saving || undefined} data-invalid={Boolean(error) || invalid || undefined} data-multiline={multiline || undefined} data-readonly={readOnly || undefined} data-size={resolvedSize} onBlur={event => {
+  return <div {...props} className={classes('inkra-editable', className)} data-disabled={disabled || undefined} data-editing={isEditing || undefined} data-saving={saving || undefined} data-invalid={Boolean(error) || invalid || undefined} data-multiline={isMultiline || undefined} data-editor-type={resolvedEditorType} data-readonly={readOnly || undefined} data-size={resolvedSize} onBlur={event => {
     onRootBlur?.(event);
     handleEditorBlur(event);
   }} ref={rootRef}>
     <div className="inkra-editable__frame">
       {isEditing ? <div className="inkra-editable__editor" data-editable-editor="true">
-        {editor == null ? defaultEditor : typeof editor === 'function' ? editor(editorProps) : editor}
+        {editor == null ? defaultEditor : <div className="inkra-editable__custom-row">{typeof editor === 'function' ? editor(editorProps) : editor}{actions}</div>}
         {error ? <PencilText as="div" className="inkra-editable__error" role="alert" id={`${resolvedId}-error`} seed={`${resolvedSeed}-error`}>{error}</PencilText> : null}
       </div> : <div className="inkra-editable__display-shell">
-        <PencilSurface<'span'> aria-hidden="true" as="span" className="inkra-editable__display-surface" seed={`${resolvedSeed}-display`} variant="quiet" />
-        <div className="inkra-editable__display" data-editable-display="true" onClick={handleDisplayClick}>{displayContent}</div>
+        <PencilSurface<'span'> aria-hidden="true" as="span" className="inkra-editable__focus-ring" seed={`${resolvedSeed}-focus`} variant="outline" />
+        {display == null
+          ? <button aria-label={ariaLabel ?? startEditingLabel} className="inkra-editable__display" data-editable-display="true" disabled={disabled || readOnly} onClick={startEditing} ref={editButtonRef} type="button">{displayContent}</button>
+          : <><div className="inkra-editable__display" data-editable-display="true" onClick={handleDisplayClick}>{displayContent}</div>
+              <button aria-label={ariaLabel ?? startEditingLabel} className="inkra-editable__custom-trigger" disabled={disabled || readOnly} onClick={startEditing} ref={editButtonRef} type="button">{startEditingLabel}</button></>}
       </div>}
-      <Tooltip.Provider><div aria-label={isEditing ? `${saveLabel}, ${cancelLabel}` : startEditingLabel} className="inkra-editable__actions" role="group">
-        {isEditing ? <>
-          <Tooltip.Root><Tooltip.Trigger asChild><Button aria-label={saveLabel} className="inkra-editable__action" disabled={disabled || readOnly} loading={saving} onClick={() => void save()} size={actionSize} title={saveLabel} type="button" variant="primary"><PencilIcon decorative paths={checkIcon} seed={`${resolvedSeed}-save-icon`} size={actionIconSize} sourceSize={24} /></Button></Tooltip.Trigger><Tooltip.Portal><Tooltip.Content>{saveLabel}</Tooltip.Content></Tooltip.Portal></Tooltip.Root>
-          <Tooltip.Root><Tooltip.Trigger asChild><Button aria-label={cancelLabel} className="inkra-editable__action" disabled={saving} onClick={() => cancel()} size={actionSize} title={cancelLabel} type="button" variant="ghost"><PencilIcon decorative paths={cancelIcon} seed={`${resolvedSeed}-cancel-icon`} size={actionIconSize} sourceSize={24} /></Button></Tooltip.Trigger><Tooltip.Portal><Tooltip.Content>{cancelLabel}</Tooltip.Content></Tooltip.Portal></Tooltip.Root>
-        </> : <Tooltip.Root><Tooltip.Trigger asChild><Button aria-label={ariaLabel ?? startEditingLabel} className="inkra-editable__action inkra-editable__action--edit" disabled={disabled || readOnly} onClick={startEditing} ref={editButtonRef} size={actionSize} title={startEditingLabel} type="button" variant="ghost"><PencilIcon decorative paths={pencilIcon} seed={`${resolvedSeed}-edit-icon`} size={actionIconSize} sourceSize={24} /></Button></Tooltip.Trigger><Tooltip.Portal><Tooltip.Content>{startEditingLabel}</Tooltip.Content></Tooltip.Portal></Tooltip.Root>}
-      </div></Tooltip.Provider>
     </div>
   </div>;
 });

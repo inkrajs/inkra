@@ -1,5 +1,9 @@
 export const pencilRenderDefaults = Object.freeze({
   strokeWidth: 2,
+  iconStrokeWidth: 1.5,
+  iconBreaks: 0.18,
+  iconBreakCount: 1,
+  iconPressureVariation: 0.82,
   strokeRoughness: 1.5,
   washStrength: 0.8,
   washSpacing: 2,

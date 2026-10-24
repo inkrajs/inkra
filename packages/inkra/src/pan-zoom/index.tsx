@@ -79,6 +79,8 @@ export interface PanZoomProps extends Omit<HTMLAttributes<HTMLDivElement>, 'chil
   minScale?: number;
   maxScale?: number;
   wheel?: PanZoomWheelMode;
+  /** Scale increment per wheel delta unit. Must be finite and positive. */
+  wheelStep?: number;
   pinch?: boolean;
   pan?: boolean;
   keyboard?: boolean;
@@ -138,6 +140,7 @@ function PanZoomRoot(
     minScale = 0.25,
     maxScale = 8,
     wheel = 'modifier',
+    wheelStep = 0.001,
     pinch = true,
     pan = true,
     keyboard = true,
@@ -166,6 +169,7 @@ function PanZoomRoot(
 ) {
   const resolvedMinScale = Math.max(Number.isFinite(minScale) ? minScale : 0.25, 0.0001);
   const resolvedMaxScale = Math.max(Number.isFinite(maxScale) ? maxScale : 8, resolvedMinScale);
+  const resolvedWheelStep = Number.isFinite(wheelStep) && wheelStep > 0 ? wheelStep : 0.001;
   const controlled = value !== undefined;
   const initialTransform = normalizedTransform(value ?? defaultValue, resolvedMinScale, resolvedMaxScale);
   const engineRef = useRef<ReactZoomPanPinchRef>(null);
@@ -298,6 +302,7 @@ function PanZoomRoot(
         }}
         pinch={{ disabled: userInteractionDisabled || !pinch, excluded: interactionExclusions }}
         wheel={{
+          step: resolvedWheelStep,
           disabled: userInteractionDisabled || wheel === 'disabled',
           activationKeys: wheelActivation,
           excluded: interactionExclusions,

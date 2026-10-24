@@ -33,7 +33,7 @@ test('Editable keyboard behavior is IME-safe and supports configurable blur', ()
   assert.match(source, /event\.nativeEvent\.isComposing \|\| event\.nativeEvent\.keyCode === 229/);
   assert.match(source, /if \(event\.key === 'Escape'\)/);
   assert.match(source, /if \(event\.key === 'Enter' && submitOnEnter/);
-  assert.match(source, /rootRef\.current\?\.contains\(document\.activeElement\)/);
+  assert.match(source, /popupOpenRef\.current \|\| rootRef\.current\?\.contains\(document\.activeElement\)/);
   assert.match(source, /rootRef\.current\?\.contains\(event\.relatedTarget as Node \| null\)/);
   assert.match(source, /onBlur=\{event => \{\s*onRootBlur\?\.\(event\);\s*handleEditorBlur\(event\);/);
   assert.match(source, /if \(blurBehavior === 'cancel'\) cancel\(false\);/);
@@ -52,18 +52,18 @@ test('Editable uses Input/Textarea, custom display/editor, and separates nested 
   assert.match(source, /data-editable-display="true"/);
   assert.match(source, /data-editable-editor="true"/);
   assert.match(source, /className="inkra-editable__display-shell"/);
-  assert.match(source, /<PencilText seed=\{`\$\{resolvedSeed\}-display-text`\}>\{currentValue \|\| placeholder\}<\/PencilText>/);
+  assert.match(source, /\{displayValue \|\| placeholder\}/);
   assert.match(source, /className="inkra-editable__actions" role="group"/);
   assert.doesNotMatch(source, /role="button" tabIndex=/);
 });
 
 test('Editable keeps SSR-safe DOM semantics and focus return hooks', () => {
-  assert.match(source, /requestAnimationFrame\(\(\) => editorRef\.current\?\.focus/);
+  assert.match(source, /const control = editorRef\.current \?\? rootRef\.current\?\.querySelector/);
   assert.match(source, /editButtonRef\.current\?\.focus\(\{ preventScroll: true \}\)/);
   assert.match(source, /disabled=\{disabled \|\| readOnly\}/);
-  assert.match(source, /const resolvedSize = multiline \? \(textareaProps\?\.size \?\? 'md'\) : \(inputProps\?\.size \?\? 'md'\)/);
+  assert.match(source, /const resolvedSize = resolvedEditorType === 'select'/);
   assert.match(source, /className="inkra-editable__action" disabled=\{disabled \|\| readOnly\} loading=\{saving\}.*size=\{actionSize\}/);
-  assert.match(source, /<Tooltip\.Content>\{startEditingLabel\}<\/Tooltip\.Content>/);
+  assert.match(source, /<button aria-label=\{ariaLabel \?\? startEditingLabel\} className="inkra-editable__display"/);
   assert.match(source, /role="alert"/);
   assert.doesNotMatch(source, /window\.addEventListener|document\.addEventListener/);
 });
@@ -73,7 +73,7 @@ test('Editable composes input handlers and associates validation feedback with t
   assert.match(source, /textareaProps\?\.onBlur\?\.\(event\)/);
   assert.match(source, /inputProps\?\.onKeyDown\?\.\(event\)/);
   assert.match(source, /textareaProps\?\.onKeyDown\?\.\(event\)/);
-  assert.match(source, /if \(event\.defaultPrevented \|\| rootRef\.current\?\.contains/);
+  assert.match(source, /if \(event\.defaultPrevented \|\| popupOpenRef\.current \|\| rootRef\.current\?\.contains/);
   assert.match(source, /onBlur: \(event: FocusEvent<HTMLInputElement \| HTMLTextAreaElement>\) => void/);
   assert.match(source, /aria-errormessage=\{error \? `\$\{resolvedId\}-error`/);
   assert.match(source, /'aria-describedby': error \? `\$\{resolvedId\}-error`/);
@@ -83,15 +83,41 @@ test('Editable styles preserve stable action geometry, responsive actions and fa
   assert.match(styles, /--inkra-editable-control-height: var\(--inkra-control-md\)/);
   assert.match(styles, /data-size="sm".*var\(--inkra-control-sm\)/);
   assert.match(styles, /data-size="lg".*var\(--inkra-control-lg\)/);
-  assert.match(styles, /box-sizing: border-box;\s*block-size: var\(--inkra-editable-control-height\);\s*min-block-size: var\(--inkra-editable-control-height\)/);
-  assert.match(styles, /padding-inline: var\(--inkra-space-3\)/);
+  assert.match(styles, /background: transparent/);
+  assert.match(styles, /padding: 0 var\(--inkra-space-3\)/);
   assert.match(styles, /data-multiline="true".*block-size: auto/s);
   assert.match(styles, /min-block-size: max\(var\(--inkra-editable-control-height\), var\(--inkra-touch-target\)\)/);
   assert.match(styles, /grid-template-columns: repeat\(2, var\(--inkra-touch-target\)\)/);
-  assert.match(styles, /\.inkra-editable__action--edit \{ grid-column: 2; \}/);
-  assert.match(styles, /@media \(max-width: 24rem\)/);
+  assert.doesNotMatch(styles, /inkra-editable__action--edit/);
+  assert.match(styles, /inkra-editable__select-row/);
   assert.match(styles, /@media \(prefers-reduced-motion: reduce\)/);
   assert.match(styles, /@media \(forced-colors: active\)/);
   assert.match(styles, /@media print/);
   assert.doesNotMatch(styles, /linear-gradient|radial-gradient|box-shadow|color-mix/);
+});
+
+test('Editable built-ins integrate text actions and preserve selection labels and popup focus', () => {
+  assert.match(source, /export type EditableEditorType = 'input' \| 'textarea' \| 'select'/);
+  assert.match(source, /editorType \?\? \(multiline \? 'textarea' : 'input'\)/);
+  assert.match(source, /mode\?: 'dropdown' \| 'searchable' \| 'stepper'/);
+  assert.match(source, /<Select\.Searchable/);
+  assert.match(source, /<Select\.Stepper/);
+  assert.match(source, /<Select\.Root/);
+  assert.match(source, /selectProps\?\.items\.find\(item => item.value === currentValue\)\?\.label/);
+  assert.match(source, /endAction=\{<>\{inputProps\?\.endAction\}\{actions\}<\/>\}/);
+  assert.match(source, /endAction=\{<>\{textareaProps\?\.endAction\}\{actions\}<\/>\}/);
+  assert.match(source, /<Textarea\s+variant="underline"/);
+  assert.doesNotMatch(source, /display-surface|pencilIcon|action--edit/);
+  assert.match(source, /!isMultiline \|\| event.ctrlKey \|\| event.metaKey/);
+});
+
+test('Textarea provides a shared-surface action slot without changing its default outline', async () => {
+  const textarea = await readFile(new URL('../src/form/Textarea.tsx', import.meta.url), 'utf8');
+  const css = await readFile(new URL('../src/form/styles.css', import.meta.url), 'utf8');
+  assert.match(textarea, /variant = 'outline'/);
+  assert.match(textarea, /endAction\?: ReactNode/);
+  assert.match(textarea, /<InputAction disabled=\{Boolean\(state.disabled\)\}/);
+  assert.match(textarea, /variant === 'underline' && <PencilLine/);
+  assert.match(css, /data-end-action="true".*inkra-field-control--textarea[\s\S]*?grid-template-columns: minmax\(0, 1fr\) auto/);
+  assert.match(css, /inkra-textarea__footer \{\s*grid-column: 1 \/ -1/);
 });

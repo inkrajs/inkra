@@ -1,0 +1,72 @@
+.inkra-image-viewer__video-resource {
+  block-size: 100%;
+  box-sizing: border-box;
+  container-type: inline-size;
+  display: grid;
+  grid-template-rows: minmax(var(--inkra-touch-target), 1fr) auto;
+  inline-size: 100%;
+  min-block-size: 0;
+  min-inline-size: 0;
+  overflow: hidden;
+}
+
+.inkra-image-viewer__video-media {
+  align-self: stretch;
+  background: #000;
+  block-size: 100%;
+  display: block;
+  inline-size: 100%;
+  min-block-size: 0;
+  object-fit: contain;
+}
+
+.inkra-image-viewer__video-controls {
+  align-items: center;
+  background: var(--inkra-paper);
+  box-sizing: border-box;
+  color: var(--inkra-ink);
+  display: grid;
+  gap: var(--inkra-space-2);
+  grid-template-areas:
+    "play seek time"
+    "settings settings settings";
+  grid-template-columns: var(--inkra-touch-target) minmax(var(--inkra-touch-target), 1fr) minmax(0, 6.5rem);
+  grid-template-rows: minmax(var(--inkra-touch-target), auto) minmax(var(--inkra-touch-target), auto);
+  inline-size: 100%;
+  min-inline-size: 0;
+  padding: var(--inkra-space-2) var(--inkra-space-3);
+}
+
+.inkra-image-viewer__video-play { grid-area: play; }
+.inkra-image-viewer__video-seek { grid-area: seek; min-inline-size: 0; }
+.inkra-image-viewer__video-volume { grid-area: volume; min-inline-size: 0; }
+.inkra-image-viewer__video-seek .inkra-slider,
+.inkra-image-viewer__video-volume .inkra-slider { inline-size: 100%; min-inline-size: 0; }
+.inkra-image-viewer__video-time { color: var(--inkra-ink-muted); font-variant-numeric: tabular-nums; grid-area: time; min-inline-size: 0; overflow-wrap: anywhere; text-align: center; unicode-bidi: isolate; }
+.inkra-image-viewer__video-settings {
+  align-items: center;
+  display: grid;
+  gap: var(--inkra-space-2);
+  grid-area: settings;
+  grid-template-areas: "mute volume rate";
+  grid-template-columns: var(--inkra-touch-target) minmax(var(--inkra-touch-target), 1fr) minmax(5.5rem, max-content);
+  min-inline-size: 0;
+}
+.inkra-image-viewer__video-mute { grid-area: mute; }
+.inkra-image-viewer__video-settings > .inkra-select__trigger { grid-area: rate; inline-size: 100%; min-inline-size: 5.5rem; }
+.inkra-image-viewer__video-error { color: var(--inkra-danger); grid-column: 1 / -1; margin: 0; overflow-wrap: anywhere; }
+
+@container (max-width: 22rem) {
+  .inkra-image-viewer__video-controls { column-gap: var(--inkra-space-1); padding-inline: var(--inkra-space-2); }
+  .inkra-image-viewer__video-settings { column-gap: var(--inkra-space-1); }
+}
+
+@media (forced-colors: active) {
+  .inkra-image-viewer__video-media { border: 1px solid CanvasText; }
+  .inkra-image-viewer__video-controls { border-block-start: 1px solid CanvasText; }
+  .inkra-image-viewer__video-error { color: Mark; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inkra-image-viewer__video-resource * { animation: none !important; transition: none !important; }
+}

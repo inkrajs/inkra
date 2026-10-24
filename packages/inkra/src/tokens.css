@@ -166,6 +166,10 @@
   --inkra-z-tooltip: 40;
 
   --inkra-stroke-width: 2px;
+  --inkra-icon-stroke-width: 1.5px;
+  --inkra-icon-breaks: 0.18;
+  --inkra-icon-break-count: 1;
+  --inkra-icon-pressure-variation: 0.82;
   --inkra-stroke-variation: 0.82;
   --inkra-stroke-grain: 0.7;
   --inkra-stroke-breaks: 0.2;

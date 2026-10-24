@@ -239,6 +239,46 @@
   z-index: 3;
 }
 
+.inkra-field-control-hit--textarea[data-end-action="true"] .inkra-field-control--textarea {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.inkra-textarea__end-action {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-self: start;
+  align-items: center;
+  min-block-size: var(--inkra-touch-target);
+}
+
+.inkra-field-control-hit--textarea[data-end-action="true"] .inkra-textarea__footer {
+  grid-column: 1 / -1;
+}
+
+.inkra-textarea__underline {
+  position: absolute !important;
+  inset-inline: 0;
+  inset-block-end: -4px;
+  inline-size: 100%;
+  pointer-events: none;
+}
+
+.inkra-field-control-hit--textarea[data-invalid="true"] .inkra-textarea__underline {
+  color: var(--inkra-danger);
+}
+
+.inkra-field-control-hit--textarea[data-variant="underline"] .inkra-input__action-wash {
+  inset: 4px;
+  border-radius: 3px;
+}
+
+.inkra-field-control-hit--textarea[data-variant="underline"] .inkra-input__action-divider {
+  inset-block-start: 8px;
+  block-size: calc(100% - 16px);
+}
+
 .inkra-textarea__count {
   display: flex;
   align-items: center;
@@ -558,7 +598,8 @@
     color: ButtonText;
   }
 
-  .inkra-input-root[data-variant="underline"] .inkra-field-control {
+  .inkra-input-root[data-variant="underline"] .inkra-field-control,
+  .inkra-field-control-hit--textarea[data-variant="underline"] .inkra-field-control {
     border: 0;
   }
 

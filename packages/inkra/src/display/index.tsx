@@ -132,9 +132,10 @@ export interface SkeletonProps extends Omit<HTMLAttributes<HTMLDivElement>, 'chi
 }
 
 export const Skeleton = forwardRef<HTMLDivElement, SkeletonProps>(function Skeleton(
-  { className, seed = 'inkra-skeleton', radius, width, height, animation = 'none', style, ...props },
+  { className, seed = 'inkra-skeleton', radius = 7, width, height, animation = 'none', style, ...props },
   ref,
 ) {
+  const resolvedRadius = Number.isFinite(radius) ? Math.max(0, Math.min(radius, 8)) : 7;
   return (
     <PencilSurface<'div'>
       {...props}
@@ -142,11 +143,11 @@ export const Skeleton = forwardRef<HTMLDivElement, SkeletonProps>(function Skele
       as="div"
       className={['inkra-skeleton', className].filter(Boolean).join(' ')}
       data-animation={animation}
-      style={{ width, height, ...style }}
+      style={{ width, height, borderRadius: resolvedRadius, ...style }}
       ref={ref}
       seed={seed}
-      radius={radius}
-      variant="quiet"
+      radius={resolvedRadius}
+      variant="selection"
     />
   );
 });

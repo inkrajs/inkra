@@ -13,8 +13,7 @@
 
 .inkra-editable__frame {
   display: grid;
-  min-inline-size: min(100%, 15rem);
-  grid-template-columns: minmax(0, 1fr) auto;
+  min-inline-size: 0;
   align-items: start;
   gap: var(--inkra-space-2);
   min-block-size: max(var(--inkra-editable-control-height), var(--inkra-touch-target));
@@ -28,20 +27,19 @@
   align-items: center;
 }
 
-.inkra-editable__display-surface {
+.inkra-editable__focus-ring {
   position: absolute !important;
   inset-inline: 0;
   inset-block: 50% auto;
   block-size: var(--inkra-editable-control-height);
   transform: translateY(-50%);
-  opacity: .42;
+  opacity: 0;
   pointer-events: none;
   transition: opacity var(--inkra-motion-fast) var(--inkra-ease);
 }
 
-.inkra-editable__display-shell:hover .inkra-editable__display-surface,
-.inkra-editable__display-shell:focus-within .inkra-editable__display-surface {
-  opacity: .8;
+.inkra-editable__display-shell:has(:focus-visible) .inkra-editable__focus-ring {
+  opacity: 1;
 }
 
 .inkra-editable__display {
@@ -50,10 +48,15 @@
   display: flex;
   min-inline-size: 0;
   box-sizing: border-box;
-  block-size: var(--inkra-editable-control-height);
-  min-block-size: var(--inkra-editable-control-height);
+  inline-size: 100%;
+  min-block-size: max(var(--inkra-editable-control-height), var(--inkra-touch-target));
   align-items: center;
-  padding-inline: var(--inkra-space-3);
+  padding: 0 var(--inkra-space-3);
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
   cursor: text;
   overflow-wrap: anywhere;
   text-align: start;
@@ -64,6 +67,7 @@
   min-block-size: var(--inkra-editable-control-height);
   align-items: flex-start;
   padding-block: var(--inkra-space-2);
+  white-space: pre-wrap;
 }
 
 .inkra-editable[data-disabled="true"] .inkra-editable__display,
@@ -71,8 +75,7 @@
   cursor: default;
 }
 
-.inkra-editable[data-disabled="true"] .inkra-editable__display-shell,
-.inkra-editable[data-readonly="true"] .inkra-editable__display-shell {
+.inkra-editable[data-disabled="true"] .inkra-editable__display-shell {
   opacity: .62;
 }
 
@@ -90,11 +93,11 @@
 }
 
 .inkra-editable__actions {
-  display: grid;
+  display: inline-grid;
+  flex: none;
   min-block-size: max(var(--inkra-editable-control-height), var(--inkra-touch-target));
   grid-template-columns: repeat(2, var(--inkra-touch-target));
   align-items: center;
-  gap: var(--inkra-space-1);
 }
 
 .inkra-editable__action {
@@ -102,7 +105,23 @@
   block-size: var(--inkra-touch-target);
 }
 
-.inkra-editable__action--edit { grid-column: 2; }
+.inkra-editable__custom-trigger {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.inkra-editable__select-row,
+.inkra-editable__custom-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--inkra-space-1);
+  min-inline-size: 0;
+}
 
 .inkra-editable__error {
   inline-size: 100%;
@@ -110,22 +129,17 @@
   font-size: var(--inkra-text-sm);
 }
 
-@media (max-width: 24rem) {
-  .inkra-editable__frame { grid-template-columns: minmax(0, 1fr); }
-  .inkra-editable__actions { justify-self: end; }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .inkra-editable__display-surface { transition: none; }
+  .inkra-editable__focus-ring { transition: none; }
 }
 
 @media (forced-colors: active) {
-  .inkra-editable__display-shell { border: 1px solid CanvasText; }
-  .inkra-editable__display-surface { display: none; }
+  .inkra-editable__display-shell:has(:focus-visible) { outline: 2px solid Highlight; outline-offset: -2px; }
+  .inkra-editable__focus-ring { display: none; }
   .inkra-editable__error { color: Mark; }
 }
 
 @media print {
   .inkra-editable__actions,
-  .inkra-editable__display-surface { display: none; }
+  .inkra-editable__focus-ring { display: none; }
 }

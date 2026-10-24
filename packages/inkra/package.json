@@ -1,6 +1,6 @@
 {
   "name": "@inkra/react",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Hand-drawn React controls with native semantics and deterministic decoration.",
   "type": "module",
   "license": "MIT",
@@ -78,6 +78,11 @@
       "types": "./dist/choice-grid/index.d.ts",
       "import": "./dist/choice-grid/index.js",
       "default": "./dist/choice-grid/index.js"
+    },
+    "./color-swatch": {
+      "types": "./dist/color-swatch/index.d.ts",
+      "import": "./dist/color-swatch/index.js",
+      "default": "./dist/color-swatch/index.js"
     },
     "./color-picker": {
       "types": "./dist/color-picker/index.d.ts",
@@ -198,6 +203,11 @@
       "types": "./dist/layout/index.d.ts",
       "import": "./dist/layout/index.js",
       "default": "./dist/layout/index.js"
+    },
+    "./markdown": {
+      "types": "./dist/markdown/index.d.ts",
+      "import": "./dist/markdown/index.js",
+      "default": "./dist/markdown/index.js"
     },
     "./log": {
       "types": "./dist/log/index.d.ts",
@@ -383,6 +393,7 @@
     "./styles/carousel.css": "./dist/styles/carousel.css",
     "./styles/choice-grid.css": "./dist/styles/choice-grid.css",
     "./styles/color-picker.css": "./dist/styles/color-picker.css",
+    "./styles/color-swatch.css": "./dist/styles/color-swatch.css",
     "./styles/command.css": "./dist/styles/command.css",
     "./styles/content.css": "./dist/styles/content.css",
     "./styles/context-menu.css": "./dist/styles/context-menu.css",
@@ -408,6 +419,7 @@
     "./styles/layout.css": "./dist/styles/layout.css",
     "./styles/leaflet.css": "./dist/styles/leaflet.css",
     "./styles/log.css": "./dist/styles/log.css",
+    "./styles/markdown.css": "./dist/styles/markdown.css",
     "./styles/node-graph.css": "./dist/styles/node-graph.css",
     "./styles/number-ticker.css": "./dist/styles/number-ticker.css",
     "./styles/overflow-list.css": "./dist/styles/overflow-list.css",
@@ -463,6 +475,7 @@
     "@types/d3-scale": "4.0.9",
     "@types/d3-shape": "3.2.0",
     "@types/leaflet": "^1.9.22",
+    "@types/prismjs": "^1.26.6",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "react": "19.3.1",
@@ -507,10 +520,13 @@
     "embla-carousel-react": "^8.6.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.60.0",
+    "prismjs": "^1.30.0",
     "react-aria-components": "^1.22.1",
     "react-day-picker": "^9.14.0",
     "react-easy-crop": "^6.2.4",
+    "react-markdown": "^10.1.0",
     "react-resizable-panels": "^4.14.8",
-    "react-zoom-pan-pinch": "^4.2.0"
+    "react-zoom-pan-pinch": "^4.2.0",
+    "remark-gfm": "^4.0.1"
   }
 }

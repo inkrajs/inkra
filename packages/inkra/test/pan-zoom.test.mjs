@@ -56,6 +56,13 @@ test('PanZoom preserves content interaction and an explicit wheel policy', () =>
   assert.match(styles, /not\(\[data-gestures\]\)/);
 });
 
+test('PanZoom uses a gentle configurable wheel step without replacing engine gestures', () => {
+  assert.match(source, /wheelStep\?: number/);
+  assert.match(source, /wheelStep = 0\.001/);
+  assert.match(source, /Number\.isFinite\(wheelStep\) && wheelStep > 0 \? wheelStep : 0\.001/);
+  assert.match(source, /step: resolvedWheelStep/);
+});
+
 test('PanZoom styles provide stable geometry and accessibility fallbacks', () => {
   assert.match(styles, /--inkra-pan-zoom-min-block-size:\s*18rem/);
   assert.match(source, /className="inkra-pan-zoom__clip"/);

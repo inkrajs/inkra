@@ -53,10 +53,27 @@
 .inkra-tabs__label { position: relative; }
 .inkra-tabs__content { min-width: 0; }
 .inkra-tabs__content[hidden] { display: none !important; }
+.inkra-tabs__overflow { display: flex; align-items: center; min-width: 0; max-width: 100%; position: relative; }
+.inkra-tabs__overflow > .inkra-tabs__list { flex: 1 1 auto; min-width: 0; }
+.inkra-tabs__scroll-button, .inkra-tabs__more { flex: 0 0 44px; }
+.inkra-tabs__overflow-icon { display: inline-flex; width: 32px; height: 32px; position: relative; pointer-events: none; }
+.inkra-tabs__overflow-icon[data-down] { transform: rotate(90deg); }
+.inkra-tabs__overflow-icon > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.inkra-tabs__overflow-icon > [data-pencil-icon-ready] + svg { display: none; }
+.inkra-tabs__overflow-icon > canvas:not([data-pencil-icon-ready]) { visibility: hidden; }
+.inkra-tabs__list[data-overflow="menu"] { position: relative; overflow: hidden; }
+.inkra-tabs__list[data-overflow="menu"][data-full-width] > .inkra-tabs__trigger { flex: 1 0 auto; }
+.inkra-tabs__trigger[data-overflow-hidden] { position: absolute; visibility: hidden; pointer-events: none; inset-inline-start: 0; top: 0; }
+.inkra-tabs__list[data-overflow="buttons"] { scrollbar-width: none; }
+.inkra-tabs__list[data-overflow="buttons"]::-webkit-scrollbar { display: none; }
 @media (forced-colors: active) {
+  .inkra-tabs__overflow-icon > [data-pencil-icon-ready] + svg { display: block; }
   .inkra-pencil-surface.inkra-tabs__focus-ring { display: none !important; }
   .inkra-tabs__trigger:focus-visible { outline: var(--inkra-focus-width) solid Highlight; outline-offset: calc(-1 * var(--inkra-focus-width)); }
   .inkra-pencil-surface.inkra-tabs__selection { display: none !important; }
   .inkra-tabs__trigger[data-state="active"] { color: Highlight; outline: 2px solid Highlight; outline-offset: -2px; }
 }
-@media print { .inkra-pencil-surface.inkra-tabs__selection, .inkra-pencil-surface.inkra-tabs__focus-ring { display: none !important; } }
+@media print {
+  .inkra-pencil-surface.inkra-tabs__selection, .inkra-pencil-surface.inkra-tabs__focus-ring { display: none !important; }
+  .inkra-tabs__overflow-icon > [data-pencil-icon-ready] + svg { display: block; }
+}

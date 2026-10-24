@@ -50,8 +50,28 @@ test('ColorPicker SSR output exposes native palette, text, slider, presets and f
   assert.match(html, /role="slider"/);
   assert.match(html, /aria-valuenow="50"/);
   assert.match(html, /role="group" aria-label="Saved colors"/);
-  assert.equal((html.match(/class="inkra-color-picker__preset"/g) ?? []).length, 2);
+  assert.equal((html.match(/class="[^"]*inkra-color-picker__preset"/g) ?? []).length, 2);
   assert.match(html, /type="hidden" form="brand-form" name="brandColor" value="#33669980"/);
+});
+
+test('ColorPicker presentations retain form values and render only applicable editors', () => {
+  for (const presentation of ['inline', 'compact', 'popover', 'swatches']) {
+    const html = renderToStaticMarkup(createElement(ColorPicker, {
+      presentation, defaultValue: '#abc', name: 'color', presets: ['#abc', '#def'],
+    }));
+    assert.match(html, new RegExp(`data-presentation="${presentation}"`));
+    assert.match(html, /type="hidden" name="color" value="#aabbccff"/);
+    assert.doesNotMatch(html, /<fieldset[^>]* presentation=/);
+    if (presentation === 'swatches') {
+      assert.doesNotMatch(html, /type="color"|role="slider"/);
+      assert.match(html, /aria-pressed="true"/);
+    } else if (presentation === 'popover') {
+      assert.match(html, /aria-haspopup="dialog"/);
+      assert.doesNotMatch(html, /type="color"/);
+    } else assert.match(html, /type="color"/);
+  }
+  const fallback = renderToStaticMarkup(createElement(ColorPicker, { presentation: 'swatches', presets: ['invalid'] }));
+  assert.match(fallback, /type="color"/);
 });
 
 test('ColorPicker controlled, opaque and disabled contracts are explicit in SSR', () => {

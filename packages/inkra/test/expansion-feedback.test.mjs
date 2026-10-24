@@ -43,6 +43,30 @@ test('Empty keeps every content region optional and preserves native semantics',
   assert.doesNotMatch(minimal, /inkra-empty__icon|inkra-empty__description|inkra-empty__actions/);
 });
 
+test('Empty provides distinct pencil illustrations with accessible SVG fallbacks', () => {
+  const geometries = new Set();
+  for (const illustration of ['inbox', 'search', 'folder', 'documents', 'messages', 'image', 'offline', 'favorites']) {
+    const html = render(h(Empty.Icon, { illustration, size: 144 }));
+    assert.match(html, new RegExp(`data-illustration="${illustration}"`));
+    assert.match(html, /--inkra-empty-icon-size:144px/);
+    assert.equal((html.match(/<canvas/g) ?? []).length, 2);
+    assert.equal((html.match(/<svg/g) ?? []).length, 2);
+    assert((html.match(/<path/g) ?? []).length >= 6);
+    assert.doesNotMatch(html, / illustration=| size=/);
+    geometries.add([...html.matchAll(/ d="([^"]+)"/g)].map(match => match[1]).join('|'));
+  }
+  assert.equal(geometries.size, 8);
+  const named = render(h(Empty.Icon, { decorative: false, 'aria-label': 'No results' }));
+  assert.match(named, /<div[^>]*aria-label="No results"[^>]*role="img"/);
+  assert.doesNotMatch(named, /<div[^>]*aria-hidden/);
+  assert.match(named, /data-illustration="inbox"/);
+  for (const size of [0, -1, NaN, Infinity]) {
+    assert.doesNotMatch(render(h(Empty.Icon, { size })), /--inkra-empty-icon-size/);
+  }
+  assert.doesNotMatch(render(h(Empty.Icon, { children: null })), /<canvas|<svg|data-illustration/);
+  assert.doesNotMatch(render(h(Empty.Icon, null, h('span', null, 'Custom'))), /<canvas|<svg|data-illustration/);
+});
+
 test('ToggleGroup uses pressed buttons, array values and real group semantics', () => {
   const html = render(h(ToggleGroup.Root, {
     'aria-label': 'Formatting',
