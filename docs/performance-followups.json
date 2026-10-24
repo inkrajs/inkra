@@ -1,0 +1,391 @@
+{
+  "schemaVersion": 1,
+  "baseline": "de402394be5d0d5120ef2b3cd1f1f2732eae74f9",
+  "sources": [
+    {
+      "path": "input/continuation/full-report.txt",
+      "sha256": "0fdcb74a397bb82b61838e239a9597ce47e050b1860b4ba4b7d94f8069b813bd"
+    },
+    {
+      "path": "input/continuation/metrics/inkra-performance-audit-delivery/REPORT.md",
+      "sha256": "d22eb6f7b6b0a162f5213eec27ddb1c67124396c00f6856c9c2076185064b364"
+    },
+    {
+      "path": "input/continuation/metrics/inkra-performance-audit-delivery/REPORT.original-audit.md",
+      "sha256": "a878da283fbeecd10898f9e860e362ace7592546a08e0b479c91dfc3cac3e673"
+    },
+    {
+      "path": "input/continuation/metrics/inkra-performance-audit-delivery/component-bundles/bundle-analysis.md",
+      "sha256": "0c4a4506628c8498d60e054660341186d3581705ae1357c7c485b47d9c55b8e5"
+    },
+    {
+      "path": "input/archive/inkra-optimization-batches/Inkra-performance-optimization-review.html",
+      "sha256": "a1e503d9c9846270109aa72b0b89da049f9ffd6cfec79fbfa9b9d75b9e88dcf9"
+    },
+    {
+      "path": "Inkra-local-integration-report.html",
+      "sha256": "f7bd0eccaac6e4d028e4c1a6fa30d14fcda2dd89599cb2ce9640784fb06b5496"
+    }
+  ],
+  "items": [
+    {
+      "id": "D01",
+      "title": "DataTable 不可变数组全行模型",
+      "source": "REPORT.md P1.4; Word 大数据/模型",
+      "initialDisposition": "implement",
+      "status": "implementation-under-validation",
+      "plan": "可选 manualPagination/rowCount/manualSorting/manualFiltering；默认模型不变",
+      "evidence": [
+        "scripts/benchmark-paged-collections.mjs",
+        "packages/inkra/test/paged-collections-runtime.test.mjs",
+        "packages/inkra/test/data-table-model-contract.test.mjs"
+      ],
+      "outcome": null
+    },
+    {
+      "id": "D02",
+      "title": "Transfer 全量挂载及 10k/50k 边界",
+      "source": "REPORT.md P1.1; large-data-results",
+      "initialDisposition": "investigate",
+      "status": "implementation-under-validation",
+      "plan": "项级复用、显式分页；搜索/批量/焦点保持",
+      "evidence": [
+        "scripts/benchmark-paged-collections.mjs",
+        "packages/inkra/test/paged-collections-runtime.test.mjs",
+        "packages/inkra/test/data-table-model-contract.test.mjs"
+      ],
+      "outcome": null
+    },
+    {
+      "id": "D03",
+      "title": "TagInput 全量标签及 50k 超时",
+      "source": "REPORT.md P1.1",
+      "initialDisposition": "investigate",
+      "status": "pending",
+      "plan": "可选折叠可展开标签，完整表单值和删除/键盘保持",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "D04",
+      "title": "ChoiceGrid 全量选项/单项状态传播",
+      "source": "REPORT.md P1.1–2",
+      "initialDisposition": "investigate",
+      "status": "pending",
+      "plan": "按项订阅/显式分页方案，原生单选/多选/重置保持",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "D05",
+      "title": "小规模首次挂载回退/比较开销",
+      "source": "优化 HTML 完整阶段对照",
+      "initialDisposition": "measure",
+      "status": "pending",
+      "plan": "固定 1k/10k 与基线串行重复，保留回退",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "D06",
+      "title": "TreeSelect 关闭整树构造",
+      "source": "REPORT.md P1.3",
+      "initialDisposition": "covered",
+      "status": "pending",
+      "plan": "已由 #7 延迟构造；补打开/搜索/深层边界浏览器证据",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "D07",
+      "title": "Calendar 密集事件输出",
+      "source": "REPORT.md P1.5",
+      "initialDisposition": "investigate",
+      "status": "pending",
+      "plan": "索引已 #5；调查每格溢出摘要是否已有并量化",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "D08",
+      "title": "DayAgenda 密集布局/输出",
+      "source": "REPORT.md P1.5",
+      "initialDisposition": "investigate",
+      "status": "pending",
+      "plan": "堆扫描已 #5；调查输出上限/可见量，不删除事件",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "D09",
+      "title": "模型选择/过滤/粘贴 Map Set",
+      "source": "Word 常规优化/算法增长",
+      "initialDisposition": "covered",
+      "status": "pending",
+      "plan": "已 #5，复测真实模型计数与规模",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "E01",
+      "title": "Select/AudioPlayer 入口闭包",
+      "source": "REPORT.md P2.6; bundle-analysis",
+      "initialDisposition": "implement",
+      "status": "pending",
+      "plan": "独立可消费子路径/引擎边界，真实生产包体对照",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "E02",
+      "title": "全局 CSS 初始负担",
+      "source": "bundle-analysis CSS",
+      "initialDisposition": "implement",
+      "status": "pending",
+      "plan": "可选基础/按族样式；默认 styles.css 完整保持",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "E03",
+      "title": "JourneyMap 可选 Leaflet 懒加载",
+      "source": "bundle-analysis JourneyMap",
+      "initialDisposition": "covered",
+      "status": "pending",
+      "plan": "已有 lazy chunk；复核 entry/closure 与网络请求",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "E04",
+      "title": "字体按需/子集",
+      "source": "bundle-analysis font subsetting",
+      "initialDisposition": "investigate",
+      "status": "pending",
+      "plan": "核对实际请求与字符覆盖；不得删除任意语言字形",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "E05",
+      "title": "命名别名/tree shaking",
+      "source": "bundle-analysis paired aliases",
+      "initialDisposition": "measure",
+      "status": "pending",
+      "plan": "已反证仅改导入拼写无效；验证子路径和未使用导出",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "F01",
+      "title": "13 个真实 DOM 运行时缺口",
+      "source": "REPORT.md 明确运行时缺口",
+      "initialDisposition": "measure",
+      "status": "pending",
+      "plan": "逐身份有效 portal/overflow 场景与断言，不能封闭壳计时",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "F02",
+      "title": "真实大数据 DOM/键盘/滚动",
+      "source": "REPORT.md P1.1; Word 操作表",
+      "initialDisposition": "measure",
+      "status": "pending",
+      "plan": "1k/10k 安全上限，N/V/R、选择/搜索/输入到绘制",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "F03",
+      "title": "长任务/布局/绘制/帧",
+      "source": "Word 交互布局绘制",
+      "initialDisposition": "measure",
+      "status": "pending",
+      "plan": "浏览器 trace、longtask、layout/paint 与原始样本",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "F04",
+      "title": "冷暖加载/瀑布/覆盖率",
+      "source": "Word 页面加载方法",
+      "initialDisposition": "measure",
+      "status": "pending",
+      "plan": "文档/重集合/编辑浮层页面，固定构建网络条件",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "F05",
+      "title": "实验室 LCP/CLS/Event Timing",
+      "source": "Word CWV 方法",
+      "initialDisposition": "measure",
+      "status": "pending",
+      "plan": "真实页面采样；不伪造线上 p75 INP 或 RUM",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "F06",
+      "title": "真实用户 RUM/设备/网络分组",
+      "source": "Word 页面加载 RUM",
+      "initialDisposition": "investigate",
+      "status": "pending",
+      "plan": "无生产发布授权/采样源；保留具体数据缺口与可行采集方法",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "F07",
+      "title": "多轮生命周期 retained heap",
+      "source": "REPORT.md P2.7; Word heap 表",
+      "initialDisposition": "measure",
+      "status": "pending",
+      "plan": "100 轮开关/挂载/卸载，GC/DOM/快照，关注列出的 timeline/heatmap/toggle/calendar 等",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "F08",
+      "title": "监听器/observer/RAF/定时器/媒体",
+      "source": "REPORT.original 未完成验收",
+      "initialDisposition": "measure",
+      "status": "pending",
+      "plan": "实际浏览器创建/销毁计数及残留证据",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "F09",
+      "title": "偶发崩溃可控压力复现",
+      "source": "原报告结论与风险",
+      "initialDisposition": "measure",
+      "status": "pending",
+      "plan": "有界串行压力，记录崩溃/超时/资源上限，不等同原始故障",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "F10",
+      "title": "真机触摸/后台恢复/GPU",
+      "source": "原审计兼容风险; 当前 HTML",
+      "initialDisposition": "investigate",
+      "status": "pending",
+      "plan": "本机 Chromium 可测模拟，真实设备/GPU 回收缺口单列",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "F11",
+      "title": "不可变输入/回调新鲜度",
+      "source": "原审计兼容风险",
+      "initialDisposition": "covered",
+      "status": "pending",
+      "plan": "保留 immutable 契约及上下文/ref/重置回归",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "F12",
+      "title": "持续回归与预算/来源一致",
+      "source": "Word 持续回归; 每提交证据",
+      "initialDisposition": "implement",
+      "status": "pending",
+      "plan": "版本/输入/构建/原始样本/节点/失败状态记录；避免噪声毫秒阈值",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "F13",
+      "title": "231 身份/349 别名/255 导出",
+      "source": "当前 HTML; Word 前置项",
+      "initialDisposition": "measure",
+      "status": "pending",
+      "plan": "完整新清单、包体/fixture 映射验证，历史230不冒充231",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "G01",
+      "title": "原子展示/主题尺寸/长文本",
+      "source": "Word 各类适用场景",
+      "initialDisposition": "measure",
+      "status": "pending",
+      "plan": "复用全组件 fixture + 关键浏览器主题/尺寸",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "G02",
+      "title": "输入表单/校验/异步竞态",
+      "source": "Word 各类适用场景",
+      "initialDisposition": "measure",
+      "status": "pending",
+      "plan": "连续输入/受控回写/IME/焦点与错误状态",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "G03",
+      "title": "选择器开闭/搜索/匹配/导航",
+      "source": "Word 各类适用场景",
+      "initialDisposition": "measure",
+      "status": "pending",
+      "plan": "搜索与 portal/overflow 实际打开场景",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "G04",
+      "title": "表格树列表排序过滤滚动",
+      "source": "Word 各类适用场景",
+      "initialDisposition": "measure",
+      "status": "pending",
+      "plan": "总N/可见V/渲染R；模型/输出分别记录",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "G05",
+      "title": "浮层定位/resize/滚动",
+      "source": "Word 各类适用场景",
+      "initialDisposition": "measure",
+      "status": "pending",
+      "plan": "真实弹层定位与重复清理",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "G06",
+      "title": "Tabs 隐藏子树/forceMount",
+      "source": "Word 各类适用场景",
+      "initialDisposition": "measure",
+      "status": "pending",
+      "plan": "保留/卸载策略各自证据，hidden 工作不擅自丢状态",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "G07",
+      "title": "Provider 上下文扇出",
+      "source": "Word 各类适用场景",
+      "initialDisposition": "measure",
+      "status": "pending",
+      "plan": "稳定/新 value 与局部更新的消费者工作",
+      "evidence": [],
+      "outcome": null
+    },
+    {
+      "id": "G08",
+      "title": "媒体图表画布/动画持续任务",
+      "source": "Word 各类适用场景",
+      "initialDisposition": "measure",
+      "status": "pending",
+      "plan": "资源/RAF/媒体请求/缩放尺寸与卸载，音频解码另记",
+      "evidence": [],
+      "outcome": null
+    }
+  ],
+  "componentInventory": "component-performance-inventory.json"
+}

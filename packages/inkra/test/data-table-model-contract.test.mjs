@@ -208,3 +208,45 @@ test('DataTable corrections retain current filtering, page navigation and eligib
     assert.ok(pageButtons.every(node => node.props.disabled));
   });
 });
+
+test('DataTable server pagination models only supplied rows and uses total count for navigation', async () => {
+  const probe = captureTable();
+  let calls = 0;
+  const requests = [];
+  const data = Array.from({ length: 25 }, (_, i) => ({ id: String(250 + i), label: `Row ${250 + i}` }));
+  const props = { data, columns: probe.columns, getRowId: row => { calls++; return row.id; }, pagination: true, manualPagination: true, rowCount: 50000,
+    paginationState: { pageIndex: 10, pageSize: 25 }, onPaginationChange: value => requests.push(value) };
+  await withRenderer(h(DataTable, props), async renderer => {
+    assert.equal(probe.current().getRowModel().rows.length, 25);
+    assert.equal(probe.current().getRowModel().rows[0].id, '250');
+    assert.equal(probe.current().getPageCount(), 2000);
+    assert.equal(calls, 25);
+    assert.equal(requests.length, 0, 'page index must not be clamped to the size of this page');
+    await act(() => probe.current().nextPage());
+    assert.deepEqual(requests[0](props.paginationState), { pageIndex: 11, pageSize: 25 });
+    await act(() => renderer.update(h(DataTable, { ...props, data: data.map((r,i)=>i===0?{...r,label:'updated'}:r) })));
+    assert.equal(calls, 50, 'immutable update rebuilds only the supplied server page');
+    assert.equal(probe.current().getRowModel().rows[0].getValue('label'), 'updated');
+  });
+});
+
+test('DataTable server sort/filter preserve supplied order and still emit requests', async () => {
+  const probe=captureTable(); const sortingRequests=[], filterRequests=[];
+  const data=[{id:'b',label:'Zulu'},{id:'a',label:'Alpha'}];
+  await withRenderer(h(DataTable,{data,columns:probe.columns,getRowId:r=>r.id,manualSorting:true,manualFiltering:true,
+    sorting:[{id:'label',desc:false}],globalFilter:'not present',onSortingChange:u=>sortingRequests.push(u),onGlobalFilterChange:v=>filterRequests.push(v)}), async()=>{
+    assert.deepEqual(probe.current().getRowModel().rows.map(r=>r.id),['b','a']);
+    await act(()=>probe.current().getColumn('label').toggleSorting(true));
+    await act(()=>probe.current().setGlobalFilter('next'));
+    assert.equal(sortingRequests.length,1); assert.deepEqual(filterRequests,['next']);
+  });
+});
+
+test('DataTable server total shrink clamps once and zero total retains empty pagination semantics', async()=>{
+ const probe=captureTable(); const corrections=[];
+ await withRenderer(h(DataTable,{data:[],columns:probe.columns,getRowId:r=>r.id,pagination:true,manualPagination:true,rowCount:0,
+ paginationState:{pageIndex:20,pageSize:25},onPaginationChange:u=>corrections.push(u)}),async renderer=>{
+  assert.deepEqual(corrections,[{pageIndex:0,pageSize:25}]);
+  assert.ok(renderer.root.findAllByType('button').filter(n=>['Previous page','Next page'].includes(n.props['aria-label'])).every(n=>n.props.disabled));
+ });
+});
