@@ -77,7 +77,7 @@ package and the main branch may contain different features.*
 
 ## Find Your Components
 
-The published **0.3.0** package includes these core components:
+The published **0.4.3** package includes these core components:
 
 | Use | Components |
 | --- | --- |
@@ -96,8 +96,14 @@ Sparkline, VirtualList) and circular Progress.
 
 **New in 0.3.0:** exact bigint and decimal-string NumberTicker values, configurable
 units and rounding, InputNumber modifier steps and hold repetition, popup motion,
-password examples and localized, collapsible playground settings. Version 0.3.0
-is published on npm and verified with React 18 and 19.
+password examples and localized, collapsible playground settings.
+
+**New in 0.4.3:** theme-aligned Markdown, ColorSwatch and gradient editing,
+built-in Editable text/select editors, full-viewport image/video viewing, Tabs
+overflow controls, independent Toast queues and expanded icon stroke controls.
+Rendering and documentation performance are improved, with simpler primary
+previews and a nine-icon size/pressure/gap playground. Version 0.4.3 is published
+on npm and verified with React 18 and 19.
 See [Releases](https://github.com/inkrajs/inkra/releases),
 the [changelog](./CHANGELOG.md) and
 [package API](./packages/inkra/README.md) for the full scope and known limits.
