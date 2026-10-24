@@ -215,7 +215,10 @@ export function DataTable<TData>({
     getPaginationRowModel: pagination ? getPaginationRowModel() : undefined,
   });
   const filteredRowCount = table.getPrePaginationRowModel().rows.length;
-  const effectivePagination = normalizeDataTablePagination(initialPagination, filteredRowCount);
+  const effectivePagination = useMemo(
+    () => normalizeDataTablePagination(initialPagination, filteredRowCount),
+    [initialPagination, filteredRowCount],
+  );
   if (table.getState().pagination.pageIndex !== effectivePagination.pageIndex
     || table.getState().pagination.pageSize !== effectivePagination.pageSize) {
     table.setOptions(previous => ({

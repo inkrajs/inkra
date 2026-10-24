@@ -1,6 +1,7 @@
 import {
   createContext,
   forwardRef,
+  memo,
   useContext,
   useCallback,
   useMemo,
@@ -12,6 +13,7 @@ import type {
   CSSProperties,
   ChangeEvent,
   FieldsetHTMLAttributes,
+  ForwardedRef,
   ImgHTMLAttributes,
   InputHTMLAttributes,
   ReactNode,
@@ -118,7 +120,7 @@ function gridStyle(style: CSSProperties | undefined, columns: ChoiceGridColumns 
   } as CSSProperties;
 }
 
-export const ChoiceGrid = forwardRef<HTMLFieldSetElement, ChoiceGridProps>(function ChoiceGrid(
+export const ChoiceGrid = memo(forwardRef<HTMLFieldSetElement, ChoiceGridProps>(function ChoiceGrid(
   props,
   forwardedRef,
 ) {
@@ -244,7 +246,7 @@ export const ChoiceGrid = forwardRef<HTMLFieldSetElement, ChoiceGridProps>(funct
       <GroupMessages description={description} descriptionId={descriptionId} error={error} errorId={errorId} />
     </fieldset>
   );
-});
+}));
 
 function OptionMedia({ icon, image }: Pick<ChoiceGridOptionProps, 'icon' | 'image'>) {
   if (image) {
@@ -260,30 +262,42 @@ function OptionMedia({ icon, image }: Pick<ChoiceGridOptionProps, 'icon' | 'imag
   return null;
 }
 
-export const ChoiceGridOption = forwardRef<HTMLInputElement, ChoiceGridOptionProps>(function ChoiceGridOption(
-  {
-    className,
-    description,
-    disabled = false,
-    form,
-    icon,
-    id,
-    image,
-    label,
-    onChange,
-    required = false,
-    seed,
-    value,
-    ...props
-  },
-  ref,
-) {
-  const context = useContext(ChoiceGridContext);
-  if (!context) throw new Error('ChoiceGridOption must be rendered inside ChoiceGrid');
+interface ChoiceGridOptionViewProps extends ChoiceGridOptionProps {
+  mode: 'single' | 'multiple';
+  inputRef: ForwardedRef<HTMLInputElement>;
+  groupName: string;
+  multipleChecked?: boolean;
+  multipleDefaultChecked?: boolean;
+  onMultipleChange?: ChoiceGridContextValue['onMultipleChange'];
+}
+
+// Resolve context in a small adapter. A membership change must not rebuild the
+// paper, text and controls of every option whose own checked state is unchanged.
+const ChoiceGridOptionView = memo(function ChoiceGridOptionView({
+  className,
+  description,
+  disabled = false,
+  form,
+  icon,
+  id,
+  image,
+  label,
+  mode,
+  inputRef,
+  groupName,
+  multipleChecked,
+  multipleDefaultChecked,
+  onMultipleChange,
+  onChange,
+  required = false,
+  seed,
+  value,
+  ...props
+}: ChoiceGridOptionViewProps) {
   const generatedId = useId();
   const inputId = id ?? `inkra-choice-grid-option-${generatedId}`;
   const resolvedSeed = seed ?? inputId;
-  const itemDisabled = context.disabled || disabled;
+  const itemDisabled = disabled;
   const content = (
     <>
       <OptionMedia icon={icon} image={image} />
@@ -294,17 +308,17 @@ export const ChoiceGridOption = forwardRef<HTMLInputElement, ChoiceGridOptionPro
       </span>
     </>
   );
-  const control = context.mode === 'single' ? (
+  const control = mode === 'single' ? (
     <RadioGroupItem
       {...props}
       className="inkra-choice-grid__control"
       description={description}
       disabled={itemDisabled}
-      form={form ?? context.form}
+      form={form}
       id={inputId}
       label={content}
       onChange={onChange}
-      ref={ref}
+      ref={inputRef}
       required={required}
       seed={resolvedSeed}
       value={value}
@@ -312,21 +326,21 @@ export const ChoiceGridOption = forwardRef<HTMLInputElement, ChoiceGridOptionPro
   ) : (
     <Checkbox
       {...props}
-      checked={context.values === undefined ? undefined : context.values.has(value)}
+      checked={multipleChecked}
       className="inkra-choice-grid__control"
       data-choice-grid-value=""
-      defaultChecked={context.values === undefined ? context.defaultValues?.has(value) : undefined}
+      defaultChecked={multipleDefaultChecked}
       description={description}
       disabled={itemDisabled}
-      form={form ?? context.form}
+      form={form}
       id={inputId}
       label={content}
-      name={context.name}
+      name={groupName}
       onChange={(event: ChangeEvent<HTMLInputElement>) => {
         onChange?.(event);
-        context.onMultipleChange?.(value, event.currentTarget.checked);
+        onMultipleChange?.(value, event.currentTarget.checked);
       }}
-      ref={ref}
+      ref={inputRef}
       required={required}
       seed={resolvedSeed}
       value={value}
@@ -371,3 +385,18 @@ export const ChoiceGridOption = forwardRef<HTMLInputElement, ChoiceGridOptionPro
   );
 });
 
+export const ChoiceGridOption = forwardRef<HTMLInputElement, ChoiceGridOptionProps>(function ChoiceGridOption(props, ref) {
+  const context = useContext(ChoiceGridContext);
+  if (!context) throw new Error('ChoiceGridOption must be rendered inside ChoiceGrid');
+  return <ChoiceGridOptionView
+    {...props}
+    disabled={context.disabled || props.disabled}
+    form={props.form ?? context.form}
+    groupName={context.name}
+    mode={context.mode}
+    multipleChecked={context.values === undefined ? undefined : context.values.has(props.value)}
+    multipleDefaultChecked={context.values === undefined ? context.defaultValues?.has(props.value) : undefined}
+    onMultipleChange={context.onMultipleChange}
+    inputRef={ref}
+  />;
+});

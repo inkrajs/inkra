@@ -1,5 +1,7 @@
 import {
   forwardRef,
+  memo,
+  useCallback,
   useEffect,
   useId,
   useImperativeHandle,
@@ -14,6 +16,7 @@ import type {
   InputHTMLAttributes,
   KeyboardEvent,
   MouseEvent,
+  RefObject,
 } from 'react';
 
 import { PencilIcon } from '../PencilIcon.js';
@@ -149,6 +152,59 @@ function validationText(result: TagInputValidationResult, fallback: string): str
   return undefined;
 }
 
+interface TagInputTagRowProps {
+  tag: TagInputTag;
+  index: number;
+  disabled: boolean;
+  readOnly: boolean;
+  className?: string;
+  seed: string | number;
+  removeLabel: TagInputLabels['removeTag'];
+  removeRefs: RefObject<Map<string, HTMLButtonElement>>;
+}
+
+// Rows contain only their own display/ref inputs. Events bubble to the list,
+// whose current handlers own selection, callbacks, guards and tag positions.
+const TagInputTagRow = memo(function TagInputTagRow({
+  tag, index, disabled, readOnly, className, seed, removeLabel, removeRefs,
+}: TagInputTagRowProps) {
+  const removeText = readOnly ? undefined : removeLabel(tag);
+  return <PencilSurface<'li'>
+    as="li"
+    className={classes('inkra-tag-input__tag', className)}
+    data-tag-id={tag.id}
+    radius={6}
+    seed={`${seed}-tag-${tag.id}`}
+    variant="quiet"
+  >
+    <span className="inkra-tag-input__tag-label">{tag.label ?? tag.value}</span>
+    {!readOnly ? <button
+      aria-label={removeText}
+      className="inkra-tag-input__remove"
+      data-inkra-tag-index={index}
+      disabled={disabled}
+      ref={node => {
+        if (node) removeRefs.current.set(tag.id, node);
+        else removeRefs.current.delete(tag.id);
+      }}
+      title={removeText}
+      type="button"
+    >
+      <PencilIcon decorative paths={removePaths} seed={`${seed}-remove-${tag.id}`} size={18} sourceSize={24} />
+    </button> : null}
+  </PencilSurface>;
+});
+
+function tagRemoveTarget(event: { target: EventTarget; currentTarget: HTMLUListElement }, length: number) {
+  const target = event.target as Element;
+  const button = typeof target.closest === 'function'
+    ? target.closest<HTMLButtonElement>('button.inkra-tag-input__remove[data-inkra-tag-index]')
+    : null;
+  if (!button || !event.currentTarget.contains(button)) return undefined;
+  const index = Number(button.getAttribute('data-inkra-tag-index'));
+  return Number.isInteger(index) && index >= 0 && index < length ? { button, index } : undefined;
+}
+
 export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function TagInput(
   {
     'aria-describedby': ariaDescribedBy,
@@ -272,10 +328,10 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
     onInputValueChange?.(next, details);
   };
 
-  const commitTags = (next: readonly TagInputTag[], details: TagInputChangeDetails) => {
+  const commitTags = useCallback((next: readonly TagInputTag[], details: TagInputChangeDetails) => {
     if (!tagsControlled) setUncontrolledTags([...next]);
     onValueChange?.(next, details);
-  };
+  }, [tagsControlled, onValueChange]);
 
   const reportValidation = (
     candidate: string,
@@ -348,7 +404,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
     return commitCandidates(parsed.parts, reason);
   };
 
-  const removeTag = (index: number, focus: PendingFocus = null) => {
+  const removeTag = useCallback((index: number, focus: PendingFocus = null) => {
     if (!canEdit) return;
     const tag = currentTags[index];
     if (!tag) return;
@@ -361,7 +417,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
     setLocalValidationMessage(undefined);
     commitTags(next, { reason: 'remove', tags: [tag] });
     setPendingFocus(nextFocus);
-  };
+  }, [canEdit, currentTags, commitTags]);
 
   const clearAll = () => {
     if (!canEdit || currentTags.length === 0) return;
@@ -372,10 +428,10 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
     setPendingFocus({ input: true });
   };
 
-  const focusRemoveButton = (index: number) => {
+  const focusRemoveButton = useCallback((index: number) => {
     const tag = currentTags[index];
     if (tag) removeRefs.current.get(tag.id)?.focus({ preventScroll: true });
-  };
+  }, [currentTags]);
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     inputProps.onChange?.(event);
@@ -428,9 +484,9 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
     }
   };
 
-  const handleTagKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+  const handleTagKeyDown = useCallback((event: KeyboardEvent<HTMLUListElement>, index: number, button: HTMLButtonElement) => {
     if (event.defaultPrevented || !canEdit) return;
-    const direction = getComputedStyle(event.currentTarget).direction;
+    const direction = getComputedStyle(button).direction;
     const previousKey = direction === 'rtl' ? 'ArrowRight' : 'ArrowLeft';
     const nextKey = direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
     if (event.key === previousKey) {
@@ -450,7 +506,24 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
       event.preventDefault();
       removeTag(index);
     }
-  };
+  }, [canEdit, currentTags.length, focusRemoveButton, removeTag]);
+
+  // Stable rows survive immutable edits to other tags. Parent event handlers
+  // remain fresh instead of hiding a changing callback behind a memo comparator.
+  const tagRows = useMemo(() => currentTags.map((tag, index) => <TagInputTagRow
+    className={classNames.tag}
+    disabled={state.disabled}
+    index={index}
+    key={`${tag.id}-${index}`}
+    readOnly={state.readOnly}
+    removeLabel={copy.removeTag}
+    removeRefs={removeRefs}
+    seed={resolvedSeed}
+    tag={tag}
+  />), [currentTags, state.disabled, state.readOnly, copy.removeTag, classNames.tag, resolvedSeed]);
+  const formValues = useMemo(() => name ? currentTags.map((tag, index) => (
+    <input disabled={state.disabled} form={form} key={`${tag.id}-${index}`} name={name} type="hidden" value={tag.value} />
+  )) : null, [currentTags, state.disabled, form, name]);
 
   return (
     <div
@@ -489,38 +562,18 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
         seed={resolvedSeed}
         variant={surfaceVariant}
       >
-        <ul aria-label={copy.tagList} className={classes('inkra-tag-input__list', classNames.list)}>
-          {currentTags.map((tag, index) => (
-            <PencilSurface<'li'>
-              as="li"
-              className={classes('inkra-tag-input__tag', classNames.tag)}
-              data-tag-id={tag.id}
-              key={`${tag.id}-${index}`}
-              radius={6}
-              seed={`${resolvedSeed}-tag-${tag.id}`}
-              variant="quiet"
-            >
-              <span className="inkra-tag-input__tag-label">{tag.label ?? tag.value}</span>
-              {!state.readOnly ? (
-                <button
-                  aria-label={copy.removeTag(tag)}
-                  className="inkra-tag-input__remove"
-                  disabled={state.disabled}
-                  onClick={() => removeTag(index)}
-                  onKeyDown={event => handleTagKeyDown(event, index)}
-                  ref={node => {
-                    if (node) removeRefs.current.set(tag.id, node);
-                    else removeRefs.current.delete(tag.id);
-                  }}
-                  title={copy.removeTag(tag)}
-                  type="button"
-                >
-                  <PencilIcon decorative paths={removePaths} seed={`${resolvedSeed}-remove-${tag.id}`} size={18} sourceSize={24} />
-                </button>
-              ) : null}
-            </PencilSurface>
-          ))}
-        </ul>
+        <ul
+          aria-label={copy.tagList}
+          className={classes('inkra-tag-input__list', classNames.list)}
+          onClick={event => {
+            const target = tagRemoveTarget(event, currentTags.length);
+            if (target) removeTag(target.index);
+          }}
+          onKeyDown={event => {
+            const target = tagRemoveTarget(event, currentTags.length);
+            if (target) handleTagKeyDown(event, target.index, target.button);
+          }}
+        >{tagRows}</ul>
         <input
           {...inputProps}
           aria-describedby={state.describedBy}
@@ -575,9 +628,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
           />
         ) : null}
       </PencilSurface>
-      {name ? currentTags.map((tag, index) => (
-        <input disabled={state.disabled} form={form} key={`${tag.id}-${index}`} name={name} type="hidden" value={tag.value} />
-      )) : null}
+      {formValues}
       {activeValidationMessage ? (
         <PencilText
           as="span"
