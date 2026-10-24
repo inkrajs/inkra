@@ -244,21 +244,23 @@ test('DataTable caches 10,000-row core model on unrelated updates and clamps a s
   });
 });
 
-test('TreeSelect memoizes label construction and preserves depth-first callback order', async t => {
+test('TreeSelect defers collection labels to its mounted popup and keeps its inputs current', async t => {
   const calls = [];
   const items = [{ id: 'a', label: 'A', children: [{ id: 'a1', label: 'A1' }] }, { id: 'b', label: 'B' }];
   const props = { items, value: ['a1'], multiple: true, renderLabel: (node, state) => { calls.push([node.id, state.selected]); return node.label; } };
   await withRenderer(h(TreeSelect, props), async renderer => {
-    assert.deepEqual(calls, [['a', false], ['a1', true], ['b', false]]);
+    assert.deepEqual(calls, [], 'closed popup does not construct its collection');
     const { Popover } = await import(new URL('overlay/index.js', dist));
-    const tree = renderer.root.findByType(Popover.Portal).props.children.props.children[1];
-    const shape = nodes => nodes.map(node => ({ id: node.props.id, textValue: node.props.textValue, children: node.props.children[1] === null ? [] : shape(node.props.children[1]) }));
-    assert.deepEqual(shape(tree.props.children), [{ id: 'a', textValue: 'A', children: [{ id: 'a1', textValue: 'A1', children: [] }] }, { id: 'b', textValue: 'B', children: [] }]);
+    const tree = () => renderer.root.findByType(Popover.Portal).props.children.props.children[1];
+    assert.deepEqual(tree().props.nodes.map(node => node.id), ['a', 'b']);
+    assert.deepEqual(tree().props.nodes[0].children.map(node => node.id), ['a1']);
+    assert.deepEqual([...tree().props.selectedSet], ['a1']);
     for (let index = 0; index < 8; index++) await act(async () => renderer.update(h(TreeSelect, { ...props, className: `update-${index}` })));
     t.diagnostic(JSON.stringify({ scenario: '3-node tree, 8 unrelated updates', labelCalls: calls.length }));
-    assert.equal(calls.length, 3);
+    assert.equal(calls.length, 0);
     await act(async () => renderer.update(h(TreeSelect, { ...props, value: ['b'] })));
-    assert.deepEqual(calls.slice(-3), [['a', false], ['a1', false], ['b', true]]);
+    assert.equal(calls.length, 0);
+    assert.deepEqual([...tree().props.selectedSet], ['b']);
   });
 });
 
