@@ -104,6 +104,59 @@ test('ChoiceGrid single selection and latest group callback cross a memoized opt
   });
 });
 
+test('ChoiceGrid child state and cancel-aware form reset remain live across root bailouts', async () => {
+  for (const mode of ['single', 'multiple']) {
+    const firstForm = new EventTarget(), secondForm = new EventTarget();
+    const events = [];
+    const hosts = new Map();
+    const root = { form: firstForm, querySelectorAll: () => [...hosts.values()] };
+    const props = {
+      type: mode, name: 'letters', label: 'Letters', form: 'first-form',
+      ...(mode === 'multiple'
+        ? { defaultValues: ['a'], onValuesChange: next => events.push(next) }
+        : { defaultValue: 'a', onValueChange: next => events.push(next) }),
+    };
+    const children = ['a', 'b'].map(value => h(ChoiceGridOption, { key: value, id: `reset-${mode}-${value}`, value, label: value.toUpperCase(), ref: createRef() }));
+    const render = (extra = {}) => h(ChoiceGrid, { ...props, ...extra }, children);
+    const options = { createNodeMock(element) {
+      if (element.type === 'fieldset') return root;
+      if (element.type !== 'input') return null;
+      if (!hosts.has(element.props.value)) hosts.set(element.props.value, {
+        form: root.form, name: element.props.name, value: element.props.value,
+        checked: Boolean(element.props.checked ?? element.props.defaultChecked),
+      });
+      return hosts.get(element.props.value);
+    } };
+    const reset = async (form, canceled = false) => {
+      const event = new Event('reset', { cancelable: true });
+      if (canceled) event.preventDefault();
+      await act(async () => { form.dispatchEvent(event); await new Promise(resolve => setTimeout(resolve, 5)); });
+    };
+    await withRenderer(render(), async renderer => {
+      await act(() => renderer.update(render()));
+      const inputs = renderer.root.findAllByType('input');
+      if (mode === 'single') hosts.get('a').checked = false;
+      hosts.get('b').checked = true;
+      await act(() => inputs[1].props.onChange({ currentTarget: hosts.get('b') }));
+      const visual = () => hostClass(renderer, mode === 'single' ? 'inkra-radio-group__item' : 'inkra-checkbox').map(node => Boolean(node.props['data-checked']));
+      const changed = mode === 'single' ? [false, true] : [true, true];
+      assert.deepEqual(visual(), changed, `${mode} child state renders through memoized ancestors`);
+      await act(() => renderer.update(render()));
+      await reset(firstForm, true);
+      assert.deepEqual(visual(), changed);
+      root.form = secondForm;
+      for (const host of hosts.values()) host.form = secondForm;
+      await act(() => renderer.update(render({ form: 'second-form' })));
+      await reset(firstForm);
+      assert.deepEqual(visual(), changed, `${mode} old form no longer owns reset`);
+      await reset(secondForm);
+      assert.deepEqual(visual(), [true, false]);
+      assert.deepEqual([...hosts.values()].map(node => node.checked), [true, false]);
+      assert.equal(events.length, 1, `${mode} reset does not emit another change`);
+    }, options);
+  }
+});
+
 test('TagInput cached subtrees refresh labels, scalar class overrides, callback and Field guards', async () => {
   const events = [];
   const value = [{ id: 'a', value: 'alpha', label: 'Alpha' }, { id: 'b', value: 'beta', label: 'Beta' }];

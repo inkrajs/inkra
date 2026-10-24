@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
-import { createElement as h } from 'react';
+import { createElement as h, createRef } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { act, create } from 'react-test-renderer';
 
@@ -10,6 +10,8 @@ const { TagInput } = await import(new URL('tag-input/index.js', dist));
 const { TreeSelect } = await import(new URL('tree-select/index.js', dist));
 const { Popover } = await import(new URL('overlay/index.js', dist));
 const { PencilSurface } = await import(new URL('PencilSurface.js', dist));
+const { Field } = await import(new URL('form/Field.js', dist));
+const { useFieldContext } = await import(new URL('form/context.js', dist));
 
 // Deterministic wrapper/reconciliation checks, not timing or browser acceptance.
 // Decoration refs remain null; the collection boundary is also rendered through
@@ -159,4 +161,33 @@ test('ChoiceGrid changes only affected option subtrees while retaining every nat
     await act(() => renderer.update(h(ChoiceGrid, { ...props, disabled: true }, children)));
     assert.ok(renderer.root.findAllByType('input').every(node => node.props.disabled));
   } finally { if (renderer) await act(() => renderer.unmount()); }
+});
+
+test('ChoiceGrid stable root props retain the complete host subtree while ref replacement and Field context stay live', async () => {
+  function FieldProbe() {
+    const field = useFieldContext();
+    return h('span', { 'data-field-probe': true, 'data-disabled': field.disabled, 'data-readonly': field.readOnly }, 'Current field');
+  }
+  for (const type of ['single', 'multiple']) {
+    const children = [h(ChoiceGridOption, { key: 'a', value: 'a', label: h(FieldProbe) })];
+    const props = { type, name: 'stable-choice', label: 'Stable choice' };
+    const firstRef = createRef(), nextRef = createRef();
+    const fieldset = { kind: `${type}-fieldset` };
+    const view = (ref, fieldProps = {}) => h(Field, { label: 'Field', ...fieldProps }, h(ChoiceGrid, { ...props, ref }, children));
+    await withRenderer(view(firstRef), async renderer => {
+      assert.equal(firstRef.current, fieldset);
+      const initialProps = renderer.root.findByType('fieldset').props;
+      for (let repeat = 0; repeat < 4; repeat++) await act(() => renderer.update(view(firstRef)));
+      assert.equal(renderer.root.findByType('fieldset').props, initialProps, 'unchanged root props reuse the complete fieldset element');
+      await act(() => renderer.update(view(firstRef, { disabled: true, readOnly: true })));
+      const probe = renderer.root.findAllByType('span').find(node => node.props['data-field-probe']);
+      assert.equal(probe.props['data-disabled'], true);
+      assert.equal(probe.props['data-readonly'], true);
+      assert.equal(renderer.root.findByType('fieldset').props, initialProps, 'descendant context updates do not require a root rerender');
+      await act(() => renderer.update(view(nextRef, { disabled: true, readOnly: true })));
+      assert.equal(firstRef.current, null);
+      assert.equal(nextRef.current, fieldset, 'ref identity changes bypass the memo bailout');
+    }, { createNodeMock: element => element.type === 'fieldset' ? fieldset : null });
+    assert.equal(nextRef.current, null);
+  }
 });

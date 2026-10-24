@@ -120,7 +120,7 @@ function gridStyle(style: CSSProperties | undefined, columns: ChoiceGridColumns 
   } as CSSProperties;
 }
 
-export const ChoiceGrid = forwardRef<HTMLFieldSetElement, ChoiceGridProps>(function ChoiceGrid(
+export const ChoiceGrid = memo(forwardRef<HTMLFieldSetElement, ChoiceGridProps>(function ChoiceGrid(
   props,
   forwardedRef,
 ) {
@@ -246,7 +246,7 @@ export const ChoiceGrid = forwardRef<HTMLFieldSetElement, ChoiceGridProps>(funct
       <GroupMessages description={description} descriptionId={descriptionId} error={error} errorId={errorId} />
     </fieldset>
   );
-});
+}));
 
 function OptionMedia({ icon, image }: Pick<ChoiceGridOptionProps, 'icon' | 'image'>) {
   if (image) {
