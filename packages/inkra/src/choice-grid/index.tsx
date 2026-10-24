@@ -1,13 +1,16 @@
 import {
+  Children,
   createContext,
   forwardRef,
   memo,
+  isValidElement,
   useContext,
   useCallback,
   useMemo,
   useId,
   useImperativeHandle,
   useRef,
+  useState,
 } from 'react';
 import type {
   CSSProperties,
@@ -17,7 +20,9 @@ import type {
   ImgHTMLAttributes,
   InputHTMLAttributes,
   ReactNode,
+  ReactElement,
 } from 'react';
+import { Button } from '../Button.js';
 
 import { PencilSurface } from '../PencilSurface.js';
 import { PencilText } from '../PencilText.js';
@@ -25,6 +30,7 @@ import { Checkbox } from '../selection/Checkbox.js';
 import { RadioGroup, RadioGroupItem } from '../selection/RadioGroup.js';
 
 const classes = (...values: Array<string | undefined | false>) => values.filter(Boolean).join(' ');
+const noPagedOptions: ReactNode[] = [];
 
 function mergeIds(...values: Array<string | undefined>): string | undefined {
   const merged = Array.from(new Set(values.flatMap(value => value?.split(/\s+/).filter(Boolean) ?? [])));
@@ -46,6 +52,11 @@ interface ChoiceGridCommonProps
   error?: ReactNode;
   columns?: ChoiceGridColumns;
   minItemWidth?: string;
+  /** Opt-in paging for controlled, direct non-required ChoiceGridOption children. */
+  pageSize?: number;
+  previousPageLabel?: string;
+  nextPageLabel?: string;
+  pageLabel?: (page: number, pages: number) => ReactNode;
 }
 
 export interface SingleChoiceGridProps extends ChoiceGridCommonProps {
@@ -139,6 +150,10 @@ export const ChoiceGrid = memo(forwardRef<HTMLFieldSetElement, ChoiceGridProps>(
     label,
     minItemWidth = '13rem',
     name,
+    pageSize,
+    previousPageLabel = 'Previous page',
+    nextPageLabel = 'Next page',
+    pageLabel = (page, pages) => `${page} / ${pages}`,
     style,
     type = 'single',
     ...rest
@@ -156,14 +171,39 @@ export const ChoiceGrid = memo(forwardRef<HTMLFieldSetElement, ChoiceGridProps>(
   const onValuesChange = props.type === 'multiple' ? props.onValuesChange : undefined;
   const values = useMemo(() => multipleValues === undefined ? undefined : new Set(multipleValues), [multipleValues]);
   const defaultValues = useMemo(() => multipleDefaults === undefined ? undefined : new Set(multipleDefaults), [multipleDefaults]);
+  const [page, setPage] = useState(0);
+  const directOptions = useMemo(() => pageSize === undefined ? noPagedOptions : Children.toArray(children), [children, pageSize]);
+  const controlled = props.type === 'multiple' ? props.values !== undefined : props.value !== undefined;
+  const paged = controlled && pageSize !== undefined && Number.isFinite(pageSize) && directOptions.length > 0
+    && directOptions.every(child => isValidElement<ChoiceGridOptionProps>(child) && child.type === ChoiceGridOption && !child.props.required);
+  const pageLength = paged ? Math.max(1, Math.floor(pageSize!)) : 1;
+  const pageCount = paged ? Math.ceil(directOptions.length / pageLength) : 0;
+  const currentPage = Math.min(page, Math.max(0, pageCount - 1));
+  const pageChildren = paged ? directOptions.map((child, index) => {
+    const option = child as ReactElement<ChoiceGridOptionProps>;
+    if (index >= currentPage * pageLength && index < (currentPage + 1) * pageLength) return child;
+    const selected = props.type === 'multiple' ? values?.has(option.props.value) : props.value === option.props.value;
+    return selected ? <input key={option.key} type="hidden" name={name} value={option.props.value}
+      disabled={disabled || option.props.disabled} form={option.props.form ?? form} /> : null;
+  }) : children;
+  const pageControls = paged ? <nav aria-label={typeof label === 'string' ? label : undefined}>
+    <Button size="sm" variant="ghost" aria-label={previousPageLabel} disabled={disabled || currentPage === 0} onClick={() => setPage(currentPage - 1)}>{previousPageLabel}</Button>
+    <span aria-live="polite">{pageLabel(currentPage + 1, pageCount)}</span>
+    <Button size="sm" variant="ghost" aria-label={nextPageLabel} disabled={disabled || currentPage >= pageCount - 1} onClick={() => setPage(currentPage + 1)}>{nextPageLabel}</Button>
+  </nav> : null;
+  const pagingValues = paged ? values : undefined;
   const onMultipleChange = useCallback((optionValue: string, checked: boolean) => {
     if (!onValuesChange) return;
+    if (paged) {
+      onValuesChange((directOptions as ReactElement<ChoiceGridOptionProps>[]).filter(option => option.props.value === optionValue ? checked : pagingValues?.has(option.props.value)).map(option => option.props.value));
+      return;
+    }
     const selected = Array.from(
       rootRef.current?.querySelectorAll<HTMLInputElement>('input[type="checkbox"][data-choice-grid-value]') ?? [],
     ).filter(input => input.value === optionValue ? checked : input.checked)
       .map(input => input.value);
     onValuesChange(selected);
-  }, [onValuesChange]);
+  }, [onValuesChange, paged, directOptions, pagingValues]);
   const context = useMemo<ChoiceGridContextValue>(() => ({
     defaultValues, disabled, form, mode: type, name, onMultipleChange, values,
   }), [defaultValues, disabled, form, type, name, onMultipleChange, values]);
@@ -202,8 +242,9 @@ export const ChoiceGrid = memo(forwardRef<HTMLFieldSetElement, ChoiceGridProps>(
             ref={rootRef}
             value={single.value}
           >
-            {children}
+            {pageChildren}
           </RadioGroup>
+          {pageControls}
         </ChoiceGridContext.Provider>
         <GroupMessages description={description} descriptionId={descriptionId} error={error} errorId={errorId} />
       </div>
@@ -241,7 +282,8 @@ export const ChoiceGrid = memo(forwardRef<HTMLFieldSetElement, ChoiceGridProps>(
         </PencilText>
       ) : <legend className="inkra-choice-grid__legend">{label}</legend>}
       <ChoiceGridContext.Provider value={context}>
-        <div className="inkra-choice-grid__items">{children}</div>
+        <div className="inkra-choice-grid__items">{pageChildren}</div>
+        {pageControls}
       </ChoiceGridContext.Provider>
       <GroupMessages description={description} descriptionId={descriptionId} error={error} errorId={errorId} />
     </fieldset>
