@@ -77,7 +77,7 @@ package and the main branch may contain different features.*
 
 ## Find Your Components
 
-The published **0.5.0** package includes these core components:
+The published **0.6.0** package includes these core components:
 
 | Use | Components |
 | --- | --- |
@@ -108,7 +108,13 @@ previews and a nine-icon size/pressure/gap playground.
 nested InkraProvider inheritance, plus a scoped ThemeProvider for theme mode,
 palette, text, line and fill customization. Documentation adds matching provider
 playgrounds and five-language navigation; reference translations remain partial.
-Version 0.5.0 is published on npm and verified with React 18 and 19.
+
+**New in 0.6.0:** pencil-underlined Breadcrumb links, leading/trailing icons,
+dropdown and context-menu composition, and aligned Select.Stepper actions.
+Documentation adds resizable/collapsible Layout compositions and stable header
+breadcrumbs. Version 0.6.0 is published on npm, verified with React 18 and 19,
+and consumed by the deployed documentation site. Later source additions remain
+unreleased until their own publication is verified.
 See [Releases](https://github.com/inkrajs/inkra/releases),
 the [changelog](./CHANGELOG.md) and
 [package API](./packages/inkra/README.md) for the full scope and known limits.
