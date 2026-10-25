@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.5.0 - 2026-10-25
+
+- Add InkraProvider with English, Simplified Chinese, Japanese, Korean and
+  French component dictionaries, typed partial overrides and nested inheritance.
+  Explicit component copy stays authoritative; locale changes preserve user input.
+- Add scoped ThemeProvider with light, dark, system and inherited themes,
+  CSS token overrides, portal inheritance and forced-color support.
+- Add five-language documentation navigation and provider playgrounds with
+  shared text, line and fill controls. Reference translations remain partial.
+- Remove the empty searchable-select clear-action space and retain pencil text
+  on long Retina lines using bounded adaptive raster resolution.
+
+This version is a release candidate until public-registry verification succeeds.
+Existing React 18 Calendar SSR and Next.js/RSC limitations remain documented.
+
 ## 0.4.3 - 2026-10-25
 
 - Add theme-aligned Markdown with pencil typography, task checkboxes, tables,
