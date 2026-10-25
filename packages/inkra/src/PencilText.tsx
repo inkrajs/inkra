@@ -370,6 +370,13 @@ const PencilTextImplementation = forwardRef<HTMLElement, PencilTextImplementatio
         markDirty();
       });
       schedule();
+      // Ancestor layout effects can reveal a clipped label during the same commit.
+      if (!visible) queueMicrotask(() => {
+        if (!disposed && dirty && inViewport()) {
+          visible = true;
+          schedule();
+        }
+      });
 
       return () => {
         disposed = true;

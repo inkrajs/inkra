@@ -199,6 +199,11 @@
       "import": "./dist/input-number/index.js",
       "default": "./dist/input-number/index.js"
     },
+    "./inventory-grid": {
+      "types": "./dist/inventory-grid/index.d.ts",
+      "import": "./dist/inventory-grid/index.js",
+      "default": "./dist/inventory-grid/index.js"
+    },
     "./journey-map": {
       "types": "./dist/journey-map/index.d.ts",
       "import": "./dist/journey-map/index.js",
@@ -424,6 +429,7 @@
     "./styles/image-cropper.css": "./dist/styles/image-cropper.css",
     "./styles/image-viewer.css": "./dist/styles/image-viewer.css",
     "./styles/input-number.css": "./dist/styles/input-number.css",
+    "./styles/inventory-grid.css": "./dist/styles/inventory-grid.css",
     "./styles/journey-map.css": "./dist/styles/journey-map.css",
     "./styles/keypad.css": "./dist/styles/keypad.css",
     "./styles/layout.css": "./dist/styles/layout.css",
@@ -534,6 +540,7 @@
     "react-aria-components": "^1.22.1",
     "react-day-picker": "^9.14.0",
     "react-easy-crop": "^6.2.4",
+    "react-grid-layout": "^2.3.0",
     "react-markdown": "^10.1.0",
     "react-resizable-panels": "^4.14.8",
     "react-zoom-pan-pinch": "^4.2.0",

@@ -1,10 +1,20 @@
 # Changelog
 
-## 0.7.0 - Unreleased
+## 0.7.0 - 2026-10-26
 
 - Add optional Pagination page-size selection, button appearance, logical
   alignment and wrapping. Single-page hiding retains the size selector; labels
   follow InkraProvider and controlled page/page-size state stays caller-owned.
+- Add shared Layout header/sidebar columns and configurable mobile edge-swipe
+  navigation, preserving keyboard navigation and reduced-motion behavior.
+- Add Grid.Resizable for adjustable row/column tracks and Grid.Board for
+  draggable, resizable dashboard tiles backed by react-grid-layout.
+- Add InventoryGrid with irregular cell shapes, quarter-turn rotation,
+  placement validation, cross-container movement and keyboard controls.
+- Unify documentation examples, anchors and compound-component API groups;
+  expand translated introductions and prevent sidebar labels from wrapping.
+- Use Layout and Resizable in the documentation shell, with a compact mobile
+  tab header and a full-screen search interface.
 
 Release candidate. Publication and public-registry verification are pending.
 These Pagination additions are not included in the published 0.6.0 archive.

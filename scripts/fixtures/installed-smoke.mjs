@@ -6,9 +6,14 @@ import * as Inkra from '@inkra/react';
 import { Button as SubpathButton } from '@inkra/react/Button';
 import { SelectStepper as SubpathStepper } from '@inkra/react/select/stepper';
 import { TagInput as SubpathTagInput } from '@inkra/react/tag-input';
+import { InventoryGrid as SubpathInventoryGrid } from '@inkra/react/inventory-grid';
+import { Grid as SubpathGrid } from '@inkra/react/layout';
 assert.equal(SubpathButton, Inkra.Button);
 assert.equal(SubpathStepper, Inkra.Select.Stepper);
 assert.equal(SubpathTagInput, Inkra.TagInput);
+assert.equal(SubpathInventoryGrid, Inkra.InventoryGrid);
+assert.equal(SubpathGrid.Board, Inkra.GridBoard);
+assert.equal(SubpathGrid.Resizable, Inkra.GridResizable);
 for (const path of ['@inkra/react/styles/base.css', '@inkra/react/styles/select.css', '@inkra/react/styles/leaflet.css']) {
   assert(existsSync(new URL(import.meta.resolve(path))), `Missing optional style entry: ${path}`);
 }
@@ -38,6 +43,14 @@ const markup = renderToString(h('main', null,
   h(Inkra.Timeline, { items: [{ id: 'created', title: 'Created', date: 'October 22', dateTime: '2026-10-22' }] }),
 ));
 assert.match(markup, /Save/);
+const gridMarkup = renderToString(h(Inkra.InventoryGrid, {
+  containers: [{ id: 'bag', label: 'Backpack', columns: 3, rows: 3, items: [{ id: 'tool', label: 'Tool', position: { x: 0, y: 0 }, cells: [{ x: 0, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }] }] }],
+  onChange() {},
+}));
+assert.match(gridMarkup, /Backpack/);
+assert.match(gridMarkup, /data-inventory-item="tool"/);
+assert.match(gridMarkup, /aria-label="Tool"/);
+assert(existsSync(new URL(import.meta.resolve('@inkra/react/styles/inventory-grid.css'))));
 assert.match(markup, /Language/);
 assert.match(markup, /value="Inkra"/);
 assert.match(markup, /role="tabpanel"/);

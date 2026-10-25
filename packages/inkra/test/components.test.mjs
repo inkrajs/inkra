@@ -93,6 +93,23 @@ test('Button keeps native semantics while exposing pencil canvases', () => {
   assert.doesNotMatch(markup, /<svg/);
 });
 
+test('Ghost buttons separate the hover wash from the hidden border without clipping content or focus', () => {
+  for (const Component of [Button, ButtonLink]) {
+    for (const disabled of [false, true]) {
+      const markup = renderToStaticMarkup(createElement(Component, { variant: 'ghost', disabled, href: '/notes' }, 'Notes'));
+      assert.match(markup, /inkra-pencil-surface--quiet inkra-pencil-surface--clipped inkra-button__surface/);
+      assert.equal((markup.match(/inkra-pencil-surface__border/g) ?? []).length, 1);
+      assert.equal((markup.match(/inkra-button__focus-ring/g) ?? []).length, 1);
+      assert.match(markup, /inkra-pencil-text__source">Notes<\/span>/);
+    }
+  }
+  const styles = readFileSync(new URL('../src/styles.css', import.meta.url), 'utf8');
+  assert.match(styles, /\.inkra-button\[data-variant="ghost"\] > \.inkra-button__surface > \.inkra-pencil-surface__border\s*\{\s*display: none;/);
+  assert.match(styles, /\.inkra-button\[data-variant="ghost"\] > \.inkra-button__surface > \.inkra-pencil-surface__content\s*\{\s*clip-path: none;/);
+  assert.match(styles, /\.inkra-button\[data-variant="ghost"\]:hover[^{}]+\.inkra-button__surface\[data-pencil-fallback="true"\][^{]*\{\s*background: var\(--inkra-surface-muted\);\s*border-color: transparent;/);
+  assert.match(styles, /\.inkra-button:focus-visible > \.inkra-button__focus-ring\s*\{\s*opacity: 1;/);
+});
+
 test('Button exposes every variant, size, icon slot and native form override', () => {
   const variants = ['primary', 'secondary', 'outline', 'ghost', 'destructive', 'link'];
   const sizes = ['xs', 'sm', 'md', 'lg', 'icon-xs', 'icon-sm', 'icon', 'icon-lg'];
@@ -100,7 +117,7 @@ test('Button exposes every variant, size, icon slot and native form override', (
   for (const variant of variants) {
     const markup = renderToStaticMarkup(createElement(Button, { variant }, variant));
     assert.match(markup, new RegExp(`data-variant="${variant}"`));
-    if (variant === 'ghost') assert.doesNotMatch(markup, /inkra-pencil-surface__border/);
+    if (variant === 'ghost') assert.equal((markup.match(/inkra-pencil-surface__border/g) ?? []).length, 1);
   }
 
   for (const size of sizes) {

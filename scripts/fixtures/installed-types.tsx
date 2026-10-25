@@ -4,6 +4,36 @@ import { InkraProvider, inkraLocales, useInkraLocale } from '@inkra/react/i18n';
 import type { InkraDictionary, InkraLocale, InkraMessageKey } from '@inkra/react/i18n';
 import { ThemeProvider } from '@inkra/react/theme';
 import type { InkraThemeTokens } from '@inkra/react/theme';
+import { useState } from 'react';
+import { Grid } from '@inkra/react/layout';
+import type { GridBoardLayout } from '@inkra/react/layout';
+import { InventoryGrid, rotateInventoryCells } from '@inkra/react/inventory-grid';
+import type { InventoryContainer, InventoryItem } from '@inkra/react/inventory-grid';
+
+interface Equipment extends InventoryItem { kind: 'tool' | 'supply' }
+const initialInventory: readonly InventoryContainer<Equipment>[] = [{
+  id: 'bag', columns: 4, rows: 4, items: [{
+    id: 'tool', kind: 'tool', position: { x: 0, y: 0 },
+    cells: [{ x: 0, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }],
+  }],
+}];
+// @ts-expect-error Rotation is restricted to quarter turns.
+rotateInventoryCells([{ x: 0, y: 0 }], 45);
+export function InstalledGridExample() {
+  const [containers, setContainers] = useState(initialInventory);
+  const [layout, setLayout] = useState<GridBoardLayout>([{ i: 'one', x: 0, y: 0, w: 4, h: 3 }]);
+  return <>
+    <InventoryGrid containers={containers} onChange={(next, details) => {
+      const kind: 'tool' | 'supply' = next[0].items[0].kind;
+      const type: 'move' | 'transfer' | 'rotate' = details.type;
+      setContainers(next);
+    }} renderItem={item => <span>{item.kind}</span>} canPlace={({ item }) => item.kind === 'tool'} />
+    <Grid.Board layout={layout} onLayoutChange={setLayout}>{item => <span>{item.i}</span>}</Grid.Board>
+    <Grid.Resizable columns={[{ id: 'a' }, { id: 'b' }]} rows={[{ id: 'row' }]}>
+      {({ row, column }) => <span>{row}:{column}</span>}
+    </Grid.Resizable>
+  </>;
+}
 
 const themeTokens = { '--inkra-accent': '#4b96aa', '--inkra-icon-stroke-width': '1.5px' } satisfies InkraThemeTokens;
 const themeScope = <ThemeProvider theme="auto" tokens={themeTokens}><span>Scoped theme</span></ThemeProvider>;
