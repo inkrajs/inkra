@@ -58,7 +58,7 @@ function sizingHarness() {
     ownerDocument: document, form, parentElement: {}, value: '', wrap: 'soft',
     scrollTop: 37, selectionStart: 2, selectionEnd: 3,
     getClientRects: () => visible ? [{}] : [],
-    getBoundingClientRect: () => ({ width: parseFloat(computed.width) }),
+    getBoundingClientRect: () => ({ width: parseFloat(computed.width), height: 38 }),
   };
   return { control, computed, form, fonts, frames, view,
     setContentRows(rows) { contentRows = rows; }, setVisible(value) { visible = value; },
@@ -231,4 +231,35 @@ test('SSR preserves defaults and native rows while autoSize owns height and manu
   const count = render({ autoSize: true, maxLength: 20, countDisplay: 'always', countMode: 'fraction', defaultValue: 'text' });
   assert.match(count, /inkra-textarea__footer/);
   assert.match(count, /4 \/ 20/);
+});
+
+test('an existing manual height respects later row/font minima and retains caller minHeight', async () => {
+  const fixture = sizingHarness();
+  fixture.computed.boxSizing = 'content-box';
+  const previousCancel = globalThis.cancelAnimationFrame;
+  globalThis.cancelAnimationFrame = fixture.view.cancelAnimationFrame;
+  let renderer;
+  const props = { resize: 'vertical', rows: 1, style: { boxSizing: 'content-box' } };
+  const control = () => renderer.root.findByType('textarea');
+  const handle = () => renderer.root.findAllByType('button').find(node => node.props.role === 'slider');
+  try {
+    await act(() => { renderer = create(h(Textarea, props), { createNodeMock: node => node.type === 'textarea' ? fixture.control : null }); });
+    await act(() => handle().props.onKeyDown({ key: 'ArrowDown', preventDefault() {} }));
+    assert.equal(control().props.style.height, 40, '58 visible pixels minus 18 padding/border pixels');
+    await act(() => renderer.update(h(Textarea, { ...props, rows: 5 })));
+    assert.equal(control().props.style.height, 100);
+    assert.equal(handle().props['aria-valuemin'], 118);
+    assert.ok(handle().props['aria-valuenow'] >= 118, 'the handle must not report a value below its new minimum');
+    fixture.computed.lineHeight = '30px';
+    await act(() => renderer.update(h(Textarea, { ...props, rows: 5, style: { ...props.style, lineHeight: '30px', minHeight: 200 } })));
+    assert.equal(control().props.style.height, 150);
+    assert.equal(control().props.style.minHeight, 200, 'larger caller constraints are retained');
+    assert.equal(handle().props['aria-valuemin'], 168);
+    assert.ok(handle().props['aria-valuenow'] >= 168);
+  } finally {
+    if (renderer) await act(() => renderer.unmount());
+    if (previousCancel === undefined) delete globalThis.cancelAnimationFrame;
+    else globalThis.cancelAnimationFrame = previousCancel;
+    fixture.checkCleanup();
+  }
 });
