@@ -106,7 +106,7 @@ function ButtonVisual({ children, endIcon, loading, loadingPosition, loadingIndi
     <><PencilSurface<'span'>
       as="span"
       className="inkra-button__surface"
-      clipContent={sharedOutline}
+      clipContent={sharedOutline || variant === 'ghost'}
       radius={sharedOutline ? 0 : undefined}
       seed={seed}
       variant={inputAction ? 'ghost' : surfaceVariant(variant)}

@@ -22,7 +22,7 @@ const styles = await Promise.all([
   'image-viewer/styles.css', 'image-viewer/video.css', 'keypad/styles.css', 'node-graph/styles.css',
   'overflow-list/styles.css', 'pan-zoom/styles.css', 'radar/styles.css',
   'rating/styles.css', 'resizable/styles.css',
-  'scroll-area/styles.css', 'sortable/styles.css',
+  'scroll-area/styles.css', 'sortable/styles.css', 'inventory-grid/styles.css',
   'sparkline/styles.css', 'tag-input/styles.css', 'transfer/styles.css',
   'tree-select/styles.css', 'typewriter/styles.css', 'virtual-list/styles.css',
   'markdown/styles.css',

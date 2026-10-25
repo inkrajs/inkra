@@ -87,7 +87,9 @@ test('Only embedded Input buttons delegate their wash and outline to Input', () 
   assert.match(embedded, /inkra-pencil-surface--ghost inkra-pencil-surface--clipped inkra-button__surface/);
   assert.match(embedded, /inkra-pencil-surface--selection inkra-input__action-wash/);
   assert.equal((embedded.match(/inkra-pencil-surface__border/g) ?? []).length, 2);
-  assert.doesNotMatch(standalone, /inkra-pencil-surface--clipped|inkra-pencil-surface__border/);
+  assert.match(standalone, /inkra-pencil-surface--quiet inkra-pencil-surface--clipped inkra-button__surface/);
+  assert.equal((standalone.match(/inkra-pencil-surface__border/g) ?? []).length, 1);
+  assert.doesNotMatch(standalone, /inkra-input__action-wash/);
 });
 
 test('Input loading is nonblocking and supports a stable explicitly reserved slot', () => {

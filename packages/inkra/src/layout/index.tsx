@@ -1,6 +1,15 @@
-import { createElement, forwardRef } from 'react';
-import type { CSSProperties, HTMLAttributes } from 'react';
+import { createContext, createElement, forwardRef, useContext, useRef } from 'react';
+import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
 import { PencilLine } from '../PencilLine.js';
+import { GridResizable } from './GridResizable.js';
+import { GridBoard } from './GridBoard.js';
+import { useBrowserLayoutEffect } from '../internal/useBrowserLayoutEffect.js';
+import { createLayoutSwipeNavigation, type LayoutSwipeNavigation } from './swipeNavigation.js';
+export type { LayoutSwipeNavigation } from './swipeNavigation.js';
+export { GridResizable } from './GridResizable.js';
+export type { GridResizableProps, GridTrack } from './GridResizable.js';
+export { GridBoard } from './GridBoard.js';
+export type { GridBoardProps, GridBoardLayout, GridBoardLayoutItem } from './GridBoard.js';
 
 export type LayoutSpace = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 8 | 10 | 12 | 16;
 export type LayoutElement = 'div' | 'section' | 'article' | 'nav' | 'header' | 'footer' | 'main' | 'aside' | 'ul' | 'ol' | 'li';
@@ -58,7 +67,7 @@ export interface GridProps extends LayoutElementProps {
 const columnCount = (value: number | undefined, fallback: number) =>
   value === undefined || !Number.isFinite(value) ? fallback : Math.min(12, Math.max(1, Math.trunc(value)));
 
-export const Grid = forwardRef<HTMLElement, GridProps>(function Grid({
+const GridRoot = forwardRef<HTMLElement, GridProps>(function Grid({
   as: Element = 'div', columns = 1, gap = 3, rowGap = gap, columnGap = gap,
   align = 'stretch', className, style, ...props
 }, ref) {
@@ -73,6 +82,8 @@ export const Grid = forwardRef<HTMLElement, GridProps>(function Grid({
   };
   return <Box as={Element} {...props} ref={ref} className={classes('inkra-grid', className)} style={resolvedStyle} />;
 });
+
+export const Grid = /* @__PURE__ */ Object.assign(GridRoot, { Resizable: GridResizable, Board: GridBoard });
 
 export interface ContainerProps extends LayoutElementProps {
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
@@ -91,12 +102,35 @@ export const Container = forwardRef<HTMLElement, ContainerProps>(function Contai
 export interface LayoutProps extends LayoutElementProps {
   gap?: LayoutSpace;
   collapseAt?: 'sm' | 'md' | 'never';
+  sidebarWidth?: CSSProperties['width'];
+  swipeNavigation?: LayoutSwipeNavigation;
 }
+const LayoutColumnContext = createContext(false);
+const normalizeSidebarWidth = (width: CSSProperties['width'] = 240) =>
+  typeof width === 'number' ? (Number.isFinite(width) ? Math.max(0, width) : 240) : width;
+const isCollapsedWidth = (width: CSSProperties['width']) =>
+  width === 0 || (typeof width === 'string' && /^0(?:\.0+)?(?:[a-z]+|%)?$/i.test(width.trim()));
 const LayoutRoot = forwardRef<HTMLElement, LayoutProps>(function LayoutRoot({
-  as: Element = 'div', gap = 0, collapseAt = 'sm', className, style, ...props
+  as: Element = 'div', gap = 0, collapseAt = 'sm', sidebarWidth = 240, className, style, swipeNavigation, onTouchStart, ...props
 }, ref) {
-  return <Box as={Element} {...props} ref={ref} className={classes('inkra-layout', className)}
-    data-collapse-at={collapseAt} style={{ gap: space(gap), ...style }} />;
+  const sharedWidth = normalizeSidebarWidth(sidebarWidth);
+  const resolvedStyle: LayoutStyle = {
+    '--inkra-layout-shared-sidebar-width': typeof sharedWidth === 'number' ? `${sharedWidth}px` : sharedWidth,
+    gap: space(gap), ...style,
+  };
+  const options = useRef(swipeNavigation);
+  const gesture = useRef<ReturnType<typeof createLayoutSwipeNavigation> | null>(null);
+  if (!gesture.current) gesture.current = createLayoutSwipeNavigation(() => options.current);
+  useBrowserLayoutEffect(() => { options.current = swipeNavigation; });
+  useBrowserLayoutEffect(() => { gesture.current?.cancel(); },
+    [swipeNavigation?.enabled, swipeNavigation?.open, swipeNavigation?.side, swipeNavigation?.edgeWidth, swipeNavigation?.threshold]);
+  useBrowserLayoutEffect(() => () => gesture.current?.dispose(), []);
+  return <LayoutColumnContext.Provider value={isCollapsedWidth(sharedWidth)}><Box as={Element} {...props} ref={ref} className={classes('inkra-layout', className)}
+    onTouchStart={event => {
+      onTouchStart?.(event);
+      if (!event.defaultPrevented) gesture.current?.start(event.nativeEvent, event.currentTarget);
+    }}
+    data-collapse-at={collapseAt} style={resolvedStyle} /></LayoutColumnContext.Provider>;
 });
 
 export interface LayoutBodyProps extends LayoutElementProps { gap?: LayoutSpace }
@@ -113,12 +147,28 @@ export interface LayoutRegionProps extends LayoutElementProps {
 export interface LayoutSidebarProps extends LayoutRegionProps {
   width?: CSSProperties['width'];
 }
-const LayoutHeader = forwardRef<HTMLElement, LayoutRegionProps>(function LayoutHeader({
-  as: Element = 'header', padding = 5, divided = false, className, style, children, ...props
+export interface LayoutHeaderProps extends LayoutRegionProps {
+  sidebar?: ReactNode;
+  sidebarDivided?: boolean;
+}
+const LayoutHeader = forwardRef<HTMLElement, LayoutHeaderProps>(function LayoutHeader({
+  as: Element = 'header', padding = 5, divided = false, sidebar, sidebarDivided = false, className, style, children, ...props
 }, ref) {
+  const collapsed = useContext(LayoutColumnContext);
+  const split = sidebar !== undefined && sidebar !== null && typeof sidebar !== 'boolean';
+  const resolvedStyle: LayoutStyle = {
+    '--inkra-layout-header-padding': space(padding),
+    padding: split ? 0 : space(padding), ...style,
+  };
   return <Box as={Element} {...props} ref={ref} className={classes('inkra-layout__header', className)}
-    style={{ padding: space(padding), ...style }}>
-    {children}{divided && <PencilLine className="inkra-layout__divider" />}
+    data-shared-sidebar={split || undefined} style={resolvedStyle}>
+    {split ? <>
+      <div className="inkra-layout__header-sidebar" hidden={collapsed} inert={collapsed || undefined} aria-hidden={collapsed || undefined}>
+        {sidebar}{sidebarDivided && <PencilLine className="inkra-layout__header-sidebar-divider" orientation="vertical" />}
+      </div>
+      <div className="inkra-layout__header-content">{children}</div>
+    </> : children}
+    {divided && <PencilLine className="inkra-layout__divider" />}
   </Box>;
 });
 const LayoutFooter = forwardRef<HTMLElement, LayoutRegionProps>(function LayoutFooter({
@@ -130,13 +180,18 @@ const LayoutFooter = forwardRef<HTMLElement, LayoutRegionProps>(function LayoutF
   </Box>;
 });
 const LayoutSidebar = forwardRef<HTMLElement, LayoutSidebarProps>(function LayoutSidebar({
-  as: Element = 'aside', width = 240, padding = 5, divided = false, className, style, children, ...props
+  as: Element = 'aside', width, padding = 5, divided = false, className, style, children, hidden, inert, ...props
 }, ref) {
+  const sharedCollapsed = useContext(LayoutColumnContext);
+  const resolvedWidth = width === undefined ? undefined : normalizeSidebarWidth(width);
+  const collapsed = resolvedWidth === undefined ? sharedCollapsed : isCollapsedWidth(resolvedWidth);
   const resolvedStyle: LayoutStyle = {
-    '--inkra-layout-sidebar-width': typeof width === 'number' ? `${width}px` : width,
+    '--inkra-layout-sidebar-width': resolvedWidth === undefined ? 'var(--inkra-layout-shared-sidebar-width, 240px)'
+      : typeof resolvedWidth === 'number' ? `${resolvedWidth}px` : resolvedWidth,
     padding: space(padding), ...style,
   };
-  return <Box as={Element} {...props} ref={ref} className={classes('inkra-layout__sidebar', className)} style={resolvedStyle}>
+  return <Box as={Element} {...props} ref={ref} hidden={collapsed || hidden} inert={collapsed || inert}
+    aria-hidden={collapsed ? true : props['aria-hidden']} className={classes('inkra-layout__sidebar', className)} style={resolvedStyle}>
     {children}{divided && <>
       <PencilLine className="inkra-layout__sidebar-divider" orientation="vertical" />
       <PencilLine className="inkra-layout__sidebar-divider-mobile" />
