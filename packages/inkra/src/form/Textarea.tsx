@@ -157,7 +157,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
           ref={textareaRef}
           required={state.required}
           rows={sizing.enabled ? sizing.minRows : props.rows}
-          style={{ ...props.style, ...(manualResize && height !== undefined ? { height } : {}), ...sizing.style, resize: 'none' }}
+          style={{ ...props.style, ...(manualResize && height !== undefined ? { height: Math.max(height, sizing.minimumHeight ?? height) } : {}), ...sizing.style, resize: 'none' }}
           onInput={event => {
             if (!controlled) setUncontrolledCount(event.currentTarget.value.length);
             props.onInput?.(event);
@@ -188,7 +188,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
           {manualResize && <Button className="inkra-textarea__resize" variant="ghost" size="icon"
             role="slider" aria-label={resizeLabel} title={resizeLabel} aria-controls={state.id}
             aria-orientation="vertical" aria-valuemin={minimumHeight} aria-valuemax={maximumHeight}
-            aria-valuenow={Math.round(measuredHeight ?? minimumHeight)} disabled={state.disabled}
+            aria-valuenow={Math.round(Math.max(measuredHeight ?? minimumHeight, minimumHeight))} disabled={state.disabled}
             onPointerDown={event => {
               if (event.button !== 0) return;
               drag.current = { y: event.clientY, height: textareaRef.current?.getBoundingClientRect().height ?? minimumHeight };
