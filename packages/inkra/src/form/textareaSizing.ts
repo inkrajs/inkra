@@ -52,7 +52,13 @@ export function measureTextareaSize(control: HTMLTextAreaElement, minRows: numbe
   document.body.appendChild(mirror);
   try {
     mirror.value = 'x';
-    const lineHeight = number(computed.lineHeight) || Math.max(1, mirror.scrollHeight - padding);
+    let lineHeight = number(computed.lineHeight);
+    if (!lineHeight) {
+      // scrollHeight rounds to integer pixels. A bounded multi-line probe avoids
+      // multiplying that rounding error by maxRows when line-height is normal.
+      mirror.value = Array(100).fill('x').join('\n');
+      lineHeight = Math.max(1, (mirror.scrollHeight - padding) / 100);
+    }
     // Placeholder copy does not change the height of an otherwise empty editor.
     mirror.value = measureContent ? control.value || ' ' : ' ';
     const contentHeight = Math.max(lineHeight, mirror.scrollHeight - padding);

@@ -26,7 +26,7 @@ function eventTarget() {
 // Deterministic native-layout protocol fixture, not a simulated browser acceptance test.
 function sizingHarness() {
   const frames = new Map();
-  let frame = 0, contentRows = 1, visible = true, mirrors = 0, removed = 0;
+  let frame = 0, contentRows = 1, visible = true, mirrors = 0, removed = 0, normalLineHeight = 24;
   const computed = {
     boxSizing: 'border-box', width: '240px', lineHeight: '20px', fontSize: '15px',
     paddingTop: '8px', paddingBottom: '8px', borderTopWidth: '1px', borderBottomWidth: '1px',
@@ -46,8 +46,9 @@ function sizingHarness() {
         style: {}, value: '', setAttribute(name, value) { assert.equal(name, 'aria-hidden'); assert.equal(value, 'true'); },
         get scrollHeight() {
           const padding = parseFloat(computed.paddingTop) + parseFloat(computed.paddingBottom);
-          const line = parseFloat(computed.lineHeight) || 24;
-          return padding + (this.value === 'x' ? 1 : contentRows) * line;
+          const line = parseFloat(computed.lineHeight) || normalLineHeight;
+          const probeRows = /^x(?:\nx)+$/.test(this.value) ? this.value.split('\n').length : undefined;
+          return Math.round(padding + (probeRows ?? (this.value === 'x' ? 1 : contentRows)) * line);
         },
         remove() { removed++; },
       };
@@ -61,6 +62,7 @@ function sizingHarness() {
   };
   return { control, computed, form, fonts, frames, view,
     setContentRows(rows) { contentRows = rows; }, setVisible(value) { visible = value; },
+    setNormalLineHeight(value) { normalLineHeight = value; },
     flush() { const callbacks = [...frames.values()]; frames.clear(); callbacks.forEach(callback => callback()); },
     checkCleanup() { assert.equal(mirrors, removed); assert.equal(frames.size, 0); assert.equal(fonts.count(), 0); assert.equal(form.count(), 0); assert.equal(view.count(), 0); },
   };
@@ -113,6 +115,8 @@ test('measurement uses computed typography, padding, border and box sizing and w
   assert.equal(measureTextareaSize(fixture.control, 2, 4).minimumHeight, 55);
   fixture.computed.lineHeight = 'normal';
   assert.equal(measureTextareaSize(fixture.control, 1, 4).height, 24);
+  fixture.setNormalLineHeight(23.375);
+  assert.equal(measureTextareaSize(fixture.control, 6, 6).minimumHeight, 141, 'normal line-height retains fractional row metrics instead of multiplying a rounded single row');
   fixture.setVisible(false);
   assert.equal(measureTextareaSize(fixture.control, 1, 4), undefined);
   fixture.checkCleanup();
