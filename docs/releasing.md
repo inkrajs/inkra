@@ -1,7 +1,7 @@
 # React Package Releases
 
 Repository: inkrajs/inkra. Package: @inkra/react. First release: 0.1.0.
-Version 0.6.0 is published and registry-verified. Future source versions remain
+Version 0.8.0 is published and registry-verified. Future source versions remain
 candidates until their own registry verification passes.
 Website deployment does not publish an npm package.
 
@@ -95,6 +95,23 @@ validated the trusted publisher through a successful OIDC publication.
   verification jobs were rerun after registry availability; no duplicate
   publication occurred and the source tag remained unchanged.
 - Later Pagination, Grid and mobile Layout work is outside this archive.
+
+## Version 0.8.0 Record
+
+- Source/tag: ea38dfedc4ee2a665935f58dbe616deb7b021bed / react-v0.8.0.
+- Release run: 40229546497, successful on 2026-10-26 (Asia/Shanghai).
+- Validation docs: 21f3c6a973b314183b8bcba171ed588fdbafac40.
+- OIDC publication, public archive comparison and clean React 18/19 installations passed.
+- GitHub Release was created only after registry verification succeeded.
+- Public archive SHA-256:
+  c73ec89ba53dadcc06f9a6aa07dd1a5c08e63129cf5fad3fd49e08958f70ca42.
+- Registry docs consumer: d35e3193cf40cef90e903981929ab8a94e4e1bfb.
+- npm processing exceeded the one-minute public-availability check. Only failed
+  verification jobs were rerun after the public archive became available;
+  no duplicate publication occurred.
+- The 0.7.0 release was stopped before upload when main gained the Textarea API.
+  Its tag remains unchanged. Version 0.8.0 includes both the earlier Layout/Grid
+  work and the merged Textarea sizing additions.
 
 ## Pipeline
 
