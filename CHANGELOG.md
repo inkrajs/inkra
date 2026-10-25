@@ -1,15 +1,22 @@
 # Changelog
 
-## 0.8.0 - Unreleased
+## 0.8.0 - 2026-10-26
 
 - Respect explicit Textarea rows, including a one-row editor, and add optional
   autoSize with minimum/maximum visible rows. Content grows and shrinks with
   wrapping, controlled values, form reset and font changes; overflow scrolls
   internally while character counters retain their separate footer.
 
-Unpublished candidate. These Textarea changes follow the existing
-`react-v0.7.0` tag and are not included in that tagged source. This version
-preparation does not publish an npm package or create a release tag.
+This release also includes all Layout, Grid, InventoryGrid, Pagination and
+documentation changes listed under the unpublished 0.7.0 candidate below.
+PencilText rechecks initially clipped labels after layout effects so newly
+revealed text receives its first pencil paint without waiting for a scroll.
+
+Published as `@inkra/react@0.8.0` with the `latest` npm dist-tag and the
+`react-v0.8.0` GitHub Release, from commit
+`ea38dfedc4ee2a665935f58dbe616deb7b021bed`.
+The public archive matches the approved candidate; clean registry installations
+passed with React 18 and 19. Release run: `40229546497`.
 
 ## 0.7.0 - 2026-10-26
 
@@ -27,8 +34,9 @@ preparation does not publish an npm package or create a release tag.
 - Use Layout and Resizable in the documentation shell, with a compact mobile
   tab header and a full-screen search interface.
 
-Release candidate. Publication and public-registry verification are pending.
-These Pagination additions are not included in the published 0.6.0 archive.
+Not published. The immutable `react-v0.7.0` tag is retained unchanged; its
+release runs stopped before upload. All changes are included in 0.8.0 alongside
+the subsequently merged Textarea API.
 
 ## 0.6.0 - 2026-10-25
 

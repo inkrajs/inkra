@@ -77,7 +77,7 @@ package and the main branch may contain different features.*
 
 ## Find Your Components
 
-The published **0.6.0** package includes these core components:
+The published **0.8.0** package includes these core components:
 
 | Use | Components |
 | --- | --- |
@@ -112,9 +112,14 @@ playgrounds and five-language navigation; reference translations remain partial.
 **New in 0.6.0:** pencil-underlined Breadcrumb links, leading/trailing icons,
 dropdown and context-menu composition, and aligned Select.Stepper actions.
 Documentation adds resizable/collapsible Layout compositions and stable header
-breadcrumbs. Version 0.6.0 is published on npm, verified with React 18 and 19,
-and consumed by the deployed documentation site. Later source additions remain
-unreleased until their own publication is verified.
+breadcrumbs.
+
+**New in 0.8.0:** shared Layout header/sidebar columns and mobile edge gestures,
+resizable Grid tracks and dashboard tiles, irregular InventoryGrid placement,
+Pagination controls and row-based Textarea automatic sizing. This release also
+includes the unpublished 0.7.0 candidate. Version 0.8.0 is published on npm and
+verified with React 18 and 19. Documentation has unified example anchors and
+compound API groups, a resizable shell and compact mobile search.
 See [Releases](https://github.com/inkrajs/inkra/releases),
 the [changelog](./CHANGELOG.md) and
 [package API](./packages/inkra/README.md) for the full scope and known limits.
