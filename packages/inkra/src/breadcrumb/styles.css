@@ -1,7 +1,98 @@
-.inkra-breadcrumb { min-width: 0; color: var(--inkra-ink); }
-.inkra-breadcrumb__list { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.inkra-breadcrumb {
+  --inkra-breadcrumb-item-height: var(--inkra-control-md);
+  --inkra-breadcrumb-item-padding: var(--inkra-space-3);
+  --inkra-breadcrumb-item-font-size: var(--inkra-text-md);
+  --inkra-breadcrumb-item-icon-size: var(--inkra-icon-md);
+  --inkra-breadcrumb-item-gap: var(--inkra-space-2);
+  color: var(--inkra-ink);
+  max-width: 100%;
+  min-width: 0;
+}
+.inkra-breadcrumb__list { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; max-width: 100%; margin: 0; padding: 0; list-style: none; }
 .inkra-breadcrumb__item { display: inline-flex; align-items: center; min-width: 0; max-width: 100%; }
-.inkra-breadcrumb__link { max-width: 100%; color: var(--inkra-ink-muted); }
-.inkra-breadcrumb__link .inkra-button__label { white-space: normal; overflow-wrap: anywhere; }
-.inkra-breadcrumb__page { min-height: 44px; display: inline-flex; align-items: center; padding-inline: 12px; overflow-wrap: anywhere; }
+.inkra-breadcrumb__link,
+.inkra-breadcrumb__trigger {
+  --inkra-button-visual-height: var(--inkra-breadcrumb-item-height);
+  --inkra-button-visual-padding: var(--inkra-breadcrumb-item-padding);
+  --inkra-button-font-size: var(--inkra-breadcrumb-item-font-size);
+  --inkra-button-icon-size: var(--inkra-breadcrumb-item-icon-size);
+  --inkra-button-content-gap: var(--inkra-breadcrumb-item-gap);
+  color: var(--inkra-accent-strong);
+  max-width: 100%;
+}
+.inkra-breadcrumb__link .inkra-button__label,
+.inkra-breadcrumb__link .inkra-button__label > .inkra-pencil-text,
+.inkra-breadcrumb__link .inkra-button__label > .inkra-pencil-text > .inkra-pencil-text__source,
+.inkra-breadcrumb__trigger .inkra-button__label,
+.inkra-breadcrumb__trigger .inkra-button__label > .inkra-pencil-text,
+.inkra-breadcrumb__trigger .inkra-button__label > .inkra-pencil-text > .inkra-pencil-text__source {
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.inkra-breadcrumb :is(.inkra-breadcrumb__link, .inkra-breadcrumb__trigger) .inkra-button__surface {
+  height: auto;
+  max-width: 100%;
+  min-height: var(--inkra-breadcrumb-item-height);
+  min-width: var(--inkra-breadcrumb-item-height);
+}
+.inkra-breadcrumb :is(.inkra-breadcrumb__link, .inkra-breadcrumb__trigger) .inkra-button__content {
+  max-width: 100%;
+  min-width: 0;
+}
+.inkra-breadcrumb :is(.inkra-breadcrumb__link, .inkra-breadcrumb__trigger) .inkra-button__focus-ring {
+  height: 100%;
+  inset-inline: 0;
+  top: 0;
+  transform: none;
+}
+.inkra-breadcrumb :is(.inkra-breadcrumb__link, .inkra-breadcrumb__trigger):hover:not(:disabled):not([aria-disabled="true"]) .inkra-button__surface,
+.inkra-breadcrumb :is(.inkra-breadcrumb__link, .inkra-breadcrumb__trigger):active:not(:disabled):not([aria-disabled="true"]) .inkra-button__surface {
+  transform: none;
+}
+.inkra-breadcrumb__page {
+  align-items: center;
+  box-sizing: border-box;
+  display: inline-flex;
+  font-family: "Trip Map Hand", "HanziPen SC", "Hannotate SC", "Kaiti SC", "STKaiti", cursive;
+  font-size: var(--inkra-breadcrumb-item-font-size);
+  gap: var(--inkra-breadcrumb-item-gap);
+  justify-content: center;
+  letter-spacing: var(--inkra-letter-spacing);
+  line-height: var(--inkra-line-ui);
+  max-width: 100%;
+  min-height: var(--inkra-breadcrumb-item-height);
+  min-width: var(--inkra-breadcrumb-item-height);
+  overflow-wrap: anywhere;
+  padding-inline: var(--inkra-breadcrumb-item-padding);
+}
+.inkra-breadcrumb__label,
+.inkra-breadcrumb__label > .inkra-pencil-text {
+  align-items: center;
+  display: inline-flex;
+  min-width: 0;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.inkra-breadcrumb__label > .inkra-pencil-text > .inkra-pencil-text__source {
+  display: block;
+  min-width: 0;
+  white-space: inherit;
+}
+.inkra-breadcrumb__icon {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 var(--inkra-breadcrumb-item-icon-size);
+  height: var(--inkra-breadcrumb-item-icon-size);
+  justify-content: center;
+  width: var(--inkra-breadcrumb-item-icon-size);
+}
+.inkra-breadcrumb__icon > :is(svg, canvas) {
+  height: 100% !important;
+  max-height: 100%;
+  max-width: 100%;
+  width: 100% !important;
+}
 .inkra-breadcrumb__separator { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; min-width: 16px; color: var(--inkra-ink-subtle); pointer-events: none; }

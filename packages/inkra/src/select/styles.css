@@ -58,11 +58,16 @@
   inline-size: 100%;
 }
 
-.inkra-select-stepper .inkra-select-stepper__control,
-.inkra-select-stepper .inkra-select-stepper__control > .inkra-pencil-surface__content {
+.inkra-select-stepper .inkra-select-stepper__control {
   flex-wrap: nowrap;
   gap: 0;
   padding-inline: 0;
+}
+
+.inkra-select-stepper .inkra-select-stepper__control > .inkra-pencil-surface__content {
+  flex-wrap: nowrap;
+  gap: 0;
+  padding-inline: var(--inkra-field-control-padding);
 }
 
 .inkra-select-stepper__control {
