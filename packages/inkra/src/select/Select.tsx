@@ -623,6 +623,7 @@ export const SelectClear = forwardRef<HTMLButtonElement, SelectClearProps>(funct
   children, className, disabled, onClick, ...props
 }, ref) {
   const state = useContext(MultipleSelectContext);
+  const { t } = useInkraLocale();
   if (!state) throw new Error('Select.Clear must be used inside Select.Root with multiple.');
   return <Button {...props} className={classes('inkra-select__clear', className)} ref={ref} type="button" variant="ghost"
     disabled={disabled || state.disabled || state.readOnly || state.values.length === 0}
@@ -631,7 +632,7 @@ export const SelectClear = forwardRef<HTMLButtonElement, SelectClearProps>(funct
       if (event.defaultPrevented) return;
       state.change([]);
       state.triggerRef.current?.focus({ preventScroll: true });
-    }}>{children ?? 'Clear'}</Button>;
+    }}>{children ?? t('common.clear')}</Button>;
 });
 
 export const Select = /* @__PURE__ */ Object.freeze({
@@ -653,3 +654,4 @@ export const Select = /* @__PURE__ */ Object.freeze({
   Separator: SelectSeparator,
   Clear: SelectClear,
 });
+import { useInkraLocale } from '../i18n/index.js';

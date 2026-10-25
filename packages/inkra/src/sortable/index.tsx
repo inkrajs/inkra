@@ -1,3 +1,4 @@
+import { useInkraLocale, type InkraTranslate } from '../i18n/index.js';
 import { __iconData as gripIconData } from 'lucide-react/dist/esm/icons/grip-vertical.mjs';
 import {
   DndContext,
@@ -153,14 +154,14 @@ export interface SortableProps<Item> {
   autoScroll?: boolean;
 }
 
-const defaultLabels: Required<SortableLabels> = {
-  handle: 'Drag item',
-  screenReaderInstructions: 'Press Space or Enter to pick up an item. Use the arrow keys to move it, Space or Enter to drop it, and Escape to cancel.',
-  pickedUp: (item, container, position, count) => `Picked up ${item}, item ${position} of ${count} in ${container}.`,
-  movedOver: (item, container, position, count) => `${item} is over position ${position} of ${count} in ${container}.`,
-  dropped: (item, container, position, count) => `Dropped ${item} at position ${position} of ${count} in ${container}.`,
-  cancelled: (item) => `Sorting cancelled. ${item} returned to its original position.`,
-};
+const defaultLabels = (t: InkraTranslate): Required<SortableLabels> => ({
+  handle: t('sortable.handle'),
+  screenReaderInstructions: t('sortable.instructions'),
+  pickedUp: (item, container, position, count) => t('sortable.pickedUp', { item, container, position, count }),
+  movedOver: (item, container, position, count) => t('sortable.movedOver', { item, container, position, count }),
+  dropped: (item, container, position, count) => t('sortable.dropped', { item, container, position, count }),
+  cancelled: item => t('sortable.cancelled', { item }),
+});
 
 function getEngineData(value: { data: { current?: unknown } } | null): SortableEngineData | null {
   const data = value?.data.current as SortableEngineData | undefined;
@@ -397,7 +398,8 @@ export function Sortable<Item>({
   renderItem,
   renderOverlay,
 }: SortableProps<Item>) {
-  const labels = { ...defaultLabels, ...labelsProp };
+  const { t } = useInkraLocale();
+  const labels = useMemo(() => ({ ...defaultLabels(t), ...labelsProp }), [t, labelsProp]);
   const [activeId, setActiveId] = useState<SortableIdentifier | null>(null);
   const [activeWidth, setActiveWidth] = useState<number | null>(null);
   const [projected, setProjected] = useState<SortableContainerData<Item>[] | null>(null);

@@ -30,6 +30,15 @@ export const pencilLettering: PencilLetteringSettings = Object.freeze({
 export const pencilHandwriting = '"Trip Map Hand","HanziPen SC","Hannotate SC","Kaiti SC","STKaiti",cursive';
 
 const TEXT_PIXEL_LIMIT = 524288;
+export function boundedTextResolution(width: number, height: number, dpr: number): number {
+  if (![width, height, dpr].every(value => Number.isFinite(value) && value > 0)) return 0;
+  return Math.floor(Math.min(
+    Math.max(2, Math.min(4, Math.ceil(dpr * 2))),
+    Math.sqrt(TEXT_PIXEL_LIMIT / (width * height)),
+    8192 / width,
+    8192 / height,
+  ));
+}
 const textCache = new BoundedCache<PencilTextSprite>(160, 16 * 1024 * 1024);
 const glyphCache = new BoundedCache<PencilTextSprite>(512, 8 * 1024 * 1024);
 const clamp = (value: number): number => Math.max(0, Math.min(1, value));
@@ -111,11 +120,12 @@ export function renderPencilText(
   if (text.length > 256 || !Number.isFinite(size) || size <= 0 || size > 128) {
     throw new RangeError('Pencil text exceeds the bounded renderer input');
   }
-  const resolution = Math.max(2, Math.min(4, Math.ceil(dpr * 2)));
+  let resolution = Math.max(2, Math.min(4, Math.ceil(dpr * 2)));
   const font = `${options.style ?? 'normal'} ${options.weight ?? '400'} ${size}px ${family}`;
   const fontReady = document.fonts?.check(font, text) ?? false;
   const key = cache ? JSON.stringify([
     PENCIL_RENDERER_VERSION,
+    'adaptive-text-raster-v1',
     text,
     size,
     font,
@@ -148,7 +158,9 @@ export function renderPencilText(
   const descent = Math.ceil(size * 0.35);
   const width = advance + padding * 2;
   const height = ascent + descent + padding * 2;
-  if (width * height * resolution ** 2 > TEXT_PIXEL_LIMIT) {
+  // Wide lines on Retina displays can retain pencil ink at a lower sampling rate.
+  resolution = boundedTextResolution(width, height, dpr);
+  if (resolution < 1) {
     throw new RangeError('Pencil text exceeds the bounded pixel budget');
   }
 

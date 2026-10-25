@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import { forwardRef, useMemo, useRef, useState } from 'react';
 import type { HTMLAttributes, KeyboardEvent } from 'react';
 import { PencilText } from '../PencilText.js';
@@ -26,10 +27,6 @@ export interface SparklineProps extends Omit<HTMLAttributes<HTMLDivElement>, 'ch
   getLabel?: (value: number | null, index: number) => string;
 }
 
-function defaultLabel(value: number | null, index: number) {
-  return value === null ? `Point ${index + 1}: missing` : `Point ${index + 1}: ${value}`;
-}
-
 function resolveCssColor(host: HTMLElement, style: CSSStyleDeclaration, token: string, fallback: string): string {
   const value = style.getPropertyValue(token).trim();
   if (!value || !value.includes('var(')) return value || fallback;
@@ -41,21 +38,23 @@ function resolveCssColor(host: HTMLElement, style: CSSStyleDeclaration, token: s
   return resolved || fallback;
 }
 
-export const Sparkline = forwardRef<HTMLDivElement, SparklineProps>(function Sparkline({
+export const Sparkline = forwardRef<HTMLDivElement, SparklineProps>(function Sparkline(inkraProps, ref) {
+  const { t } = useInkraLocale();
+  const {
   data,
   type = 'line',
   width = 180,
   height = 56,
   min,
   max,
-  label = 'Sparkline',
+  label = t('sparkline.label'),
   showPoints = true,
   showArea = true,
   showSummary = true,
-  getLabel = defaultLabel,
+  getLabel = (value, index) => t(value === null ? 'sparkline.missing' : 'sparkline.point', { index: index + 1, value: value ?? '' }),
   className,
   ...props
-}, ref) {
+} = inkraProps;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const interactionCanvasRef = useRef<HTMLCanvasElement>(null);
   const [pencilReady, setPencilReady] = useState(false);
@@ -78,15 +77,15 @@ export const Sparkline = forwardRef<HTMLDivElement, SparklineProps>(function Spa
   const activePoint = activeIndex === null ? null : points[activeIndex] ?? null;
   const effectiveShowPoints = showPoints || values.length === 1;
   const summary = useMemo(() => {
-    if (!values.length) return 'No data';
+    if (!values.length) return t('sparkline.empty');
     let minimum = values[0];
     let maximum = values[0];
     for (let index = 1; index < values.length; index++) {
       minimum = Math.min(minimum, values[index]);
       maximum = Math.max(maximum, values[index]);
     }
-    return `Current ${values[values.length - 1]}, min ${minimum}, max ${maximum}`;
-  }, [values]);
+    return t('sparkline.summary', { current: values[values.length - 1], minimum, maximum });
+  }, [t, values]);
   const onKeyDown = (event: KeyboardEvent<SVGSVGElement>) => {
     if (!points.length || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();

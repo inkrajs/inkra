@@ -10,8 +10,11 @@ test('optional public family subpaths reference the existing identities',async()
   const mod=await import(new URL('../'+part.import,import.meta.url));
   for(const [key,value] of Object.entries(mod)) if(key in root)assert.equal(value,root[key],`${name}:${key}`);
  }
- assert.equal(Object.keys(root).length,261);
- for (const name of ['Markdown', 'ColorSwatch', 'MediaViewer', 'formatColorPaint']) assert(name in root, name);
+ assert.equal(Object.keys(root).length,267);
+ assert.ok(root.ThemeProvider);
+ assert.ok(pkg.exports['./theme']);
+ for (const name of ['Markdown', 'ColorSwatch', 'MediaViewer', 'formatColorPaint', 'InkraProvider', 'useInkraLocale', 'createInkraTranslator', 'resolveInkraLocale', 'inkraLocales']) assert(name in root, name);
+ assert.ok(pkg.exports['./i18n']);
 });
 test('optional CSS preserves source rules and rebases font/token/Leaflet URLs',()=>{
  const base=readFileSync(new URL('../dist/styles/base.css',import.meta.url),'utf8');

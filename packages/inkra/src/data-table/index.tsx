@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import {
   flexRender,
   functionalUpdate,
@@ -118,7 +119,9 @@ function SelectionCheckbox(props: {
   />;
 }
 
-export function DataTable<TData>({
+export function DataTable<TData>(inkraProps: DataTableProps<TData>) {
+  const { t } = useInkraLocale();
+  const {
   data,
   columns,
   getRowId,
@@ -130,8 +133,8 @@ export function DataTable<TData>({
   stickyHeader = false,
   captionSide = 'top',
   filterable = false,
-  filterLabel = 'Filter rows',
-  filterPlaceholder = 'Filter rows',
+  filterLabel = t('table.filter'),
+  filterPlaceholder = t('table.filter'),
   globalFilter,
   defaultGlobalFilter = '',
   onGlobalFilterChange,
@@ -152,18 +155,18 @@ export function DataTable<TData>({
   onRowSelectionChange,
   getRowCanSelect,
   loading = false,
-  loadingMessage = 'Loading rows',
-  emptyMessage = 'No rows',
-  selectAllLabel = 'Select all rows on this page',
-  selectRowLabel = row => `Select row ${row.id}`,
-  previousPageLabel = 'Previous page',
-  nextPageLabel = 'Next page',
-  paginationLabel = 'Table pagination',
-  pageLabel = (page, pageCount) => `Page ${page} of ${pageCount}`,
-  sortStatusLabel = (columnId, direction) => direction === 'asc' ? `${columnId}: sorted ascending` : direction === 'desc' ? `${columnId}: sorted descending` : `${columnId}: not sorted`,
+  loadingMessage = t('table.loading'),
+  emptyMessage = t('table.empty'),
+  selectAllLabel = t('table.selectAll'),
+  selectRowLabel = row => t('table.selectRow', { row: row.id }),
+  previousPageLabel = t('common.previousPage'),
+  nextPageLabel = t('common.nextPage'),
+  paginationLabel = t('table.pagination'),
+  pageLabel = (page, pageCount) => t('pagination.status', { page, total: pageCount }),
+  sortStatusLabel = (columnId, direction) => t(direction === 'asc' ? 'table.ascending' : direction === 'desc' ? 'table.descending' : 'table.unsorted', { column: columnId }),
   className,
   ...props
-}: DataTableProps<TData>) {
+} = inkraProps;
   const [internalFilter, setInternalFilter] = useState(defaultGlobalFilter);
   const [internalSorting, setInternalSorting] = useState(defaultSorting);
   const [internalPagination, setInternalPagination] = useState(defaultPagination);

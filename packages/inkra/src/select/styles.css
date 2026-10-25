@@ -23,11 +23,8 @@
 .inkra-search-select__input .inkra-search-select__input-control > .inkra-pencil-surface__border { display: none; }
 .inkra-search-select__anchor > .inkra-input__end-action { flex: 0 0 auto; }
 .inkra-search-select__anchor > .inkra-input__end-action:has(.inkra-search-select__clear:not([data-visible])) {
-  pointer-events: none;
+  display: none;
 }
-.inkra-search-select__anchor > .inkra-input__end-action:has(.inkra-search-select__clear:not([data-visible]))
-  > :is(.inkra-input__action-divider, .inkra-input__action-wash) { display: none; }
-.inkra-search-select__clear:not([data-visible]) { visibility: hidden; }
 .inkra-search-select__trigger .inkra-button__content,
 .inkra-search-select__trigger .inkra-button__label,
 .inkra-search-select__trigger .inkra-button__label > span { min-width: 0; width: 100%; }

@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
 import { useBrowserLayoutEffect } from '../internal/useBrowserLayoutEffect.js';
 import { Button } from '../Button.js';
@@ -45,13 +46,17 @@ const format = (value: number | null | undefined) => String(finiteValue(value) ?
 const numberFromDraft = (draft: string) => draft === '' ? null : finiteValue(Number(draft));
 
 export const InputNumber = forwardRef<HTMLInputElement, InputNumberProps>(function InputNumber(
-  {
+  inkraProps,
+  forwardedRef,
+) {
+  const { t } = useInkraLocale();
+  const {
     classNames,
     controls = true,
-    decrementButtonLabel = 'Decrease value',
+    decrementButtonLabel = t('inputNumber.decrease'),
     defaultValue,
     disabled,
-    incrementButtonLabel = 'Increase value',
+    incrementButtonLabel = t('inputNumber.increase'),
     inputMode = 'decimal',
     max,
     min,
@@ -69,9 +74,7 @@ export const InputNumber = forwardRef<HTMLInputElement, InputNumberProps>(functi
     textAlign = 'center',
     value,
     ...props
-  },
-  forwardedRef,
-) {
+  } = inkraProps;
   const inputRef = useRef<HTMLInputElement>(null);
   const isControlled = value !== undefined;
   const [draft, setDraft] = useState(() => format(isControlled ? value : defaultValue));

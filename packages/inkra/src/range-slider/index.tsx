@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+import { useInkraLocale } from '../i18n/index.js';
 
 import { Slider } from '../slider/index.js';
 import type { SliderProps } from '../slider/index.js';
@@ -21,8 +22,6 @@ export interface RangeSliderProps extends Omit<
   /** Accessible names for the current low and high endpoints. */
   thumbLabels?: readonly [string, string];
 }
-
-const DEFAULT_LABELS = ['Minimum value', 'Maximum value'] as const;
 
 function asRangeValue(value: number[]): RangeSliderValue {
   return [value[0], value[1]];
@@ -48,12 +47,13 @@ export const RangeSlider = forwardRef<HTMLSpanElement, RangeSliderProps>(functio
     onValueChange,
     onValueCommit,
     step = 1,
-    thumbLabels = DEFAULT_LABELS,
+    thumbLabels,
     value,
     ...props
   },
   forwardedRef,
 ) {
+  const { t } = useInkraLocale();
   const controlledValue = value === undefined ? undefined : normalizeRangeValue(value);
   const uncontrolledDefault = value === undefined ? normalizeRangeValue(defaultValue ?? [min, max]) : undefined;
 
@@ -68,7 +68,7 @@ export const RangeSlider = forwardRef<HTMLSpanElement, RangeSliderProps>(functio
     preserveThumbOrder={!allowCross}
     ref={forwardedRef}
     step={step}
-    thumbLabels={thumbLabels}
+    thumbLabels={thumbLabels ?? [t('rangeSlider.minimum'), t('rangeSlider.maximum')]}
     value={controlledValue}
   />;
 });

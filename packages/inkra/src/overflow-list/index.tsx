@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import {
   forwardRef,
   useCallback,
@@ -98,10 +99,6 @@ function assignRef<Element>(ref: ForwardedRef<Element>, value: Element | null) {
   else if (ref) ref.current = value;
 }
 
-function defaultOverflowLabel(count: number) {
-  return `More items (${count})`;
-}
-
 function OverflowListInner<Item extends OverflowListItem>(
   {
     'aria-label': ariaLabel,
@@ -113,7 +110,7 @@ function OverflowListInner<Item extends OverflowListItem>(
     onOverflowChange,
     onOverflowItemSelect,
     overflowButtonProps,
-    overflowLabel = defaultOverflowLabel,
+    overflowLabel: overflowLabelProp,
     renderItem,
     renderOverflow,
     renderOverflowItem,
@@ -124,6 +121,8 @@ function OverflowListInner<Item extends OverflowListItem>(
   }: OverflowListProps<Item>,
   forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
+  const { t } = useInkraLocale();
+  const overflowLabel = overflowLabelProp ?? ((count: number) => t('overflow.more', { count }));
   const generatedId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);

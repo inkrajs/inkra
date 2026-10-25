@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import { forwardRef, useEffect, useId, useImperativeHandle, useRef, useState } from 'react';
 import type { ReactNode, TextareaHTMLAttributes } from 'react';
 
@@ -33,11 +34,13 @@ export interface TextareaProps
 }
 
 const resizePaths = [{ d: 'M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4' }];
-const defaultCountLabel = ({ remaining }: TextareaCountDetails) =>
-  remaining < 0 ? `${-remaining} over limit` : `${remaining} remaining`;
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function Textarea(
-  {
+  inkraProps,
+  ref,
+) {
+  const { t } = useInkraLocale();
+  const {
     'aria-describedby': ariaDescribedBy,
     'aria-errormessage': ariaErrorMessage,
     'aria-invalid': ariaInvalid,
@@ -54,13 +57,11 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
     countMode = 'remaining',
     countDisplay = 'auto',
     countThreshold = 0.8,
-    getCountLabel = defaultCountLabel,
+    getCountLabel = ({ remaining }) => t(remaining < 0 ? 'textarea.overLimit' : 'textarea.countRemaining', { count: Math.abs(remaining) }),
     resize = 'none',
-    resizeLabel = 'Resize text area',
+    resizeLabel = t('textarea.resize'),
     ...props
-  },
-  ref,
-) {
+  } = inkraProps;
   const generatedId = useId();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [uncontrolledCount, setUncontrolledCount] = useState(() => String(props.defaultValue ?? '').length);

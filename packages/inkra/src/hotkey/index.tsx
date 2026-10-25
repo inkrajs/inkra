@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import {
   forwardRef,
   useEffect,
@@ -127,7 +128,11 @@ export const Hotkey = forwardRef<HTMLElement, HotkeyProps>(function Hotkey(
 });
 
 export const HotkeyInput = forwardRef<HTMLInputElement, HotkeyInputProps>(function HotkeyInput(
-  {
+  inkraProps,
+  forwardedRef,
+) {
+  const { t } = useInkraLocale();
+  const {
     'aria-describedby': ariaDescribedBy,
     'aria-errormessage': ariaErrorMessage,
     'aria-invalid': ariaInvalid,
@@ -136,9 +141,9 @@ export const HotkeyInput = forwardRef<HTMLInputElement, HotkeyInputProps>(functi
     className,
     classNames = {},
     clearable = true,
-    clearButtonLabel = 'Clear shortcut',
+    clearButtonLabel = t('hotkey.clear'),
     conflict,
-    conflictMessage = 'Shortcut already assigned',
+    conflictMessage = t('hotkey.conflict'),
     defaultValue = null,
     disabled,
     id,
@@ -151,19 +156,17 @@ export const HotkeyInput = forwardRef<HTMLInputElement, HotkeyInputProps>(functi
     onFocus,
     onKeyDown,
     onValueChange,
-    placeholder = 'Press shortcut',
+    placeholder = t('hotkey.placeholder'),
     platform = 'auto',
     readOnly,
-    recordingLabel = 'Press a shortcut...',
+    recordingLabel = t('hotkey.recordingPrompt'),
     required,
     seed,
     size = 'md',
     validateHotkey,
     value,
     ...props
-  },
-  forwardedRef,
-) {
+  } = inkraProps;
   const generatedId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const composingRef = useRef(false);

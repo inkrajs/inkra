@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import { scaleLinear, scaleQuantize } from 'd3-scale';
 import {
   forwardRef,
@@ -181,7 +182,9 @@ function paintStyle(color: string) {
   } as CSSProperties;
 }
 
-export const Heatmap = forwardRef<HTMLDivElement, HeatmapProps>(function Heatmap({
+export const Heatmap = forwardRef<HTMLDivElement, HeatmapProps>(function Heatmap(inkraProps, forwardedRef) {
+  const { t } = useInkraLocale();
+  const {
   rows,
   columns,
   cells,
@@ -193,9 +196,9 @@ export const Heatmap = forwardRef<HTMLDivElement, HeatmapProps>(function Heatmap
   binCount,
   showLegend = true,
   showValues = true,
-  legendLabel = 'Intensity',
+  legendLabel = t('heatmap.intensity'),
   missingLabel = '—',
-  missingValueLabel = 'Missing',
+  missingValueLabel = t('common.missing'),
   selectionMode = 'single',
   selectedCell,
   defaultSelectedCell = null,
@@ -206,12 +209,12 @@ export const Heatmap = forwardRef<HTMLDivElement, HeatmapProps>(function Heatmap
   renderDetails,
   cellSize = 56,
   rowLabelWidth = '8rem',
-  rowHeaderLabel = 'Rows',
-  emptyMessage = 'No heatmap data',
+  rowHeaderLabel = t('heatmap.rows'),
+  emptyMessage = t('heatmap.empty'),
   className,
   style,
   ...props
-}, forwardedRef) {
+} = inkraProps;
   const generatedId = useId();
   const labelId = `inkra-heatmap-${generatedId}-label`;
   const descriptionId = description == null ? undefined : `inkra-heatmap-${generatedId}-description`;

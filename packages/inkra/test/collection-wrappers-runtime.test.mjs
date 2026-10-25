@@ -225,23 +225,32 @@ test('Command.Root: repeated composition events preserve caller handlers and pre
   } finally { if (renderer) await act(() => renderer.unmount()); }
 });
 
-test('Tree wrappers: 10000 pure delegation/state callbacks retain live state and only active decorations', () => {
+test('Tree wrappers: 10000 pure delegation/state callbacks retain live state and only active decorations', async () => {
   // React Aria's complete Tree uses a ReactDOM collection portal unsupported by react-test-renderer.
-  // Exercise the pure Inkra wrapper boundary without pretending this mounts a Tree or tests navigation.
+  // Capture the wrapper boundary inside React so provider hooks run legally.
+  // This does not mount the underlying Aria Tree or test navigation.
+  async function capture(component, props, ref) {
+    let output;
+    function Probe() { output = component.render(props, ref); return null; }
+    let renderer;
+    try { await act(() => { renderer = create(h(Probe)); }); }
+    finally { if (renderer) await act(() => renderer.unmount()); }
+    return output;
+  }
   const items = [{ id: 'alpha' }];
   const ref = { current: null };
-  const root = Tree.Root.render({ items, 'aria-label': 'Tree', indent: Number.NaN, emptyState: 'Nothing' }, ref);
+  const root = await capture(Tree.Root, { items, 'aria-label': 'Tree', indent: Number.NaN, emptyState: 'Nothing' }, ref);
   assert.equal(root.props.items, items);
   assert.equal(root.props.ref, ref);
   assert.equal(root.props.selectionMode, 'single');
   assert.equal(root.props.style['--inkra-tree-indent'], '24px');
   assert.equal(root.props.renderEmptyState().props.children, 'Nothing');
-  assert.equal(Tree.Root.render({ indent: -10 }, ref).props.style['--inkra-tree-indent'], '0px');
+  assert.equal((await capture(Tree.Root, { indent: -10 }, ref)).props.style['--inkra-tree-indent'], '0px');
   const item = Tree.Item.render({ id: 'alpha', textValue: 'Alpha', className: 'custom' }, ref);
   assert.equal(item.props.id, 'alpha');
   assert.equal(item.props.ref, ref);
   let callbackCalls = 0;
-  const wrapped = Tree.ItemContent.render({
+  const wrapped = await capture(Tree.ItemContent, {
     children: state => { callbackCalls++; return `Selected ${state.isSelected}`; },
     icon: state => { callbackCalls++; return state.isDisabled ? 'locked' : null; },
     disclosureIcon: state => { callbackCalls++; return state.isExpanded ? 'expanded' : 'collapsed'; },

@@ -1,3 +1,4 @@
+import { useInkraLocale, type InkraTranslate } from '../i18n/index.js';
 import { __iconData as downloadIcon } from 'lucide-react/dist/esm/icons/download.mjs';
 import { __iconData as imageOffIcon } from 'lucide-react/dist/esm/icons/image-off.mjs';
 import { __iconData as rotateCcwIcon } from 'lucide-react/dist/esm/icons/rotate-ccw.mjs';
@@ -80,20 +81,20 @@ export interface ImageCropperLabels {
   exporting: string;
 }
 
-const defaultLabels: ImageCropperLabels = {
-  cropper: 'Image crop area',
-  instructions: 'Use pointer gestures or arrow keys to move the image. Use the zoom control. In free aspect mode, use the size controls or Alt plus arrow keys to resize the crop area.',
-  loading: 'Loading image',
-  failedTitle: 'Image unavailable',
-  failedDescription: 'The image could not be loaded. Check the source and try again.',
-  retry: 'Retry image',
-  zoom: 'Zoom',
-  cropWidth: 'Crop width',
-  cropHeight: 'Crop height',
-  reset: 'Reset crop',
-  export: 'Export crop',
-  exporting: 'Exporting crop',
-};
+const defaultLabels = (t: InkraTranslate): ImageCropperLabels => ({
+  cropper: t('cropper.label'),
+  instructions: t('cropper.instructions'),
+  loading: t('cropper.loading'),
+  failedTitle: t('viewer.failed'),
+  failedDescription: t('cropper.failedDescription'),
+  retry: t('cropper.retry'),
+  zoom: t('cropper.zoom'),
+  cropWidth: t('cropper.width'),
+  cropHeight: t('cropper.height'),
+  reset: t('cropper.reset'),
+  export: t('cropper.export'),
+  exporting: t('cropper.exporting'),
+});
 
 export interface ImageCropperHandle {
   exportCrop(options?: ImageCropperExportOptions): Promise<ImageCropperExportResult>;
@@ -197,7 +198,8 @@ export const ImageCropper = forwardRef<ImageCropperHandle, ImageCropperProps>(fu
   },
   forwardedRef,
 ) {
-  const labels = { ...defaultLabels, ...labelOverrides };
+  const { t } = useInkraLocale();
+  const labels = { ...defaultLabels(t), ...labelOverrides };
   const generatedId = useId();
   const resolvedId = props.id ?? `inkra-image-cropper-${generatedId}`;
   const stageRef = useRef<HTMLDivElement>(null);

@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import { Toast as BaseToast } from '@base-ui/react/toast';
 import { createContext, useContext, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import type { ReactNode } from 'react';
@@ -158,9 +159,11 @@ function ToastQueue({
   );
 }
 
-function Provider({
+function Provider(inkraProps: ToastProviderProps) {
+  const { t } = useInkraLocale();
+  const {
   children,
-  closeLabel = 'Close notification',
+  closeLabel = t('toast.close'),
   limit,
   limits,
   placement = 'bottom-end',
@@ -169,8 +172,8 @@ function Provider({
   timeout,
   toastManager,
   viewportClassName,
-  viewportLabel = 'Notifications',
-}: ToastProviderProps) {
+  viewportLabel = t('toast.viewport'),
+} = inkraProps;
   const [localManager] = useState(() => createToastManager());
   const manager = toastManager ?? localManager;
   const router = getToastRouter(manager);

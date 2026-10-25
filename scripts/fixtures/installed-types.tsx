@@ -1,5 +1,16 @@
 import { Button, Field, Input, InputNumber, PencilIcon, Select, Slider, Tabs } from '@inkra/react';
 import type { SelectTriggerProps } from '@inkra/react';
+import { InkraProvider, inkraLocales, useInkraLocale } from '@inkra/react/i18n';
+import type { InkraDictionary, InkraLocale, InkraMessageKey } from '@inkra/react/i18n';
+import { ThemeProvider } from '@inkra/react/theme';
+import type { InkraThemeTokens } from '@inkra/react/theme';
+
+const themeTokens = { '--inkra-accent': '#4b96aa', '--inkra-icon-stroke-width': '1.5px' } satisfies InkraThemeTokens;
+const themeScope = <ThemeProvider theme="auto" tokens={themeTokens}><span>Scoped theme</span></ThemeProvider>;
+// @ts-expect-error theme must use a supported mode
+const invalidTheme = <ThemeProvider theme="sepia" />;
+// @ts-expect-error theme tokens must use the Inkra namespace
+const invalidThemeTokens: InkraThemeTokens = { color: 'red' };
 import {
   AlertDialog, Command, DataTable, DatePicker, Drawer, Empty, Pagination, Steps,
   Timeline, TimePicker, Toast, ToggleGroup, Tree, Upload,
@@ -13,6 +24,23 @@ const trigger: SelectTriggerProps = {
   textAlign: 'start',
   'aria-label': 'Language',
 };
+
+const dictionary = { 'input.clear': 'Custom clear', 'pagination.page': 'Page {page}' } satisfies InkraDictionary;
+const messageKey: InkraMessageKey = 'input.clear';
+const locale: InkraLocale = 'ja';
+// @ts-expect-error Message keys must match the public catalog.
+const badDictionary: InkraDictionary = { 'input.typo': 'Missing key' };
+// @ts-expect-error Dictionaries contain text, not executable render functions.
+const badValue: InkraDictionary = { 'input.clear': () => 'Clear' };
+function LocalizedContent() {
+  const { t } = useInkraLocale();
+  return <Input clearable aria-label={t(messageKey)} />;
+}
+export function InstalledLocaleExample() {
+  return <InkraProvider locale={locale} messages={{ ...inkraLocales.ja, ...dictionary }}>
+    <LocalizedContent />
+  </InkraProvider>;
+}
 
 export function InstalledExample() {
   return <>

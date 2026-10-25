@@ -1,3 +1,4 @@
+import { useInkraLocale, type InkraTranslate } from '../i18n/index.js';
 import { forwardRef, useEffect, useState } from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { Button } from '../Button.js';
@@ -36,20 +37,21 @@ export interface PaginationProps extends Omit<HTMLAttributes<HTMLElement>, 'chil
   labels?: Partial<PaginationLabels>;
 }
 
-const defaultLabels: PaginationLabels = {
-  nav: 'Pagination', first: 'First page', previous: 'Previous page', next: 'Next page', last: 'Last page',
-  page: page => `Page ${page}`, ellipsis: 'More pages',
-};
+const defaultLabels = (t: InkraTranslate): PaginationLabels => ({
+  nav: t('pagination.nav'), first: t('pagination.first'), previous: t('common.previousPage'), next: t('common.nextPage'), last: t('pagination.last'),
+  page: page => t('pagination.page', { page }), ellipsis: t('pagination.more'),
+});
 
 export const Pagination = forwardRef<HTMLElement, PaginationProps>(function Pagination({
   totalPages, page, defaultPage = 1, onPageChange, siblingCount = 1, boundaryCount = 1,
   showFirstLast = false, showPreviousNext = true, hideOnSinglePage = false, simple = false,
   renderPage, renderSummary, disabled = false, size = 'md', labels, className, ...props
 }, ref) {
+  const { t } = useInkraLocale();
   const total = normalizeTotal(totalPages);
   const [internalPage, setInternalPage] = useState(() => clampPage(defaultPage, total));
   const current = clampPage(page ?? internalPage, total);
-  const text = { ...defaultLabels, ...labels };
+  const text = { ...defaultLabels(t), ...labels };
   useEffect(() => {
     if (page === undefined) setInternalPage(value => clampPage(value, total));
   }, [page, total]);

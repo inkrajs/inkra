@@ -23,7 +23,7 @@ test('Open and clear stay independent native buttons in shared action regions', 
   assert.match(searchable, /Combobox\.Clear[\s\S]*?render=\{\(renderProps, state\) => <Button/);
 });
 
-test('Clear keeps a stable slot, cannot open the popup, and restores useful focus', () => {
+test('Clear collapses its empty slot, cannot open the popup, and restores useful focus', () => {
   assert.match(searchable, /<Combobox\.Clear[\s\S]*?keepMounted/);
   assert.match(searchable, /aria-hidden=\{!state\.visible \|\| undefined\} tabIndex=\{state\.visible \? 0 : -1\}/);
   assert.match(searchable, /onMouseDown=\{event => \{[\s\S]*?preventDefault\(\)[\s\S]*?stopPropagation\(\)/);
@@ -31,8 +31,7 @@ test('Clear keeps a stable slot, cannot open the popup, and restores useful focu
   assert.match(searchable, /const actionsRef = useRef<Combobox\.Root\.Actions \| null>\(null\)/);
   assert.match(searchable, /actionsRef\.current\?\.close\(\)/);
   assert.match(searchable, /<Combobox\.Root<string, boolean>[\s\S]*?actionsRef=\{actionsRef\}/);
-  assert.match(styles, /\.inkra-search-select__clear:not\(\[data-visible\]\) \{ visibility: hidden; \}/);
-  assert.match(styles, /:has\(\.inkra-search-select__clear:not\(\[data-visible\]\)\)[\s\S]*?action-divider[\s\S]*?display: none/);
+  assert.match(styles, /\.inkra-input__end-action:has\(\.inkra-search-select__clear:not\(\[data-visible\]\)\)\s*\{\s*display: none/);
 });
 
 test('Searchable shared frame keeps stable sizes, long-copy flex and disabled state', () => {

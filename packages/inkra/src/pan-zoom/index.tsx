@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 import type {
   FitToViewMode,
@@ -132,7 +133,11 @@ function prefersReducedMotion(element: HTMLElement | null) {
 }
 
 function PanZoomRoot(
-  {
+  inkraProps: PanZoomProps,
+  forwardedRef: ForwardedRef<PanZoomRef>,
+) {
+  const { t } = useInkraLocale();
+  const {
     children,
     value,
     defaultValue = defaultTransform,
@@ -162,11 +167,9 @@ function PanZoomRoot(
     viewportProps,
     contentProps,
     instructions,
-    'aria-label': ariaLabel = 'Pan and zoom content',
+    'aria-label': ariaLabel = t('panZoom.label'),
     ...props
-  }: PanZoomProps,
-  forwardedRef: ForwardedRef<PanZoomRef>,
-) {
+  } = inkraProps;
   const resolvedMinScale = Math.max(Number.isFinite(minScale) ? minScale : 0.25, 0.0001);
   const resolvedMaxScale = Math.max(Number.isFinite(maxScale) ? maxScale : 8, resolvedMinScale);
   const resolvedWheelStep = Number.isFinite(wheelStep) && wheelStep > 0 ? wheelStep : 0.001;
@@ -264,8 +267,8 @@ function PanZoomRoot(
     ? (keys: string[]) => !wheelTargetBlocksZoomRef.current && (keys.includes('Control') || keys.includes('Meta'))
     : () => !wheelTargetBlocksZoomRef.current;
   const defaultInstructions = wheel === 'modifier'
-    ? 'Use Control or Command with the mouse wheel to zoom. Use arrow keys to pan, plus or minus to zoom, and 0 to reset.'
-    : 'Use arrow keys to pan, plus or minus to zoom, and 0 to reset.';
+    ? t('panZoom.modifierInstructions')
+    : t('panZoom.instructions');
   const wheelHint = instructions ?? defaultInstructions;
   const mergedViewportLabel = viewportProps?.['aria-label'] ?? ariaLabel;
   const describedBy = [viewportProps?.['aria-describedby'], keyboard && !disabled ? instructionsId : null]

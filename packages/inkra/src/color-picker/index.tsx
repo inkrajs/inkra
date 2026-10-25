@@ -1,3 +1,4 @@
+import { useInkraLocale, type InkraTranslate } from '../i18n/index.js';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { FieldsetHTMLAttributes, ReactNode } from 'react';
 
@@ -71,13 +72,13 @@ export type ColorPickerProps = ColorPickerBaseProps & ({
   maxStops?: number;
 });
 
-const defaultLabels: Required<ColorPickerLabels> = {
-  palette: 'Open color palette',
-  value: 'Color value',
-  alpha: 'Opacity',
-  presets: 'Color presets',
-  invalid: 'Use #RGB, #RGBA, #RRGGBB, or #RRGGBBAA.',
-};
+const defaultLabels = (t: InkraTranslate): Required<ColorPickerLabels> => ({
+  palette: t('color.palette'),
+  value: t('color.value'),
+  alpha: t('color.alpha'),
+  presets: t('color.presets'),
+  invalid: t('color.invalid'),
+});
 
 function presetData(preset: string | ColorPreset, allowGradient: boolean) {
   const input = typeof preset === 'string' ? preset : preset.value;
@@ -87,6 +88,7 @@ function presetData(preset: string | ColorPreset, allowGradient: boolean) {
 }
 
 export function ColorPicker(options: ColorPickerProps) {
+  const { t } = useInkraLocale();
   const {
     allowGradient = false,
     colorTypes = colorPaintTypes,
@@ -97,7 +99,7 @@ export function ColorPicker(options: ColorPickerProps) {
     disabled = false,
     form,
     id,
-    label = 'Color',
+    label = t('color.label'),
     labels,
     name,
     onInvalidInput,
@@ -134,8 +136,8 @@ export function ColorPicker(options: ColorPickerProps) {
   const skipNextBlurRef = useRef(false);
   const [draft, setDraft] = useState<string>(currentColor);
   const [open, setOpen] = useState(false);
-  const copy = { ...defaultLabels, ...labels };
-  const gradientCopy = { ...defaultGradientLabels, ...gradientLabels };
+  const copy = { ...defaultLabels(t), ...labels };
+  const gradientCopy = { ...defaultGradientLabels(t), ...gradientLabels };
   const parsedPresets = useMemo(() => presets.map(preset => presetData(preset, allowGradient)).filter((preset): preset is NonNullable<typeof preset> => preset !== null), [presets, allowGradient]);
   const inputInvalid = normalizeColorValue(draft) === null;
   const rgbValue = colorRgbValue(currentColor) ?? '#4b96aa';

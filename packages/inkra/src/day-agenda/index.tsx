@@ -1,4 +1,5 @@
 import { useId, useMemo, useState, type CSSProperties, type HTMLAttributes, type ReactNode } from 'react';
+import { useInkraLocale } from '../i18n/index.js';
 import { TravelIcon } from '../internal/travelIcons.js';
 import { Button } from '../Button.js';
 import { createAgendaScale, layoutAgendaCards } from './layout.js';
@@ -63,7 +64,9 @@ export function agendaInterval(event: AgendaEvent) {
   return { start: Math.max(0, event.startMinute), end: Math.min(1440, end ?? event.startMinute), before: event.startMinute < 0, after: (end ?? 0) > 1440 };
 }
 
-export function DayAgenda({ date, events, selectedEvent, onEventSelect, locale = 'en', timeZoneLabel, emptyLabel = 'No events', untimedLabel = 'Time pending', showOverview = true, hourCycle = 'h23', density = 'comfortable', showDescriptions = true, divided = true, disabled = false, onPreviousDay, onNextDay, navigationLabels = { previous: 'Previous day', next: 'Next day' }, maxVisibleEvents, showAllEventsLabel = count => `Show all ${count} events`, showFewerEventsLabel = 'Show fewer events', className, ...props }: DayAgendaProps) {
+export function DayAgenda(inkraProps: DayAgendaProps) {
+  const { locale, t } = useInkraLocale(inkraProps.locale);
+  const { date, events, selectedEvent, onEventSelect, locale: _locale, timeZoneLabel, emptyLabel = t('agenda.empty'), untimedLabel = t('agenda.pending'), showOverview = true, hourCycle = 'h23', density = 'comfortable', showDescriptions = true, divided = true, disabled = false, onPreviousDay, onNextDay, navigationLabels = { previous: t('agenda.previous'), next: t('agenda.next') }, maxVisibleEvents, showAllEventsLabel = count => t('agenda.all', { count }), showFewerEventsLabel = t('agenda.fewer'), className, ...props } = inkraProps;
   const id = useId();
   const [expandedDate, setExpandedDate] = useState<string>();
   const displayLimit = maxVisibleEvents !== undefined && Number.isFinite(maxVisibleEvents) ? Math.max(0, Math.floor(maxVisibleEvents)) : Infinity;

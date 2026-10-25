@@ -1,3 +1,4 @@
+import { type InkraTranslate } from '../i18n/index.js';
 import { useId, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { __iconData as addIcon } from 'lucide-react/dist/esm/icons/plus.mjs';
@@ -45,15 +46,15 @@ export interface ColorGradientLabels {
   farthestCorner?: string;
   repeating?: string;
 }
-export const defaultGradientLabels: Required<ColorGradientLabels> = {
-  type: 'Color type', solid: 'Solid', linear: 'Linear', radial: 'Radial', conic: 'Conic',
-  preview: 'Gradient preview', stops: 'Color stops', stop: 'Stop', stopColor: 'Stop color',
-  addStop: 'Add stop', removeStop: 'Remove stop', reverse: 'Reverse gradient',
-  position: 'Stop position', angle: 'Angle', centerX: 'Center X', centerY: 'Center Y',
-  shape: 'Shape', circle: 'Circle', ellipse: 'Ellipse', extent: 'Extent',
-  closestSide: 'Closest side', closestCorner: 'Closest corner',
-  farthestSide: 'Farthest side', farthestCorner: 'Farthest corner', repeating: 'Repeat gradient',
-};
+export const defaultGradientLabels = (t: InkraTranslate): Required<ColorGradientLabels> => ({
+  type: t('gradient.type'), solid: t('gradient.solid'), linear: t('gradient.linear'), radial: t('gradient.radial'), conic: t('gradient.conic'),
+  preview: t('gradient.preview'), stops: t('gradient.stops'), stop: t('gradient.stop'), stopColor: t('gradient.stopColor'),
+  addStop: t('gradient.add'), removeStop: t('gradient.remove'), reverse: t('gradient.reverse'),
+  position: t('gradient.position'), angle: t('gradient.angle'), centerX: t('gradient.centerX'), centerY: t('gradient.centerY'),
+  shape: t('gradient.shape'), circle: t('gradient.circle'), ellipse: t('gradient.ellipse'), extent: t('gradient.extent'),
+  closestSide: t('gradient.closestSide'), closestCorner: t('gradient.closestCorner'),
+  farthestSide: t('gradient.farthestSide'), farthestCorner: t('gradient.farthestCorner'), repeating: t('gradient.repeat'),
+});
 const iconPaths = (data: typeof addIcon) => data.node.filter(([tag]) => tag === 'path').map(([, attrs]) => ({ d: attrs.d }));
 const actions = { add: iconPaths(addIcon), remove: iconPaths(removeIcon), reverse: iconPaths(reverseIcon) };
 

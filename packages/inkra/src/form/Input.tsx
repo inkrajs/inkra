@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import { forwardRef, useEffect, useId, useImperativeHandle, useRef, useState } from 'react';
 import type { InputHTMLAttributes, MouseEvent, ReactNode } from 'react';
 
@@ -53,14 +54,18 @@ function affixContent(content: ReactNode, seed: string) {
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  {
+  inkraProps,
+  ref,
+) {
+  const { t } = useInkraLocale();
+  const {
     'aria-describedby': ariaDescribedBy,
     'aria-errormessage': ariaErrorMessage,
     'aria-invalid': ariaInvalid,
     className,
     classNames = {},
     clearable = false,
-    clearButtonLabel = 'Clear input',
+    clearButtonLabel = t('input.clear'),
     defaultValue,
     dir,
     disabled,
@@ -88,9 +93,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     value,
     variant = 'underline',
     ...props
-  },
-  ref,
-) {
+  } = inkraProps;
   const generatedId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uncontrolledValue, setUncontrolledValue] = useState(() => String(defaultValue ?? ''));

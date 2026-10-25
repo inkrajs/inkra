@@ -1,3 +1,4 @@
+import { useInkraLocale, type InkraTranslate } from '../i18n/index.js';
 import { useEffect, useRef, useState, type HTMLAttributes } from 'react';
 import { createPortal } from 'react-dom';
 import type * as Leaflet from 'leaflet';
@@ -33,11 +34,13 @@ export interface JourneyMapProps extends HTMLAttributes<HTMLDivElement> {
   focusSelectedPlace?: boolean;
   labels?: { zoomIn: string; zoomOut: string; reset: string; unavailable: string; attribution?: string };
 }
-const defaults = { zoomIn: 'Zoom in', zoomOut: 'Zoom out', reset: 'Reset view', unavailable: 'Map unavailable. Choose a place below.' };
+const defaults = (t: InkraTranslate) => ({ zoomIn: t('common.zoomIn'), zoomOut: t('common.zoomOut'), reset: t('common.resetView'), unavailable: t('map.unavailable') });
 const noRoutes: readonly JourneyRoute[] = [];
 const valid = (place: JourneyPlace) => Number.isFinite(place.latitude) && Number.isFinite(place.longitude) && Math.abs(place.latitude) <= 85 && Math.abs(place.longitude) <= 180;
 
-export function JourneyMap({ places, routes = noRoutes, geography, landCover, water, selectedPlace, onPlaceSelect, attribution, attributionDisplay = 'inline', height = 480, interactive = true, scrollWheelZoom = false, showControls = true, showPlaceList = false, focusSelectedPlace = false, labels = defaults, className, ...props }: JourneyMapProps) {
+export function JourneyMap({ places, routes = noRoutes, geography, landCover, water, selectedPlace, onPlaceSelect, attribution, attributionDisplay = 'inline', height = 480, interactive = true, scrollWheelZoom = false, showControls = true, showPlaceList = false, focusSelectedPlace = false, labels: labelOverrides, className, ...props }: JourneyMapProps) {
+  const { t } = useInkraLocale();
+  const labels = { ...defaults(t), ...labelOverrides };
   const root = useRef<HTMLDivElement>(null);
   const host = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Leaflet.Map | null>(null);
@@ -191,13 +194,13 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
     {placeLabels.map(({ place, node }) => createPortal(<PencilText>{place.label}</PencilText>, node, place.id))}
     <div className="inkra-journey-map__viewport" style={{ height: Math.max(240, Math.min(800, height)) }}>
       {attributionDisplay === 'popover' && <div className="inkra-journey-map__credits"><Popover.Root>
-        <Popover.Trigger asChild><Button size="icon" variant="ghost" aria-label={labels.attribution ?? 'Map credits'} title={labels.attribution ?? 'Map credits'}><TravelIcon name="info" /></Button></Popover.Trigger>
+        <Popover.Trigger asChild><Button size="icon" variant="ghost" aria-label={labels.attribution ?? t('map.credits')} title={labels.attribution ?? t('map.credits')}><TravelIcon name="info" /></Button></Popover.Trigger>
         <Popover.Portal><Popover.Content align="end" sideOffset={8} collisionPadding={20} className="inkra-journey-map__credits-content">
-          <Popover.Title>{labels.attribution ?? 'Map credits'}</Popover.Title>
+          <Popover.Title>{labels.attribution ?? t('map.credits')}</Popover.Title>
           <Popover.Description>{attribution}</Popover.Description>
         </Popover.Content></Popover.Portal>
       </Popover.Root></div>}
-      <div ref={host} className="inkra-journey-map__host" aria-label={props['aria-label'] ?? 'Map'} />
+      <div ref={host} className="inkra-journey-map__host" aria-label={props['aria-label'] ?? t('map.label')} />
       {showControls && <div className="inkra-journey-map__tools">
         <Button size="icon" variant="ghost" disabled={!ready} aria-label={labels.zoomIn} title={labels.zoomIn} onClick={() => { mapRef.current?.stop(); mapRef.current?.zoomIn(); }}><TravelIcon name="plus" /></Button>
         <Button size="icon" variant="ghost" disabled={!ready} aria-label={labels.zoomOut} title={labels.zoomOut} onClick={() => { mapRef.current?.stop(); mapRef.current?.zoomOut(); }}><TravelIcon name="minus" /></Button>

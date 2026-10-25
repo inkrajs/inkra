@@ -1,3 +1,4 @@
+import { useInkraLocale, type InkraTranslate } from '../i18n/index.js';
 import {
   forwardRef,
   useCallback,
@@ -66,16 +67,16 @@ export interface LogProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children
   viewportProps?: Omit<HTMLAttributes<HTMLDivElement>, 'children'>;
 }
 
-const defaultLabels: LogLabels = {
-  filters: 'Filter log levels',
-  allLevels: 'All',
-  pause: 'Pause automatic follow',
-  resume: 'Resume automatic follow',
-  latest: 'Go to latest record',
-  empty: 'No records yet',
-  noMatches: 'No records match the selected levels',
-  list: 'Log records',
-};
+const defaultLabels = (t: InkraTranslate): LogLabels => ({
+  filters: t('log.filters'),
+  allLevels: t('common.all'),
+  pause: t('log.pause'),
+  resume: t('log.resume'),
+  latest: t('log.latest'),
+  empty: t('log.empty'),
+  noMatches: t('log.noMatches'),
+  list: t('log.list'),
+});
 
 const defaultTones: Record<string, LogLevelTone> = {
   debug: 'neutral',
@@ -129,7 +130,8 @@ export const Log = forwardRef<HTMLDivElement, LogProps>(function Log(
   },
   ref,
 ) {
-  const labels = { ...defaultLabels, ...labelOverrides };
+  const { t } = useInkraLocale();
+  const labels = { ...defaultLabels(t), ...labelOverrides };
   const resolvedLevels = useMemo<readonly LogLevelDefinition[]>(() => {
     if (levels) return levels;
     const seen = new Set<string>();

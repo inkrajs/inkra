@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import {
   Tree as AriaTree,
   TreeItem as AriaTreeItem,
@@ -31,16 +32,18 @@ export type TreeRootProps<T extends object = object> = Omit<AriaTreeProps<T>, 'c
   size?: 'sm' | 'md' | 'lg';
 };
 
-function TreeRootInner<T extends object>({
+function TreeRootInner<T extends object>(inkraProps: TreeRootProps<T>, ref: ForwardedRef<HTMLDivElement>) {
+  const { t } = useInkraLocale();
+  const {
   className,
   style,
   indent = 24,
   size = 'md',
-  emptyState = 'No items',
+  emptyState = t('common.noItems'),
   selectionMode = 'single',
   selectionBehavior = 'toggle',
   ...props
-}: TreeRootProps<T>, ref: ForwardedRef<HTMLDivElement>) {
+} = inkraProps;
   return <AriaTree
     {...props}
     ref={ref}
@@ -78,14 +81,16 @@ export interface TreeItemContentProps {
   collapseLabel?: string;
 }
 
-const TreeItemContent = forwardRef<Element, TreeItemContentProps>(function TreeItemContent({
+const TreeItemContent = forwardRef<Element, TreeItemContentProps>(function TreeItemContent(inkraProps, ref) {
+  const { t } = useInkraLocale();
+  const {
   children,
   className,
   icon,
   disclosureIcon,
-  expandLabel = 'Expand item',
-  collapseLabel = 'Collapse item',
-}, ref) {
+  expandLabel = t('tree.expand'),
+  collapseLabel = t('tree.collapse'),
+} = inkraProps;
   return <AriaTreeItemContent ref={ref}>{({
     hasChildItems,
     isExpanded,

@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import { Combobox } from '@base-ui/react/combobox';
 import { DirectionProvider } from '@base-ui/react/direction-provider';
 import { forwardRef, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
@@ -55,9 +56,10 @@ const checkPaths = [{ d: 'M5 12l4 4L19 6' }];
 const clearPaths = [{ d: 'M6 6l12 12M18 6L6 18' }];
 
 const SearchableControl = forwardRef<HTMLDivElement, SearchableSelectProps>(function SearchableControl(props, forwardedRef) {
+  const { t } = useInkraLocale();
   const {
-    items, searchPlacement = 'trigger', placeholder = 'Select an option', searchPlaceholder = 'Search options',
-    emptyContent = 'No matching options', clearable = true, clearLabel = 'Clear selection', openLabel = 'Show options',
+    items, searchPlacement = 'trigger', placeholder = t('select.placeholder'), searchPlaceholder = t('select.search'),
+    emptyContent = t('select.empty'), clearable = true, clearLabel = t('select.clear'), openLabel = t('select.open'),
     size = 'md', multiple = false, value, defaultValue, onValueChange: _onValueChange,
     name, form, dir, disabled, readOnly, required, invalid, id, className, children: _children,
     open, defaultOpen, onOpenChange, side = 'bottom', align = 'start', sideOffset = 8, collisionPadding = 8,

@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import { forwardRef, useId, useRef, useState } from 'react';
 import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
 
@@ -41,13 +42,17 @@ function keyVariant(key: KeypadKey): KeypadKeyVariant {
 }
 
 export const Keypad = forwardRef<HTMLDivElement, KeypadProps>(function Keypad(
-  {
+  inkraProps,
+  ref,
+) {
+  const { t } = useInkraLocale();
+  const {
     'aria-label': ariaLabel,
     className,
     defaultValue = '',
     disabled = false,
     emptyContent = null,
-    label = 'Keypad',
+    label = t('keypad.label'),
     layout,
     maxLength,
     onConfirm,
@@ -55,9 +60,7 @@ export const Keypad = forwardRef<HTMLDivElement, KeypadProps>(function Keypad(
     onValueChange,
     value,
     ...props
-  },
-  ref,
-) {
+  } = inkraProps;
   const id = useId();
   const controlled = value !== undefined;
   const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue);

@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { forwardRef, useId } from 'react';
 import type {
@@ -147,7 +148,9 @@ export interface DrawerCloseButtonProps extends Omit<ButtonProps, 'aria-label' |
 }
 
 export const DrawerCloseButton = forwardRef<HTMLButtonElement, DrawerCloseButtonProps>(
-  function DrawerCloseButton({ className, label = 'Close', onFocus, ...props }, ref) {
+  function DrawerCloseButton(inkraProps, ref) {
+  const { t } = useInkraLocale();
+  const { className, label = t('common.close'), onFocus, ...props } = inkraProps;
     return <Tooltip.Provider><Tooltip.Root>
       <Tooltip.Trigger asChild>
         <DialogPrimitive.Close asChild>
@@ -174,7 +177,9 @@ export interface DrawerHeaderProps extends ComponentPropsWithoutRef<'div'> {
 }
 
 export const DrawerHeader = forwardRef<HTMLDivElement, DrawerHeaderProps>(
-  function DrawerHeader({ action, children, className, closeLabel = 'Close', divided = true, showClose = true, ...props }, ref) {
+  function DrawerHeader(inkraProps, ref) {
+  const { t } = useInkraLocale();
+  const { action, children, className, closeLabel = t('common.close'), divided = true, showClose = true, ...props } = inkraProps;
     const id = useId();
     const hasActions = Boolean(action || showClose);
     return <div {...props} className={classes('inkra-drawer__header', className)} data-actions={hasActions || undefined} data-custom-action={action ? true : undefined} data-divided={divided || undefined} ref={ref}>

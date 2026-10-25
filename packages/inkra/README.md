@@ -48,6 +48,104 @@ export function Actions() {
 
 To use only the design tokens, import `@inkra/react/tokens.css` instead.
 
+## Theme Provider
+
+```tsx
+import '@inkra/react/styles.css';
+import { ThemeProvider } from '@inkra/react/theme';
+import type { InkraThemeTokens } from '@inkra/react/theme';
+
+const tokens = {
+  '--inkra-accent': '#4b96aa',
+  '--inkra-icon-stroke-width': '1.5px',
+} satisfies InkraThemeTokens;
+
+<ThemeProvider theme="auto" tokens={tokens}>
+  <App />
+</ThemeProvider>
+```
+
+`ThemeProvider` is also exported from the package root. It renders a local `div`
+scope, accepts its normal HTML attributes and forwards its ref. It never changes
+the document theme or stores a preference. `theme` supports `light`, `dark`, and
+`auto`; omit it to inherit the surrounding CSS theme. Auto uses native CSS media
+queries and works with SSR without resolving the system preference in JavaScript.
+
+`tokens` accepts partial `--inkra-*` variables for color, fonts, geometry and
+pencil rendering. Supply units for lengths (`"1.5px"`); unitless numbers work for
+intensity and similar values. An inner scope without `theme` inherits outer
+tokens; an explicit mode establishes that mode's built-in variables before local
+overrides. `style` takes precedence over `tokens`. User token overrides are
+suspended while forced colors are active so the system palette can take over.
+
+Custom colors do not automatically adapt to light/dark modes. Supply appropriate
+variables for each mode, or use CSS media queries. Existing component portals
+inherit the trigger scope and track its live changes. The scope has no default
+background or spacing; use a surface or your own layout when needed. It composes
+with `InkraProvider` for language configuration without changing input state.
+
+## Internationalization
+
+Wrap your application in `InkraProvider` to localize component-owned copy and
+accessible labels. Built-in dictionaries are `en`, `zh-CN`, `ja`, `ko`, and `fr`.
+All five share the same typed keys. Regional tags such as `en-GB`, `ja-JP`,
+`ko-KR`, `fr-CA` and `zh-Hans-CN` select the matching language while keeping
+regional date/number formatting. No provider preserves the English defaults.
+
+```tsx
+import { InkraProvider, Input, Pagination } from '@inkra/react';
+import type { InkraDictionary } from '@inkra/react/i18n';
+
+const messages = {
+  'input.clear': 'Clear note',
+  'pagination.page': 'Open page {page}',
+} satisfies InkraDictionary;
+
+<InkraProvider locale="fr-CA" messages={messages}>
+  <Input clearable defaultValue="My note" aria-label="Note" />
+  <Pagination totalPages={5} />
+</InkraProvider>;
+```
+
+`messages` is a partial dictionary; developers can import JSON or adapt their
+existing i18n resource into these flat keys. Inspect `inkraLocales.en` for the
+complete key list and source templates, or copy another built-in dictionary.
+The provider, dictionaries, types, `useInkraLocale` and
+`createInkraTranslator` are also exported from `@inkra/react/i18n`.
+
+- Precedence: explicit component labels/props, inner provider overrides, inherited
+  overrides, then the built-in dictionary. Unknown languages use English copy
+  while valid `Intl` locale formatting is preserved. Invalid locale strings use `en-US`.
+- Nested providers merge by key, even when the inner locale changes. Pass the
+  desired override dictionary on language changes; inherited overrides are intentional.
+- `undefined` entries do not override; empty strings do. Avoid empty accessible
+  labels on interactive controls. Use `satisfies InkraDictionary` to catch key typos.
+- Preserve template placeholders such as `{page}`, `{count}` and `{label}`.
+  Interpolation is a single literal-text pass, not HTML, ICU, or executable code.
+  Missing placeholder values are left visible rather than silently removed.
+- Explicit component `locale` props take priority over the provider. Calendar
+  also retains its DayPicker locale/labels/formatters API. NumberTicker's
+  explicit compact-unit policies remain independent of regional number formatting.
+- Language and dictionary updates do not remount children or clear form drafts.
+  The provider adds no HTML wrapper and does not mutate the document language.
+  Set `lang` on your page or locale-scoped container; set `dir` separately if needed.
+- Application labels, option content, errors supplied by your application, and
+  stored/submitted values are not automatically translated. InkraProvider also
+  passes its locale to React Aria's internal announcements; third-party/native
+  messages are not keys in the Inkra dictionary.
+- Use identical locale/dictionary data for SSR and hydration. Messages may change
+  after hydration; the provider does not read browser language or local storage.
+
+```tsx
+import { InkraProvider, inkraLocales } from '@inkra/react/i18n';
+
+const customLanguage = { ...inkraLocales.en, 'input.clear': 'Effacer la note' };
+
+<InkraProvider locale="fr" messages={customLanguage}>
+  {children}
+</InkraProvider>;
+```
+
 ## Button
 
 `Button` forwards its ref and native button attributes. Its default `type` is `button`, so placing it inside a form will not submit unexpectedly.

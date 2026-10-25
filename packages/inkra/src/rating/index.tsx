@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import {
   forwardRef,
   useCallback,
@@ -107,7 +108,7 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
     dir,
     symbol,
     renderSymbol,
-    getValueLabel = (nextValue, maximum) => `${nextValue} of ${maximum}`,
+    getValueLabel: valueLabelProp,
     className = '',
     'aria-label': ariaLabel,
     'aria-labelledby': ariaLabelledBy,
@@ -119,6 +120,8 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
   },
   forwardedRef,
 ) {
+  const { t } = useInkraLocale();
+  const getValueLabel = valueLabelProp ?? ((value: number, count: number) => t('rating.value', { value, count }));
   const count = Math.max(1, Math.floor(finitePositive(countProp, 5)));
   const step = Math.min(count, finitePositive(stepProp, 1));
   const controlled = value !== undefined;
@@ -275,7 +278,7 @@ export const Rating = forwardRef<HTMLDivElement, RatingProps>(function Rating(
     <div
       {...props}
       aria-disabled={disabled || undefined}
-      aria-label={ariaLabel ?? (ariaLabelledBy ? undefined : 'Rating')}
+      aria-label={ariaLabel ?? (ariaLabelledBy ? undefined : t('rating.label'))}
       aria-labelledby={ariaLabelledBy}
       aria-readonly={readOnly || undefined}
       aria-valuemax={count}

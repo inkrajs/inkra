@@ -1,4 +1,6 @@
 export { Button, ButtonGroup, ButtonLink } from './Button.js';
+export * from './i18n/index.js';
+export * from './theme/index.js';
 export * from './overlay/index.js';
 export * from './form/index.js';
 export * from './input-number/index.js';

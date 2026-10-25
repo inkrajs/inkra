@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import {
   forwardRef,
   useCallback,
@@ -122,7 +123,11 @@ function isComposing(event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement
 }
 
 export const Editable = forwardRef<EditableHandle, EditableProps>(function Editable(
-  {
+  inkraProps,
+  forwardedRef,
+) {
+  const { t } = useInkraLocale();
+  const {
     'aria-label': ariaLabel,
     blurBehavior = 'ignore',
     className,
@@ -142,11 +147,11 @@ export const Editable = forwardRef<EditableHandle, EditableProps>(function Edita
     onEditingChange,
     onSave,
     onValueChange,
-    placeholder = 'Edit value',
+    placeholder = t('editable.edit'),
     readOnly = false,
-    saveLabel = 'Save',
-    cancelLabel = 'Cancel',
-    startEditingLabel = 'Edit value',
+    saveLabel = t('common.save'),
+    cancelLabel = t('common.cancel'),
+    startEditingLabel = t('editable.edit'),
     seed,
     selectProps,
     submitOnEnter = true,
@@ -154,9 +159,7 @@ export const Editable = forwardRef<EditableHandle, EditableProps>(function Edita
     validate,
     value,
     ...props
-  },
-  forwardedRef,
-) {
+  } = inkraProps;
   const generatedId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
@@ -255,13 +258,13 @@ export const Editable = forwardRef<EditableHandle, EditableProps>(function Edita
     setError(undefined);
     try {
       const validation = validate ? await validate(next, previous) : undefined;
-      const validationMessage = resultMessage(validation, 'Value is invalid');
+      const validationMessage = resultMessage(validation, t('editable.invalid'));
       if (validationMessage) {
         setError(validationMessage);
         return;
       }
       const saved = onSave ? await onSave(next, previous) : undefined;
-      const saveMessage = resultMessage(saved, 'Could not save value');
+      const saveMessage = resultMessage(saved, t('editable.failed'));
       if (saveMessage) {
         setError(saveMessage);
         return;
@@ -270,12 +273,12 @@ export const Editable = forwardRef<EditableHandle, EditableProps>(function Edita
       updateValue(next);
       finish(restoreFocus);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Could not save value');
+      setError(caught instanceof Error ? caught.message : t('editable.failed'));
     } finally {
       savingRef.current = false;
       setSaving(false);
     }
-  }, [currentValue, disabled, finish, onSave, readOnly, updateValue, validate]);
+  }, [currentValue, disabled, finish, onSave, readOnly, t, updateValue, validate]);
 
   useImperativeHandle(forwardedRef, () => ({ focus: () => editButtonRef.current?.focus(), startEditing, save, cancel }), [cancel, save, startEditing]);
 

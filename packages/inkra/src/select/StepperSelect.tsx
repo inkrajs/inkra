@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import { forwardRef, useEffect, useId, useRef, useState } from 'react';
 import type { AriaAttributes, ButtonHTMLAttributes, KeyboardEvent } from 'react';
 
@@ -45,7 +46,11 @@ const previousPaths = [{ d: 'M15 18l-6-6 6-6' }];
 const nextPaths = [{ d: 'M9 18l6-6-6-6' }];
 
 export const SelectStepper = forwardRef<HTMLButtonElement, SelectStepperProps>(function SelectStepper(
-  {
+  inkraProps,
+  forwardedRef,
+) {
+  const { t } = useInkraLocale();
+  const {
     'aria-describedby': ariaDescribedBy,
     'aria-errormessage': ariaErrorMessage,
     'aria-invalid': ariaInvalid,
@@ -60,19 +65,17 @@ export const SelectStepper = forwardRef<HTMLButtonElement, SelectStepperProps>(f
     items,
     loop = false,
     name,
-    nextLabel = 'Select next option',
+    nextLabel = t('select.next'),
     onKeyDown,
     onValueChange,
-    placeholder = 'Select an option',
-    previousLabel = 'Select previous option',
+    placeholder = t('select.placeholder'),
+    previousLabel = t('select.previous'),
     readOnly,
     required,
     size = 'md',
     value,
     ...props
-  },
-  forwardedRef,
-) {
+  } = inkraProps;
   const generatedId = useId();
   const controlRef = useRef<HTMLButtonElement>(null);
   const selectRef = useRef<HTMLSelectElement>(null);

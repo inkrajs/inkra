@@ -1,3 +1,4 @@
+import { useInkraLocale, type InkraTranslate } from '../i18n/index.js';
 import { __iconData as pauseIcon } from 'lucide-react/dist/esm/icons/pause.mjs';
 import { __iconData as playIcon } from 'lucide-react/dist/esm/icons/play.mjs';
 import { __iconData as volumeIcon } from 'lucide-react/dist/esm/icons/volume-2.mjs';
@@ -64,18 +65,18 @@ export interface VideoResourceProps {
   onLoad?: () => void;
 }
 
-const defaultLabels: VideoResourceLabels = {
-  controls: 'Video controls',
-  play: 'Play video',
-  pause: 'Pause video',
-  seek: 'Seek video',
-  mute: 'Mute video',
-  unmute: 'Unmute video',
-  volume: 'Video volume',
-  rate: 'Playback speed',
-  playbackError: 'Video playback could not start.',
+const defaultLabels = (t: InkraTranslate): VideoResourceLabels => ({
+  controls: t('video.controls'),
+  play: t('video.play'),
+  pause: t('video.pause'),
+  seek: t('video.seek'),
+  mute: t('video.mute'),
+  unmute: t('video.unmute'),
+  volume: t('video.volume'),
+  rate: t('audio.rate'),
+  playbackError: t('video.error'),
   time: (current, duration) => `${formatTime(current)} / ${formatTime(duration)}`,
-};
+});
 
 function clamp(value: number, min: number, max: number): number {
   return Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : min;
@@ -88,6 +89,7 @@ function formatTime(value: number): string {
 }
 
 export function VideoResource({ alt, labels: overrides, onError, onLoad, poster, src }: VideoResourceProps) {
+  const { t } = useInkraLocale();
   const videoRef = useRef<HTMLVideoElement>(null);
   const sourceRef = useRef(src);
   sourceRef.current = src;
@@ -103,7 +105,7 @@ export function VideoResource({ alt, labels: overrides, onError, onLoad, poster,
   const [muted, setMutedState] = useState(false);
   const [playbackRate, setPlaybackRateState] = useState(1);
   const [playbackError, setPlaybackError] = useState(false);
-  const labels = { ...defaultLabels, ...overrides };
+  const labels = { ...defaultLabels(t), ...overrides };
 
   const sync = useCallback(() => {
     const video = videoRef.current;

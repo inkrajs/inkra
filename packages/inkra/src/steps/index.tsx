@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import { forwardRef, type OlHTMLAttributes, type ReactNode } from 'react';
 import { PencilIcon, type PencilIconPath } from '../PencilIcon.js';
 import { PencilLine } from '../PencilLine.js';
@@ -38,9 +39,11 @@ function resolvedStatus(item: StepItem, index: number, current: number): StepSta
 }
 
 export const Steps = forwardRef<HTMLOListElement, StepsProps>(function Steps(
-  { 'aria-label': ariaLabel = 'Progress', className, current = 0, items, onStepChange, orientation = 'horizontal', ...props },
+  inkraProps,
   ref,
 ) {
+  const { t } = useInkraLocale();
+  const { 'aria-label': ariaLabel = t('steps.label'), className, current = 0, items, onStepChange, orientation = 'horizontal', ...props } = inkraProps;
   return <ol {...props} ref={ref} aria-label={ariaLabel} className={['inkra-steps', className].filter(Boolean).join(' ')} data-orientation={orientation}>
     {items.map((item, index) => {
       const status = resolvedStatus(item, index, current);

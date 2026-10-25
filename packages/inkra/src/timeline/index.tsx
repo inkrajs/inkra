@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import { forwardRef, type OlHTMLAttributes, type ReactNode } from 'react';
 import { PencilIcon, type PencilIconPath } from '../PencilIcon.js';
 import { PencilLine } from '../PencilLine.js';
@@ -25,9 +26,11 @@ const markerPaths: readonly PencilIconPath[] = [
 const copy = (value: ReactNode) => typeof value === 'string' ? <PencilText>{value}</PencilText> : value;
 
 export const Timeline = forwardRef<HTMLOListElement, TimelineProps>(function Timeline(
-  { 'aria-label': ariaLabel = 'Timeline', className, items, orientation = 'vertical', ...props },
+  inkraProps,
   ref,
 ) {
+  const { t } = useInkraLocale();
+  const { 'aria-label': ariaLabel = t('timeline.label'), className, items, orientation = 'vertical', ...props } = inkraProps;
   return <ol {...props} ref={ref} aria-label={ariaLabel} className={['inkra-timeline', className].filter(Boolean).join(' ')} data-orientation={orientation}>
     {items.map((item, index) => <li key={item.id} className="inkra-timeline__item">
       <span className="inkra-timeline__rail" aria-hidden="true">

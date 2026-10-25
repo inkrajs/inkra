@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { forwardRef, useId } from 'react';
 import type { ComponentPropsWithoutRef, ComponentRef, ReactNode } from 'react';
@@ -174,7 +175,9 @@ export interface OverlayCloseButtonProps extends Omit<ButtonProps, 'children' | 
 }
 
 export const OverlayCloseButton = forwardRef<HTMLButtonElement, OverlayCloseButtonProps>(
-  function OverlayCloseButton({ label = 'Close', className, onFocus, ...props }, ref) {
+  function OverlayCloseButton(inkraProps, ref) {
+  const { t } = useInkraLocale();
+  const { label = t('common.close'), className, onFocus, ...props } = inkraProps;
     return <Tooltip.Provider><Tooltip.Root>
       <Tooltip.Trigger asChild>
         <DialogPrimitive.Close asChild>
@@ -203,7 +206,9 @@ export interface OverlayHeaderProps extends ComponentPropsWithoutRef<'div'> {
 }
 
 export const OverlayHeader = forwardRef<HTMLDivElement, OverlayHeaderProps>(
-  function OverlayHeader({ children, className, divided = true, showClose = true, closeLabel = 'Close', action, ...props }, ref) {
+  function OverlayHeader(inkraProps, ref) {
+  const { t } = useInkraLocale();
+  const { children, className, divided = true, showClose = true, closeLabel = t('common.close'), action, ...props } = inkraProps;
     const id = useId();
     return <div {...props} ref={ref} className={classes('inkra-overlay__header', className)} data-divided={divided || undefined}>
       <div className="inkra-overlay__heading">{children}</div>

@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import { scaleLinear } from 'd3-scale';
 import { curveLinearClosed, lineRadial } from 'd3-shape';
 import { forwardRef, useEffect, useId, useMemo, useRef, useState } from 'react';
@@ -249,7 +250,9 @@ function paintStyle(color: string) {
   return { '--inkra-accent': color, '--inkra-accent-soft': color, '--inkra-accent-strong': color } as CSSProperties;
 }
 
-export const Radar = forwardRef<HTMLDivElement, RadarProps>(function Radar({
+export const Radar = forwardRef<HTMLDivElement, RadarProps>(function Radar(inkraProps, forwardedRef) {
+  const { t } = useInkraLocale();
+  const {
   axes,
   series,
   label,
@@ -262,11 +265,11 @@ export const Radar = forwardRef<HTMLDivElement, RadarProps>(function Radar({
   showLegend = true,
   showValues = true,
   showTable = true,
-  legendLabel = 'Series',
-  tableCaption = 'Radar data',
-  seriesLabel = 'Series',
-  missingLabel = 'Missing',
-  emptyMessage = 'No radar data',
+  legendLabel = t('radar.series'),
+  tableCaption = t('radar.caption'),
+  seriesLabel = t('radar.series'),
+  missingLabel = t('common.missing'),
+  emptyMessage = t('radar.empty'),
   selectedSeries,
   defaultSelectedSeries = null,
   onSelectedSeriesChange,
@@ -276,7 +279,7 @@ export const Radar = forwardRef<HTMLDivElement, RadarProps>(function Radar({
   className,
   style,
   ...props
-}, forwardedRef) {
+} = inkraProps;
   const id = useId();
   const labelId = `inkra-radar-${id}-label`;
   const descriptionId = description == null ? undefined : `inkra-radar-${id}-description`;

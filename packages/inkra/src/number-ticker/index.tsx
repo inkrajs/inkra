@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import {
   forwardRef,
   useEffect,
@@ -89,7 +90,7 @@ export const NumberTicker = forwardRef<HTMLSpanElement, NumberTickerProps>(funct
     easing = easeOutCubic,
     formatOptions,
     getValueLabel,
-    locale,
+    locale: localeProp,
     prefix,
     renderDelta,
     renderValue,
@@ -100,6 +101,8 @@ export const NumberTicker = forwardRef<HTMLSpanElement, NumberTickerProps>(funct
   },
   forwardedRef,
 ) {
+  const { locale: inheritedLocale } = useInkraLocale();
+  const locale = localeProp ?? inheritedLocale;
   const rootRef = useRef<HTMLSpanElement>(null);
   const frameRef = useRef<number | null>(null);
   const deltaTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);

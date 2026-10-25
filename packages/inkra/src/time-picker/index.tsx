@@ -1,4 +1,5 @@
 import { forwardRef, memo, useCallback, useEffect, useId, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { useInkraLocale } from '../i18n/index.js';
 import type { MouseEvent, ReactNode } from 'react';
 
 import { Button, ButtonGroup } from '../Button.js';
@@ -97,13 +98,12 @@ export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function
   const secondsVisible = showSeconds || (step !== undefined && step !== 'any' && Number(step) % 60 !== 0);
   const resolvedStep = step ?? (secondsVisible ? 1 : 60);
   const stepBase = String(defaultValue ?? initialValue.current);
-  const resolvedLocale = locale ?? lang ?? (hourCycle === 'h12' ? 'en-US' : 'en-GB');
-  const zh = resolvedLocale.toLowerCase().startsWith('zh');
-  const copy = zh
-    ? { title: '选择时间', hour: '时', minute: '分', second: '秒', period: '时段', am: '上午', pm: '下午',
-      done: '确定', cancel: '取消', clear: '清空时间', invalid: '请选择符合时间范围和步进的时间。' }
-    : { title: 'Choose time', hour: 'Hour', minute: 'Minute', second: 'Second', period: 'Period', am: 'AM', pm: 'PM',
-      done: 'Apply', cancel: 'Cancel', clear: 'Clear time', invalid: 'Choose a time within the allowed range and step.' };
+  const { locale: resolvedLocale, t } = useInkraLocale(locale ?? lang, hourCycle === 'h12' ? 'en-US' : 'en-GB');
+  const copy = {
+    title: t('timePicker.title'), hour: t('timePicker.hour'), minute: t('timePicker.minute'),
+    second: t('timePicker.second'), period: t('timePicker.period'), am: t('timePicker.am'), pm: t('timePicker.pm'),
+    done: t('common.apply'), cancel: t('common.cancel'), clear: t('timePicker.clear'), invalid: t('timePicker.invalid'),
+  };
   const currentParts = partsOf(currentValue);
   const hasCurrentParts = currentParts !== undefined;
   const formatter = useMemo(() => hasCurrentParts ? new Intl.DateTimeFormat(resolvedLocale, {

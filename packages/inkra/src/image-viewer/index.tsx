@@ -1,3 +1,4 @@
+import { useInkraLocale, type InkraTranslate } from '../i18n/index.js';
 import { __iconData as chevronLeftIcon } from 'lucide-react/dist/esm/icons/chevron-left.mjs';
 import { __iconData as chevronRightIcon } from 'lucide-react/dist/esm/icons/chevron-right.mjs';
 import { __iconData as imageOffIcon } from 'lucide-react/dist/esm/icons/image-off.mjs';
@@ -218,26 +219,26 @@ export interface ImageViewerLabels {
   emptyDescription: string;
 }
 
-const defaultLabels: ImageViewerLabels = {
-  title: 'Image viewer',
-  description: 'Use the previous and next controls or arrow keys to browse images.',
-  close: 'Close image viewer',
-  previous: 'Previous image',
-  next: 'Next image',
-  thumbnails: 'Image thumbnails',
-  imagePosition: (current, total) => `${current} of ${total}`,
-  thumbnail: (item, current, total) => `Show ${item.alt}, ${current} of ${total}`,
-  failedTitle: 'Image unavailable',
-  failedDescription: item => `${item.alt} could not be loaded.`,
-  retry: 'Retry',
-  zoomIn: 'Zoom in',
-  zoomOut: 'Zoom out',
-  resetZoom: 'Reset zoom',
-  rotate: 'Rotate clockwise',
-  panZoom: item => `Pan and zoom ${item.alt}`,
-  emptyTitle: 'No images',
-  emptyDescription: 'There are no images to show.',
-};
+const defaultLabels = (t: InkraTranslate): ImageViewerLabels => ({
+  title: t('viewer.title'),
+  description: t('viewer.description'),
+  close: t('viewer.close'),
+  previous: t('viewer.previous'),
+  next: t('viewer.next'),
+  thumbnails: t('viewer.thumbnails'),
+  imagePosition: (current, total) => t('viewer.position', { current, total }),
+  thumbnail: (item, current, total) => t('viewer.thumbnail', { label: item.alt, current, total }),
+  failedTitle: t('viewer.failed'),
+  failedDescription: item => t('viewer.failedDescription', { label: item.alt }),
+  retry: t('common.retry'),
+  zoomIn: t('common.zoomIn'),
+  zoomOut: t('common.zoomOut'),
+  resetZoom: t('viewer.reset'),
+  rotate: t('viewer.rotate'),
+  panZoom: item => t('viewer.panZoom', { label: item.alt }),
+  emptyTitle: t('viewer.empty'),
+  emptyDescription: t('viewer.emptyDescription'),
+});
 
 export interface ImageViewerImageRenderProps {
   alt: string;
@@ -288,8 +289,9 @@ export const ImageViewerContent = forwardRef<
   },
   forwardedRef,
 ) {
+  const { t } = useInkraLocale();
   const { activeIndex, activeItem, items, loop, open, selectIndex, step } = useImageViewerContext();
-  const labels = { ...defaultLabels, ...labelOverrides };
+  const labels = { ...defaultLabels(t), ...labelOverrides };
   const stageRef = useRef<HTMLDivElement>(null);
   const thumbnailsRef = useRef<HTMLDivElement>(null);
   const thumbnailRefs = useRef(new Map<string, HTMLButtonElement>());

@@ -1,3 +1,4 @@
+import { useInkraLocale, type InkraTranslate } from '../i18n/index.js';
 import {
   forwardRef,
   memo,
@@ -91,23 +92,23 @@ const uploadPaths: readonly PencilIconPath[] = [
   { d: 'M12 3v12' },
 ];
 
-const defaultLabels: UploadLabels = {
-  browse: 'Choose files',
-  drop: 'or drop files here',
-  selected: 'Selected',
-  upload: 'Upload',
-  uploading: 'Uploading',
-  success: 'Uploaded',
-  error: 'Upload failed',
-  cancelled: 'Cancelled',
-  retry: 'Retry',
-  cancel: 'Cancel',
-  remove: 'Remove',
-  rejected: 'Files not added',
-  acceptError: 'This file type is not accepted.',
-  sizeError: maxSize => `File exceeds the ${formatBytes(maxSize)} limit.`,
-  countError: maxFiles => `Only ${maxFiles} file${maxFiles === 1 ? '' : 's'} may be selected.`,
-};
+const defaultLabels = (t: InkraTranslate): UploadLabels => ({
+  browse: t('upload.browse'),
+  drop: t('upload.drop'),
+  selected: t('common.selected'),
+  upload: t('upload.upload'),
+  uploading: t('upload.uploading'),
+  success: t('upload.success'),
+  error: t('upload.failed'),
+  cancelled: t('upload.cancelled'),
+  retry: t('common.retry'),
+  cancel: t('common.cancel'),
+  remove: t('common.remove'),
+  rejected: t('upload.rejected'),
+  acceptError: t('upload.acceptError'),
+  sizeError: maxSize => t('upload.sizeError', { size: formatBytes(maxSize) }),
+  countError: maxFiles => t(maxFiles === 1 ? 'upload.countErrorOne' : 'upload.countError', { count: maxFiles }),
+});
 
 function formatBytes(value: number): string {
   if (value < 1024) return `${value} B`;
@@ -186,6 +187,7 @@ export const Upload = forwardRef<HTMLDivElement, UploadProps>(function Upload(
   },
   ref,
 ) {
+  const { t } = useInkraLocale();
   const instanceId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const itemCounter = useRef(0);
@@ -200,7 +202,8 @@ export const Upload = forwardRef<HTMLDivElement, UploadProps>(function Upload(
   const itemsRef = useRef(items);
   itemsRef.current = items;
   disabledRef.current = disabled;
-  const labelValues = { ...defaultLabels, ...labelOverrides };
+  const localizedDefaults = useMemo(() => defaultLabels(t), [t]);
+  const labelValues = { ...localizedDefaults, ...labelOverrides };
   // Snapshot scalar/function values so same-object label edits remain observable.
   const labels = useMemo(() => labelValues, [
     labelValues.browse, labelValues.drop, labelValues.selected, labelValues.upload,

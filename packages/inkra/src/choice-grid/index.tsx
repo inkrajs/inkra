@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import {
   Children,
   createContext,
@@ -135,6 +136,7 @@ export const ChoiceGrid = memo(forwardRef<HTMLFieldSetElement, ChoiceGridProps>(
   props,
   forwardedRef,
 ) {
+  const { t } = useInkraLocale();
   const {
     'aria-describedby': ariaDescribedBy,
     'aria-errormessage': ariaErrorMessage,
@@ -151,8 +153,8 @@ export const ChoiceGrid = memo(forwardRef<HTMLFieldSetElement, ChoiceGridProps>(
     minItemWidth = '13rem',
     name,
     pageSize,
-    previousPageLabel = 'Previous page',
-    nextPageLabel = 'Next page',
+    previousPageLabel = t('common.previousPage'),
+    nextPageLabel = t('common.nextPage'),
     pageLabel = (page, pages) => `${page} / ${pages}`,
     style,
     type = 'single',

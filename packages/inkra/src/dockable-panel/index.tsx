@@ -1,3 +1,4 @@
+import { useInkraLocale, type InkraTranslate } from '../i18n/index.js';
 import {
   DndContext,
   MouseSensor,
@@ -218,13 +219,13 @@ const resetPaths: readonly PencilIconPath[] = [
   { d: 'M4 4v4.68h4.68' },
 ];
 
-const defaultLabels: Required<DockablePanelLabels> = {
-  move: 'Move panel',
-  collapse: 'Collapse panel',
-  expand: 'Expand panel',
-  reset: 'Restore panel position',
-  keyboardInstructions: 'Use the arrow keys to move this panel. Hold Shift for larger steps. Press Home to restore its position.',
-};
+const defaultLabels = (t: InkraTranslate): Required<DockablePanelLabels> => ({
+  move: t('dockable.move'),
+  collapse: t('dockable.collapse'),
+  expand: t('dockable.expand'),
+  reset: t('dockable.reset'),
+  keyboardInstructions: t('dockable.instructions'),
+});
 
 function renderTitle(title: ReactNode) {
   return typeof title === 'string' ? <PencilText>{title}</PencilText> : title;
@@ -260,6 +261,7 @@ export const DockablePanel = forwardRef<HTMLElement, DockablePanelProps>(functio
   },
   forwardedRef,
 ) {
+  const { t } = useInkraLocale();
   const workspace = useContext(WorkspaceContext);
   if (!workspace) throw new Error('DockablePanel must be rendered inside DockablePanelWorkspace.');
   const generatedId = useId();
@@ -274,7 +276,7 @@ export const DockablePanel = forwardRef<HTMLElement, DockablePanelProps>(functio
   const resolvedCollapsed = collapsed ?? uncontrolledCollapsed;
   const positionRef = useRef(resolvedPosition);
   positionRef.current = resolvedPosition;
-  const labels = { ...defaultLabels, ...labelOverrides };
+  const labels = { ...defaultLabels(t), ...labelOverrides };
   const {
     activate,
     bounds,

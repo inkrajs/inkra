@@ -1,3 +1,5 @@
+import { useInkraLocale, resolveInkraLocale, type InkraTranslate } from '../i18n/index.js';
+import { calendarLocales } from '../calendar/locales.js';
 import {
   forwardRef,
   useEffect,
@@ -103,18 +105,12 @@ function initialForMode(mode: DatePickerMode, value: DatePickerValue): DatePicke
   return isRange(value) ? value : undefined;
 }
 
-function defaultCopy(locale: string) {
-  const chinese = locale.toLowerCase().startsWith('zh');
+function defaultCopy(t: InkraTranslate) {
   return {
-    calendar: chinese ? '选择日期' : 'Choose date',
-    clear: chinese ? '清空日期' : 'Clear date',
-    next: chinese ? '下个月' : 'Next month',
-    open: chinese ? '打开日期选择器' : 'Open date picker',
-    placeholder: chinese ? '选择日期' : 'Choose a date',
-    previous: chinese ? '上个月' : 'Previous month',
-    rangePlaceholder: chinese ? '选择日期范围' : 'Choose a date range',
-    selected: chinese ? '已选择' : 'selected',
-    today: chinese ? '今天' : 'today',
+    calendar: t('datePicker.calendar'), clear: t('datePicker.clear'),
+    next: t('datePicker.next'), open: t('datePicker.open'),
+    placeholder: t('datePicker.placeholder'), previous: t('datePicker.previous'),
+    rangePlaceholder: t('datePicker.range'), selected: t('datePicker.selected'), today: t('datePicker.today'),
   };
 }
 
@@ -141,7 +137,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
     fullWidth = true,
     id,
     invalid = false,
-    locale = 'en-US',
+    locale: localeProp,
     mode = 'single',
     name,
     onBlur,
@@ -158,6 +154,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
     style,
     value,
   } = allProps;
+  const { locale, t } = useInkraLocale(localeProp);
   const generatedId = useId();
   const field = useFieldContext();
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -176,7 +173,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
     'aria-errormessage': ariaErrorMessage,
     'aria-invalid': ariaInvalid,
   });
-  const copy = defaultCopy(locale);
+  const copy = defaultCopy(t);
   const currentValue = initialForMode(mode, valueControlled ? value : uncontrolledValue);
   const currentOpen = openControlled ? Boolean(open) : uncontrolledOpen;
   const singleValue = validDate(currentValue) ? currentValue : undefined;
@@ -249,6 +246,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
     ...labels,
   };
   const sharedCalendarProps = {
+    locale: calendarLocales[resolveInkraLocale(locale)],
     ...restCalendarProps,
     appearance: 'picker' as const,
     defaultMonth: defaultMonth ?? firstDate,

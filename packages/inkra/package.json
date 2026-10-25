@@ -21,6 +21,16 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./theme": {
+      "types": "./dist/theme/index.d.ts",
+      "import": "./dist/theme/index.js",
+      "default": "./dist/theme/index.js"
+    },
+    "./i18n": {
+      "types": "./dist/i18n/index.d.ts",
+      "import": "./dist/i18n/index.js",
+      "default": "./dist/i18n/index.js"
+    },
     "./PencilSurface": {
       "types": "./dist/PencilSurface.d.ts",
       "import": "./dist/PencilSurface.js",

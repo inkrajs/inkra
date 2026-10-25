@@ -1,3 +1,5 @@
+import { useInkraLocale, resolveInkraLocale } from '../i18n/index.js';
+import { calendarLocales } from './locales.js';
 import { createContext, useContext, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import { CaptionLabel, Day, DayButton, DayPicker, Weekday, type CaptionLabelProps, type ChevronProps, type DayProps, type DayButtonProps, type DayPickerProps, type PreviousMonthButtonProps, type WeekdayProps } from 'react-day-picker';
 import { Button } from '../Button.js';
@@ -45,6 +47,7 @@ function CalendarChevron({ className, orientation = 'left', size = 28 }: Chevron
 
 // The trip calendar uses a full-cell date target with sibling event buttons.
 function CalendarCell({ children, day, modifiers, ...props }: DayProps) {
+  const { t } = useInkraLocale();
   const { eventsByDay, appearance, onEventSelect, renderDayAccessory, maxEventsPerDay, showDayEventsLabel } = useContext(EventContext);
   const [expandedDay, setExpandedDay] = useState<string>();
   if (appearance === 'picker') return <Day {...props} day={day} modifiers={modifiers}>{children}</Day>;
@@ -63,7 +66,7 @@ function CalendarCell({ children, day, modifiers, ...props }: DayProps) {
         aria-label={`${event.label}${event.description ? `, ${event.description}` : ''}`} title={event.description ?? event.label}
         onClick={click => { click.stopPropagation(); onEventSelect?.(event); }}><PencilText ellipsis>{event.label}</PencilText></PencilSurface>)}
         {entries.length > limit && <Button className="inkra-calendar__events-toggle" size="sm" variant="ghost" aria-expanded={expanded} onClick={click => { click.stopPropagation(); setExpandedDay(expanded ? undefined : dayKey(day.date)); }}>
-          {showDayEventsLabel?.(day.date, entries.length, expanded) ?? (expanded ? 'Show fewer events' : `Show all ${entries.length} events`)}
+          {showDayEventsLabel?.(day.date, entries.length, expanded) ?? (expanded ? t('agenda.fewer') : t('agenda.all', { count: entries.length }))}
         </Button>}
       </div>
     </div>
@@ -71,11 +74,12 @@ function CalendarCell({ children, day, modifiers, ...props }: DayProps) {
 }
 
 function CalendarDay({ children, modifiers, day, ...props }: DayButtonProps) {
+  const { t } = useInkraLocale();
   const { eventsByDay, indicator, appearance, maxEventsPerDay, showDayEventsLabel } = useContext(EventContext);
   const events = eventsByDay.get(dayKey(day.date)) ?? emptyEvents;
   return <DayButton {...props} day={day} modifiers={modifiers}
     aria-label={[props['aria-label'], ...(maxEventsPerDay !== undefined && Number.isFinite(maxEventsPerDay) && events.length > Math.max(0, Math.floor(maxEventsPerDay))
-      ? [showDayEventsLabel?.(day.date, events.length, false) ?? `${events.length} events`] : events.map(event => event.label))].filter(Boolean).join(', ')}>
+      ? [showDayEventsLabel?.(day.date, events.length, false) ?? t('agenda.count', { count: events.length })] : events.map(event => event.label))].filter(Boolean).join(', ')}>
     {modifiers.selected && appearance === 'picker' && <PencilSurface variant="selection" className="inkra-calendar__selection" aria-hidden="true" />}
     <PencilText>{String(children)}</PencilText>
     {appearance === 'picker' && events.length > 0 && indicator !== 'none' && <span className="inkra-calendar__event" data-indicator={indicator} aria-hidden="true">{indicator === 'count' ? events.length : '\u2022'}</span>}
@@ -83,6 +87,9 @@ function CalendarDay({ children, modifiers, day, ...props }: DayButtonProps) {
 }
 
 export function Calendar({ events = emptyEvents, eventIndicator = 'count', appearance = 'itinerary', onEventSelect, renderDayAccessory, displayRange, maxEventsPerDay, showDayEventsLabel, className, components, showOutsideDays = true, ...props }: CalendarProps) {
+  const { locale, t } = useInkraLocale(props.locale?.code);
+  const eventSummary = useMemo(() => showDayEventsLabel ?? ((_date: Date, total: number, expanded: boolean) =>
+    t(expanded ? 'agenda.fewer' : 'agenda.all', { count: total })), [showDayEventsLabel, t]);
   const eventsByDay = useMemo(() => {
     const index = new Map<string, CalendarEvent[]>();
     for (const event of events) {
@@ -93,12 +100,14 @@ export function Calendar({ events = emptyEvents, eventIndicator = 'count', appea
     }
     return index;
   }, [events]);
-  const context = useMemo(() => ({ eventsByDay, indicator: eventIndicator, appearance, onEventSelect, renderDayAccessory, maxEventsPerDay, showDayEventsLabel }),
-    [eventsByDay, eventIndicator, appearance, onEventSelect, renderDayAccessory, maxEventsPerDay, showDayEventsLabel]);
+  const context = useMemo(() => ({ eventsByDay, indicator: eventIndicator, appearance, onEventSelect, renderDayAccessory, maxEventsPerDay, showDayEventsLabel: eventSummary }),
+    [eventsByDay, eventIndicator, appearance, onEventSelect, renderDayAccessory, maxEventsPerDay, eventSummary]);
   const hidden = displayRange ? [...(Array.isArray(props.hidden) ? props.hidden : props.hidden ? [props.hidden] : []), { before: displayRange.from }, { after: displayRange.to }] : props.hidden;
   return <EventContext.Provider value={context}><div className="inkra-calendar-scroll" data-appearance={appearance}
     data-event-summary={maxEventsPerDay !== undefined && Number.isFinite(maxEventsPerDay) || undefined}>
-    <DayPicker {...props} hidden={hidden} data-appearance={appearance} data-week-numbers={props.showWeekNumber || undefined} showOutsideDays={showOutsideDays} className={['inkra-calendar', className].filter(Boolean).join(' ')}
+    <DayPicker {...props} locale={props.locale ?? calendarLocales[resolveInkraLocale(locale)]}
+      labels={{ labelPrevious: () => t('datePicker.previous'), labelNext: () => t('datePicker.next'), ...props.labels }}
+      hidden={hidden} data-appearance={appearance} data-week-numbers={props.showWeekNumber || undefined} showOutsideDays={showOutsideDays} className={['inkra-calendar', className].filter(Boolean).join(' ')}
       components={{ CaptionLabel: CalendarCaption, Weekday: CalendarWeekday, Chevron: CalendarChevron, PreviousMonthButton: CalendarMonthButton, NextMonthButton: CalendarMonthButton, Day: CalendarCell, DayButton: CalendarDay, ...components }} />
   </div></EventContext.Provider>;
 }

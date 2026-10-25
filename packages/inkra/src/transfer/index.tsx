@@ -1,3 +1,4 @@
+import { useInkraLocale, type InkraTranslate } from '../i18n/index.js';
 import { forwardRef, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
 
@@ -93,29 +94,29 @@ export interface TransferProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onC
   pageLabel?: (page: number, pageCount: number) => ReactNode;
 }
 
-const defaultLabels: Required<TransferLabels> = {
-  sourceTitle: 'Available',
-  targetTitle: 'Selected',
-  sourceSearchLabel: 'Search available items',
-  targetSearchLabel: 'Search selected items',
-  sourceClearSearch: 'Clear available item search',
-  targetClearSearch: 'Clear selected item search',
-  sourceSearchPlaceholder: 'Search available',
-  targetSearchPlaceholder: 'Search selected',
-  selectAllSource: 'Select all visible available items',
-  selectAllTarget: 'Select all visible selected items',
-  sourceEmpty: 'No available items',
-  targetEmpty: 'No selected items',
-  sourceNoResults: 'No available items match this search',
-  targetNoResults: 'No selected items match this search',
-  moveToTarget: 'Move to selected',
-  moveToSource: 'Move to available',
-  moveSelectedToTarget: 'Move selected visible items to selected',
-  moveSelectedToSource: 'Move selected visible items to available',
-  batchActions: 'Transfer selected visible items',
-  previousPage: 'Previous page',
-  nextPage: 'Next page',
-};
+const defaultLabels = (t: InkraTranslate): Required<TransferLabels> => ({
+  sourceTitle: t('transfer.available'),
+  targetTitle: t('common.selected'),
+  sourceSearchLabel: t('transfer.sourceSearch'),
+  targetSearchLabel: t('transfer.targetSearch'),
+  sourceClearSearch: t('transfer.sourceClear'),
+  targetClearSearch: t('transfer.targetClear'),
+  sourceSearchPlaceholder: t('transfer.sourcePlaceholder'),
+  targetSearchPlaceholder: t('transfer.targetPlaceholder'),
+  selectAllSource: t('transfer.allSource'),
+  selectAllTarget: t('transfer.allTarget'),
+  sourceEmpty: t('transfer.sourceEmpty'),
+  targetEmpty: t('transfer.targetEmpty'),
+  sourceNoResults: t('transfer.sourceNoResults'),
+  targetNoResults: t('transfer.targetNoResults'),
+  moveToTarget: t('transfer.toTarget'),
+  moveToSource: t('transfer.toSource'),
+  moveSelectedToTarget: t('transfer.selectedToTarget'),
+  moveSelectedToSource: t('transfer.selectedToSource'),
+  batchActions: t('transfer.batch'),
+  previousPage: t('common.previousPage'),
+  nextPage: t('common.nextPage'),
+});
 
 function searchableText(item: TransferItem): string {
   const parts = [
@@ -139,8 +140,8 @@ function filterPanelItems(
   return items.filter(item => searchableText(item).includes(needle));
 }
 
-function defaultCount({ visible, total, selected }: TransferCountDetails): ReactNode {
-  return selected > 0 ? `${selected} selected · ${visible}/${total}` : `${visible}/${total}`;
+function defaultCount({ visible, total, selected }: TransferCountDetails, t: InkraTranslate): ReactNode {
+  return selected > 0 ? t('transfer.count', { selected, visible, total }) : `${visible}/${total}`;
 }
 
 function itemCopy(item: TransferItem) {
@@ -160,7 +161,7 @@ export const Transfer = forwardRef<HTMLDivElement, TransferProps>(function Trans
     defaultTargetKeys = [],
     disabled = false,
     filterItem,
-    formatCount = defaultCount,
+    formatCount: formatCountProp,
     items,
     labels: labelOverrides,
     onTargetKeysChange,
@@ -173,6 +174,8 @@ export const Transfer = forwardRef<HTMLDivElement, TransferProps>(function Trans
   },
   ref,
 ) {
+  const { t } = useInkraLocale();
+  const formatCount = formatCountProp ?? ((details: TransferCountDetails) => defaultCount(details, t));
   const generatedId = useId();
   const controlled = targetKeys !== undefined;
   const uniqueItems = useMemo(() => uniqueTransferItems(items), [items]);
@@ -182,7 +185,7 @@ export const Transfer = forwardRef<HTMLDivElement, TransferProps>(function Trans
   const currentTargetSet = useMemo(() => new Set(currentTargetKeys), [currentTargetKeys]);
   const itemsById = useMemo(() => new Map(uniqueItems.map(item => [item.id, item])), [uniqueItems]);
   const panels = useMemo(() => splitTransferItems(uniqueItems, currentTargetKeys), [uniqueItems, currentTargetKeys]);
-  const labels = { ...defaultLabels, ...labelOverrides };
+  const labels = { ...defaultLabels(t), ...labelOverrides };
   const [queries, setQueries] = useState<Record<TransferSide, string>>({ source: '', target: '' });
   const [pages, setPages] = useState<Record<TransferSide, number>>({ source: 0, target: 0 });
   const pageLength = pageSize !== undefined && Number.isFinite(pageSize) ? Math.max(1, Math.floor(pageSize)) : undefined;

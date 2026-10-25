@@ -1,3 +1,4 @@
+import { useInkraLocale, type InkraTranslate } from '../i18n/index.js';
 import { forwardRef, useCallback, useEffect, useId, useImperativeHandle, useRef, useState } from 'react';
 import type { AudioHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
 import { Button } from '../Button.js';
@@ -88,9 +89,9 @@ export interface AudioPlayerProps extends Omit<HTMLAttributes<HTMLDivElement>, '
   audioProps?: Omit<AudioHTMLAttributes<HTMLAudioElement>, 'src' | 'controls' | 'autoPlay' | 'preload' | 'volume' | 'muted' | 'playbackRate' | 'onError'>;
 }
 
-const DEFAULT_LABELS: Required<Omit<AudioPlayerLabels, 'time'>> = {
-  controls: 'Audio controls', audio: 'Audio', play: 'Play', pause: 'Pause', mute: 'Mute', unmute: 'Unmute', seek: 'Seek', volume: 'Volume', rate: 'Playback speed', loading: 'Loading audio', blocked: 'Playback was blocked. Press play to try again.', error: 'Audio failed to load.',
-};
+const DEFAULT_LABELS = (t: InkraTranslate): Required<Omit<AudioPlayerLabels, 'time'>> => ({
+  controls: t('audio.controls'), audio: t('audio.label'), play: t('audio.play'), pause: t('audio.pause'), mute: t('audio.mute'), unmute: t('audio.unmute'), seek: t('audio.seek'), volume: t('audio.volume'), rate: t('audio.rate'), loading: t('audio.loading'), blocked: t('audio.blocked'), error: t('audio.error'),
+});
 
 const rates = [0.75, 1, 1.25, 1.5, 2];
 
@@ -101,6 +102,7 @@ export const AudioPlayer = forwardRef<AudioPlayerControls, AudioPlayerProps>(fun
   { src, preload = 'metadata', autoPlay = false, crossOrigin, className, defaultMuted = false, defaultPlaybackRate = 1, defaultVolume = 1, volume, muted, playbackRate, onVolumeChange, onMutedChange, onPlaybackRateChange, onTimeChange, onStateChange, onError, labels, renderControls, audioProps, ...props },
   forwardedRef,
 ) {
+  const { t } = useInkraLocale();
   const id = useId();
   const audioRef = useRef<HTMLAudioElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -114,7 +116,7 @@ export const AudioPlayer = forwardRef<AudioPlayerControls, AudioPlayerProps>(fun
   controlledRef.current = { volume, muted, playbackRate };
   const callbacksRef = useRef({ onVolumeChange, onMutedChange, onPlaybackRateChange, onTimeChange, onStateChange, onError });
   callbacksRef.current = { onVolumeChange, onMutedChange, onPlaybackRateChange, onTimeChange, onStateChange, onError };
-  const mergedLabels = { ...DEFAULT_LABELS, ...labels };
+  const mergedLabels = { ...DEFAULT_LABELS(t), ...labels };
   const update = useCallback((patch: Partial<AudioPlayerState>) => {
     const current = stateRef.current;
     const changed = (Object.keys(patch) as (keyof AudioPlayerState)[]).some(key => !Object.is(current[key], patch[key]));

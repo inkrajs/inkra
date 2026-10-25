@@ -1,3 +1,4 @@
+import { useInkraLocale, type InkraTranslate } from '../i18n/index.js';
 import {
   forwardRef,
   memo,
@@ -126,28 +127,19 @@ const removePaths = [{ d: 'M18 6 6 18' }, { d: 'm6 6 12 12' }] as const;
 const clearPaths = [{ d: 'M4 7h16' }, { d: 'M9 7V4h6v3' }, { d: 'm7 7 1 13h8l1-13' }] as const;
 const classes = (...values: (string | false | undefined)[]) => values.filter(Boolean).join(' ');
 
-const defaultLabels: TagInputLabels = {
-  tagList: 'Selected tags',
-  removeTag: tag => `Remove ${tag.label ?? tag.value}`,
-  clearAll: 'Clear all tags',
-  duplicate: candidate => `${candidate} is already added.`,
-  maxTags: maximum => `You can add up to ${maximum} tags.`,
-  invalid: candidate => `${candidate} is not a valid tag.`,
-};
-
 function joinAriaIds(...values: (string | undefined)[]) {
   const ids = values.flatMap(value => value?.split(/\s+/).filter(Boolean) ?? []);
   return [...new Set(ids)].join(' ') || undefined;
 }
 
-function resolvedLabels(labels: Partial<TagInputLabels> | undefined): TagInputLabels {
+function resolvedLabels(labels: Partial<TagInputLabels> | undefined, t: InkraTranslate): TagInputLabels {
   return {
-    tagList: labels?.tagList ?? defaultLabels.tagList,
-    removeTag: labels?.removeTag ?? defaultLabels.removeTag,
-    clearAll: labels?.clearAll ?? defaultLabels.clearAll,
-    duplicate: labels?.duplicate ?? defaultLabels.duplicate,
-    maxTags: labels?.maxTags ?? defaultLabels.maxTags,
-    invalid: labels?.invalid ?? defaultLabels.invalid,
+    tagList: labels?.tagList ?? t('tagInput.list'),
+    removeTag: labels?.removeTag ?? (tag => t('tagInput.remove', { label: tag.label ?? tag.value })),
+    clearAll: labels?.clearAll ?? t('tagInput.clear'),
+    duplicate: labels?.duplicate ?? (label => t('tagInput.duplicate', { label })),
+    maxTags: labels?.maxTags ?? (count => t('tagInput.maximum', { count })),
+    invalid: labels?.invalid ?? (label => t('tagInput.invalid', { label })),
   };
 }
 
@@ -211,7 +203,11 @@ function tagRemoveTarget(event: { target: EventTarget; currentTarget: HTMLUListE
 }
 
 export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function TagInput(
-  {
+  inkraProps,
+  forwardedRef,
+) {
+  const { t } = useInkraLocale();
+  const {
     'aria-describedby': ariaDescribedBy,
     'aria-errormessage': ariaErrorMessage,
     'aria-invalid': ariaInvalid,
@@ -235,8 +231,8 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
     labels,
     maxTags,
     maxVisibleTags,
-    showAllTagsLabel = count => `Show all ${count} tags`,
-    showFewerTagsLabel = 'Show fewer tags',
+    showAllTagsLabel = count => t('tagInput.all', { count }),
+    showFewerTagsLabel = t('tagInput.fewer'),
     name,
     onClick,
     onInputValueChange,
@@ -252,9 +248,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
     value,
     variant = 'outline',
     ...rootProps
-  },
-  forwardedRef,
-) {
+  } = inkraProps;
   const generatedId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const removeRefs = useRef(new Map<string, HTMLButtonElement>());
@@ -272,7 +266,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(function Tag
   const draftControlled = inputValue !== undefined;
   const currentTags = tagsControlled ? value : uncontrolledTags;
   const currentDraft = draftControlled ? inputValue : uncontrolledDraft;
-  const copy = useMemo(() => resolvedLabels(labels), [labels]);
+  const copy = useMemo(() => resolvedLabels(labels, t), [labels, t]);
   const activeValidationMessage = validationMessage ?? localValidationMessage;
   const messageId = activeValidationMessage ? `inkra-tag-input-${generatedId}-message` : undefined;
   const state = useResolvedControlProps({

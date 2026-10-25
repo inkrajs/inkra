@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import {
   forwardRef,
   useEffect,
@@ -194,20 +195,21 @@ const TreeSelectTree = forwardRef<HTMLDivElement, TreeSelectTreeProps>(function 
 });
 
 export const TreeSelect = forwardRef<HTMLDivElement, TreeSelectProps>(function TreeSelect(props, ref) {
+  const { t } = useInkraLocale();
   const {
     items,
     branchSelection = 'leaf',
     selectionPropagation = 'none',
     renderLabel,
     renderValue,
-    placeholder = 'Select an item',
-    searchPlaceholder = 'Search tree',
-    emptyContent = 'No matching items',
+    placeholder = t('treeSelect.placeholder'),
+    searchPlaceholder = t('treeSelect.search'),
+    emptyContent = t('treeSelect.empty'),
     clearable = true,
-    clearLabel = 'Clear selection',
-    treeLabel = 'Tree options',
-    expandLabel = 'Expand item',
-    collapseLabel = 'Collapse item',
+    clearLabel = t('select.clear'),
+    treeLabel = t('treeSelect.options'),
+    expandLabel = t('tree.expand'),
+    collapseLabel = t('tree.collapse'),
     size = 'md',
     name,
     form,

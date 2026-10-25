@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import {
   Group as ResizableGroupPrimitive,
   Panel as ResizablePanelPrimitive,
@@ -110,14 +111,16 @@ export interface ResizableHandleProps extends SeparatorProps {
   lineSeed?: string | number;
 }
 
-function ResizableHandle({
+function ResizableHandle(inkraProps: ResizableHandleProps) {
+  const { t } = useInkraLocale();
+  const {
   'aria-label': ariaLabel,
   children,
   className,
-  label = 'Resize panels',
+  label = t('resizable.label'),
   lineSeed = 'inkra-resizable-handle',
   ...props
-}: ResizableHandleProps) {
+} = inkraProps;
   return <ResizableSeparatorPrimitive
     {...props}
     aria-label={ariaLabel ?? label}

@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import ReactMarkdown from 'react-markdown';
 import type { Components, UrlTransform } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -285,17 +286,18 @@ export const Markdown = forwardRef<HTMLDivElement, MarkdownProps>(function Markd
   },
   ref,
 ) {
+  const { t } = useInkraLocale();
   const offset = Number.isFinite(headingLevelOffset) ? Math.trunc(headingLevelOffset) : 0;
   const resolvedLabels = useMemo<Required<MarkdownLabels>>(() => ({
-    code: labels?.code ?? 'Code block',
-    plainText: labels?.plainText ?? 'Plain text',
-    copy: labels?.copy ?? 'Copy code',
-    copied: labels?.copied ?? 'Code copied',
-    copyFailed: labels?.copyFailed ?? 'Copy failed. Select the code to copy it manually.',
-    table: labels?.table ?? 'Markdown table',
-    taskChecked: labels?.taskChecked ?? 'Completed task',
-    taskUnchecked: labels?.taskUnchecked ?? 'Incomplete task',
-  }), [labels?.code, labels?.plainText, labels?.copy, labels?.copied, labels?.copyFailed, labels?.table, labels?.taskChecked, labels?.taskUnchecked]);
+    code: labels?.code ?? t('markdown.code'),
+    plainText: labels?.plainText ?? t('markdown.plain'),
+    copy: labels?.copy ?? t('markdown.copy'),
+    copied: labels?.copied ?? t('markdown.copied'),
+    copyFailed: labels?.copyFailed ?? t('markdown.copyFailed'),
+    table: labels?.table ?? t('markdown.table'),
+    taskChecked: labels?.taskChecked ?? t('markdown.checked'),
+    taskUnchecked: labels?.taskUnchecked ?? t('markdown.unchecked'),
+  }), [t, labels?.code, labels?.plainText, labels?.copy, labels?.copied, labels?.copyFailed, labels?.table, labels?.taskChecked, labels?.taskUnchecked]);
   const builtIns = useMemo(
     () => createMarkdownComponents(offset, resolvedLabels),
     [offset, resolvedLabels],

@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import Autoplay from 'embla-carousel-autoplay';
 import useEmblaCarousel from 'embla-carousel-react';
 import {
@@ -120,8 +121,12 @@ function useReducedMotion(): boolean {
 }
 
 export const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel(
-  {
-    'aria-label': ariaLabel = 'Carousel',
+  inkraProps,
+  forwardedRef,
+) {
+  const { t } = useInkraLocale();
+  const {
+    'aria-label': ariaLabel = t('carousel.label'),
     align = 'start',
     autoplay = false,
     children,
@@ -148,9 +153,7 @@ export const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel
     tabIndex,
     visibleItems = { base: 1, sm: 2, md: 3 },
     ...props
-  },
-  forwardedRef,
-) {
+  } = inkraProps;
   const generatedId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const slideItems = Children.toArray(children);
@@ -398,9 +401,9 @@ export const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel
     '--inkra-carousel-visible-md': visible.md,
     '--inkra-carousel-visible-lg': visible.lg,
   };
-  const slideLabel = labels?.slide ?? ((index: number, total: number) => `Slide ${index} of ${total}`);
-  const pageLabel = labels?.page ?? ((index: number, total: number) => `Go to page ${index} of ${total}`);
-  const statusLabel = labels?.status ?? ((index: number, total: number) => `Slide ${index} of ${total}`);
+  const slideLabel = labels?.slide ?? ((index: number, total: number) => t('carousel.slide', { index, total }));
+  const pageLabel = labels?.page ?? ((index: number, total: number) => t('carousel.page', { index, total }));
+  const statusLabel = labels?.status ?? ((index: number, total: number) => t('carousel.slide', { index, total }));
   const showNavigation = controls && count > 1;
   const showPagination = pagination && scrollSnaps.length > 1;
 
@@ -424,7 +427,7 @@ export const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel
     tabIndex={!disabled && count > 1 ? (tabIndex ?? 0) : tabIndex}
   >
     <PencilSurface aria-hidden="true" as="span" className="inkra-carousel__focus-ring" radius={8} seed={`${generatedId}-focus`} variant="outline" />
-    {count === 0 ? <div className="inkra-carousel__empty">{emptyState ?? labels?.empty ?? 'No items'}</div> : <>
+    {count === 0 ? <div className="inkra-carousel__empty">{emptyState ?? labels?.empty ?? t('common.noItems')}</div> : <>
       <div className="inkra-carousel__viewport" ref={viewportRef}>
         <div className="inkra-carousel__container">
           {slideItems.map((item, index) => <div
@@ -440,21 +443,21 @@ export const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel
       {(showNavigation || showPagination || autoplayEnabled) && <div className="inkra-carousel__toolbar">
         {showNavigation && <div className="inkra-carousel__navigation">
           <Button
-            aria-label={labels?.previous ?? 'Previous slide'}
+            aria-label={labels?.previous ?? t('carousel.previous')}
             disabled={disabled || !canScrollPrevious}
             onClick={previous}
             size="icon"
             variant="outline"
           ><PencilIcon decorative paths={resolvedDir === 'rtl' ? nextPaths : previousPaths} seed={`${generatedId}-previous`} size={20} sourceSize={24} /></Button>
           <Button
-            aria-label={labels?.next ?? 'Next slide'}
+            aria-label={labels?.next ?? t('carousel.next')}
             disabled={disabled || !canScrollNext}
             onClick={next}
             size="icon"
             variant="outline"
           ><PencilIcon decorative paths={resolvedDir === 'rtl' ? previousPaths : nextPaths} seed={`${generatedId}-next`} size={20} sourceSize={24} /></Button>
         </div>}
-        {showPagination && <div aria-label={labels?.pages ?? 'Carousel pages'} className="inkra-carousel__pagination" role="group">
+        {showPagination && <div aria-label={labels?.pages ?? t('carousel.pages')} className="inkra-carousel__pagination" role="group">
           {scrollSnaps.map((_, index) => <button
             aria-current={index === selectedIndex ? 'true' : undefined}
             aria-label={pageLabel(index + 1, scrollSnaps.length)}
@@ -468,7 +471,7 @@ export const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel
           </button>)}
         </div>}
         {autoplayEnabled && <Button
-          aria-label={playing ? (labels?.pause ?? 'Pause autoplay') : (labels?.play ?? 'Play autoplay')}
+          aria-label={playing ? (labels?.pause ?? t('carousel.pause')) : (labels?.play ?? t('carousel.play'))}
           disabled={!autoplayAllowed}
           onClick={toggleAutoplay}
           onPointerDown={() => { autoplayControlPointerRef.current = true; }}

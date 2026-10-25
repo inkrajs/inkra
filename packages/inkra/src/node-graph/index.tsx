@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import {
   EdgeLabelRenderer,
   Handle,
@@ -603,14 +604,16 @@ export interface NodeGraphControlsProps extends HTMLAttributes<HTMLDivElement> {
   fitViewLabel?: string;
 }
 
-function NodeGraphControls({
+function NodeGraphControls(inkraProps: NodeGraphControlsProps) {
+  const { t } = useInkraLocale();
+  const {
   className,
   fitViewOptions,
-  zoomInLabel = 'Zoom in',
-  zoomOutLabel = 'Zoom out',
-  fitViewLabel = 'Fit graph to view',
+  zoomInLabel = t('common.zoomIn'),
+  zoomOutLabel = t('common.zoomOut'),
+  fitViewLabel = t('graph.fit'),
   ...props
-}: NodeGraphControlsProps) {
+} = inkraProps;
   const flow = useReactFlow();
   const actions = [
     { label: zoomInLabel, paths: zoomInPaths, run: () => flow.zoomIn() },
@@ -652,7 +655,9 @@ function SsrFallback<NodeType extends NodeGraphNode>({
 function NodeGraphRootInner<
   NodeType extends NodeGraphNode = NodeGraphNode,
   EdgeType extends NodeGraphEdge = NodeGraphEdge,
->({
+>(inkraProps: NodeGraphRootProps<NodeType, EdgeType>, forwardedRef: ForwardedRef<NodeGraphRef>) {
+  const { t } = useInkraLocale();
+  const {
   nodes,
   edges,
   onNodesChange,
@@ -663,7 +668,7 @@ function NodeGraphRootInner<
   renderEdge,
   renderEdgeLabel,
   readOnly = false,
-  emptyState = 'No nodes yet',
+  emptyState = t('graph.empty'),
   controls = true,
   controlLabels,
   fitView = false,
@@ -680,9 +685,9 @@ function NodeGraphRootInner<
   onlyRenderVisibleElements = false,
   className,
   style,
-  'aria-label': ariaLabel = 'Node graph',
+  'aria-label': ariaLabel = t('graph.label'),
   ...props
-}: NodeGraphRootProps<NodeType, EdgeType>, forwardedRef: ForwardedRef<NodeGraphRef>) {
+} = inkraProps;
   const [mounted, setMounted] = useState(false);
   const instanceRef = useRef<ReactFlowInstance<InternalNode, InternalEdge> | null>(null);
   useEffect(() => setMounted(true), []);
@@ -750,6 +755,13 @@ function NodeGraphRootInner<
     {!mounted ? <SsrFallback nodes={nodes} emptyState={emptyState} label={ariaLabel} /> : <ReactFlowProvider>
       <ReactFlow<InternalNode, InternalEdge>
         aria-label={ariaLabel}
+        ariaLabelConfig={{
+          'node.a11yDescription.default': t('graph.nodeInstructions'),
+          'node.a11yDescription.keyboardDisabled': t('graph.nodeMoveInstructions'),
+          'node.a11yDescription.ariaLiveMessage': ({ x, y }) => t('graph.nodeMoved', { x, y }),
+          'edge.a11yDescription.default': t('graph.edgeInstructions'),
+          'handle.ariaLabel': t('graph.handle'),
+        }}
         nodes={internalNodes}
         edges={internalEdges}
         nodeTypes={nodeTypes}

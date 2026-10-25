@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
 import { createContext, useContext, forwardRef, useId, useState, type HTMLAttributes, type ComponentPropsWithoutRef, type ReactNode, type CSSProperties } from 'react';
 import { Button } from '../Button.js';
@@ -60,7 +61,9 @@ export interface AlertProps extends HTMLAttributes<HTMLDivElement> {
   onOpenChange?: (open: boolean) => void;
   closeLabel?: string;
 }
-const AlertRoot = forwardRef<HTMLDivElement, AlertProps>(function AlertRoot({ className, variant = 'info', icon, seed, style, children, role = 'status', size = 'md', appearance = 'soft', actions, closable = false, open, defaultOpen = true, onOpenChange, closeLabel = 'Dismiss notification', ...props }, ref) {
+const AlertRoot = forwardRef<HTMLDivElement, AlertProps>(function AlertRoot(inkraProps, ref) {
+  const { t } = useInkraLocale();
+  const { className, variant = 'info', icon, seed, style, children, role = 'status', size = 'md', appearance = 'soft', actions, closable = false, open, defaultOpen = true, onOpenChange, closeLabel = t('alert.dismiss'), ...props } = inkraProps;
   const id = useId();
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
   if (!(open ?? internalOpen)) return null;

@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import { forwardRef, type ComponentPropsWithoutRef, type ReactNode } from 'react';
 import { ButtonLink, type ButtonLinkProps } from '../Button.js';
 import { PencilText } from '../PencilText.js';
@@ -6,7 +7,9 @@ const classes = (...values: (string | undefined)[]) => values.filter(Boolean).jo
 const copy = (children: ReactNode) => typeof children === 'string' ? <PencilText>{children}</PencilText> : children;
 
 export type BreadcrumbProps = ComponentPropsWithoutRef<'nav'>;
-const Root = forwardRef<HTMLElement, BreadcrumbProps>(function BreadcrumbRoot({ className, 'aria-label': label = 'Breadcrumb', ...props }, ref) {
+const Root = forwardRef<HTMLElement, BreadcrumbProps>(function BreadcrumbRoot(inkraProps, ref) {
+  const { t } = useInkraLocale();
+  const { className, 'aria-label': label = t('breadcrumb.label'), ...props } = inkraProps;
   return <nav {...props} ref={ref} aria-label={label} className={classes('inkra-breadcrumb', className)} />;
 });
 export type BreadcrumbListProps = ComponentPropsWithoutRef<'ol'>;

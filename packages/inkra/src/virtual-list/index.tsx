@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import { useVirtualizer, type ScrollToOptions } from '@tanstack/react-virtual';
 import {
   forwardRef,
@@ -88,11 +89,15 @@ function toEngineScrollOptions(options: VirtualListScrollOptions | undefined) {
 }
 
 function VirtualListInner<Item>(
-  {
+  inkraProps: VirtualListProps<Item>,
+  forwardedRef: ForwardedRef<VirtualListHandle>,
+) {
+  const { t } = useInkraLocale();
+  const {
     'aria-label': ariaLabel,
     className,
     empty,
-    emptyLabel = 'No items',
+    emptyLabel = t('common.noItems'),
     estimateSize,
     gap,
     getItemProps,
@@ -115,9 +120,7 @@ function VirtualListInner<Item>(
     style,
     tabIndex,
     ...props
-  }: VirtualListProps<Item>,
-  forwardedRef: ForwardedRef<VirtualListHandle>,
-) {
+  } = inkraProps;
   const rootRef = useRef<HTMLDivElement>(null);
   const itemsRef = useRef(items);
   itemsRef.current = items;

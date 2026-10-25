@@ -1,3 +1,4 @@
+import { useInkraLocale } from '../i18n/index.js';
 import * as Primitive from '@radix-ui/react-tabs';
 import { createContext, forwardRef, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
 import { __iconData as chevronLeft } from 'lucide-react/dist/esm/icons/chevron-left.mjs';
@@ -76,11 +77,13 @@ const Root = forwardRef<HTMLDivElement, TabsProps>(function TabsRoot(
   </OrientationContext.Provider></AnimatedContext.Provider></ChangeContext.Provider></ValueContext.Provider>;
 });
 
-const List = forwardRef<HTMLDivElement, TabsListProps>(function TabsList({
+const List = forwardRef<HTMLDivElement, TabsListProps>(function TabsList(inkraProps, ref) {
+  const { t } = useInkraLocale();
+  const {
   className, align = 'start', fullWidth = false, divided = false, overflow = 'scroll',
-  moreLabel = 'More tabs', scrollPreviousLabel = 'Scroll to previous tabs', scrollNextLabel = 'Scroll to next tabs',
+  moreLabel = t('tabs.more'), scrollPreviousLabel = t('tabs.previous'), scrollNextLabel = t('tabs.next'),
   onFocusCapture, ...props
-}, ref) {
+} = inkraProps;
   const current = useContext(ValueContext);
   const change = useContext(ChangeContext);
   const mode = useContext(OrientationContext) === 'horizontal' ? overflow : 'scroll';
