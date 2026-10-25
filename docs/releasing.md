@@ -1,7 +1,7 @@
 # React Package Releases
 
 Repository: inkrajs/inkra. Package: @inkra/react. First release: 0.1.0.
-Version 0.4.3 is published and registry-verified. Future source versions remain
+Version 0.5.0 is published and registry-verified. Future source versions remain
 candidates until their own registry verification passes.
 Website deployment does not publish an npm package.
 
@@ -60,6 +60,21 @@ validated the trusted publisher through a successful OIDC publication.
   Drawer overflow and viewer scrollbar offsets. Version 0.4.2 remained unpublished
   after validation reached its 25-minute limit. All three tags are retained unchanged.
   Version 0.4.3 preserves the checks with a 45-minute validation limit.
+
+## Version 0.5.0 Record
+
+- Source/tag: a8dce668c0f614d557917274a39f62e4b490c6e2 / react-v0.5.0.
+- Release run: 40179941672, successful on 2026-10-25 (Asia/Shanghai).
+- Validation docs: f4a5226e50dcf3611d65b4e5f996b40f97da3fbf.
+- OIDC publication, public archive comparison and clean React 18/19 installations passed.
+- GitHub Release was created only after registry verification succeeded.
+- Public archive SHA-256:
+  5f0eced91fe98bba204b6f0af9f87cdf049c0d621999c956b3b29004e8efae0a.
+- Registry docs consumer: a317377640eb63d8643cc6d3cfa57dfadc09f8a6.
+- npm initially reported that the package was still processing. The one-minute
+  verification window expired before public availability; only failed verification
+  jobs were rerun after the archive became available. No duplicate publication occurred.
+- The separately developed Select.Stepper alignment fix is not part of this version.
 
 ## Pipeline
 

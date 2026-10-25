@@ -12,7 +12,9 @@
 - Remove the empty searchable-select clear-action space and retain pencil text
   on long Retina lines using bounded adaptive raster resolution.
 
-This version is a release candidate until public-registry verification succeeds.
+Published as `@inkra/react@0.5.0` with the `latest` npm dist-tag and the
+`react-v0.5.0` GitHub Release. The public archive matches the approved candidate;
+clean registry installations passed with React 18 and 19.
 Existing React 18 Calendar SSR and Next.js/RSC limitations remain documented.
 
 ## 0.4.3 - 2026-10-25

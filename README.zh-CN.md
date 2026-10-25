@@ -70,7 +70,7 @@ Inkra 提供 ESM、TypeScript 声明和 CSS，React 与 React DOM 作为 peer de
 
 ## 找到你需要的组件
 
-已发布的 **0.4.3** 包包含以下基础组件：
+已发布的 **0.5.0** 包包含以下基础组件：
 
 | 用途 | 组件 |
 | --- | --- |
@@ -92,7 +92,11 @@ InputNumber 支持组合键步进与长按连续调整，并改进弹层动画�
 **0.4.3 新增：** 与主题一致的 Markdown、ColorSwatch 和渐变色编辑，Editable 内置
 文本与选择器编辑模式，全屏图片与视频查看、Tabs 溢出操作、独立 Toast 队列和更多图标笔触参数。
 改进渲染与文档性能，精简首屏示例，并提供九宫格图标的尺寸、笔压和断裂预览。
-0.4.3 已发布到 npm，并通过 React 18 和 19 的安装验证，详见[版本发布](https://github.com/inkrajs/inkra/releases)。
+
+**0.5.0 新增：** 五种组件语言、类型化字典覆盖与嵌套 InkraProvider，
+以及支持局部主题、配色、文字、线条和涂色定制的 ThemeProvider。
+文档新增对应的交互示例和五语言导航，参考文档翻译仍为部分覆盖。
+0.5.0 已发布到 npm，并通过 React 18 和 19 的安装验证，详见[版本发布](https://github.com/inkrajs/inkra/releases)。
 完整范围与已知限制见[更新日志](./CHANGELOG.md)和[组件 API](./packages/inkra/README.md)。
 
 ## 一起开发 Inkra

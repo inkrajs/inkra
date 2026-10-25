@@ -77,7 +77,7 @@ package and the main branch may contain different features.*
 
 ## Find Your Components
 
-The published **0.4.3** package includes these core components:
+The published **0.5.0** package includes these core components:
 
 | Use | Components |
 | --- | --- |
@@ -102,8 +102,13 @@ password examples and localized, collapsible playground settings.
 built-in Editable text/select editors, full-viewport image/video viewing, Tabs
 overflow controls, independent Toast queues and expanded icon stroke controls.
 Rendering and documentation performance are improved, with simpler primary
-previews and a nine-icon size/pressure/gap playground. Version 0.4.3 is published
-on npm and verified with React 18 and 19.
+previews and a nine-icon size/pressure/gap playground.
+
+**New in 0.5.0:** five-language component dictionaries with typed overrides and
+nested InkraProvider inheritance, plus a scoped ThemeProvider for theme mode,
+palette, text, line and fill customization. Documentation adds matching provider
+playgrounds and five-language navigation; reference translations remain partial.
+Version 0.5.0 is published on npm and verified with React 18 and 19.
 See [Releases](https://github.com/inkrajs/inkra/releases),
 the [changelog](./CHANGELOG.md) and
 [package API](./packages/inkra/README.md) for the full scope and known limits.
