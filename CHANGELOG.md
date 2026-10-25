@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.0 - Unreleased
+
+- Add optional Pagination page-size selection, button appearance, logical
+  alignment and wrapping. Single-page hiding retains the size selector; labels
+  follow InkraProvider and controlled page/page-size state stays caller-owned.
+
+Release candidate. Publication and public-registry verification are pending.
+These Pagination additions are not included in the published 0.6.0 archive.
+
 ## 0.6.0 - 2026-10-25
 
 - Make Breadcrumb links pencil-underlined by default and support icons on both
@@ -14,7 +23,13 @@
 - Keep header breadcrumbs stable across page changes, isolate long-path scrolling,
   align navigation icons and use consistent padding and unframed header actions.
 
-Release candidate. Publication and public-registry verification are pending.
+Published as `@inkra/react@0.6.0` with the `latest` npm dist-tag and the
+`react-v0.6.0` GitHub Release, from commit
+`1897b5c2f4b5520ad658821959643f2393b8a288`.
+The public archive matches the approved candidate; clean registry installations
+passed with React 18 and 19. The deployed documentation consumes this registry
+release at `a2d99223275e3d280d473add5042ab6da757f258`; its live version manifest
+confirms the matching package integrity and library revision.
 
 ## 0.5.0 - 2026-10-25
 

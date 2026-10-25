@@ -101,5 +101,8 @@ export function InstalledExpansionExample() {
     <Steps current={0} items={[{ id: 'one', title: 'Draft' }]} />
     <Timeline items={[{ id: 'one', title: 'Created', date: 'October 22', dateTime: '2026-10-22' }]} />
     <Pagination totalPages={5} defaultPage={2} />
+    <Pagination totalPages={5} variant="outline" align="end" wrap hideOnSinglePage
+      pageSize={20} defaultPageSize={10} pageSizeOptions={[10, 20, 50]} onPageSizeChange={value => { const size: number = value; void size; }}
+      labels={{ pageSize: 'Items per page', pageSizeOption: size => `${size} rows` }} />
   </>;
 }

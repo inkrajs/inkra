@@ -1,7 +1,7 @@
 # React Package Releases
 
 Repository: inkrajs/inkra. Package: @inkra/react. First release: 0.1.0.
-Version 0.5.0 is published and registry-verified. Future source versions remain
+Version 0.6.0 is published and registry-verified. Future source versions remain
 candidates until their own registry verification passes.
 Website deployment does not publish an npm package.
 
@@ -75,6 +75,26 @@ validated the trusted publisher through a successful OIDC publication.
   verification window expired before public availability; only failed verification
   jobs were rerun after the archive became available. No duplicate publication occurred.
 - The separately developed Select.Stepper alignment fix is not part of this version.
+
+## Version 0.6.0 Record
+
+- Source/tag: 1897b5c2f4b5520ad658821959643f2393b8a288 / react-v0.6.0.
+- Release run: 40194921258, successful on 2026-10-25 (Asia/Shanghai).
+- Validation docs: 5d97514e44015a4f04b025427084d8f007a0352d.
+- OIDC publication, public archive comparison and clean React 18/19 installations passed.
+- GitHub Release was created only after registry verification succeeded.
+- Public archive SHA-256:
+  06fbedf3ca9c6dcffd39c51cb5a06b8855dc518befbee182ebc172cef90b2c4f.
+- Registry docs consumer: a2d99223275e3d280d473add5042ab6da757f258.
+  Consumer check run 40198443308 passed, including installed-package browser smoke.
+- Website source: 3fbc62b698544d04c3952c3a7336da2ad7a005d8.
+  Deployment run 40200541355 passed; live version.json reports the matching
+  docs/library revisions and registry package integrity. The homepage,
+  getting-started, Layout and Breadcrumb routes returned HTTP 200.
+- npm initially reported that the package was still processing. Only failed
+  verification jobs were rerun after registry availability; no duplicate
+  publication occurred and the source tag remained unchanged.
+- Later Pagination, Grid and mobile Layout work is outside this archive.
 
 ## Pipeline
 
