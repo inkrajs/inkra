@@ -228,6 +228,16 @@
   resize: none;
 }
 
+/* Native rows establish the initial editor height; counters remain a separate row. */
+.inkra-field-control-hit--textarea[data-row-sizing="true"] .inkra-field-control--textarea {
+  min-height: 0;
+}
+
+.inkra-field-control-hit--textarea[data-row-sizing="true"] .inkra-textarea {
+  flex: none;
+  min-height: 0;
+}
+
 .inkra-textarea__footer {
   display: flex;
   align-items: center;

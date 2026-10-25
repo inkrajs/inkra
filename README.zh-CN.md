@@ -103,6 +103,25 @@ InputNumber 支持组合键步进与长按连续调整，并改进弹层动画�
 并由线上文档站使用。后续源码新增内容仍以各自发布验证为准，详见[版本发布](https://github.com/inkrajs/inkra/releases)。
 完整范围与已知限制见[更新日志](./CHANGELOG.md)和[组件 API](./packages/inkra/README.md)。
 
+## Textarea 行数与自动高度（待发布）
+
+显式 `rows={1}` 从一行正文开始；开启 `autoSize` 后按真实换行增长，
+超过 `maxRows` 时在正文内部滚动，删除内容后收缩：
+
+```tsx
+import { Textarea } from '@inkra/react/form';
+
+<Textarea rows={1} aria-label="单行初始高度" />
+<Textarea autoSize={{ minRows: 1, maxRows: 6 }} aria-label="笔记" />
+```
+
+`autoSize` 默认关闭，也可传 `true`；`minRows` 依次取显式配置、`rows`、1，
+不传 `maxRows` 则不限增长。行数必须为正安全整数，非法值回退默认值，
+小于最小行数的上限按最小行数处理。行数包含容器内软换行；计数区另外占位。
+自动高度优先于手动 `resize` 和内联高度，跟随受控值、表单重置、容器宽度及字体变化。
+不传 `rows` 且不开启自动高度时保留既有默认尺寸。SSR 先按原生行数呈现，
+水合后测量内容。完整约定见[组件 API](./packages/inkra/README.md#form-controls-and-select)。
+
 ## 一起开发 Inkra
 
 需要 Node.js 22.12+ 和 npm：

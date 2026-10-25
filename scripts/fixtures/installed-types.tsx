@@ -1,5 +1,13 @@
 import { Button, Field, Input, InputNumber, PencilIcon, Select, Slider, Tabs } from '@inkra/react';
 import type { SelectTriggerProps } from '@inkra/react';
+import { Textarea } from '@inkra/react/form';
+import type { TextareaAutoSizeOptions } from '@inkra/react';
+
+const textareaSizing = { minRows: 1, maxRows: 6 } satisfies TextareaAutoSizeOptions;
+// @ts-expect-error Row limits must be numbers.
+const invalidTextareaSizing = <Textarea autoSize={{ maxRows: 'six' }} />;
+// @ts-expect-error autoSize must be a boolean or a row-options object.
+const invalidTextareaAutoSize = <Textarea autoSize="true" />;
 import { InkraProvider, inkraLocales, useInkraLocale } from '@inkra/react/i18n';
 import type { InkraDictionary, InkraLocale, InkraMessageKey } from '@inkra/react/i18n';
 import { ThemeProvider } from '@inkra/react/theme';
@@ -74,6 +82,9 @@ export function InstalledLocaleExample() {
 
 export function InstalledExample() {
   return <>
+    <Textarea rows={1} aria-label="One row" />
+    <Textarea autoSize rows={2} aria-label="Growing note" />
+    <Textarea autoSize={textareaSizing} aria-label="Capped note" resize="vertical" maxLength={240} />
     <Button startIcon={trigger.startIcon}>Save</Button>
     <Field label="Name"><Input clearable startIcon={trigger.startIcon} onValueChange={value => value.toUpperCase()} /></Field>
     <InputNumber defaultValue={1} min={0} max={10} />

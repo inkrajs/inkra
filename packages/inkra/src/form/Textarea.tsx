@@ -12,6 +12,10 @@ import { useResolvedControlProps } from './controlProps.js';
 import { EditablePencilText } from './EditablePencilText.js';
 import { InputAction } from './InputAction.js';
 import type { FieldControlStateProps } from './types.js';
+import { textareaResizeHeight, useTextareaSizing } from './textareaSizing.js';
+import type { TextareaAutoSizeOptions } from './textareaSizing.js';
+
+export type { TextareaAutoSizeOptions } from './textareaSizing.js';
 
 export interface TextareaCountDetails {
   count: number;
@@ -31,6 +35,8 @@ export interface TextareaProps
   getCountLabel?: (details: TextareaCountDetails) => string;
   resize?: 'none' | 'vertical';
   resizeLabel?: string;
+  /** Grow and shrink with content. Takes precedence over manual resize and inline height. */
+  autoSize?: boolean | TextareaAutoSizeOptions;
 }
 
 const resizePaths = [{ d: 'M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4' }];
@@ -60,6 +66,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
     getCountLabel = ({ remaining }) => t(remaining < 0 ? 'textarea.overLimit' : 'textarea.countRemaining', { count: Math.abs(remaining) }),
     resize = 'none',
     resizeLabel = t('textarea.resize'),
+    autoSize = false,
     ...props
   } = inkraProps;
   const generatedId = useId();
@@ -68,6 +75,8 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
   const [height, setHeight] = useState<number>();
   const [measuredHeight, setMeasuredHeight] = useState<number>();
   const drag = useRef<{ y: number; height: number } | null>(null);
+  const sizing = useTextareaSizing(textareaRef, autoSize, props.rows, props.form, resize === 'vertical');
+  const manualResize = resize === 'vertical' && !sizing.enabled;
   const controlled = props.value != null;
   const count = controlled ? String(props.value).length : uncontrolledCount;
   const maximum = props.maxLength;
@@ -78,18 +87,19 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
   const controlId = id ?? `inkra-textarea-${generatedId}`;
   const remaining = hasCount ? maximum - count : 0;
   const countLabel = hasCount ? getCountLabel({ count, maxLength: maximum, remaining }) : '';
-  const minimumHeight = size === 'sm' ? 80 : size === 'lg' ? 112 : 96;
-  const resizeTo = (next: number) => setHeight(Math.max(minimumHeight, Math.min(1200, next)));
+  const minimumHeight = (sizing.minimumHeight ?? (size === 'sm' ? 80 : size === 'lg' ? 112 : 96)) + sizing.boxAdjustment;
+  const maximumHeight = Math.max(1200, minimumHeight);
+  const resizeTo = (next: number) => setHeight(textareaResizeHeight(next, minimumHeight, maximumHeight, sizing.boxAdjustment));
   useEffect(() => {
     const control = textareaRef.current;
-    if (resize !== 'vertical' || !control) return;
+    if (!manualResize || !control) return;
     const measure = () => setMeasuredHeight(control.getBoundingClientRect().height);
     measure();
     if (typeof ResizeObserver === 'undefined') return;
     const observer = new ResizeObserver(measure);
     observer.observe(control);
     return () => observer.disconnect();
-  }, [resize]);
+  }, [manualResize]);
   useEffect(() => {
     const control = textareaRef.current;
     const form = control?.form;
@@ -128,6 +138,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
       data-size={size}
       data-variant={variant}
       data-end-action={endAction != null || undefined}
+      data-row-sizing={sizing.rowSizing || undefined}
     >
       <PencilSurface
         className="inkra-field-control inkra-field-control--textarea"
@@ -145,10 +156,13 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
           readOnly={state.readOnly}
           ref={textareaRef}
           required={state.required}
-          style={{ ...props.style, ...(resize === 'vertical' && height !== undefined ? { height } : {}), resize: 'none' }}
+          rows={sizing.enabled ? sizing.minRows : props.rows}
+          style={{ ...props.style, ...(manualResize && height !== undefined ? { height } : {}), ...sizing.style, resize: 'none' }}
           onInput={event => {
             if (!controlled) setUncontrolledCount(event.currentTarget.value.length);
             props.onInput?.(event);
+            // Wait for React to accept or restore a controlled value before measuring.
+            sizing.schedule();
           }}
         />
         <EditablePencilText
@@ -162,7 +176,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
         {endAction != null && <div className="inkra-textarea__end-action">
           <InputAction disabled={Boolean(state.disabled)} seed={`${resolvedSeed}-action`}>{endAction}</InputAction>
         </div>}
-        {(hasCount || resize === 'vertical') && <div className="inkra-textarea__footer">
+        {(hasCount || manualResize) && <div className="inkra-textarea__footer">
           {hasCount && <div className="inkra-textarea__count" id={countId}
             data-visible={showCount} data-limit={remaining <= 0 ? 'reached' : 'near'}
             aria-hidden={!showCount || undefined}>
@@ -171,9 +185,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
               aria-label={countLabel} aria-valuetext={countLabel} />}
             <PencilText>{countMode === 'fraction' ? `${count} / ${maximum}` : countLabel}</PencilText>
           </div>}
-          {resize === 'vertical' && <Button className="inkra-textarea__resize" variant="ghost" size="icon"
+          {manualResize && <Button className="inkra-textarea__resize" variant="ghost" size="icon"
             role="slider" aria-label={resizeLabel} title={resizeLabel} aria-controls={state.id}
-            aria-orientation="vertical" aria-valuemin={minimumHeight} aria-valuemax={1200}
+            aria-orientation="vertical" aria-valuemin={minimumHeight} aria-valuemax={maximumHeight}
             aria-valuenow={Math.round(measuredHeight ?? minimumHeight)} disabled={state.disabled}
             onPointerDown={event => {
               if (event.button !== 0) return;
@@ -194,7 +208,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
               if (event.key === 'ArrowUp') resizeTo(current - 20);
               else if (event.key === 'ArrowDown') resizeTo(current + 20);
               else if (event.key === 'Home') resizeTo(minimumHeight);
-              else if (event.key === 'End') resizeTo(1200);
+              else if (event.key === 'End') resizeTo(maximumHeight);
               else return;
               event.preventDefault();
             }}>
