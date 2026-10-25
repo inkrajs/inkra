@@ -328,7 +328,7 @@ working examples, live property tabs and per-component API/accessibility notes.
 | Drawer | Dialog parts plus section layout, four `Content.direction` values and token/custom `size`; focus trap, Escape and return focus, no swipe gesture API |
 | DatePicker | Calendar/Popover composition; single/range local dates, controlled/default values, clear, form fields and localized labels; no UTC conversion |
 | TimePicker | Native time input with clear, disabled/readOnly, min/max/step and optional seconds; browser/OS controls the native presentation |
-| Pagination | Page count/current page, boundary actions and ellipses; buttons change local state rather than pretending to navigate URLs |
+| Pagination | Page count/current page, boundary actions and ellipses; optional page-size selection, button variants, logical alignment and wrapping |
 | Empty | Optional `Root`, `Icon`, `Title`, `Description`, `Actions`; no mandatory card or live-region role |
 | ToggleGroup | `Root` and `Item`; array values for single/multiple toggles, roving focus and `aria-pressed`, not tabs |
 | Command | cmdk-backed search, grouped commands, empty/disabled states and optional modal composition |
@@ -337,6 +337,49 @@ working examples, live property tabs and per-component API/accessibility notes.
 | Tree | `Root`, `Item`, `ItemContent`, `ItemTitle`, `ItemDescription`; stable keys, expansion and selection via React Aria; no drag/drop |
 | Steps | Ordered `items`, `current`, orientation and optional `onStepChange`; status and disabled steps |
 | Timeline | Ordered `items` with date/title/description/content, semantic `dateTime` and horizontal/vertical orientation |
+
+### Pagination page sizes
+
+```tsx
+const [page, setPage] = useState(1);
+const [pageSize, setPageSize] = useState(20);
+<Pagination totalPages={Math.ceil(itemCount / pageSize)}
+  page={page} onPageChange={setPage}
+  pageSize={pageSize} onPageSizeChange={setPageSize}
+  pageSizeOptions={[10, 20, 50]} hideOnSinglePage
+  variant="outline" align="end" wrap />
+```
+
+The caller computes `totalPages` and slices or fetches its data. `pageSize` is
+controlled; `defaultPageSize` initializes an uncontrolled size (default `10`).
+Only positive safe integers are accepted. Invalid sizes fall back to `10`;
+invalid options are ignored, duplicates removed and options sorted numerically.
+The current size is retained in a nonempty option list. Omit `pageSizeOptions`
+or provide no valid options to hide the selector.
+
+Selecting a different size first calls `onPageSizeChange(size)`, then requests
+`onPageChange(1)` when the current page exceeds one. Each uncontrolled state
+updates independently; controlled state changes only when the parent accepts
+the request. Rendering, changing totals or options, and clamping do not emit
+user callbacks. `hideOnSinglePage` hides page controls for zero or one page while
+retaining the size selector.
+
+`variant` uses the Button variants (default `ghost`). `align` accepts logical
+`start | center | end` (default `start`); `wrap` defaults to `false` and retains
+local horizontal scrolling. The size selector reuses Select, inherits disabled
+state and direction, and uses InkraProvider labels. Override
+`labels.pageSize` (accessible name) and `labels.pageSizeOption(size)` (visible
+option text) for application-specific copy. `simple`, `renderPage` and
+`renderSummary` compose with these options.
+
+分页容量由调用方计算总页数并切分或请求数据。`pageSize` 为受控值，
+`defaultPageSize` 为非受控初值，默认 10；只接收正安全整数。非法容量回退为
+10，非法选项忽略，选项去重并排序，有效列表保留当前容量。省略或提供空的有效
+选项列表时不显示选择器。切换容量先通知 `onPageSizeChange`，当前页大于 1 时
+再请求 `onPageChange(1)`；受控值由父组件决定是否接受。渲染、总页数及选项变化
+不触发交互回调。`hideOnSinglePage` 隐藏翻页按钮但保留容量选择器；`align`
+按逻辑方向对齐，`wrap` 允许换行，默认仍为局部横滚。容量选择复用 Select，
+继承禁用、方向和语言设置，可用 `labels.pageSize/pageSizeOption` 覆盖文案。
 
 ## Utility Components (Unreleased)
 
