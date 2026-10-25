@@ -26,6 +26,10 @@ These Pagination additions are not included in the published 0.6.0 archive.
 Published as `@inkra/react@0.6.0` with the `latest` npm dist-tag and the
 `react-v0.6.0` GitHub Release, from commit
 `1897b5c2f4b5520ad658821959643f2393b8a288`.
+The public archive matches the approved candidate; clean registry installations
+passed with React 18 and 19. The deployed documentation consumes this registry
+release at `a2d99223275e3d280d473add5042ab6da757f258`; its live version manifest
+confirms the matching package integrity and library revision.
 
 ## 0.5.0 - 2026-10-25
 
