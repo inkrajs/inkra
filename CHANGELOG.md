@@ -2,6 +2,10 @@
 
 ## 0.7.0 - 2026-10-26
 
+- Respect explicit Textarea rows, including a one-row editor, and add optional
+  autoSize with minimum/maximum visible rows. Content grows and shrinks with
+  wrapping, controlled values, form reset and font changes; overflow scrolls
+  internally while character counters retain their separate footer.
 - Add optional Pagination page-size selection, button appearance, logical
   alignment and wrapping. Single-page hiding retains the size selector; labels
   follow InkraProvider and controlled page/page-size state stays caller-owned.
@@ -17,7 +21,7 @@
   tab header and a full-screen search interface.
 
 Release candidate. Publication and public-registry verification are pending.
-These Pagination additions are not included in the published 0.6.0 archive.
+These Pagination and Textarea additions are not included in the published 0.6.0 archive.
 
 ## 0.6.0 - 2026-10-25
 

@@ -176,6 +176,39 @@ All standard `button` props, including `disabled`, `name`, `value`, `form`, `ari
 
 `Input` defaults to an underline appearance, with explicit `outline`, `soft` and `ghost` variants. It supports `startIcon`, `endIcon`, `prefix`, `suffix`, `clearable`, `loading`, `startAction`, `endAction`, `fullWidth` and logical `textAlign`. Use `onValueChange` for edits and clearing; native `onChange` does not receive fabricated clear events. `Field` connects labels, descriptions and errors.
 
+`Textarea` respects an explicit native `rows`, including `rows={1}`. Omit both
+`rows` and `autoSize` to retain the existing sm/md/lg minimum heights. Enable
+`autoSize` to grow and shrink with content, including lines wrapped by the actual
+container width:
+
+```tsx
+import { Textarea } from '@inkra/react/form';
+import type { TextareaAutoSizeOptions } from '@inkra/react/form';
+
+<Textarea rows={1} aria-label="Single-line initial height" />
+<Textarea autoSize={{ minRows: 1, maxRows: 6 }} aria-label="Note" />
+<Textarea autoSize rows={2} aria-label="At least two rows, unlimited growth" />
+```
+
+`autoSize` accepts `boolean | TextareaAutoSizeOptions` and defaults to `false`.
+Its `minRows` falls back to `rows`, then 1; omit `maxRows` for unlimited growth.
+Both limits accept positive safe integers; invalid values use these defaults and
+`maxRows` below `minRows` is raised to `minRows`. The limit counts visible text
+rows, including soft wraps, rather than newline characters or input length.
+Above the maximum, the native editor scrolls internally; deleting text shrinks it.
+Controlled value updates, native form reset, width and font changes remeasure
+without emitting change events or replacing the native control. Empty editors
+size from their minimum rows rather than their placeholder text.
+
+Automatic sizing owns `height`, `minHeight`, `maxHeight` and vertical overflow;
+it takes precedence over inline height and `resize="vertical"`, hiding the manual
+handle. With automatic sizing disabled, manual resizing keeps its existing
+behavior (an explicit `rows` supplies its minimum). Row limits apply only to the
+editor: the character counter retains its separate footer, even while its
+automatic indicator is hidden. On the server, native `rows` provides the initial
+height; existing multi-line content is measured after hydration. Avoid CSS
+`!important` height constraints when enabling automatic sizing.
+
 `InputNumber` places decrease and increase buttons on either side of a centered numeric input, with no clear button. Keyboard deletion produces `null`; decimal stepping and out-of-range validation remain native. `Slider` supports single/range values, horizontal/vertical layout and `standard` or `inset` appearance.
 
 `InputNumber` supports Shift-click and Shift-arrow increments of 10 by default.
