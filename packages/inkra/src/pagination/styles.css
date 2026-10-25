@@ -1,4 +1,14 @@
 .inkra-pagination { min-inline-size: 0; max-inline-size: 100%; color: var(--inkra-ink); }
+.inkra-pagination { display: flex; flex-wrap: wrap; align-items: center; gap: var(--inkra-space-2); }
+.inkra-pagination[data-align="start"] { justify-content: flex-start; }
+.inkra-pagination[data-align="center"] { justify-content: center; }
+.inkra-pagination[data-align="end"] { justify-content: flex-end; }
+.inkra-pagination__size { flex: 0 1 auto; min-inline-size: 0; max-inline-size: 100%; }
+.inkra-pagination__size .inkra-select__trigger { max-inline-size: 100%; }
+.inkra-pagination__list { min-inline-size: 0; }
+.inkra-pagination[data-wrap="true"] .inkra-pagination__list { flex-wrap: wrap; }
+.inkra-pagination[data-wrap="true"][data-align="center"] .inkra-pagination__list { justify-content: center; }
+.inkra-pagination[data-wrap="true"][data-align="end"] .inkra-pagination__list { justify-content: flex-end; }
 .inkra-pagination__list { box-sizing: border-box; display: flex; flex-wrap: nowrap; align-items: center; gap: var(--inkra-space-1); max-inline-size: 100%; overflow-x: auto; overscroll-behavior-inline: contain; scroll-padding-inline: 8px; list-style: none; padding: 8px; margin: 0; }
 .inkra-pagination__list > li { display: flex; flex: 0 0 auto; }
 .inkra-pagination__summary { align-items: center; box-sizing: border-box; font-variant-numeric: tabular-nums; justify-content: center; max-inline-size: 100%; min-block-size: var(--inkra-touch-target); min-inline-size: 0; overflow-wrap: anywhere; padding-inline: var(--inkra-space-2); text-align: center; white-space: normal; }

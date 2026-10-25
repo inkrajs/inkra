@@ -94,6 +94,8 @@ export const messageRows = [
   ['pagination.last', 'Last page', '最后一页', '最後のページ', '마지막 페이지', 'Dernière page'],
   ['pagination.page', 'Page {page}', '第 {page} 页', '{page} ページ', '{page}페이지', 'Page {page}'],
   ['pagination.more', 'More pages', '更多页', '他のページ', '더 많은 페이지', 'Autres pages'],
+  ['pagination.pageSize', 'Items per page', '每页条数', '1ページの件数', '페이지당 항목 수', 'Éléments par page'],
+  ['pagination.pageSizeOption', '{pageSize} / page', '{pageSize} 条 / 页', '{pageSize} 件 / ページ', '페이지당 {pageSize}개', '{pageSize} / page'],
   ['pagination.status', 'Page {page} of {total}', '第 {page} 页，共 {total} 页', '{total} ページ中 {page} ページ', '총 {total}페이지 중 {page}페이지', 'Page {page} sur {total}'],
   ['tabs.more', 'More tabs', '更多标签页', 'その他のタブ', '더 많은 탭', 'Autres onglets'],
   ['tabs.previous', 'Scroll to previous tabs', '滚动到前面的标签页', '前のタブへスクロール', '이전 탭으로 스크롤', 'Faire défiler vers les onglets précédents'],

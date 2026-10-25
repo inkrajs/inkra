@@ -2,6 +2,9 @@
 
 ## 0.6.0 - 2026-10-25
 
+- Add optional Pagination page-size selection, button appearance, logical
+  alignment and wrapping. Single-page hiding retains the size selector; labels
+  follow InkraProvider and controlled page/page-size state stays caller-owned.
 - Make Breadcrumb links pencil-underlined by default and support icons on both
   logical sides of the current page. Add dropdown and context-menu composition,
   including keyboard menu keys and optional touch long press.
