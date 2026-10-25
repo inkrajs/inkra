@@ -221,19 +221,21 @@ export const SelectStepper = forwardRef<HTMLButtonElement, SelectStepperProps>(f
         >
           <PencilText ellipsis seed={`${seed}-value`}>{visibleLabel}</PencilText>
         </button>
-        <InputAction disabled={interactionDisabled || next == null} seed={`${seed}-next`}>
-          <Button
-            aria-label={nextLabel}
-            className="inkra-select-stepper__button inkra-select-stepper__button--next"
-            disabled={interactionDisabled || next == null}
-            onClick={() => change(next)}
-            size={buttonSize}
-            type="button"
-            variant="ghost"
-          >
-            <PencilIcon paths={nextPaths} size={iconSize} sourceSize={24} />
-          </Button>
-        </InputAction>
+        <span className="inkra-input__actions">
+          <InputAction disabled={interactionDisabled || next == null} seed={`${seed}-next`}>
+            <Button
+              aria-label={nextLabel}
+              className="inkra-select-stepper__button inkra-select-stepper__button--next"
+              disabled={interactionDisabled || next == null}
+              onClick={() => change(next)}
+              size={buttonSize}
+              type="button"
+              variant="ghost"
+            >
+              <PencilIcon paths={nextPaths} size={iconSize} sourceSize={24} />
+            </Button>
+          </InputAction>
+        </span>
         <select
           aria-hidden="true"
           className="inkra-select-stepper__native"

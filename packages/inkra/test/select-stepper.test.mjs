@@ -71,7 +71,7 @@ test('Stepper uses one input-sized pencil surface with named arrow actions', () 
   assert.match(stepper, /inkra-field-control-hit/);
   assert.match(stepper, /inkra-field-control inkra-field-control--input inkra-select-stepper__control/);
   assert.match(stepper, /<InputAction[\s\S]*?position="start"/);
-  assert.match(stepper, /<InputAction[\s\S]*?seed=\{`\$\{seed\}-next`\}/);
+  assert.match(stepper, /<span className="inkra-input__actions">[\s\S]*?<InputAction[\s\S]*?seed=\{`\$\{seed\}-next`\}/);
   assert.match(stepper, /aria-label=\{previousLabel\}/);
   assert.match(stepper, /aria-label=\{nextLabel\}/);
   assert.match(stepper, /<PencilText ellipsis/);
@@ -80,6 +80,13 @@ test('Stepper uses one input-sized pencil surface with named arrow actions', () 
   assert.match(formStyles, /data-size="sm"[\s\S]*?--inkra-field-control-height: var\(--inkra-control-sm\)/);
   assert.match(formStyles, /data-size="lg"[\s\S]*?--inkra-field-control-height: var\(--inkra-control-lg\)/);
   assert.match(formStyles, /min-height: var\(--inkra-touch-target\)/);
+});
+
+test('Stepper keeps both action slots inside the shared logical input frame', () => {
+  assert.match(styles, /\.inkra-select-stepper \.inkra-select-stepper__control\s*\{[\s\S]*?padding-inline: 0;/);
+  assert.match(styles, /\.inkra-select-stepper \.inkra-select-stepper__control > \.inkra-pencil-surface__content\s*\{[\s\S]*?padding-inline: var\(--inkra-field-control-padding\);/);
+  assert.match(formStyles, /\.inkra-input__actions\s*\{[\s\S]*?margin-inline-end: calc\(-1 \* var\(--inkra-field-control-padding\)\);/);
+  assert.match(formStyles, /\.inkra-input__start-action\s*\{[\s\S]*?margin-inline-start: calc\(-1 \* var\(--inkra-field-control-padding\)\);/);
 });
 
 test('Searchable Select action buttons follow sm, md and lg visual sizing', () => {

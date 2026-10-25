@@ -287,6 +287,17 @@ Canvas failures, forced colors and printing retain an SVG progress fallback.
 
 ## Menus And Content
 
+`Breadcrumb` exposes `Root`, `List`, `Item`, `Link`, `MenuTrigger`,
+`ContextLink`, `Page` and `Separator`. `Link` renders a real anchor and defaults
+to the pencil-underlined `link` appearance; `startIcon` and `endIcon` occupy the
+logical sides and follow RTL. `Page` accepts the same icon slots. Page, link and
+menu-trigger content share a 44px default hit height, 15px text, 20px icon slot,
+8px gap and 12px logical padding so a header can change item semantics without
+moving its baseline. Disabled links remove `href` and leave the tab order. Use
+`MenuTrigger` inside `DropdownMenu.Root` for an item that selects another path,
+and `ContextLink` inside `ContextMenu.Root` for pointer, keyboard and optional
+long-press actions without adding a second focus target.
+
 `DropdownMenu` exposes `Root`, `Trigger`, `Portal`, `Content`, `Item`, `CheckboxItem`, `RadioGroup`, `RadioItem`, `Group`, `Label` and `Separator`. It supports controlled open state, placement/collision props, disabled items, keyboard navigation and focus return. Use `Trigger asChild` with a Button; use `Item.destructive` for dangerous actions. Portal content inherits the trigger theme. Submenus are not included yet.
 
 `Alert.Root` accepts `variant="info | success | warning | danger"`, an optional decorative `icon`, and native attributes. Compose with `Alert.Title` and `Alert.Description`. The default `role="status"` is polite; explicitly use `role="alert"` only for urgent feedback.

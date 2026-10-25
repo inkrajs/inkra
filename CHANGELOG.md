@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.6.0 - 2026-10-25
+
+- Make Breadcrumb links pencil-underlined by default and support icons on both
+  logical sides of the current page. Add dropdown and context-menu composition,
+  including keyboard menu keys and optional touch long press.
+- Keep current-page text, links and menu triggers aligned, including short
+  labels, wrapped paths, RTL and hover/focus states.
+- Align Select.Stepper arrow actions inside their shared input outline.
+- Expand the Layout documentation with eight compositions, independently
+  resizable/collapsible sidebars, reduced-motion-aware transitions and four
+  viewport presets up to 1920px.
+- Keep header breadcrumbs stable across page changes, isolate long-path scrolling,
+  align navigation icons and use consistent padding and unframed header actions.
+
+Release candidate. Publication and public-registry verification are pending.
+
 ## 0.5.0 - 2026-10-25
 
 - Add InkraProvider with English, Simplified Chinese, Japanese, Korean and
