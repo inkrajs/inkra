@@ -1,8 +1,12 @@
 .inkra-infinite-scroll {
   --inkra-infinite-scroll-pull-distance: 0px;
+  --inkra-infinite-scroll-indicator-inline-offset: 0px;
+  --inkra-infinite-scroll-indicator-block-offset: 0px;
+  --inkra-infinite-scroll-indicator-viewport-inline-size: 100%;
+  --inkra-infinite-scroll-indicator-viewport-block-size: 100%;
   position: relative;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(min-content, 1fr) auto;
   max-inline-size: 100%;
   min-block-size: 0;
   min-inline-size: 0;
@@ -13,11 +17,16 @@
 
 .inkra-infinite-scroll__body {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(min-content, 1fr) auto;
   grid-row: 2;
   min-block-size: 0;
   min-inline-size: 0;
-  transition: transform var(--inkra-motion-fast) var(--inkra-ease);
+  transform: translate3d(0, 0, 0);
+  transition: transform var(--inkra-motion-slow) cubic-bezier(0.22, 1.45, 0.36, 1);
+}
+
+.inkra-infinite-scroll[data-pull-direction] > .inkra-infinite-scroll__body {
+  transition: none;
 }
 
 .inkra-infinite-scroll__content {
@@ -51,12 +60,18 @@
 .inkra-infinite-scroll__indicator[data-direction="top"],
 .inkra-infinite-scroll__indicator[data-direction="bottom"] {
   inline-size: 100%;
+}
+.inkra-infinite-scroll__indicator[data-visible][data-direction="top"],
+.inkra-infinite-scroll__indicator[data-visible][data-direction="bottom"] {
   min-block-size: 52px;
 }
 .inkra-infinite-scroll__indicator[data-direction="left"],
 .inkra-infinite-scroll__indicator[data-direction="right"] {
   align-self: stretch;
   grid-row: 1;
+}
+.inkra-infinite-scroll__indicator[data-visible][data-direction="left"],
+.inkra-infinite-scroll__indicator[data-visible][data-direction="right"] {
   min-inline-size: 112px;
 }
 .inkra-infinite-scroll__indicator[data-direction="top"] { grid-row: 1; }
@@ -64,8 +79,30 @@
 .inkra-infinite-scroll__indicator[data-direction="left"] { grid-column: 1; }
 .inkra-infinite-scroll__indicator[data-direction="right"] { grid-column: 3; }
 
+/* Pull feedback reveals inside the elastic gap, without changing scroll layout. */
+.inkra-infinite-scroll__indicator[data-pulling] {
+  position: absolute;
+  grid-area: auto;
+  left: var(--inkra-pull-left, 0px);
+  top: var(--inkra-pull-top, 0px);
+  inline-size: var(--inkra-pull-width, 0px);
+  block-size: var(--inkra-pull-height, 0px);
+  min-inline-size: 0 !important;
+  min-block-size: 0 !important;
+  overflow: clip;
+  pointer-events: none;
+}
+.inkra-infinite-scroll__indicator[data-pulling] .inkra-infinite-scroll__indicator-surface {
+  padding: 0;
+  max-inline-size: none;
+  min-block-size: 0;
+}
+.inkra-infinite-scroll__indicator[data-pulling][data-direction="left"] .inkra-infinite-scroll__loading-label,
+.inkra-infinite-scroll__indicator[data-pulling][data-direction="right"] .inkra-infinite-scroll__loading-label {
+  display: none;
+}
+
 .inkra-infinite-scroll__indicator-surface {
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -77,6 +114,24 @@
 .inkra-infinite-scroll__indicator[data-direction="right"] .inkra-infinite-scroll__indicator-surface {
   min-block-size: 100%;
   max-inline-size: 144px;
+}
+.inkra-infinite-scroll__indicator[data-status="loading"][data-direction="top"] .inkra-infinite-scroll__indicator-surface {
+  inline-size: var(--inkra-infinite-scroll-indicator-viewport-inline-size);
+  transform: translate3d(var(--inkra-infinite-scroll-indicator-inline-offset), 0, 0);
+}
+.inkra-infinite-scroll__indicator[data-status="loading"][data-direction="bottom"] .inkra-infinite-scroll__indicator-surface {
+  inline-size: var(--inkra-infinite-scroll-indicator-viewport-inline-size);
+  transform: translate3d(var(--inkra-infinite-scroll-indicator-inline-offset), 0, 0);
+}
+.inkra-infinite-scroll__indicator[data-status="loading"][data-direction="left"] .inkra-infinite-scroll__indicator-surface {
+  block-size: var(--inkra-infinite-scroll-indicator-viewport-block-size);
+  min-block-size: 0;
+  transform: translate3d(0, var(--inkra-infinite-scroll-indicator-block-offset), 0);
+}
+.inkra-infinite-scroll__indicator[data-status="loading"][data-direction="right"] .inkra-infinite-scroll__indicator-surface {
+  block-size: var(--inkra-infinite-scroll-indicator-viewport-block-size);
+  min-block-size: 0;
+  transform: translate3d(0, var(--inkra-infinite-scroll-indicator-block-offset), 0);
 }
 .inkra-infinite-scroll__indicator-content {
   display: flex;
@@ -90,23 +145,24 @@
   text-align: center;
 }
 .inkra-infinite-scroll__indicator-content > .inkra-progress { max-inline-size: 240px; }
-.inkra-infinite-scroll__indicator[data-direction="left"] .inkra-progress,
-.inkra-infinite-scroll__indicator[data-direction="right"] .inkra-progress { min-inline-size: 96px; }
-.inkra-infinite-scroll__indicator-line {
-  position: absolute;
-  pointer-events: none;
+.inkra-infinite-scroll__indicator[data-direction="left"] .inkra-infinite-scroll__indicator-content > .inkra-progress,
+.inkra-infinite-scroll__indicator[data-direction="right"] .inkra-infinite-scroll__indicator-content > .inkra-progress { min-inline-size: 96px; }
+.inkra-infinite-scroll__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--inkra-space-2);
+  min-inline-size: 0;
 }
-.inkra-infinite-scroll__indicator[data-direction="top"] .inkra-infinite-scroll__indicator-line { inset-inline: 4px; inset-block-end: -4px; inline-size: calc(100% - 8px); }
-.inkra-infinite-scroll__indicator[data-direction="bottom"] .inkra-infinite-scroll__indicator-line { inset-inline: 4px; inset-block-start: -4px; inline-size: calc(100% - 8px); }
-.inkra-infinite-scroll__indicator[data-direction="left"] .inkra-infinite-scroll__indicator-line { inset-block: 4px; inset-inline-end: -4px; block-size: calc(100% - 8px); }
-.inkra-infinite-scroll__indicator[data-direction="right"] .inkra-infinite-scroll__indicator-line { inset-block: 4px; inset-inline-start: -4px; block-size: calc(100% - 8px); }
+.inkra-infinite-scroll__loading > .inkra-progress { flex: 0 0 auto; }
+.inkra-infinite-scroll__loading-label { min-inline-size: 0; white-space: nowrap; }
+.inkra-infinite-scroll__indicator[data-direction="left"] .inkra-infinite-scroll__loading,
+.inkra-infinite-scroll__indicator[data-direction="right"] .inkra-infinite-scroll__loading { flex-wrap: wrap; }
+.inkra-infinite-scroll__indicator[data-direction="left"] .inkra-infinite-scroll__loading-label,
+.inkra-infinite-scroll__indicator[data-direction="right"] .inkra-infinite-scroll__loading-label { white-space: normal; }
 
 @media (prefers-reduced-motion: reduce) {
   .inkra-infinite-scroll__body { transition-duration: 0ms; }
-}
-
-@media (forced-colors: active) {
-  .inkra-infinite-scroll__indicator-surface { outline: 1px solid CanvasText; }
 }
 
 @media print {

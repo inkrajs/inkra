@@ -16,6 +16,33 @@ test('Loading keeps business status, progress and timed presence separate', asyn
   assert.doesNotMatch(source, /setStatus|progress\s*>=\s*resolvedMax/);
 });
 
+test('Loading exposes pencil-rendered animations without duplicating honest progress', async () => {
+  const [source, styles] = await Promise.all([readFile(sourceUrl, 'utf8'), readFile(styleUrl, 'utf8')]);
+  assert.match(source, /export type LoadingAnimation = 'progress' \| 'orbit' \| 'dots' \| 'pulse' \| 'trail'/);
+  assert.match(source, /animation\?: LoadingAnimation/);
+  assert.match(source, /animation = 'progress'/);
+  assert.match(source, /data-animation=\{animation\}/);
+  assert.match(source, /showCustomAnimation = animation !== 'progress'[\s\S]*progress === undefined \|\| progress === null/);
+  assert.match(source, /showProgress = progress !== undefined[\s\S]*animation === 'progress' \|\| progress !== null/);
+  assert.match(source, /role="progressbar"/);
+  assert.match(source, /LoadingAnimationVisual animation=\{animation\}/);
+  assert.match(source, /<PencilSurface[\s\S]*variant=\{animation === 'pulse' \? 'outline' : 'quiet'\}/);
+  assert.match(source, /<PencilLine[\s\S]*inkra-loading__animation-mark/);
+  assert.doesNotMatch(source, /<span className="inkra-loading__animation-mark"/);
+  assert.match(source, /showProgress \? <Progress/);
+  assert.doesNotMatch(styles, /\.inkra-loading__animation-mark\s*\{[^}]*background:/s);
+  assert.doesNotMatch(styles, /\.inkra-loading__animation-mark\s*\{[^}]*border:/s);
+  for (const animation of ['orbit', 'dots', 'pulse', 'trail']) {
+    assert.match(styles, new RegExp(`data-animation="${animation}"`));
+    assert.match(styles, new RegExp(`inkra-loading-${animation === 'dots' ? 'dot' : animation}`));
+  }
+  assert.match(styles, /@keyframes inkra-loading-orbit \{ to \{ transform: rotate\(360deg\); \} \}/);
+  assert.match(styles, /@keyframes inkra-loading-dot \{[^\n]+opacity:[^\n]+transform:[^\n]+\}/);
+  assert.match(styles, /@keyframes inkra-loading-pulse \{[^\n]+opacity:[^\n]+transform:[^\n]+\}/);
+  assert.match(styles, /@keyframes inkra-loading-trail \{[^\n]+opacity:[^\n]+transform:[^\n]+\}/);
+  assert.match(styles, /prefers-reduced-motion: reduce[\s\S]*inkra-loading__animation[\s\S]*animation: none !important/);
+});
+
 test('fullscreen blocking, focus isolation and scroll lock use mature independent primitives', async () => {
   const [source, styles] = await Promise.all([readFile(sourceUrl, 'utf8'), readFile(styleUrl, 'utf8')]);
   assert.match(source, /FocusScope/);

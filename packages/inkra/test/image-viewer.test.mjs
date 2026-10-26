@@ -184,3 +184,17 @@ test('ImageViewer fullscreen shell avoids a viewport-sized decorative surface ca
   assert.match(styles, /> \.inkra-overlay__surface > \.inkra-pencil-surface__ink \{ display: none !important/);
   assert.match(styles, /> \.inkra-overlay__surface > \.inkra-overlay__content-body \{[\s\S]*?background: var\(--inkra-paper\);[\s\S]*?height: 100dvh;[\s\S]*?width: 100dvw/);
 });
+
+test('image tools float over the stage and the optional counter leaves no empty footer', () => {
+  assert.match(component, /showCounter\?: boolean/);
+  assert.match(component, /showCounter = false/);
+  assert.match(component, /toolbarPosition = 'top'/);
+  assert.match(component, /className="inkra-image-viewer__floating-tools" data-position=\{toolbarPosition\}/);
+  assert.match(component, /showCounter && total > 0 \? <PencilText/);
+  assert.match(styles, /\.inkra-image-viewer__floating-tools \{[^}]*pointer-events: none;/);
+  assert.match(styles, /\.inkra-image-viewer__floating-tools\[data-position="bottom"\]/);
+  const body = component.indexOf('className="inkra-image-viewer__body"');
+  const tools = component.indexOf('className="inkra-image-viewer__floating-tools"');
+  const bottom = component.indexOf('className="inkra-image-viewer__bottom"');
+  assert(body < tools && tools < bottom);
+});

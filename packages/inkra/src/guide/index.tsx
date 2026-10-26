@@ -1,4 +1,5 @@
 import * as PopoverPrimitive from '@radix-ui/react-popover';
+import { __iconData as skipIcon } from 'lucide-react/dist/esm/icons/skip-forward.mjs';
 import { __iconData as closeIcon } from 'lucide-react/dist/esm/icons/x.mjs';
 import {
   Children,
@@ -38,6 +39,8 @@ import {
 
 type GuideSide = 'top' | 'right' | 'bottom' | 'left';
 type GuideAlign = 'start' | 'center' | 'end';
+export type GuideSkipPlacement = 'panel' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end';
+export type GuideSkipAppearance = 'icon' | 'text';
 
 export type GuideTarget =
   | string
@@ -100,6 +103,8 @@ export interface GuideRootProps {
   onFinish?: () => void;
   onSkip?: () => void;
   showSkip?: boolean;
+  skipPlacement?: GuideSkipPlacement;
+  skipAppearance?: GuideSkipAppearance;
   showClose?: boolean;
   closeOnEscape?: boolean;
   scrollIntoView?: boolean | ScrollIntoViewOptions;
@@ -202,6 +207,8 @@ interface GuideLayerProps {
   scrollIntoView: boolean | ScrollIntoViewOptions;
   showClose: boolean;
   showSkip: boolean;
+  skipAppearance: GuideSkipAppearance;
+  skipPlacement: GuideSkipPlacement;
   onClose: () => void;
   onEscape: () => void;
   onFinish: () => void;
@@ -211,6 +218,36 @@ interface GuideLayerProps {
 }
 
 const closePaths = closeIcon.node.map(([, attributes]) => ({ d: attributes.d }));
+const skipPaths = skipIcon.node.map(([, attributes]: [string, { d: string }]) => ({ d: attributes.d }));
+const cornerPlacements: Exclude<GuideSkipPlacement, 'panel'>[] = ['top-start', 'top-end', 'bottom-start', 'bottom-end'];
+
+function focusableElements(container: HTMLElement | null): HTMLElement[] {
+  if (!container) return [];
+  return [...container.querySelectorAll<HTMLElement>('button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])')]
+    .filter(element => !element.hidden && element.getAttribute('aria-hidden') !== 'true');
+}
+
+function cornerRect(
+  placement: Exclude<GuideSkipPlacement, 'panel'>,
+  width: number,
+  height: number,
+  direction: 'ltr' | 'rtl',
+): DOMRect {
+  const inset = 16;
+  const start = direction === 'rtl' ? window.innerWidth - inset - width : inset;
+  const end = direction === 'rtl' ? inset : window.innerWidth - inset - width;
+  return new DOMRect(
+    placement.endsWith('start') ? start : end,
+    placement.startsWith('top') ? inset : window.innerHeight - inset - height,
+    width,
+    height,
+  );
+}
+
+function overlaps(left: DOMRect, right: DOMRect, gap = 8): boolean {
+  return left.left < right.right + gap && left.right > right.left - gap
+    && left.top < right.bottom + gap && left.bottom > right.top - gap;
+}
 
 function GuideLayer({
   activeStep,
@@ -225,6 +262,8 @@ function GuideLayer({
   scrollIntoView,
   showClose,
   showSkip,
+  skipAppearance,
+  skipPlacement,
   onClose,
   onEscape,
   onFinish,
@@ -235,6 +274,8 @@ function GuideLayer({
   const titleId = useId();
   const descriptionId = useId();
   const contentRef = useRef<HTMLDivElement>(null);
+  const skipRef = useRef<HTMLButtonElement>(null);
+  const [resolvedSkipPlacement, setResolvedSkipPlacement] = useState(skipPlacement);
   const [target, setTarget] = useState<HTMLElement | null>(null);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [viewportWidth, setViewportWidth] = useState(0);
@@ -306,6 +347,48 @@ function GuideLayer({
     return () => observer.disconnect();
   }, [measure, target]);
 
+  useEffect(() => {
+    if (!showSkip || skipPlacement === 'panel') {
+      setResolvedSkipPlacement(skipPlacement);
+      return undefined;
+    }
+    let frame = 0;
+    const resolvePlacement = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const content = contentRef.current;
+        const skip = skipRef.current;
+        if (!content) return;
+        const contentRect = content.getBoundingClientRect();
+        const skipRect = skip?.getBoundingClientRect();
+        const direction = getComputedStyle(content).direction === 'rtl' ? 'rtl' : 'ltr';
+        const preferred = skipPlacement as Exclude<GuideSkipPlacement, 'panel'>;
+        const alternatives = [
+          preferred,
+          preferred.startsWith('top') ? preferred.replace('top', 'bottom') : preferred.replace('bottom', 'top'),
+          preferred.endsWith('start') ? preferred.replace('start', 'end') : preferred.replace('end', 'start'),
+          ...cornerPlacements,
+        ] as Exclude<GuideSkipPlacement, 'panel'>[];
+        const width = skipRect?.width || (skipAppearance === 'icon' ? 44 : 128);
+        const height = skipRect?.height || 44;
+        const next = alternatives.find(placement => !overlaps(cornerRect(placement, width, height, direction), contentRect)) ?? 'panel';
+        setResolvedSkipPlacement(current => current === next ? current : next);
+      });
+    };
+    resolvePlacement();
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(resolvePlacement);
+    if (contentRef.current) observer?.observe(contentRef.current);
+    if (skipRef.current) observer?.observe(skipRef.current);
+    window.addEventListener('resize', resolvePlacement);
+    window.addEventListener('scroll', resolvePlacement, true);
+    return () => {
+      cancelAnimationFrame(frame);
+      observer?.disconnect();
+      window.removeEventListener('resize', resolvePlacement);
+      window.removeEventListener('scroll', resolvePlacement, true);
+    };
+  }, [activeIndex, showSkip, skipAppearance, skipPlacement]);
+
   const themedProps = usePortalThemeProps({});
   const paddedRect = targetRect ? {
     left: Math.max(0, targetRect.left - highlightPadding),
@@ -331,6 +414,22 @@ function GuideLayer({
     : preferredSide;
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Tab') {
+      const focusables = focusableElements(contentRef.current);
+      const first = focusables[0];
+      const lastFocusable = focusables[focusables.length - 1];
+      const cornerSkip = showSkip && resolvedSkipPlacement !== 'panel';
+      if (!event.shiftKey && event.target === lastFocusable) {
+        event.preventDefault();
+        (cornerSkip ? skipRef.current : first ?? contentRef.current)?.focus();
+        return;
+      }
+      if (event.shiftKey && (event.target === first || event.target === contentRef.current)) {
+        event.preventDefault();
+        (cornerSkip ? skipRef.current : lastFocusable ?? contentRef.current)?.focus();
+        return;
+      }
+    }
     if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || isTextEntry(event.target)) return;
     const direction = getComputedStyle(event.currentTarget).direction;
     const nextKey = direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
@@ -343,6 +442,32 @@ function GuideLayer({
       onPrevious();
     }
   };
+
+  const handleSkipKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key !== 'Tab') return;
+    const focusables = focusableElements(contentRef.current);
+    const destination = event.shiftKey ? focusables[focusables.length - 1] ?? contentRef.current : focusables[0] ?? contentRef.current;
+    event.preventDefault();
+    destination?.focus();
+  };
+
+  const skipAction = (corner: boolean) => <Button
+    aria-label={labels.skip}
+    className={corner ? 'inkra-guide__skip' : 'inkra-guide__skip-panel'}
+    data-appearance={skipAppearance}
+    data-placement={corner ? resolvedSkipPlacement : 'panel'}
+    data-tooltip={corner && skipAppearance === 'icon' ? labels.skip : undefined}
+    onClick={onSkip}
+    onKeyDown={corner ? handleSkipKeyDown : undefined}
+    ref={corner ? skipRef : undefined}
+    size={skipAppearance === 'icon' ? 'icon-xs' : 'sm'}
+    title={corner && skipAppearance === 'icon' ? labels.skip : undefined}
+    variant="ghost"
+  >
+    {skipAppearance === 'icon'
+      ? <PencilIcon decorative paths={skipPaths} size={18} sourceSize={24} />
+      : labels.skip}
+  </Button>;
 
   return (
     <>
@@ -366,6 +491,13 @@ function GuideLayer({
           />
         ) : <div {...themedProps} aria-hidden="true" className="inkra-guide__backdrop" />}
       </PopoverPrimitive.Portal>
+      {showSkip && resolvedSkipPlacement !== 'panel' ? (
+        <PopoverPrimitive.Portal container={portalContainer ?? undefined}>
+          <div {...themedProps} className="inkra-guide__skip-layer">
+            {skipAction(true)}
+          </div>
+        </PopoverPrimitive.Portal>
+      ) : null}
       <PopoverPrimitive.Portal container={portalContainer ?? undefined}>
         <PopoverPrimitive.Content
           {...themedProps}
@@ -418,7 +550,7 @@ function GuideLayer({
                 </div>
               ) : null}
               <footer className="inkra-guide__footer">
-                {showSkip ? <Button onClick={onSkip} variant="ghost">{labels.skip}</Button> : <span />}
+                {showSkip && resolvedSkipPlacement === 'panel' ? skipAction(false) : <span />}
                 <div className="inkra-guide__navigation">
                   <Button disabled={activeIndex === 0} onClick={onPrevious} variant="secondary">{labels.previous}</Button>
                   <Button onClick={last ? onFinish : onNext}>{last ? labels.finish : labels.next}</Button>
@@ -443,6 +575,8 @@ export function GuideRoot({
   onFinish,
   onSkip,
   showSkip = true,
+  skipPlacement = 'top-end',
+  skipAppearance = 'icon',
   showClose = true,
   closeOnEscape = true,
   scrollIntoView = true,
@@ -559,6 +693,8 @@ export function GuideRoot({
               scrollIntoView={scrollIntoView}
               showClose={showClose}
               showSkip={showSkip}
+              skipAppearance={skipAppearance}
+              skipPlacement={skipPlacement}
               total={steps.length}
             />
           ) : null}

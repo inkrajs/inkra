@@ -34,6 +34,41 @@
   outline-offset: var(--inkra-focus-offset);
 }
 
+.inkra-guide__skip-layer {
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  z-index: calc(var(--inkra-z-modal, 30) + var(--inkra-floating-layer-offset, 0) + 2);
+}
+
+.inkra-guide__skip {
+  color: var(--inkra-ink-muted);
+  opacity: .72;
+  pointer-events: auto;
+  position: absolute;
+}
+
+.inkra-guide__skip:is(:hover, :focus-visible) {
+  color: var(--inkra-ink);
+  opacity: 1;
+}
+
+.inkra-guide__skip[data-placement^="top"] {
+  inset-block-start: max(var(--inkra-space-4), env(safe-area-inset-top));
+}
+
+.inkra-guide__skip[data-placement^="bottom"] {
+  inset-block-end: max(var(--inkra-space-4), env(safe-area-inset-bottom));
+}
+
+.inkra-guide__skip[data-placement$="start"] {
+  inset-inline-start: max(var(--inkra-space-4), env(safe-area-inset-left));
+}
+
+.inkra-guide__skip[data-placement$="end"] {
+  inset-inline-end: max(var(--inkra-space-4), env(safe-area-inset-right));
+}
+
 .inkra-guide__surface {
   color: var(--inkra-ink);
   display: block;
@@ -102,6 +137,10 @@
   justify-content: space-between;
 }
 
+.inkra-guide__footer > :empty {
+  display: none;
+}
+
 .inkra-guide__navigation {
   flex-wrap: wrap;
   justify-content: flex-end;
@@ -154,5 +193,10 @@
   .inkra-guide__surface {
     background: Canvas;
     border: 1px solid CanvasText;
+  }
+
+  .inkra-guide__skip {
+    color: ButtonText;
+    opacity: 1;
   }
 }

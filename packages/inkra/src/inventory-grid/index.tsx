@@ -12,6 +12,7 @@ import { useInkraLocale } from '../i18n/index.js';
 import { PortalThemeBridge, PortalThemeProvider, usePortalTriggerRef } from '../overlay/themeBridge.js';
 import { assertInventoryContainers, projectInventoryMove, rotateInventoryCells, validateInventoryPlacement } from './model.js';
 import type { InventoryCell, InventoryChangeDetails, InventoryContainer, InventoryItem, InventoryPlacement, InventoryPlacementRule, InventoryRotation } from './model.js';
+import { inventoryOutline } from './outline.js';
 export { assertInventoryContainers, projectInventoryMove, rotateInventoryCells, validateInventoryPlacement } from './model.js';
 export type { InventoryCell, InventoryChangeDetails, InventoryContainer, InventoryItem, InventoryPlacement, InventoryPlacementContext, InventoryPlacementResult, InventoryPlacementRule, InventoryRotation } from './model.js';
 
@@ -52,13 +53,33 @@ const itemId = (id: string) => `inkra-inventory-item:${id}`;
 const bounds = (cells: readonly InventoryCell[]) => ({ width: Math.max(...cells.map(cell => cell.x)) + 1, height: Math.max(...cells.map(cell => cell.y)) + 1 });
 const collisionDetection: CollisionDetection = args => args.pointerCoordinates ? pointerWithin(args) : rectIntersection(args);
 
-function Shape({ cells, size, seed, children, preview = false }: {
-  cells: readonly InventoryCell[]; size: number; seed: string; children?: ReactNode; preview?: boolean;
+function Shape({ cells, size, seed, children }: {
+  cells: readonly InventoryCell[]; size: number; seed: string; children?: ReactNode;
 }) {
-  return <>{cells.map((cell, index) => <span key={`${cell.x}:${cell.y}`} className="inkra-inventory-grid__cell"
+  const outline = useMemo(() => inventoryOutline(cells, size), [cells, size]);
+  const box = bounds(cells);
+  return <>
+    <span className="inkra-inventory-grid__shape" aria-hidden="true"
+      style={{ width: box.width * size, height: box.height * size }}>
+      <PencilSurface as="span" variant="full" seed={seed} className="inkra-inventory-grid__shape-fill"
+        style={{ clipPath: `path("${outline.path}")` }}>
+        <PencilSurface as="span" variant="selection" seed={`${seed}-wash`} className="inkra-inventory-grid__shape-wash" />
+      </PencilSurface>
+      <svg className="inkra-inventory-grid__shape-fallback" width="100%" height="100%">
+        <path d={outline.path} fill="none" stroke="currentColor" />
+      </svg>
+      {outline.segments.map(({ start, end }, index) => {
+        const vertical = start.x === end.x;
+        const style = { left: Math.min(start.x, end.x) - (vertical ? 4 : 1),
+          top: Math.min(start.y, end.y) - (vertical ? 1 : 4),
+          width: vertical ? 8 : Math.abs(end.x - start.x) + 2,
+          height: vertical ? Math.abs(end.y - start.y) + 2 : 8 };
+        return <PencilLine key={index} orientation={vertical ? 'vertical' : 'horizontal'}
+          seed={`${seed}-edge-${index}`} className="inkra-inventory-grid__shape-edge" style={style} />;
+      })}
+    </span>
+    {cells.map((cell, index) => <span key={`${cell.x}:${cell.y}`} className="inkra-inventory-grid__cell"
     style={{ left: cell.x * size, top: cell.y * size, width: size, height: size }}>
-    <PencilSurface as="span" variant={preview ? 'selection' : 'quiet'} radius={3} seed={`${seed}-${cell.x}-${cell.y}`} className="inkra-inventory-grid__cell-surface" />
-    {!preview && <PencilSurface as="span" variant="outline" radius={3} seed={`${seed}-${cell.x}-${cell.y}-focus`} className="inkra-inventory-grid__cell-focus" />}
     {index === 0 && <span className="inkra-inventory-grid__item-content">{children}</span>}
   </span>)}</>;
 }
@@ -123,7 +144,7 @@ function ContainerView<Item extends InventoryItem>({ container, size, disabled, 
           onSelect={onSelect} onRotate={onRotate} renderItem={renderItem} getItemLabel={getItemLabel} allowRotation={allowRotation} />)}
         {projection && projection.containerId === container.id && <div aria-hidden="true" className="inkra-inventory-grid__preview" data-valid={valid}
           style={{ left: projection.position.x * size, top: projection.position.y * size }}>
-          <Shape cells={projectedCells} size={size} seed="inventory-preview" preview />
+          <Shape cells={projectedCells} size={size} seed="inventory-preview" />
         </div>}
       </div>
     </div>

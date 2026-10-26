@@ -9,13 +9,23 @@ import { nextTipIndex, normalizeLoadingProgress } from '../dist/loading/model.js
 
 test('Loading renders honest inline and region progress semantics', () => {
   const unknown = render(h(Loading, { progress: null, progressLabel: 'Preparing' }));
+  assert.match(unknown, /data-animation="progress"/);
   assert.match(unknown, /role="status"/);
   assert.match(unknown, /aria-busy="true"/);
   assert.match(unknown, /role="progressbar"/);
   assert.doesNotMatch(unknown, /aria-valuenow/);
   assert.doesNotMatch(unknown.replace(/<[^>]*>/g, ''), /\d+(?:\.\d+)?%/);
 
-  const determinate = render(h(Loading, { mode: 'region', preset: 'intel', progress: 42, max: 80, title: 'Downloading' }));
+  const customUnknown = render(h(Loading, { animation: 'orbit', progress: null, progressLabel: 'Preparing' }));
+  assert.match(customUnknown, /class="inkra-loading__animation" role="progressbar"/);
+  assert.match(customUnknown, /aria-label="Preparing"/);
+  assert.match(customUnknown, /inkra-pencil-surface/);
+  assert.doesNotMatch(customUnknown, /class="inkra-progress/);
+  assert.doesNotMatch(customUnknown, /aria-valuenow/);
+
+  const determinate = render(h(Loading, { animation: 'orbit', mode: 'region', preset: 'intel', progress: 42, max: 80, title: 'Downloading' }));
+  assert.match(determinate, /data-animation="orbit"/);
+  assert.doesNotMatch(determinate, /class="inkra-loading__animation"/);
   assert.match(determinate, /aria-valuenow="42"/);
   assert.match(determinate, />53%<|>52%<|>53%<\/span>/);
   assert.match(determinate, /Downloading/);

@@ -33,8 +33,69 @@ const axisRatio = 1.25;
 export function createInfiniteScrollGesture(read: () => InfiniteScrollGestureOptions) {
   let cancelCurrent = () => {};
   let clearClick = () => {};
+  let cancelWheel = () => {};
+  let wheelSession: { direction: InfiniteScrollDirection; distance: number; timer: number } | null = null;
+
+  function wheel(event: WheelEvent) {
+    const options = read();
+    const { root, container } = options;
+    const view = root?.ownerDocument.defaultView;
+    const target = event.target instanceof HTMLElement ? event.target : null;
+    if (!root || !container || !view || !target || !root.contains(target)
+      || event.defaultPrevented || event.ctrlKey || !event.cancelable
+      || isEditableOrInteractiveTarget(target)) return;
+    const dx = event.shiftKey && !event.deltaX ? event.deltaY : event.deltaX;
+    const dy = event.shiftKey && !event.deltaX ? 0 : event.deltaY;
+    const horizontal = Math.abs(dx) > Math.abs(dy) * axisRatio;
+    const vertical = Math.abs(dy) > Math.abs(dx) * axisRatio;
+    if (!horizontal && !vertical) { cancelWheel(); return; }
+    const direction: InfiniteScrollDirection = horizontal ? (dx < 0 ? 'left' : 'right') : (dy < 0 ? 'top' : 'bottom');
+    if (!options.directions.includes(direction) || !options.isEnabled(direction)
+      || hasNestedScrollOwner(target, root, container, directionAxis(direction))
+      || (isPageScrollContainer(container) && !options.isExplicitlyEnabled(direction))) {
+      cancelWheel();
+      return;
+    }
+    if (wheelSession && wheelSession.direction !== direction) cancelWheel();
+    // Native scrolling reaches the edge first; only later outward input belongs to the pull.
+    if (!wheelSession && physicalBoundaryDistance(container, options.sentinel(direction), direction, root) > 1) return;
+    if (!wheelSession) {
+      cancelCurrent();
+      const session = { direction, distance: 0, timer: 0 };
+      wheelSession = session;
+      const abort = () => {
+        view.clearTimeout(session.timer);
+        view.removeEventListener('blur', abort);
+        wheelSession = null;
+        options.onPull(null, 0, options.threshold(direction), false);
+        cancelWheel = () => {};
+      };
+      cancelWheel = abort;
+      view.addEventListener('blur', abort);
+    }
+    const session = wheelSession;
+    const threshold = Math.max(1, options.threshold(direction));
+    const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2
+      ? (horizontal ? container.clientWidth : container.clientHeight) : 1;
+    const rect = container.getBoundingClientRect();
+    const scale = horizontal ? container.clientWidth / (rect.width || container.clientWidth)
+      : container.clientHeight / (rect.height || container.clientHeight);
+    session.distance += Math.min(Math.abs(horizontal ? dx : dy) * unit * scale, threshold);
+    event.preventDefault();
+    event.stopPropagation();
+    options.onPull(direction, dampPullDistance(session.distance, threshold), threshold, session.distance >= threshold);
+    view.clearTimeout(session.timer);
+    session.timer = view.setTimeout(() => {
+      const latest = read();
+      const commit = session.distance >= threshold && root.isConnected
+        && latest.root === root && latest.container === container && latest.isEnabled(direction);
+      cancelWheel();
+      if (commit) latest.onCommit(direction);
+    }, 160);
+  }
 
   function start(event: TouchEvent) {
+    cancelWheel();
     cancelCurrent();
     clearClick();
     const options = read();
@@ -160,7 +221,8 @@ export function createInfiniteScrollGesture(read: () => InfiniteScrollGestureOpt
 
   return {
     start,
-    cancel: () => cancelCurrent(),
-    dispose: () => { cancelCurrent(); clearClick(); },
+    wheel,
+    cancel: () => { cancelCurrent(); cancelWheel(); },
+    dispose: () => { cancelCurrent(); cancelWheel(); clearClick(); },
   };
 }

@@ -254,6 +254,8 @@ export interface ImageViewerImageRenderProps {
 export interface ImageViewerContentProps extends Omit<OverlayContentProps, 'children' | 'layout'> {
   labels?: Partial<ImageViewerLabels>;
   showThumbnails?: boolean;
+  showCounter?: boolean;
+  toolbarPosition?: 'top' | 'bottom';
   renderImage?: (item: ImageViewerItem, props: ImageViewerImageRenderProps) => ReactNode;
   emptyState?: ReactNode;
   zoomable?: boolean;
@@ -280,6 +282,8 @@ export const ImageViewerContent = forwardRef<
     renderImage,
     rotatable = false,
     showThumbnails = true,
+    showCounter = false,
+    toolbarPosition = 'top',
     zoomable = true,
     minScale = 0.5,
     maxScale = 6,
@@ -477,25 +481,19 @@ export const ImageViewerContent = forwardRef<
               <PencilText as="p">{labels.emptyDescription}</PencilText>
             </>}
           </div>}
-        </div>
-
-        {(activeItem || (showThumbnails && total > 1)) ? <div className="inkra-image-viewer__bottom">
-          <div className="inkra-image-viewer__bottom-row">
-            {total > 0 ? <PencilText as="span" className="inkra-image-viewer__counter" dir="auto">
-              {labels.imagePosition(activeIndex + 1, total)}
-            </PencilText> : null}
-            {activeItem && activeItemType === 'image' && !failed && (zoomable || rotatable) ? <div className="inkra-image-viewer__tools" role="group" aria-label={labels.panZoom(activeItem)} data-pan-zoom-no-drag>
+            {activeItem && activeItemType === 'image' && !failed && (zoomable || rotatable) ? <div className="inkra-image-viewer__floating-tools" data-position={toolbarPosition}>
+              <div className="inkra-image-viewer__tools" role="group" aria-label={labels.panZoom(activeItem)} data-pan-zoom-no-drag>
               <PencilSurface aria-hidden="true" className="inkra-image-viewer__tools-paper" radius={8} seed={`image-viewer-tools-${activeItem.id}`} variant="paper" />
               {zoomable ? <>
-                <Button aria-label={labels.zoomOut} onClick={() => void panZoomRef.current?.zoomOut()} size="icon-sm" variant="outline">
+                <Button aria-label={labels.zoomOut} title={labels.zoomOut} onClick={() => void panZoomRef.current?.zoomOut()} size="icon-sm" variant="ghost">
                   <PencilIcon decorative paths={zoomOutPaths} size={24} sourceSize={24} />
                 </Button>
-                <Button aria-label={labels.resetZoom} onClick={() => void panZoomRef.current?.reset()} size="sm" variant="outline">100%</Button>
-                <Button aria-label={labels.zoomIn} onClick={() => void panZoomRef.current?.zoomIn()} size="icon-sm" variant="outline">
+                <Button aria-label={labels.resetZoom} title={labels.resetZoom} onClick={() => void panZoomRef.current?.reset()} size="sm" variant="ghost">100%</Button>
+                <Button aria-label={labels.zoomIn} title={labels.zoomIn} onClick={() => void panZoomRef.current?.zoomIn()} size="icon-sm" variant="ghost">
                   <PencilIcon decorative paths={zoomInPaths} size={24} sourceSize={24} />
                 </Button>
               </> : null}
-              {rotatable ? <Button aria-label={labels.rotate} onClick={() => {
+              {rotatable ? <Button aria-label={labels.rotate} title={labels.rotate} onClick={() => {
                 setRotation(current => (current + 90) % 360);
                 if (fitFrameRef.current !== null) cancelAnimationFrame(fitFrameRef.current);
                 const resourceKey = activeItemKey;
@@ -503,10 +501,18 @@ export const ImageViewerContent = forwardRef<
                   fitFrameRef.current = null;
                   if (activeResourceRef.current === resourceKey) void panZoomRef.current?.fit({ mode: 'contain' });
                 });
-              }} size="icon-sm" variant="outline">
+              }} size="icon-sm" variant="ghost">
                 <PencilIcon decorative paths={rotatePaths} size={24} sourceSize={24} />
               </Button> : null}
+              </div>
             </div> : null}
+        </div>
+
+        {((showCounter && total > 0) || (activeItemType === 'video' && total > 1) || (showThumbnails && total > 1)) ? <div className="inkra-image-viewer__bottom">
+          {((showCounter && total > 0) || (activeItemType === 'video' && total > 1)) ? <div className="inkra-image-viewer__bottom-row">
+            {showCounter && total > 0 ? <PencilText as="span" className="inkra-image-viewer__counter" dir="auto">
+              {labels.imagePosition(activeIndex + 1, total)}
+            </PencilText> : null}
             {activeItem && activeItemType === 'video' && total > 1 ? <div className="inkra-image-viewer__video-navigation" role="group" aria-label={labels.thumbnails}>
               <Button aria-label={labels.previous} disabled={!loop && atStart} onClick={() => step(-1)} size="icon-sm" variant="secondary">
                 <PencilIcon decorative paths={chevronLeftPaths} size={24} sourceSize={24} />
@@ -515,7 +521,7 @@ export const ImageViewerContent = forwardRef<
                 <PencilIcon decorative paths={chevronRightPaths} size={24} sourceSize={24} />
               </Button>
             </div> : null}
-          </div>
+          </div> : null}
           {showThumbnails && total > 1 ? <div
             aria-label={labels.thumbnails}
             className="inkra-image-viewer__thumbnails"

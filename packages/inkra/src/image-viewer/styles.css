@@ -79,6 +79,7 @@
 }
 
 .inkra-image-viewer__body {
+  position: relative;
   display: grid;
   flex: 1 1 auto;
   min-block-size: var(--inkra-touch-target);
@@ -226,6 +227,24 @@
   padding: var(--inkra-focus-offset);
   position: relative;
   scrollbar-gutter: auto;
+  pointer-events: auto;
+}
+
+.inkra-image-viewer__floating-tools {
+  position: absolute;
+  inset-inline: max(var(--inkra-space-3), env(safe-area-inset-left)) max(var(--inkra-space-3), env(safe-area-inset-right));
+  inset-block-start: max(var(--inkra-space-3), env(safe-area-inset-top));
+  display: flex;
+  justify-content: center;
+  padding-inline: var(--inkra-touch-target);
+  pointer-events: none;
+  z-index: 6;
+}
+
+.inkra-image-viewer__floating-tools[data-position="bottom"] {
+  inset-block-start: auto;
+  inset-block-end: max(var(--inkra-space-3), env(safe-area-inset-bottom));
+  padding-inline: 0;
 }
 
 .inkra-image-viewer__video-navigation {
@@ -345,5 +364,6 @@
 @media print {
   .inkra-image-viewer__close-control,
   .inkra-image-viewer__navigation,
+  .inkra-image-viewer__floating-tools,
   .inkra-image-viewer__bottom { display: none; }
 }
