@@ -5,6 +5,7 @@ import { cp, lstat, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { installRegistryVersion } from './registry-install.mjs';
 
 const candidate = JSON.parse(await readFile(new URL('../.release/manifest.json', import.meta.url), 'utf8'));
 const tarball = fileURLToPath(new URL(`../.release/${candidate.filename}`, import.meta.url));
@@ -21,7 +22,23 @@ assert(/^\d+\.\d+\.\d+(?:-[\w.-]+)?$/.test(candidate.version), 'Invalid candidat
 try {
   await writeFile(join(directory, 'package.json'), JSON.stringify({ private: true, type: 'module' }));
   const installSource = fromRegistry ? candidate.name + '@' + candidate.version : tarball;
-  execFileSync('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--registry=https://registry.npmjs.org', installSource, `react@${reactVersion}`, `react-dom@${reactVersion}`, 'typescript@5.9.3', `@types/react@${major}`, `@types/react-dom@${major}`, ...(browserChecks ? ['vite@8.3.4'] : [])], { cwd: directory, stdio: 'inherit', timeout: 180000 });
+  const install = (remainingMs = 180000) => {
+    try {
+      const output = execFileSync('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', ...(fromRegistry ? ['--prefer-online'] : []), '--registry=https://registry.npmjs.org', installSource, `react@${reactVersion}`, `react-dom@${reactVersion}`, 'typescript@5.9.3', `@types/react@${major}`, `@types/react-dom@${major}`, ...(browserChecks ? ['vite@8.3.4'] : [])], {
+        cwd: directory, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: Math.min(180000, remainingMs),
+      });
+      process.stdout.write(output);
+    } catch (error) {
+      process.stdout.write(String(error.stdout ?? ''));
+      process.stderr.write(String(error.stderr ?? ''));
+      throw error;
+    }
+  };
+  if (fromRegistry) await installRegistryVersion(install, {
+    name: candidate.name, version: candidate.version,
+    onRetry: delay => console.log(`npm index has not exposed ${installSource}; retrying installation in ${delay / 1000}s (five-minute limit, no republish).`),
+  });
+  else install();
   const installedLock = JSON.parse(await readFile(join(directory, 'package-lock.json'), 'utf8'));
   assert.equal(installedLock.packages['node_modules/@inkra/react'].integrity, candidate.integrity, 'Installed bytes differ from candidate');
   assert(!(await lstat(join(directory, 'node_modules/@inkra/react'))).isSymbolicLink(), 'Must test the installed tarball, not a workspace link');

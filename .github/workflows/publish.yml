@@ -55,11 +55,6 @@ jobs:
           REACT_VERSION: 18.3.1
       - name: Verify candidate identity
         run: node scripts/release.mjs candidate
-      - run: npx playwright install --with-deps chromium
-      - name: Hydrate the installed archive with React 18 and 19
-        run: |
-          REACT_VERSION=18.3.1 node scripts/check-installed.mjs --browser
-          REACT_VERSION=19.3.1 node scripts/check-installed.mjs --browser
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: npm-candidate
@@ -69,6 +64,34 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 90
+
+  hydration:
+    needs: validate
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea
+      options: --ipc=host
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: npm-candidate
+          path: .release
+      - run: npm ci --ignore-scripts
+      - name: Verify preinstalled browser runtime
+        run: node scripts/check-browser-runtime.mjs
+      - name: Hydrate the same archive with React 18 and 19
+        run: |
+          REACT_VERSION=18.3.1 node scripts/check-installed.mjs --browser
+          REACT_VERSION=19.3.1 node scripts/check-installed.mjs --browser
 
   docs-build:
     needs: validate
@@ -100,6 +123,8 @@ jobs:
         run: |
           test -f scripts/check-browser-reports.mjs
           test -f scripts/run-browser-ci.sh
+          test -f scripts/test/icon-edge-baseline.test.mjs
+          node --test scripts/test/browser-report.test.mjs scripts/test/browser-incremental-workflow.test.mjs scripts/test/icon-edge-baseline.test.mjs
           BROWSER_SHARD=1/4 BROWSER_INCLUDE_HOMEPAGE=true node scripts/browser-smoke.mjs --list
       - name: Prepare this exact archive in the docs consumer
         run: npm run prepare:library -- .. --lockfile-only
@@ -133,6 +158,9 @@ jobs:
   browser:
     needs: docs-build
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea
+      options: --ipc=host
     timeout-minutes: 35
     strategy:
       fail-fast: false
@@ -153,7 +181,17 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm ci --ignore-scripts
-      - run: npx playwright install --with-deps chromium
+      - name: Verify preinstalled browser runtime
+        run: |
+          node --input-type=module -e "
+            import assert from 'node:assert/strict';
+            import { createRequire } from 'node:module';
+            import { chromium } from 'playwright';
+            assert.equal(createRequire(import.meta.url)('playwright/package.json').version, '1.64.1', 'Update the pinned browser image with Playwright');
+            const browser = await chromium.launch({ headless: true });
+            console.log('Preinstalled Chromium ' + browser.version());
+            await browser.close();
+          "
       - name: Validate installed-package browser interactions
         run: bash scripts/run-browser-ci.sh
         env:
@@ -170,7 +208,7 @@ jobs:
           retention-days: 14
 
   docs-verified:
-    needs: [validate, docs-build, browser]
+    needs: [validate, hydration, docs-build, browser]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -178,9 +216,10 @@ jobs:
       - name: Require every prerequisite
         env:
           PACKAGE_RESULT: ${{ needs.validate.result }}
+          HYDRATION_RESULT: ${{ needs.hydration.result }}
           BUILD_RESULT: ${{ needs.docs-build.result }}
           BROWSER_RESULT: ${{ needs.browser.result }}
-        run: test "$PACKAGE_RESULT" = success && test "$BUILD_RESULT" = success && test "$BROWSER_RESULT" = success
+        run: test "$PACKAGE_RESULT" = success && test "$HYDRATION_RESULT" = success && test "$BUILD_RESULT" = success && test "$BROWSER_RESULT" = success
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: inkrajs/docs
