@@ -5,7 +5,6 @@ import test from 'node:test';
 const sourceUrl = new URL('../src/loading/index.tsx', import.meta.url);
 const styleUrl = new URL('../src/loading/styles.css', import.meta.url);
 const localeUrl = new URL('../src/loading/locales.ts', import.meta.url);
-const handoffUrl = new URL('../../../.release/loading-handoff.md', import.meta.url);
 
 test('Loading keeps business status, progress and timed presence separate', async () => {
   const source = await readFile(sourceUrl, 'utf8');
@@ -55,10 +54,14 @@ test('component-local copy covers five locales and remains caller-overridable', 
   assert.match(locales, /\.\.\.overrides/);
 });
 
-test('handoff records coordinator-owned registrations and the direct runtime dependency', async () => {
-  const handoff = await readFile(handoffUrl, 'utf8');
-  assert.match(handoff, /react-aria@3\.53\.1/);
-  assert.match(handoff, /src\/index\.ts/);
-  assert.match(handoff, /componentRoutes/);
-  assert.match(handoff, /No global i18n keys are required/);
+test('Loading registers public exports, styles and its direct runtime dependency', async () => {
+  const manifest = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+  const barrel = await readFile(new URL('../src/index.ts', import.meta.url), 'utf8');
+  const styleBuild = await readFile(new URL('../scripts/copy-styles.mjs', import.meta.url), 'utf8');
+  assert.equal(manifest.dependencies['react-aria'], '3.53.1');
+  assert.equal(manifest.exports['./loading'].import, './dist/loading/index.js');
+  assert.equal(manifest.exports['./loading'].types, './dist/loading/index.d.ts');
+  assert.equal(manifest.exports['./styles/loading.css'], './dist/styles/loading.css');
+  assert.match(barrel, /export \* from '\.\/loading\/index\.js'/);
+  assert.match(styleBuild, /'loading\/styles\.css'/);
 });
