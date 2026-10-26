@@ -14,16 +14,16 @@ import { Button } from '../Button.js';
 import { Progress } from '../display/index.js';
 import { useInkraLocale } from '../i18n/index.js';
 import { useBrowserLayoutEffect } from '../internal/useBrowserLayoutEffect.js';
-import { PencilLine } from '../PencilLine.js';
-import { PencilSurface } from '../PencilSurface.js';
 import { PencilText } from '../PencilText.js';
 import { createInfiniteScrollGesture } from './gesture.js';
 import {
   boundarySignature,
   completeDirectionalRecord,
+  dampPullDistance,
   directionalValue,
   finiteDistance,
   gestureStatusEnabled,
+  indicatorVisible,
   infiniteScrollDirections,
   localScrollDelta,
   normalizeDirections,
@@ -107,6 +107,9 @@ interface ActiveRequest {
   anchor: AnchorStabilizer;
   container: HTMLElement;
   source: InfiniteScrollLoadSource;
+  revealed: boolean;
+  revealPosition: number;
+  committed?: () => void;
 }
 
 const localeCopy = {
@@ -196,12 +199,22 @@ function createAnchorStabilizer(
   const offset = () => {
     const viewport = container.getBoundingClientRect();
     const rect = anchor?.getBoundingClientRect();
-    return rect ? (direction === 'top' ? rect.top - viewport.top : rect.left - viewport.left) : 0;
+    if (!rect) return 0;
+    // Pull/rebound moves the body visually; anchoring must follow its layout position.
+    const body = content.parentElement;
+    const transform = body ? view.getComputedStyle(body).transform : 'none';
+    const matrix = transform && transform !== 'none' ? new view.DOMMatrixReadOnly(transform) : null;
+    const scale = direction === 'top'
+      ? viewport.height / (container.offsetHeight || viewport.height || 1)
+      : viewport.width / (container.offsetWidth || viewport.width || 1);
+    const translation = direction === 'top' ? matrix?.m42 ?? 0 : matrix?.m41 ?? 0;
+    return (direction === 'top' ? rect.top - viewport.top : rect.left - viewport.left) - translation * scale;
   };
   let expected = offset();
   let frame = 0;
   let stopped = false;
   let correcting = false;
+  let settling = false;
 
   const findReplacement = () => {
     if (anchor?.isConnected) return anchor;
@@ -211,7 +224,7 @@ function createAnchorStabilizer(
   };
   const measure = () => {
     frame = 0;
-    if (stopped) return;
+    if (stopped || !settling) return;
     anchor = findReplacement();
     if (!anchor) return;
     const current = offset();
@@ -224,7 +237,7 @@ function createAnchorStabilizer(
     }
   };
   const schedule = () => {
-    if (!frame && !stopped) frame = view.requestAnimationFrame(measure);
+    if (settling && !frame && !stopped) frame = view.requestAnimationFrame(measure);
   };
   const onScroll = () => {
     if (correcting) correcting = false;
@@ -249,6 +262,7 @@ function createAnchorStabilizer(
     resize?.disconnect();
   };
   const settle = () => new Promise<void>(resolve => {
+    settling = true;
     schedule();
     view.requestAnimationFrame(() => view.requestAnimationFrame(() => {
       measure();
@@ -310,6 +324,7 @@ export const InfiniteScroll = forwardRef<HTMLDivElement, InfiniteScrollProps>(fu
   const propsRef = useRef(props);
   const internalStateRef = useRef(internalState);
   const requests = useRef(new Map<InfiniteScrollDirection, ActiveRequest>());
+  const [completionVersion, setCompletionVersion] = useState(0);
   const lastBoundary = useRef(new Map<InfiniteScrollDirection, string>());
   const scheduleBoundaryRef = useRef<() => void>(() => {});
   const pullStatus = useRef<InfiniteScrollStatus>('idle');
@@ -318,6 +333,12 @@ export const InfiniteScroll = forwardRef<HTMLDivElement, InfiniteScrollProps>(fu
   const containerNodeRef = useRef<HTMLElement | null>(null);
 
   useBrowserLayoutEffect(() => { propsRef.current = props; internalStateRef.current = internalState; });
+  useBrowserLayoutEffect(() => {
+    for (const request of requests.current.values()) {
+      request.committed?.();
+      request.committed = undefined;
+    }
+  }, [completionVersion]);
 
   const setRoot = useCallback((node: HTMLDivElement | null) => {
     rootRef.current = node;
@@ -349,6 +370,7 @@ export const InfiniteScroll = forwardRef<HTMLDivElement, InfiniteScrollProps>(fu
     const request = requests.current.get(direction);
     request?.controller.abort();
     request?.anchor.abort();
+    request?.committed?.();
     requests.current.delete(direction);
     const status = currentState(direction).status;
     const nextStatus = statusAfterCancellation(status);
@@ -369,18 +391,35 @@ export const InfiniteScroll = forwardRef<HTMLDivElement, InfiniteScrollProps>(fu
     const anchor = direction === 'top' || direction === 'left'
       ? createAnchorStabilizer(direction, container, content, latest.getAnchor)
       : { settle: async () => {}, abort: () => {} };
-    requests.current.set(direction, { controller, anchor, container, source });
+    const revealPosition = direction === 'top' || direction === 'bottom' ? container.scrollTop : container.scrollLeft;
+    requests.current.set(direction, {
+      controller,
+      anchor,
+      container,
+      source,
+      revealed: false,
+      revealPosition,
+    });
     transition(direction, { status: 'loading' }, { source });
+    scheduleBoundaryRef.current();
     Promise.resolve().then(() => {
       if (controller.signal.aborted) return undefined;
       return latest.onLoad({ direction, source, signal: controller.signal, scrollContainer: container });
     })
       .then(async () => {
         if (controller.signal.aborted) return;
-        await anchor.settle();
-        if (controller.signal.aborted) return;
+        // Async data and indicator state must reach the DOM before measuring anchors.
+        const committed = new Promise<void>(resolve => {
+          const request = requests.current.get(direction);
+          if (request?.controller === controller) request.committed = resolve;
+          else resolve();
+        });
         const more = directionalValue(propsRef.current.hasMore, direction, true);
         transition(direction, { status: more ? 'idle' : 'end' }, { source });
+        setCompletionVersion(version => version + 1);
+        await committed;
+        if (controller.signal.aborted) return;
+        await anchor.settle();
       })
       .catch(error => {
         anchor.abort();
@@ -421,7 +460,7 @@ export const InfiniteScroll = forwardRef<HTMLDivElement, InfiniteScrollProps>(fu
           }
           pullStatus.current = nextStatus;
           pullDirection.current = direction;
-          setPull({ direction, distance, progress: pullProgress(distance, threshold) });
+          setPull({ direction, distance, progress: pullProgress(distance, dampPullDistance(threshold, threshold)) });
         },
         onCommit: direction => runLoad(direction, 'gesture'),
       };
@@ -444,6 +483,38 @@ export const InfiniteScroll = forwardRef<HTMLDivElement, InfiniteScrollProps>(fu
 
   useBrowserLayoutEffect(() => {
     const root = rootRef.current;
+    if (!root) return;
+    const wheel = (event: WheelEvent) => gestureRef.current?.wheel(event);
+    root.addEventListener('wheel', wheel, { passive: false });
+    return () => root.removeEventListener('wheel', wheel);
+  }, []);
+
+  useBrowserLayoutEffect(() => {
+    if (!pull.direction) return;
+    const root = rootRef.current;
+    const container = resolveContainer(scrollContainer, root);
+    const indicator = sentinelRefs.current[pull.direction];
+    const parent = indicator?.offsetParent;
+    if (!root || !container || !indicator || !(parent instanceof HTMLElement)) return;
+    const viewport = container.getBoundingClientRect();
+    const origin = parent.getBoundingClientRect();
+    const scaleX = viewport.width / (container.offsetWidth || viewport.width || 1);
+    const scaleY = viewport.height / (container.offsetHeight || viewport.height || 1);
+    const horizontal = pull.direction === 'left' || pull.direction === 'right';
+    const width = horizontal ? pull.distance : container.clientWidth;
+    const height = horizontal ? container.clientHeight : pull.distance;
+    const left = (viewport.left - origin.left) / scaleX + container.clientLeft - parent.clientLeft + parent.scrollLeft
+      + (pull.direction === 'right' ? container.clientWidth - width : 0);
+    const top = (viewport.top - origin.top) / scaleY + container.clientTop - parent.clientTop + parent.scrollTop
+      + (pull.direction === 'bottom' ? container.clientHeight - height : 0);
+    indicator.style.setProperty('--inkra-pull-left', `${left}px`);
+    indicator.style.setProperty('--inkra-pull-top', `${top}px`);
+    indicator.style.setProperty('--inkra-pull-width', `${width}px`);
+    indicator.style.setProperty('--inkra-pull-height', `${height}px`);
+  }, [pull, scrollContainer]);
+
+  useBrowserLayoutEffect(() => {
+    const root = rootRef.current;
     const container = resolveContainer(scrollContainer, root) ?? containerNode;
     if (!root || !container) return undefined;
     const view = root.ownerDocument.defaultView;
@@ -452,14 +523,61 @@ export const InfiniteScroll = forwardRef<HTMLDivElement, InfiniteScrollProps>(fu
       frame = 0;
       const latest = propsRef.current;
       const activeDirections = normalizeDirections(latest.directions);
+      const loadingDirections = activeDirections.filter(direction => currentState(direction).status === 'loading');
+      const inlineSentinel = loadingDirections.includes('top')
+        ? sentinelRefs.current.top
+        : loadingDirections.includes('bottom') ? sentinelRefs.current.bottom : null;
+      const blockSentinel = loadingDirections.includes('left')
+        ? sentinelRefs.current.left
+        : loadingDirections.includes('right') ? sentinelRefs.current.right : null;
+      const viewport = container.getBoundingClientRect();
+      const scaleX = viewport.width > 0 && container.offsetWidth > 0 ? viewport.width / container.offsetWidth : 1;
+      const scaleY = viewport.height > 0 && container.offsetHeight > 0 ? viewport.height / container.offsetHeight : 1;
+      const viewportLeft = viewport.left + container.clientLeft * scaleX;
+      const viewportTop = viewport.top + container.clientTop * scaleY;
+      const viewportRight = viewportLeft + container.clientWidth * scaleX;
+      const viewportBottom = viewportTop + container.clientHeight * scaleY;
+      const inlineOffset = inlineSentinel
+        ? localScrollDelta(container, 'left', viewportLeft - inlineSentinel.getBoundingClientRect().left)
+        : 0;
+      const blockOffset = blockSentinel
+        ? localScrollDelta(container, 'top', viewportTop - blockSentinel.getBoundingClientRect().top)
+        : 0;
+      root.style.setProperty('--inkra-infinite-scroll-indicator-inline-offset', `${inlineOffset}px`);
+      root.style.setProperty('--inkra-infinite-scroll-indicator-block-offset', `${blockOffset}px`);
+      root.style.setProperty('--inkra-infinite-scroll-indicator-viewport-inline-size', `${container.clientWidth}px`);
+      root.style.setProperty('--inkra-infinite-scroll-indicator-viewport-block-size', `${container.clientHeight}px`);
       for (const direction of activeDirections) {
         const threshold = finiteDistance(directionalValue(latest.triggerDistance, direction, 160), 160);
         const distance = physicalBoundaryDistance(container, sentinelRefs.current[direction], direction, root);
+        const status = currentState(direction).status;
+        const request = requests.current.get(direction);
+        if (status === 'loading' && request && !request.revealed) {
+          request.revealed = true;
+          const currentPosition = direction === 'top' || direction === 'bottom' ? container.scrollTop : container.scrollLeft;
+          if (Math.abs(currentPosition - request.revealPosition) <= threshold + 4) {
+            const rect = sentinelRefs.current[direction]?.getBoundingClientRect();
+            const reveal = !rect ? 0
+              : direction === 'top' ? Math.min(0, rect.top - viewportTop)
+                : direction === 'bottom' ? Math.max(0, rect.bottom - viewportBottom)
+                  : direction === 'left' ? Math.min(0, rect.left - viewportLeft)
+                    : Math.max(0, rect.right - viewportRight);
+            if (Math.abs(reveal) > 0.5) {
+              const revealDelta = localScrollDelta(
+                container,
+                direction === 'top' || direction === 'bottom' ? 'top' : 'left',
+                reveal,
+              );
+              container.scrollBy(direction === 'top' || direction === 'bottom'
+                ? { behavior: 'auto', top: revealDelta }
+                : { behavior: 'auto', left: revealDelta });
+            }
+          }
+        }
         if (distance > threshold + 4) {
           lastBoundary.current.delete(direction);
           continue;
         }
-        const status = currentState(direction).status;
         if (distance <= threshold && status === 'idle' && !requests.current.has(direction)
           && directionalValue(latest.automatic, direction, true)
           && !directionalValue(latest.disabled, direction, false)
@@ -510,6 +628,7 @@ export const InfiniteScroll = forwardRef<HTMLDivElement, InfiniteScrollProps>(fu
     for (const request of requests.current.values()) {
       request.controller.abort();
       request.anchor.abort();
+      request.committed?.();
     }
     requests.current.clear();
   }, []);
@@ -523,9 +642,15 @@ export const InfiniteScroll = forwardRef<HTMLDivElement, InfiniteScrollProps>(fu
     error: unknown,
   ) => {
     const label = labelFor(direction, status);
-    if (status === 'loading') return <Progress aria-label={label} label={label} size="sm" value={null} />;
+    if (status === 'loading') return <div className="inkra-infinite-scroll__loading">
+      <Progress aria-label={label} diameter={32} shape="circular" size="sm" thickness={3} value={null} />
+      <PencilText aria-hidden="true" as="span" className="inkra-infinite-scroll__loading-label">{label}</PencilText>
+    </div>;
     if (status === 'pulling' || status === 'ready') {
-      return <Progress aria-label={label} label={label} max={100} size="sm" value={progress * 100} />;
+      return <div className="inkra-infinite-scroll__loading">
+        <Progress aria-label={label} diameter={24} shape="circular" thickness={2} max={100} size="sm" value={progress * 100} />
+        <PencilText aria-hidden="true" className="inkra-infinite-scroll__loading-label">{label}</PencilText>
+      </div>;
     }
     if (status === 'error') return <>
       {typeof errorContent === 'function' ? errorContent(direction, error) : errorContent ?? <PencilText>{label}</PencilText>}
@@ -547,29 +672,33 @@ export const InfiniteScroll = forwardRef<HTMLDivElement, InfiniteScrollProps>(fu
     const resolved = state?.[direction] ?? internalState[direction];
     const directionHasMore = directionalValue(hasMore, direction, true);
     const status = directionHasMore ? resolved.status : 'end';
+    const visible = active && indicatorVisible(status, directionalValue(automatic, direction, true), directionalValue(gesture, direction, true));
     const progress = pull.direction === direction ? pull.progress : status === 'ready' ? 1 : 0;
     const label = labelFor(direction, status);
-    const content = renderIndicator?.({
-      direction,
-      status,
-      progress,
-      error: resolved.error,
-      label,
-      retry: () => runLoad(direction, 'retry'),
-      load: () => runLoad(direction, 'button'),
-    }) ?? renderDefaultIndicator(direction, status, progress, resolved.error);
+    const content = visible
+      ? renderIndicator?.({
+        direction,
+        status,
+        progress,
+        error: resolved.error,
+        label,
+        retry: () => runLoad(direction, 'retry'),
+        load: () => runLoad(direction, 'button'),
+      }) ?? renderDefaultIndicator(direction, status, progress, resolved.error)
+      : null;
     return <div
-      aria-hidden={!active || undefined}
-      aria-live={active ? 'polite' : undefined}
+      aria-hidden={!visible || undefined}
+      aria-live={visible ? 'polite' : undefined}
       className="inkra-infinite-scroll__indicator"
       data-active={active || undefined}
       data-direction={direction}
       data-status={active ? status : undefined}
+      data-pulling={pull.direction === direction || undefined}
+      data-visible={visible || undefined}
       ref={node => { sentinelRefs.current[direction] = node; }}
-    >{active && <PencilSurface as="div" className="inkra-infinite-scroll__indicator-surface" variant="quiet" radius={8}>
+    >{visible && <div className="inkra-infinite-scroll__indicator-surface">
       <div className="inkra-infinite-scroll__indicator-content">{content}</div>
-      <PencilLine className="inkra-infinite-scroll__indicator-line" orientation={direction === 'left' || direction === 'right' ? 'vertical' : 'horizontal'} />
-    </PencilSurface>}</div>;
+    </div>}</div>;
   };
 
   const resolvedStyle: InfiniteScrollStyle = {

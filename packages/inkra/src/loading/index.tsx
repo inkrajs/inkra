@@ -39,6 +39,7 @@ export type { LoadingTipOrder } from './model.js';
 
 export type LoadingMode = 'inline' | 'region' | 'fullscreen';
 export type LoadingPreset = 'brand-center' | 'scene-bottom' | 'intel' | 'staged' | 'edge' | 'skeleton';
+export type LoadingAnimation = 'progress' | 'orbit' | 'dots' | 'pulse' | 'trail';
 export type LoadingStatus = 'loading' | 'error' | 'complete';
 export type LoadingStageState = 'pending' | 'active' | 'complete' | 'error';
 export type LoadingSlot = 'top-start' | 'top-end' | 'center' | 'bottom-start' | 'bottom-center' | 'bottom-end';
@@ -55,6 +56,7 @@ export interface LoadingProps extends Omit<HTMLAttributes<HTMLDivElement>, 'chil
   active?: boolean;
   mode?: LoadingMode;
   preset?: LoadingPreset;
+  animation?: LoadingAnimation;
   status?: LoadingStatus;
   blocking?: boolean;
   lockScroll?: boolean;
@@ -170,6 +172,27 @@ function DefaultSkeleton() {
   </div>;
 }
 
+function LoadingAnimationVisual({ animation, seed }: { animation: LoadingAnimation; seed: string }) {
+  const marks = [0, 1, 2] as const;
+  return <span className="inkra-loading__animation-visual" data-kind={animation} aria-hidden="true">
+    {animation === 'trail'
+      ? marks.map(index => <PencilLine
+        className="inkra-loading__animation-mark"
+        key={index}
+        seed={`${seed}-trail-${index}`}
+      />)
+      : marks.map(index => <PencilSurface
+        as="span"
+        aria-hidden="true"
+        className="inkra-loading__animation-mark"
+        key={index}
+        radius={8}
+        seed={`${seed}-${animation}-${index}`}
+        variant={animation === 'pulse' ? 'outline' : 'quiet'}
+      />)}
+  </span>;
+}
+
 function stageState(stage: LoadingStage, activeStage: string | undefined): LoadingStageState {
   if (stage.state) return stage.state;
   return stage.id === activeStage ? 'active' : 'pending';
@@ -185,6 +208,7 @@ function LoadingLayer({
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledBy,
   activeStage,
+  animation = 'progress',
   background,
   blocking,
   children,
@@ -228,6 +252,11 @@ function LoadingLayer({
   const titleId = `${id}-title`;
   const resolvedMax = normalizeLoadingMax(max);
   const resolvedProgress = normalizeLoadingProgress(progress, resolvedMax);
+  const showCustomAnimation = animation !== 'progress'
+    && status === 'loading'
+    && (progress === undefined || progress === null);
+  const showProgress = progress !== undefined
+    && (animation === 'progress' || progress !== null);
   const interval = Math.max(1000, finiteDuration(tipInterval, 5000));
   const [currentTip, setCurrentTip] = useControllableTipIndex(tipIndex, defaultTipIndex, tips.length, onTipIndexChange);
   const [tipsPaused, setTipsPaused] = useControllableBoolean(tipPaused, defaultTipPaused, onTipPausedChange);
@@ -265,6 +294,7 @@ function LoadingLayer({
     aria-live={semanticRole === 'status' ? 'polite' : undefined}
     aria-modal={effectiveBlocking || undefined}
     className={classes('inkra-loading', className)}
+    data-animation={animation}
     data-blocking={effectiveBlocking || undefined}
     data-mode={mode}
     data-preset={preset}
@@ -292,6 +322,19 @@ function LoadingLayer({
             : <div className="inkra-loading__description">{description}</div>}
         </div>
 
+        {showCustomAnimation ? <div className="inkra-loading__animation-progress">
+          {progressLabel == null ? null : typeof progressLabel === 'string'
+            ? <PencilText as="div" className="inkra-loading__animation-label">{progressLabel}</PencilText>
+            : <div className="inkra-loading__animation-label">{progressLabel}</div>}
+          <div
+            aria-label={typeof progressLabel === 'string' ? progressLabel : defaultStatus}
+            className="inkra-loading__animation"
+            role="progressbar"
+          >
+            <LoadingAnimationVisual animation={animation} seed={`${id}-animation`} />
+          </div>
+        </div> : null}
+
         {preset === 'skeleton' ? (skeleton ?? <DefaultSkeleton />) : null}
 
         {stages.length > 0 ? <div className="inkra-loading__stages" aria-label={stageAnnouncement}>
@@ -309,7 +352,7 @@ function LoadingLayer({
           })}
         </div> : null}
 
-        {progress !== undefined ? <Progress
+        {showProgress ? <Progress
           aria-label={typeof progressLabel === 'string' ? progressLabel : defaultStatus}
           className="inkra-loading__progress"
           label={progressLabel}

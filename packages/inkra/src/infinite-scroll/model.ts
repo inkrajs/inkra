@@ -130,10 +130,10 @@ function scrollBoundaryDistance(container: HTMLElement, direction: InfiniteScrol
 }
 
 export function dampPullDistance(distance: number, threshold: number): number {
-  const safeDistance = Math.max(0, distance);
-  const safeThreshold = Math.max(1, threshold);
-  if (safeDistance <= safeThreshold) return safeDistance;
-  return safeThreshold + (safeDistance - safeThreshold) * 0.28;
+  const safeDistance = finiteDistance(distance, 0);
+  const limit = finiteDistance(threshold, 72, 1) * 2;
+  // Continuous resistance, bounded to twice the trigger distance even on a long pull.
+  return limit * (safeDistance / (limit + safeDistance));
 }
 
 export function pullProgress(distance: number, threshold: number): number {
@@ -142,6 +142,10 @@ export function pullProgress(distance: number, threshold: number): number {
 
 export function gestureStatusEnabled(status: InfiniteScrollStatus): boolean {
   return status === 'idle' || status === 'pulling' || status === 'ready';
+}
+
+export function indicatorVisible(status: InfiniteScrollStatus, automatic: boolean, gesture = false): boolean {
+  return status !== 'idle' || (!automatic && !gesture);
 }
 
 export function statusAfterCancellation(status: InfiniteScrollStatus): InfiniteScrollStatus {
