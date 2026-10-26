@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { appendFile, readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { archiveName, checkArchive, checkPublished, checkSource, readPublished, registry } from './release-policy.mjs';
+import { archiveName, checkArchive, checkPublished, checkSource, readPublished, registry, waitForPublished } from './release-policy.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const json = async path => JSON.parse(await readFile(new URL('../' + path, import.meta.url), 'utf8'));
@@ -49,12 +49,9 @@ if (operation === 'source') {
         : 'Published the verified archive. Registry installation checks must pass before a GitHub Release is created.');
     }
   } else if (operation === 'verify') {
-    let published;
-    for (let attempt = 0; attempt < 6; attempt++) {
-      published = await readPublished(manifest);
-      if (published) break;
-      await new Promise(resolve => setTimeout(resolve, 10000));
-    }
+    const published = await waitForPublished(manifest, {
+      onRetry: ({ attempt, delayMs }) => console.log(`Registry returned 404 (attempt ${attempt}); retrying in ${Math.ceil(delayMs / 1000)}s, within a five-minute limit.`),
+    });
     assert(published, 'Version is not public. For staged publishing, complete npm approval before verify.');
     const response = await fetch(published.dist.tarball, { signal: AbortSignal.timeout(30000) });
     assert(response.ok, 'Cannot download the published archive');

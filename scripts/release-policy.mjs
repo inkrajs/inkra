@@ -37,13 +37,38 @@ export function checkPublished(manifest, metadata) {
   assert.equal(new URL(metadata.dist.tarball).origin, new URL(registry).origin);
 }
 
-export async function readPublished(manifest, request = fetch) {
+export async function readPublished(manifest, request = fetch, { timeoutMs = 30000 } = {}) {
   const response = await request(registry + encodeURIComponent(manifest.name) + '/' + encodeURIComponent(manifest.version), {
-    signal: AbortSignal.timeout(30000),
+    signal: AbortSignal.timeout(timeoutMs),
   });
   if (response.status === 404) return null;
   assert(response.ok, 'Registry lookup failed with HTTP ' + response.status);
   const metadata = await response.json();
   checkPublished(manifest, metadata);
   return metadata;
+}
+
+export async function waitForPublished(manifest, {
+  timeoutMs = 300000,
+  read = (candidate, remainingMs) => readPublished(candidate, fetch, { timeoutMs: Math.min(30000, remainingMs) }),
+  sleep = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds)),
+  now = () => performance.now(),
+  onRetry = () => {},
+} = {}) {
+  assert(Number.isFinite(timeoutMs) && timeoutMs > 0, 'Registry wait must have a positive timeout');
+  const deadline = now() + timeoutMs;
+  let delayMs = 5000;
+  let attempt = 0;
+  while (now() < deadline) {
+    const remainingMs = Math.max(1, Math.floor(deadline - now()));
+    const published = await read(manifest, remainingMs);
+    // Only a genuine 404 is retryable. Lookup and integrity errors propagate.
+    if (published !== null) return published;
+    const delay = Math.min(delayMs, deadline - now());
+    if (delay <= 0) break;
+    onRetry({ attempt: ++attempt, delayMs: delay });
+    await sleep(delay);
+    delayMs = Math.min(delayMs * 2, 30000);
+  }
+  return null;
 }

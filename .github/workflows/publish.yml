@@ -13,7 +13,6 @@ on:
         description: Exact inkrajs/docs commit used to test this candidate
         required: true
         type: string
-        default: 63335e34cac3091a365afcd76c969af51d1e60c7
 
 permissions:
   contents: read
@@ -24,7 +23,7 @@ concurrency:
 
 env:
   RELEASE_ACTION: ${{ inputs.action || 'validate' }}
-  DOCS_REF: ${{ inputs.docs_ref || '63335e34cac3091a365afcd76c969af51d1e60c7' }}
+  DOCS_REF: ${{ inputs.docs_ref }}
 
 jobs:
   validate:
@@ -41,6 +40,8 @@ jobs:
         with:
           node-version: 24
           package-manager-cache: false
+          cache: npm
+          cache-dependency-path: package-lock.json
       - name: Pin the npm CLI used to create and publish the archive
         run: npm install --global npm@11.21.0 --ignore-scripts
       - name: Check release source and version policy
@@ -59,35 +60,6 @@ jobs:
         run: |
           REACT_VERSION=18.3.1 node scripts/check-installed.mjs --browser
           REACT_VERSION=19.3.1 node scripts/check-installed.mjs --browser
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          repository: inkrajs/docs
-          ref: ${{ env.DOCS_REF }}
-          path: .consumer
-          persist-credentials: false
-      - name: Install this exact archive in the docs consumer
-        run: npm run prepare:library -- ..
-        working-directory: .consumer
-      - run: npm ci --ignore-scripts
-        working-directory: .consumer
-      - run: npm run build
-        working-directory: .consumer
-      - run: npx playwright install --with-deps chromium
-        working-directory: .consumer
-      - name: Validate installed-package browser interactions
-        working-directory: .consumer
-        run: |
-          npm run dev -- --port 4180 --strictPort > /tmp/inkra-release-browser.log 2>&1 &
-          server_pid=$!
-          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
-          for attempt in {1..60}; do
-            curl --fail --silent http://127.0.0.1:4180/ > /dev/null && break
-            kill -0 "$server_pid" || { cat /tmp/inkra-release-browser.log; exit 1; }
-            sleep 1
-          done
-          curl --fail --silent http://127.0.0.1:4180/ > /dev/null
-          npm run test:browser
-          node scripts/verify-homepage.mjs
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: npm-candidate
@@ -98,8 +70,138 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
-  publish:
+  docs-build:
     needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: npm-candidate
+          path: .release
+      - name: Verify immutable candidate identity
+        run: node scripts/release.mjs candidate
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: inkrajs/docs
+          ref: ${{ env.DOCS_REF }}
+          path: .consumer
+          persist-credentials: false
+      - name: Require docs sharding support
+        working-directory: .consumer
+        run: |
+          test -f scripts/check-browser-reports.mjs
+          test -f scripts/run-browser-ci.sh
+          BROWSER_SHARD=1/4 BROWSER_INCLUDE_HOMEPAGE=true node scripts/browser-smoke.mjs --list
+      - name: Prepare this exact archive in the docs consumer
+        run: npm run prepare:library -- .. --lockfile-only
+        working-directory: .consumer
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: .consumer/package-lock.json
+      - run: npm ci --ignore-scripts
+        working-directory: .consumer
+      - run: npm run build
+        working-directory: .consumer
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-docs-input
+          path: |
+            .consumer/package.json
+            .consumer/package-lock.json
+            .consumer/library-candidate.json
+            .consumer/vendor/*.tgz
+          include-hidden-files: true
+          if-no-files-found: error
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-docs-build
+          path: .consumer/dist/
+          include-hidden-files: true
+          if-no-files-found: error
+
+  browser:
+    needs: docs-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: inkrajs/docs
+          ref: ${{ env.DOCS_REF }}
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: release-docs-input
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npx playwright install --with-deps chromium
+      - name: Validate installed-package browser interactions
+        run: bash scripts/run-browser-ci.sh
+        env:
+          BROWSER_SHARD: ${{ matrix.shard }}/4
+          BROWSER_INCLUDE_HOMEPAGE: 'true'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: release-browser-report-${{ matrix.shard }}
+          path: .ci-results/
+          include-hidden-files: true
+          overwrite: true
+          if-no-files-found: error
+          retention-days: 14
+
+  docs-verified:
+    needs: [validate, docs-build, browser]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require every prerequisite
+        env:
+          PACKAGE_RESULT: ${{ needs.validate.result }}
+          BUILD_RESULT: ${{ needs.docs-build.result }}
+          BROWSER_RESULT: ${{ needs.browser.result }}
+        run: test "$PACKAGE_RESULT" = success && test "$BUILD_RESULT" = success && test "$BROWSER_RESULT" = success
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: inkrajs/docs
+          ref: ${{ env.DOCS_REF }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: release-browser-report-*
+          path: .ci-results
+          merge-multiple: true
+      - name: Require complete browser coverage
+        run: node scripts/check-browser-reports.mjs .ci-results 4
+        env:
+          BROWSER_INCLUDE_HOMEPAGE: 'true'
+
+  publish:
+    needs: [validate, docs-verified]
     if: inputs.action != 'validate' && inputs.action != 'verify'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -132,9 +234,10 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}
 
   verify:
-    needs: [validate, publish]
+    needs: [validate, docs-verified, publish]
     if: >-
       always() && needs.validate.result == 'success' &&
+      needs.docs-verified.result == 'success' &&
       (inputs.action == 'verify' ||
       (needs.publish.result == 'success' && inputs.action != 'bootstrap-stage'))
     runs-on: ubuntu-latest
