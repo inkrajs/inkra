@@ -32,9 +32,32 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
+          fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: ${{ matrix.node }}
           cache: npm
       - run: npm ci --ignore-scripts
-      - run: npm run check
+      - name: Full validation
+        if: github.event_name != 'pull_request'
+        run: npm run check
+      - name: Required repository, release, build and installed-package contracts
+        if: github.event_name == 'pull_request'
+        run: npm run check:contracts
+      - name: Plan affected component tests
+        if: github.event_name == 'pull_request'
+        run: >-
+          node scripts/plan-component-tests.mjs
+          --base "${{ github.event.pull_request.base.sha }}"
+          --requested-head "${{ github.event.pull_request.head.sha }}"
+          --tested-revision HEAD
+          --output .release/component-test-plan.json
+      - name: Run affected component tests
+        if: github.event_name == 'pull_request'
+        run: node scripts/run-component-tests.mjs --plan .release/component-test-plan.json
+      - name: Publish component test plan summary
+        if: always() && github.event_name == 'pull_request'
+        run: |
+          if [ -f .release/component-test-plan.json ]; then
+            node -e 'const p=require("./.release/component-test-plan.json"); console.log(`## Component test plan\n\n- Mode: ${p.mode}\n- Base: ${p.base}\n- Requested head: ${p.requestedHead}\n- Tested revision: ${p.testedRevision}${p.mergePreview ? " (merge preview)" : ""}\n- Tests: ${p.counts.selected} selected / ${p.counts.skipped} skipped / ${p.counts.total} total\n- Reasons: ${p.reasons.map(r => r.code).join(", ") || "graph selection"}`)' >> "$GITHUB_STEP_SUMMARY"
+          fi

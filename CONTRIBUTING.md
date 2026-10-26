@@ -39,7 +39,42 @@ independent consumer smoke suite. Some historical scripts need harness or
 selector updates; do not claim they passed unless they ran. Automated checks
 do not replace visual or real-device acceptance.
 
+Pull requests keep repository, release-tool, type/build, package and installed
+consumer contracts complete, while component tests use an auditable incremental
+plan. The plan compares the exact base SHA to the actual checked-out/tested Git
+revision, records the requested PR head separately when GitHub supplies a merge
+preview, and lists selected/skipped tests with conservative fallback reasons.
+Selection follows parsed source imports, re-exports, reverse transitive
+consumers, source-reading tests and recursive test fixtures/helpers. Changed
+tests run directly. Unknown paths, unmapped helpers, deleted/renamed source,
+package/lock/compiler/build changes, missing history or an unsafe Git range run
+the full component suite. Pushes to `main`, manual checks and release workflows
+continue to use full `npm run check` validation.
+
 ## Pull Requests and Licensing
+
+### Keep Merges Bounded
+
+- Freeze the requested change set before the merge gate. Track later feature or
+  pipeline improvements separately; do not keep an already-green merge waiting
+  for unrelated work. Report component merge, CI changes and publication as
+  separate states.
+- Reuse passing verification only for the same source, dependency, configuration
+  and candidate inputs. Record the revision and artifact digest. Run the affected
+  check after a fix, then one final integration pass; do not have every owner and
+  reviewer repeat the same full suite.
+- A local pass must not depend on ignored handoffs. `check:repository` rejects
+  component tests referencing local handoff directories; use tracked fixtures
+  and public package contracts instead.
+- Diagnose the failed job before retrying. For unchanged revisions and transient
+  infrastructure failures, retry failed jobs only. Code fixes require a new
+  revision and its normal required checks; never reuse old success as new proof.
+- Review CI step timestamps and the longest dependent job chain, not the sum of
+  parallel jobs. Inspect logs when a phase stops progressing rather than issuing
+  rapid unchanged polls. Do not wait for post-merge or publication work unless it
+  is part of the requested delivery.
+- Once findings, changes and verification evidence are recorded, close the task.
+  Report formatting and additional nonblocking investigations are not merge gates.
 
 Use a descriptive branch and Conventional Commit subject, such as
 `fix(select): preserve focus after clearing`. Explain behavior and checks.
