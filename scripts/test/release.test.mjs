@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { test } from 'node:test';
-import { checkArchive, checkSource, readPublished } from '../release-policy.mjs';
+import { checkArchive, checkSource, readPublished, waitForPublished } from '../release-policy.mjs';
 
 const commit = 'a'.repeat(40);
 const pkg = { name: '@inkra/react', version: '0.1.0', repository: { url: 'git+https://github.com/inkrajs/inkra.git' },
@@ -56,4 +56,60 @@ test('idempotent retry requires exactly matching registry bytes and host', async
     { ...metadata.dist, integrity: 'different' },
     { ...metadata.dist, tarball: 'https://other.example/inkra.tgz' },
   ]) await assert.rejects(readPublished(manifest, async () => ({ ok: true, json: async () => ({ ...metadata, dist }) })));
+});
+
+function clock() {
+  let time = 0;
+  const delays = [];
+  return {
+    delays, now: () => time,
+    advance: milliseconds => { time += milliseconds; },
+    sleep: async milliseconds => { delays.push(milliseconds); time += milliseconds; },
+  };
+}
+
+test('registry wait returns immediately for an available archive', async () => {
+  const timing = clock();
+  assert.equal(await waitForPublished(manifest, { ...timing, read: async () => metadata }), metadata);
+  assert.deepEqual(timing.delays, []);
+});
+
+test('registry 404 retries back off and stop when processing completes', async () => {
+  const timing = clock();
+  let attempts = 0;
+  const published = await waitForPublished(manifest, {
+    ...timing, read: async () => ++attempts === 6 ? metadata : null,
+  });
+  assert.equal(published, metadata);
+  assert.deepEqual(timing.delays, [5000, 10000, 20000, 30000, 30000]);
+});
+
+test('registry waiting has a deadline including lookup time and no attempt after it', async () => {
+  const timing = clock();
+  let attempts = 0;
+  assert.equal(await waitForPublished(manifest, {
+    ...timing, timeoutMs: 12000,
+    read: async (_, remainingMs) => { assert(remainingMs <= 12000); attempts++; timing.advance(1000); return null; },
+  }), null);
+  assert.equal(attempts, 2);
+  assert.equal(timing.now(), 12000);
+  assert.deepEqual(timing.delays, [5000, 5000]);
+  const exhausted = clock();
+  assert.equal(await waitForPublished(manifest, {
+    ...exhausted, timeoutMs: 1000, read: async () => { exhausted.advance(1000); return null; },
+  }), null);
+  assert.deepEqual(exhausted.delays, []);
+});
+
+test('registry errors are never retried or treated as unpublished', async () => {
+  for (const message of ['HTTP 401', 'HTTP 403', 'HTTP 429', 'HTTP 500', 'offline', 'integrity mismatch']) {
+    const timing = clock();
+    let attempts = 0;
+    await assert.rejects(waitForPublished(manifest, {
+      ...timing, read: async () => { attempts++; throw Error(message); },
+    }), error => error.message === message);
+    assert.equal(attempts, 1);
+    assert.deepEqual(timing.delays, []);
+  }
+  await assert.rejects(waitForPublished(manifest, { timeoutMs: 0 }), /positive timeout/);
 });

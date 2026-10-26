@@ -118,6 +118,10 @@ validated the trusted publisher through a successful OIDC publication.
 Use the manually dispatched **Release npm package** workflow, publish.yml.
 Select an exact inkrajs/docs commit in docs_ref; the docs consumer must import
 the scoped package. Pushing main or a tag does not publish automatically.
+There is no default docs revision. Select a commit containing the browser
+sharding/report scripts and lockfile-only candidate preparation. Merge that
+docs tooling before using this release workflow; an older consumer fails the
+compatibility check rather than silently running the full suite four times.
 
 | Action | Ref | Effect |
 | --- | --- | --- |
@@ -132,6 +136,21 @@ Stable releases require latest; alpha candidates can only be validated.
 Node 24 and npm 11.21.0 build and test the candidate, including package contents,
 exports, license/font assets, React 18/19 installed SSR/types/hydration checks,
 and the exact docs consumer's build, browser smoke and homepage tests.
+
+Validation uploads the exact npm candidate after package checks. A separate
+docs-build job prepares it once, followed by four independent browser runners
+with two workers each. All 99 checks, including the homepage, must be accounted
+for by the docs-verified gate before publishing or registry verification.
+The build artifact alone is not release approval. Per-check timings and failure
+logs are retained for 14 days. Rerun failed jobs, not the entire workflow, when
+only a browser shard or registry verification failed; successful package/build
+jobs and shards remain reusable within the same run.
+
+After upload, registry verification retries only HTTP 404 with bounded backoff
+for up to five minutes. Authentication, rate-limit, server, network and integrity
+errors still fail immediately. It never republishes to recover a visibility
+delay. Release concurrency remains serialized and cannot cancel an active upload.
+See pipeline-performance.md for the measured baseline, rollout and limitations.
 
 Only that validated archive and manifest reach the publishing job; no product
 rebuild occurs there. The scoped tarball is inkra-react-X.Y.Z.tgz. Actions
