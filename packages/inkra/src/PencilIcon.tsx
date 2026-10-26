@@ -14,14 +14,22 @@ import { seedToNumber } from './internal/random.js';
 import { pencilStroke } from './internal/stroke.js';
 import { maxStrokeRoughness, pencilRenderDefaults, readRenderToken } from './internal/renderTokens.js';
 import { cachedPathParts } from './internal/iconGeometry.js';
+import { paintFilledIcon } from './internal/iconFill.js';
 
 export interface PencilIconPath {
   d: string;
-  mode?: 'stroke' | 'wash' | 'scuff';
+  /** Filled icons: stroke stays a line, wash exposes paper, fill is dense; omitted mode detects closed silhouettes. */
+  mode?: 'stroke' | 'wash' | 'scuff' | 'fill' | 'cutout';
+  /** Optional pigment for an explicit fill region, including CSS custom properties. */
+  color?: string;
+  fillRule?: CanvasFillRule;
 }
 
 export interface PencilIconBadge {
   paths: readonly PencilIconPath[];
+  filledPaths?: readonly PencilIconPath[];
+  variant?: 'outline' | 'filled';
+  fillColor?: string;
   sourceSize?: number;
   position?: 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end';
   /** Relative canvas size, clamped to 0.35-0.65. Defaults to 0.55. */
@@ -30,6 +38,12 @@ export interface PencilIconBadge {
 
 export interface PencilIconProps extends Omit<CanvasHTMLAttributes<HTMLCanvasElement>, 'children' | 'height' | 'width'> {
   paths: readonly PencilIconPath[];
+  /** Filled icons retain open symbols and use negative space for interior details. */
+  variant?: 'outline' | 'filled';
+  /** Optional authored geometry for shapes whose filled silhouette differs from the outline. */
+  filledPaths?: readonly PencilIconPath[];
+  /** Body pigment, independent of the CSS color used for the contour. Defaults to currentColor. */
+  fillColor?: string;
   badge?: PencilIconBadge;
   seed?: string | number;
   size?: number;
@@ -74,7 +88,7 @@ function drawFallbackPath(
 
 function renderIcon(
   paths: readonly PencilIconPath[],
-  options: { seed: number; size: number; sourceSize: number; active: boolean; color: string; dpr: number; badge?: PencilIconBadge; rtl?: boolean; weightScale?: number; roughnessScale?: number; breaks?: number; breakCount?: number; pressureVariation?: number },
+  options: { seed: number; size: number; sourceSize: number; active: boolean; color: string; dpr: number; variant?: 'outline' | 'filled'; fillColor?: string; badge?: PencilIconBadge; rtl?: boolean; weightScale?: number; roughnessScale?: number; breaks?: number; breakCount?: number; pressureVariation?: number },
 ): HTMLCanvasElement {
   const { seed, size, sourceSize, active, color, dpr } = options;
   const weightScale = options.weightScale ?? 1;
@@ -99,11 +113,14 @@ function renderIcon(
   context.translate(offset, offset);
   let sampledPoints = 0;
 
-  paths.forEach((path, index) => {
+  if (options.variant === 'filled') {
+    paintFilledIcon(context, paths, { color, fillColor: options.fillColor ?? color, sourceSize, seed, weightScale, roughnessScale, breaks, breakCount, pressureVariation, coordinateScale });
+  } else paths.forEach((path, index) => {
     if (path.d.length > 65536) return;
     const mode = path.mode ?? 'stroke';
+    if (mode === 'cutout') return;
     const pathSeed = seed + index * 137;
-    if (mode === 'wash') {
+    if (mode === 'wash' || mode === 'fill') {
       try {
         context.save();
         context.clip(new Path2D(path.d));
@@ -190,8 +207,10 @@ function renderIcon(
     const extent = 40 * scale;
     const x = onLeft ? 0 : 40 - extent;
     const y = position.startsWith('top') ? 0 : 40 - extent;
-    const badgeImage = renderIcon(badge.paths, {
+    const badgeVariant = badge.variant ?? options.variant;
+    const badgeImage = renderIcon(badgeVariant === 'filled' ? badge.filledPaths ?? badge.paths : badge.paths, {
       seed: seed + 1543, size: size * scale, sourceSize: badgeSourceSize, active: false, color, dpr,
+      variant: badgeVariant, fillColor: badge.fillColor ?? options.fillColor,
       weightScale: weightScale / scale, roughnessScale, breaks, breakCount, pressureVariation,
     });
     const mask = document.createElement('canvas');
@@ -229,6 +248,9 @@ export const PencilIcon = forwardRef<HTMLCanvasElement, PencilIconProps>(functio
     className = '',
     decorative = true,
     paths,
+    variant = 'outline',
+    filledPaths,
+    fillColor,
     seed,
     size = 40,
     sourceSize = 32,
@@ -246,11 +268,12 @@ export const PencilIcon = forwardRef<HTMLCanvasElement, PencilIconProps>(functio
   useImperativeHandle(forwardedRef, () => canvasRef.current as HTMLCanvasElement);
   // Compare values, not caller object identity. Serializing each render also
   // detects in-place edits; the effect receives a stable snapshot of that value.
-  const geometryKey = JSON.stringify(paths);
+  const originalGeometryKey = JSON.stringify(paths);
+  const geometryKey = variant === 'filled' && filledPaths ? JSON.stringify(filledPaths) : originalGeometryKey;
   const badgeKey = badge ? JSON.stringify(badge) : '';
   const stablePaths: readonly PencilIconPath[] = useMemo(() => JSON.parse(geometryKey), [geometryKey]);
   const stableBadge: PencilIconBadge | undefined = useMemo(() => badgeKey ? JSON.parse(badgeKey) : undefined, [badgeKey]);
-  const resolvedSeed = seedToNumber(seed ?? geometryKey);
+  const resolvedSeed = seedToNumber(seed ?? originalGeometryKey);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -261,6 +284,23 @@ export const PencilIcon = forwardRef<HTMLCanvasElement, PencilIconProps>(functio
       const dpr = effectiveDpr(3);
       const computed = getComputedStyle(canvas);
       const color = computed.color;
+      const resolveColor = (value?: string): string => {
+        if (!value || value === 'currentColor') return color;
+        const probe = document.createElement('span');
+        probe.style.color = value;
+        // Canvas fallback children inherit its own color and custom properties, not just its parent's.
+        canvas.appendChild(probe);
+        try { return getComputedStyle(probe).color || color; }
+        finally { probe.remove(); }
+      };
+      const resolvedFill = variant === 'filled' ? resolveColor(fillColor) : color;
+      const resolvePaths = (items: readonly PencilIconPath[]) => items.map(path => path.color ? { ...path, color: resolveColor(path.color) } : path);
+      const renderedPaths = variant === 'filled' ? resolvePaths(stablePaths) : stablePaths;
+      const renderedBadge = stableBadge ? { ...stableBadge,
+        fillColor: resolveColor(stableBadge.fillColor ?? fillColor),
+        paths: resolvePaths(stableBadge.paths),
+        filledPaths: stableBadge.filledPaths ? resolvePaths(stableBadge.filledPaths) : undefined,
+      } : undefined;
       const rtl = computed.direction === 'rtl';
       const iconWeight = readRenderToken(computed, '--inkra-icon-stroke-width', pencilRenderDefaults.iconStrokeWidth, 0.3, 3);
       const weightScale = (typeof strokeWidth === 'number' && Number.isFinite(strokeWidth) ? Math.min(3, Math.max(0.3, strokeWidth)) : iconWeight) / 1.2;
@@ -279,9 +319,10 @@ export const PencilIcon = forwardRef<HTMLCanvasElement, PencilIconProps>(functio
         : readRenderToken(computed, '--inkra-icon-break-count', pencilRenderDefaults.iconBreakCount, 0, 12));
       const key = JSON.stringify([
         PENCIL_RENDERER_VERSION,
-        'icon-path-pressure-gaps-v4',
+        'icon-path-paper-wash-v8',
         geometryKey,
         badgeKey,
+        variant, resolvedFill, renderedPaths, renderedBadge,
         rtl,
         resolvedSeed,
         size,
@@ -300,7 +341,7 @@ export const PencilIcon = forwardRef<HTMLCanvasElement, PencilIconProps>(functio
         image = undefined;
       }
       if (!image) {
-        image = renderIcon(stablePaths, { seed: resolvedSeed, size, sourceSize, active, color, dpr, badge: stableBadge, rtl, weightScale, roughnessScale, breaks: strokeBreaks, breakCount: strokeBreakCount, pressureVariation: strokeVariation });
+        image = renderIcon(renderedPaths, { seed: resolvedSeed, size, sourceSize, active, color, dpr, variant, fillColor: resolvedFill, badge: renderedBadge, rtl, weightScale, roughnessScale, breaks: strokeBreaks, breakCount: strokeBreakCount, pressureVariation: strokeVariation });
         imageCache.set(key, image, canvasByteCost(image));
       }
       canvas.width = image.width;
@@ -332,7 +373,9 @@ export const PencilIcon = forwardRef<HTMLCanvasElement, PencilIconProps>(functio
       inheritedColor.observe(element, { attributes: true, attributeFilter: ['style', 'class', 'dir', 'data-theme', 'data-inkra-theme'] });
     }
     const colorScheme = window.matchMedia('(prefers-color-scheme: dark)');
+    const forcedColors = window.matchMedia('(forced-colors: active)');
     colorScheme.addEventListener('change', paint);
+    forcedColors.addEventListener('change', paint);
     const stopRecovery = observeCanvasRecovery(() => { lastPaintRef.current = ''; paint(); });
     paint();
     return () => {
@@ -341,8 +384,9 @@ export const PencilIcon = forwardRef<HTMLCanvasElement, PencilIconProps>(functio
       stopRecovery();
       inheritedColor.disconnect();
       colorScheme.removeEventListener('change', paint);
+      forcedColors.removeEventListener('change', paint);
     };
-  }, [active, stableBadge, badgeKey, geometryKey, stablePaths, resolvedSeed, size, sourceSize, strokeWidth, intensity, breaks, breakCount, pressureVariation]);
+  }, [active, stableBadge, badgeKey, geometryKey, stablePaths, resolvedSeed, size, sourceSize, strokeWidth, intensity, breaks, breakCount, pressureVariation, variant, fillColor]);
 
   const accessibilityProps = decorative
     ? { 'aria-hidden': true }
@@ -353,6 +397,7 @@ export const PencilIcon = forwardRef<HTMLCanvasElement, PencilIconProps>(functio
       {...accessibilityProps}
       className={['inkra-pencil-icon', className].filter(Boolean).join(' ')}
       data-active={active || undefined}
+      data-icon-variant={variant}
       data-composite={Boolean(badge?.paths.length) || undefined}
       data-renderer="inkra-pressure-pencil"
       ref={canvasRef}
