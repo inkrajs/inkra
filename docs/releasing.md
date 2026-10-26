@@ -157,7 +157,12 @@ and the exact docs consumer's build, browser smoke and homepage tests.
 
 Validation uploads the exact npm candidate after package checks. A separate
 docs-build job prepares it once, followed by four independent browser runners
-with two workers each. All registered checks, including the homepage, must be accounted
+with two workers each. React 18/19 hydration runs alongside docs preparation,
+against that same archive. Browser jobs use the immutable Playwright image matching
+the lockfile; update its digest and runtime check together when changing Playwright.
+Docs report-contract and portable-baseline tests run before the browser matrix.
+Compatible docs revisions balance shards from recorded timings, never omit checks.
+All registered checks, including the homepage, must be accounted
 for by the docs-verified gate before publishing or registry verification.
 The build artifact alone is not release approval. Per-check timings and failure
 logs are retained for 14 days. Rerun failed jobs, not the entire workflow, when
@@ -168,6 +173,9 @@ After upload, registry verification retries only HTTP 404 with bounded backoff
 for up to five minutes. Authentication, rate-limit, server, network and integrity
 errors still fail immediately. It never republishes to recover a visibility
 delay. Release concurrency remains serialized and cannot cancel an active upload.
+Clean npm installation separately retries only ETARGET for this exact release
+version for up to five minutes, because npm's package index can lag its version
+endpoint. Other errors and all post-install assertions fail immediately.
 See pipeline-performance.md for the measured baseline, rollout and limitations.
 
 Only that validated archive and manifest reach the publishing job; no product

@@ -1,5 +1,61 @@
 # Pipeline Performance
 
+## Version 0.9.0 Follow-Up (2026-10-27)
+
+The three release runs were 40388605809 (24m08s), 40392534434 (32m08s), and
+40398411054 (47m41s including the failed-install retry). From the first dispatch
+to the GitHub Release, elapsed time was 1h53m50s, including repair/redispatch gaps.
+These are not three npm uploads: only the last run published. Earlier failures
+were a missing tracked pixel baseline/animation measurement and a report CLI
+contract mismatch. Those fixes are already merged in docs PRs 16 and 17.
+
+Successful-run job/step timestamps, excluding duplicate carried-forward jobs
+in the GitHub retry response:
+
+| Work | Observed duration | Finding |
+| --- | ---: | --- |
+| Package validation | 16m16s | Browser OS dependency installation alone 12m51s |
+| Package check / React 18 SSR and types | 1m33s / 15s | Not the primary bottleneck |
+| React 18/19 hydration | 1m11s | Previously blocked docs preparation |
+| Docs prepare/build job | 37s | Actual build 9s |
+| Browser checks on shards 1/2/3/4 | 14m38s / 8m57s / 13m36s / 9m15s | Count-based distribution is unbalanced |
+| Browser installation on shard 1 | 10m31s | Other shards installed in 22-23s |
+| Publish job / npm upload | 20s / 9s | Not the bottleneck |
+| Initial registry validation | 79-80s, failed | Version endpoint ready; npm index still returned ETARGET |
+| Retried clean registry installs | 31-39s jobs, passed | No second upload |
+| Website 40405863046 build / deploy | 12m29s / 10s | Browser install 10m44s, route test 53s, build 7s |
+
+The package validation log reports 20.8 MB downloaded from the Ubuntu Azure
+mirror in 12m25s (27.9 kB/s). Chromium downloads took seconds. Adding only a
+browser archive cache would not fix that OS-package bottleneck.
+
+Changes prepared from these observations:
+
+- Reuse the docs CI's immutable Playwright 1.64.1 Noble image in release browser,
+  hydration and website jobs. Verify the installed npm version and launch the
+  preinstalled Chromium; do not run apt or download browsers in each job. Image
+  index and amd64 manifest were checked against MCR. Cold image pulls still cost
+  time, so eliminating apt does not mean zero setup time.
+- Upload the validated archive before hydration. Hydration and docs build/tests
+  can proceed independently; the final gate still requires both React versions.
+- Run report-contract and historical-baseline tests in docs preparation before
+  launching the expensive browser matrix. This exposes the two tooling failures
+  from this release early, without fabricating browser acceptance.
+- Schedule longest checks first and balance four shards using the 109 recorded
+  durations. Keep two workers per shard, exactly-once coverage, and new-test
+  fallback. Simulation of the recorded durations lowers the longest shard from
+  875.775s to 677.046s (22.7%). This is a scheduling replay, not a new CI benchmark.
+- Retry only npm ETARGET identifying the exact release package/version for at
+  most five minutes, with online metadata revalidation. Auth/network/integrity,
+  dependency-version and process-timeout errors still fail immediately. SSR,
+  type, archive-integrity and export checks never retry or get skipped.
+
+Local validation: 41 library tooling tests and 153 docs contract tests pass;
+actionlint accepts the release and deployment workflows. Chromium launches from
+the installed package locally. Cloud image startup and new end-to-end elapsed
+time remain unmeasured until a non-publishing validation runs. Do not publish a
+new version or move react-v0.9.0 just to benchmark pipeline changes.
+
 ## Measured Baseline
 
 Inspection date: 2026-10-26. The release sequence was observed around
