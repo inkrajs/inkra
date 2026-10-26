@@ -8,6 +8,17 @@ import { SelectStepper as SubpathStepper } from '@inkra/react/select/stepper';
 import { TagInput as SubpathTagInput } from '@inkra/react/tag-input';
 import { InventoryGrid as SubpathInventoryGrid } from '@inkra/react/inventory-grid';
 import { Grid as SubpathGrid } from '@inkra/react/layout';
+import { Guide } from '@inkra/react/guide';
+import { Loading } from '@inkra/react/loading';
+import { InfiniteScroll } from '@inkra/react/infinite-scroll';
+import { Masonry } from '@inkra/react/masonry';
+assert.equal(Guide, Inkra.Guide);
+assert.equal(Loading, Inkra.Loading);
+assert.equal(InfiniteScroll, Inkra.InfiniteScroll);
+assert.equal(Masonry, Inkra.Masonry);
+for (const family of ['guide', 'loading', 'infinite-scroll', 'masonry']) {
+  assert(existsSync(new URL(import.meta.resolve(`@inkra/react/styles/${family}.css`))));
+}
 assert.equal(SubpathButton, Inkra.Button);
 assert.equal(SubpathStepper, Inkra.Select.Stepper);
 assert.equal(SubpathTagInput, Inkra.TagInput);
@@ -43,6 +54,18 @@ const markup = renderToString(h('main', null,
   h(Inkra.Timeline, { items: [{ id: 'created', title: 'Created', date: 'October 22', dateTime: '2026-10-22' }] }),
 ));
 assert.match(markup, /Save/);
+const asyncMarkup = renderToString(h('section', null,
+  h(Guide.Root, { showSkip: true }, h(Guide.Trigger, null, 'Start guide'), h(Guide.Step, { target: '#welcome', title: 'Welcome' }, 'First step')),
+  h(Loading, { mode: 'region', preset: 'intel', progress: null, tips: ['One', 'Two'] }),
+  h(InfiniteScroll, { onLoad: async () => {}, automatic: false, gesture: true },
+    h(Masonry, { items: [{ id: 'one', text: 'First item' }], getItemKey: item => item.id, renderItem: ({ item }) => item.text })),
+  h(Inkra.NumberTicker, { value: 1200, animation: 'roll' }),
+));
+assert.match(asyncMarkup, /Start guide/);
+assert.match(asyncMarkup, /First item/);
+assert.match(asyncMarkup, /inkra-number-ticker__reels/);
+assert.match(asyncMarkup, /aria-live="polite">1,200/);
+assert.doesNotMatch(asyncMarkup, /automatic=|gesture=/);
 const gridMarkup = renderToString(h(Inkra.InventoryGrid, {
   containers: [{ id: 'bag', label: 'Backpack', columns: 3, rows: 3, items: [{ id: 'tool', label: 'Tool', position: { x: 0, y: 0 }, cells: [{ x: 0, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }] }] }],
   onChange() {},

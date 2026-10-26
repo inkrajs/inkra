@@ -13,6 +13,8 @@ await Promise.all([
 const styles = await Promise.all([
   'styles.css', 'form/styles.css', 'input-number/styles.css', 'slider/styles.css',
   'selection/selection.css', 'overlay/styles.css', 'select/styles.css', 'tabs/styles.css',
+  'guide/styles.css',
+  'loading/styles.css', 'infinite-scroll/styles.css', 'masonry/styles.css',
   'tooltip/styles.css', 'accordion/styles.css', 'display/styles.css', 'content/styles.css',
   'dropdown-menu/styles.css', 'slot/styles.css', 'log/styles.css', 'hotkey/styles.css',
   'number-ticker/styles.css', 'audio-player/styles.css', 'carousel/styles.css',

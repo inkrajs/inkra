@@ -169,6 +169,26 @@
       "import": "./dist/form/index.js",
       "default": "./dist/form/index.js"
     },
+    "./loading": {
+      "types": "./dist/loading/index.d.ts",
+      "import": "./dist/loading/index.js",
+      "default": "./dist/loading/index.js"
+    },
+    "./infinite-scroll": {
+      "types": "./dist/infinite-scroll/index.d.ts",
+      "import": "./dist/infinite-scroll/index.js",
+      "default": "./dist/infinite-scroll/index.js"
+    },
+    "./masonry": {
+      "types": "./dist/masonry/index.d.ts",
+      "import": "./dist/masonry/index.js",
+      "default": "./dist/masonry/index.js"
+    },
+    "./guide": {
+      "types": "./dist/guide/index.d.ts",
+      "import": "./dist/guide/index.js",
+      "default": "./dist/guide/index.js"
+    },
     "./heatmap": {
       "types": "./dist/heatmap/index.d.ts",
       "import": "./dist/heatmap/index.js",
@@ -423,6 +443,10 @@
     "./styles/empty.css": "./dist/styles/empty.css",
     "./styles/flip.css": "./dist/styles/flip.css",
     "./styles/form.css": "./dist/styles/form.css",
+    "./styles/guide.css": "./dist/styles/guide.css",
+    "./styles/loading.css": "./dist/styles/loading.css",
+    "./styles/infinite-scroll.css": "./dist/styles/infinite-scroll.css",
+    "./styles/masonry.css": "./dist/styles/masonry.css",
     "./styles/heatmap.css": "./dist/styles/heatmap.css",
     "./styles/hotkey.css": "./dist/styles/hotkey.css",
     "./styles/hover-card.css": "./dist/styles/hover-card.css",
@@ -537,6 +561,7 @@
     "leaflet": "^1.9.4",
     "lucide-react": "^1.60.0",
     "prismjs": "^1.30.0",
+    "react-aria": "3.53.1",
     "react-aria-components": "^1.22.1",
     "react-day-picker": "^9.14.0",
     "react-easy-crop": "^6.2.4",

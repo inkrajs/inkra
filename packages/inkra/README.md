@@ -17,6 +17,52 @@ Inkra components require a React client boundary. Next.js and React Server Compo
 
 ## Usage
 
+### Guided And Asynchronous Experiences
+
+`Guide.Root`, `Guide.Trigger` and `Guide.Step` compose a targeted walkthrough.
+`showSkip` exposes skipping; `onSkip` is separate from `onFinish`, so leaving
+early never reports completion. Controlled `open` and `step`, target resolution,
+focus restoration and localized labels are available.
+
+`Loading` supports `inline`, `region` and `fullscreen` carriers with six layout
+presets: `brand-center`, `scene-bottom`, `intel`, `staged`, `edge` and `skeleton`.
+Supply real progress or `null` for indeterminate progress. The application owns
+`status` and the cancel/retry/continue actions. Fullscreen blocking and scroll
+locking can be configured independently; the edge preset is non-blocking by
+default. Backgrounds, logos, stages, six logical content slots and rotating
+ReactNode tips share the same component. Tips support manual navigation, pause,
+controlled indices and sequential or non-repeating random rotation.
+
+`InfiniteScroll` loads at `top`, `bottom`, `left` or `right` boundaries. Configure
+automatic boundary loading and touch pull-and-release separately per direction;
+buttons remain available for keyboard use. `onLoad` receives an abort signal,
+direction and source. Stable item identities support anchored prepends, while
+errors, retry, exhausted directions and in-flight requests remain explicit.
+
+`Masonry` arranges measured items in shortest-column or sequential order while
+retaining DOM order. It supports adaptive or fixed columns, independent gaps,
+RTL and dynamic item sizes. Supply unique stable keys, image alternatives and
+your own data fetching, optionally through `InfiniteScroll`:
+
+```tsx
+<InfiniteScroll
+  directions="bottom"
+  hasMore={hasMore}
+  onLoad={({ signal }) => fetchNextPage(signal)}
+  style={{ maxHeight: 640, overflow: 'auto' }}
+>
+  <Masonry
+    items={items}
+    getItemKey={item => item.id}
+    minColumnWidth={220}
+    renderItem={({ item }) => <article>{item.content}</article>}
+  />
+</InfiniteScroll>
+```
+
+These APIs are included in this source candidate. Local browser checks are not
+real-device certification or a claim that this candidate has been published.
+
 Import the component styles once near the application entry point:
 
 ```tsx
@@ -434,6 +480,22 @@ the currently displayed frame, and can show a temporary signed delta. Reduced
 motion and SSR show deterministic final values. Intermediate frames are visual;
 the polite announcement updates only at the final value. Use `getValueLabel`
 when units or custom rendering need a complete accessible phrase.
+
+Use `animation="roll"` for vertical, place-aligned digit reels. Integers align
+from the right and fractions from the decimal point; carry, multiplication,
+shrinking values and sign changes expand or collapse the affected columns.
+Grouping, signs, currency and compact units remain formatted text, not digit
+reels. `rollDirection="auto"` rolls up for increasing values and down for
+decreasing values; `up` or `down` fixes the direction. `duration` and `easing`
+apply to both modes. The default `animation="count"` retains value interpolation.
+`renderValue` takes precedence over the built-in reels. Changing the formatting
+or animation mode settles immediately, as do disabled/reduced motion, invalid
+durations, and transitions with more than 128 formatted tokens. Exact strings
+and bigint values retain their original precision in either mode.
+
+```tsx
+<NumberTicker value={amount} animation="roll" rollDirection="auto" duration={650} />
+```
 
 Set `compact` to follow `locale` (Chinese units for `zh`, English units otherwise),
 or use `compact="en"` / `compact="zh"` to select a unit table explicitly.

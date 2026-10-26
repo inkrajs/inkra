@@ -28,6 +28,52 @@
   font-family: "Trip Map Hand", "HanziPen SC", "Hannotate SC", "Kaiti SC", "STKaiti", cursive;
 }
 
+.inkra-number-ticker__reels {
+  display: inline-flex;
+  align-items: baseline;
+  unicode-bidi: isolate;
+  line-height: var(--inkra-line-ui, 1.45);
+}
+
+.inkra-number-ticker__column {
+  display: inline-grid;
+  flex: none;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+
+.inkra-number-ticker__column-inner {
+  display: grid;
+  min-width: 0;
+  height: 1lh;
+  overflow: hidden;
+}
+
+.inkra-number-ticker__face {
+  grid-area: 1 / 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 1lh;
+  white-space: pre;
+}
+
+.inkra-number-ticker__column[data-digit] .inkra-number-ticker__face {
+  width: 1ch;
+}
+
+.inkra-number-ticker__face > .inkra-pencil-text {
+  flex: none;
+}
+
+@media (prefers-reduced-motion: reduce), print {
+  .inkra-number-ticker__column { grid-template-columns: 1fr !important; }
+  .inkra-number-ticker__column[data-digit] { width: 1ch !important; }
+  .inkra-number-ticker__column[data-departing] { display: none; }
+  .inkra-number-ticker__face[data-face="from"] { display: none; }
+  .inkra-number-ticker__face[data-face="to"] { transform: none !important; opacity: 1 !important; }
+}
+
 .inkra-number-ticker__prefix,
 .inkra-number-ticker__suffix {
   align-items: center;

@@ -1,0 +1,115 @@
+.inkra-infinite-scroll {
+  --inkra-infinite-scroll-pull-distance: 0px;
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  max-inline-size: 100%;
+  min-block-size: 0;
+  min-inline-size: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  color: var(--inkra-ink);
+}
+
+.inkra-infinite-scroll__body {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-row: 2;
+  min-block-size: 0;
+  min-inline-size: 0;
+  transition: transform var(--inkra-motion-fast) var(--inkra-ease);
+}
+
+.inkra-infinite-scroll__content {
+  grid-column: 2;
+  grid-row: 1;
+  min-block-size: 100%;
+  min-inline-size: 100%;
+}
+
+.inkra-infinite-scroll[data-pull-direction="top"] > .inkra-infinite-scroll__body {
+  transform: translate3d(0, var(--inkra-infinite-scroll-pull-distance), 0);
+}
+.inkra-infinite-scroll[data-pull-direction="bottom"] > .inkra-infinite-scroll__body {
+  transform: translate3d(0, calc(-1 * var(--inkra-infinite-scroll-pull-distance)), 0);
+}
+.inkra-infinite-scroll[data-pull-direction="left"] > .inkra-infinite-scroll__body {
+  transform: translate3d(var(--inkra-infinite-scroll-pull-distance), 0, 0);
+}
+.inkra-infinite-scroll[data-pull-direction="right"] > .inkra-infinite-scroll__body {
+  transform: translate3d(calc(-1 * var(--inkra-infinite-scroll-pull-distance)), 0, 0);
+}
+
+.inkra-infinite-scroll__indicator {
+  position: relative;
+  display: none;
+  min-block-size: 0;
+  min-inline-size: 0;
+  z-index: 1;
+}
+.inkra-infinite-scroll__indicator[data-active] { display: flex; }
+.inkra-infinite-scroll__indicator[data-direction="top"],
+.inkra-infinite-scroll__indicator[data-direction="bottom"] {
+  inline-size: 100%;
+  min-block-size: 52px;
+}
+.inkra-infinite-scroll__indicator[data-direction="left"],
+.inkra-infinite-scroll__indicator[data-direction="right"] {
+  align-self: stretch;
+  grid-row: 1;
+  min-inline-size: 112px;
+}
+.inkra-infinite-scroll__indicator[data-direction="top"] { grid-row: 1; }
+.inkra-infinite-scroll__indicator[data-direction="bottom"] { grid-row: 3; }
+.inkra-infinite-scroll__indicator[data-direction="left"] { grid-column: 1; }
+.inkra-infinite-scroll__indicator[data-direction="right"] { grid-column: 3; }
+
+.inkra-infinite-scroll__indicator-surface {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 100%;
+  min-inline-size: 0;
+  padding: var(--inkra-space-1) var(--inkra-space-2);
+}
+.inkra-infinite-scroll__indicator[data-direction="left"] .inkra-infinite-scroll__indicator-surface,
+.inkra-infinite-scroll__indicator[data-direction="right"] .inkra-infinite-scroll__indicator-surface {
+  min-block-size: 100%;
+  max-inline-size: 144px;
+}
+.inkra-infinite-scroll__indicator-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--inkra-space-2);
+  inline-size: 100%;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+.inkra-infinite-scroll__indicator-content > .inkra-progress { max-inline-size: 240px; }
+.inkra-infinite-scroll__indicator[data-direction="left"] .inkra-progress,
+.inkra-infinite-scroll__indicator[data-direction="right"] .inkra-progress { min-inline-size: 96px; }
+.inkra-infinite-scroll__indicator-line {
+  position: absolute;
+  pointer-events: none;
+}
+.inkra-infinite-scroll__indicator[data-direction="top"] .inkra-infinite-scroll__indicator-line { inset-inline: 4px; inset-block-end: -4px; inline-size: calc(100% - 8px); }
+.inkra-infinite-scroll__indicator[data-direction="bottom"] .inkra-infinite-scroll__indicator-line { inset-inline: 4px; inset-block-start: -4px; inline-size: calc(100% - 8px); }
+.inkra-infinite-scroll__indicator[data-direction="left"] .inkra-infinite-scroll__indicator-line { inset-block: 4px; inset-inline-end: -4px; block-size: calc(100% - 8px); }
+.inkra-infinite-scroll__indicator[data-direction="right"] .inkra-infinite-scroll__indicator-line { inset-block: 4px; inset-inline-start: -4px; block-size: calc(100% - 8px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .inkra-infinite-scroll__body { transition-duration: 0ms; }
+}
+
+@media (forced-colors: active) {
+  .inkra-infinite-scroll__indicator-surface { outline: 1px solid CanvasText; }
+}
+
+@media print {
+  .inkra-infinite-scroll { overflow: visible; }
+  .inkra-infinite-scroll__body { transform: none !important; }
+}

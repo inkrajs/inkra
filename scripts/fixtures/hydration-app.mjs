@@ -1,5 +1,6 @@
 import { createElement as h, useEffect, useState } from 'react';
 import { Button, Calendar, Checkbox, Field, Input, InputNumber, JourneyMap, Overlay, PencilText, Select, Tabs } from '@inkra/react';
+import { Guide, Loading, InfiniteScroll, Masonry, NumberTicker } from '@inkra/react';
 
 const places = [{ id: 'auckland', label: 'Auckland', latitude: -36.85, longitude: 174.76 }];
 
@@ -29,5 +30,10 @@ export function App() {
         h(Overlay.Footer, null, h(Overlay.Close, { asChild: true }, h(Button, null, 'Done')))))),
     h(Calendar, { mode: 'single', defaultMonth: new Date(2026, 9, 1), appearance: 'picker' }),
     h(JourneyMap, { places, attribution: 'Test coordinates', height: 240, 'aria-label': 'Trip map' }),
+    h(Guide.Root, { showSkip: true }, h(Guide.Trigger, null, 'Walkthrough'), h(Guide.Step, { target: '#title', title: 'Welcome' }, 'First step')),
+    h(Loading, { mode: 'inline', progress: null, title: 'Preparing items' }),
+    h(InfiniteScroll, { automatic: false, onLoad: async () => {} },
+      h(Masonry, { items: [{ id: 'a', text: 'Hydrated item' }], getItemKey: item => item.id, renderItem: ({ item }) => item.text })),
+    h(NumberTicker, { 'data-testid': 'hydrated-roll', value: 12 * (count ? 100 : 1), animation: 'roll' }),
   );
 }
