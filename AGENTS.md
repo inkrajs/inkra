@@ -9,6 +9,7 @@ This is the inkrajs/inkra React component library. Documentation is owned by the
 - The npm package is `@inkra/react`, in `packages/inkra`. Local `apps/docs` is a separate ignored Git checkout, not an npm workspace. Other checkouts use INKRA_DOCS_DIR.
 - After library changes, build and pack, then run the docs checkout's `npm run prepare:library -- <library-checkout>`. Never restore source aliases to hide packaging failures.
 - Read `docs/design-standard.md` before changing visual behavior.
+- New or changed icon geometry must support both PencilIcon outline and filled variants. Preserve holes and open-symbol semantics; provide filledPaths for shapes that need a dedicated silhouette, and validate both variants at small sizes.
 - Keep semantic HTML and selectable text. Decorative drawing must not determine layout or intercept input.
 - Never equate a successful build with visual or real-device acceptance.
 - Do not register accounts, publish packages, push, or deploy without explicit user authorization.

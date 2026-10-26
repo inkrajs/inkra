@@ -608,6 +608,33 @@ The matching inherited tokens are `--inkra-icon-stroke-width`,
 and `--inkra-icon-break-count`. Finite explicit props override those tokens.
 See `docs/pencil-contract.md` in the workspace for the material contract.
 
+Icons support `variant="outline"` (default) and `variant="filled"`. Filled icons
+keep holes and internal marks transparent, join overlapping silhouettes and do
+not close open arrows or checks into polygons. Set `fillColor` independently of
+the contour's CSS `color`; it defaults to `currentColor` and accepts CSS variables.
+The silhouette stays continuous while stroke controls affect its exterior.
+
+```tsx
+<PencilIcon paths={folderPaths} variant="filled" fillColor="var(--folder-color)"
+  sourceSize={24} size={32} style={{ color: 'var(--inkra-ink)' }} />
+```
+
+Supply `filledPaths` when a shape needs a dedicated filled silhouette. Each path
+can use `mode: 'fill'` with an optional `color` for independently colored regions,
+or `mode: 'cutout'` for transparent details. Closed cutouts remove an area; open
+cutouts remove a stroke without implicitly closing it. Explicit fills accept
+`fillRule: 'nonzero' | 'evenodd'` (default `nonzero`). These authored regions do
+not add their own contour stroke. For lighter colored-pencil regions, use
+`mode: 'wash'` with the same optional `color` and `fillRule`: paper remains visible
+between pigment strokes, with a light pencil edge in the icon's CSS `color`.
+Dense `fill` regions are unchanged.
+Explicit `mode: 'stroke'` keeps a line symbol
+even when its path closes; omitted mode detects filled silhouettes automatically.
+An empty `filledPaths` intentionally hides the
+base shape in filled mode. `badge` accepts the same three props and inherits the
+base variant and fill color unless overridden. Intensity applies once to the
+completed image, including its fills, exterior strokes and badge.
+
 `PencilLine` is an aria-hidden canvas decoration using the same pressure, grain, breaks, and repeated-pass renderer as surfaces and icons. It defaults to horizontal and supports a native vertical stroke without rotating a horizontal bitmap:
 
 ```tsx
