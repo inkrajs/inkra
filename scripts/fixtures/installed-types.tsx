@@ -1,6 +1,29 @@
 import { Button, Field, Input, InputNumber, PencilIcon, Select, Slider, Tabs } from '@inkra/react';
 import type { SelectTriggerProps } from '@inkra/react';
 import { Textarea } from '@inkra/react/form';
+import { Guide } from '@inkra/react/guide';
+import { Loading, type LoadingProps } from '@inkra/react/loading';
+import { InfiniteScroll, type InfiniteScrollLoadContext } from '@inkra/react/infinite-scroll';
+import { Masonry } from '@inkra/react/masonry';
+import { NumberTicker } from '@inkra/react/number-ticker';
+
+const loaderProps = { mode: 'fullscreen', preset: 'scene-bottom', slots: { 'bottom-start': <button>Character</button> }, tips: ['Tip'], progress: null } satisfies LoadingProps;
+// @ts-expect-error Slot names must be one of the six public positions.
+const invalidLoader: LoadingProps = { slots: { somewhere: 'Wrong' } };
+// @ts-expect-error Motion has two supported presentation modes.
+const invalidTicker = <NumberTicker value={12} animation="spin" />;
+export function InstalledAsyncExamples() {
+  return <>
+    <Guide.Root showSkip onSkip={() => {}} onFinish={() => {}}>
+      <Guide.Trigger>Start</Guide.Trigger><Guide.Step target="#welcome" title="Welcome">First step</Guide.Step>
+    </Guide.Root>
+    <Loading {...loaderProps} onCancel={() => {}} />
+    <InfiniteScroll directions={['top', 'bottom']} automatic={{ top: false }} gesture onLoad={async (context: InfiniteScrollLoadContext) => { context.signal.throwIfAborted(); }}>
+      <Masonry items={[{ id: 'a', title: 'A' }]} getItemKey={item => item.id} renderItem={({ item }) => <article>{item.title}</article>} />
+    </InfiniteScroll>
+    <NumberTicker value="120000.25" animation="roll" rollDirection="down" />
+  </>;
+}
 import type { TextareaAutoSizeOptions } from '@inkra/react';
 
 const textareaSizing = { minRows: 1, maxRows: 6 } satisfies TextareaAutoSizeOptions;

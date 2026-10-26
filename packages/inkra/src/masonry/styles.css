@@ -1,0 +1,68 @@
+.inkra-masonry {
+  box-sizing: border-box;
+  display: grid;
+  gap: var(--inkra-masonry-row-gap, 16px) var(--inkra-masonry-column-gap, 16px);
+  grid-template-columns: repeat(var(--inkra-masonry-columns, 1), minmax(0, 1fr));
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  overflow: clip;
+  overflow-clip-margin: 1px;
+  position: relative;
+}
+
+.inkra-masonry[data-mode="adaptive"] {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--inkra-masonry-min-column-width, 240px)), 1fr));
+}
+
+.inkra-masonry[data-layout="ready"] {
+  display: block;
+}
+
+.inkra-masonry__item {
+  box-sizing: border-box;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}
+
+.inkra-masonry[data-layout="ready"] > .inkra-masonry__item {
+  inset-block-start: 0;
+  left: 0;
+  position: absolute;
+}
+
+.inkra-masonry[data-layout="ready"][data-animated] > .inkra-masonry__item {
+  transition: transform var(--inkra-motion-normal, 180ms) var(--inkra-ease, ease);
+}
+
+.inkra-masonry__item > * {
+  max-inline-size: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inkra-masonry[data-layout="ready"][data-animated] > .inkra-masonry__item {
+    transition-duration: 0ms;
+  }
+}
+
+@media (forced-colors: active) {
+  .inkra-masonry[data-layout="ready"][data-animated] > .inkra-masonry__item {
+    transition-duration: 0ms;
+  }
+}
+
+@media print {
+  .inkra-masonry,
+  .inkra-masonry[data-layout="ready"] {
+    block-size: auto !important;
+    display: grid;
+    overflow: visible;
+  }
+
+  .inkra-masonry[data-layout="ready"] > .inkra-masonry__item {
+    inline-size: auto !important;
+    position: static;
+    transform: none !important;
+    transition: none;
+  }
+}

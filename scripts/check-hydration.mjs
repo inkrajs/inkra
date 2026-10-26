@@ -56,6 +56,10 @@ export async function checkHydration(directory) {
       await page.waitForSelector('html[data-hydrated="true"]');
       await page.getByRole('button', { name: 'Count 0', exact: true }).click();
       await page.getByRole('button', { name: 'Count 1', exact: true }).waitFor();
+      await page.waitForFunction(() => {
+        const ticker = document.querySelector('[data-testid="hydrated-roll"]');
+        return ticker && !ticker.hasAttribute('data-animating') && ticker.querySelector('[aria-live]').textContent === '1,200';
+      });
       await page.getByLabel('Name', { exact: true }).fill('Edited');
       await page.getByRole('button', { name: 'Increase value', exact: true }).click();
       assert.equal(await page.getByLabel('Quantity', { exact: true }).inputValue(), '3');
