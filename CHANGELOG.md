@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.9.0 - 2026-10-27
+
+- Add PencilIcon filled rendering, custom fill colors and authored multicolor
+  paths with paper-wash shading, transparent details and softened contours.
+  The documentation catalog includes 47 simplified multicolor presets.
+- Add Guide with configurable skip controls, Loading with fullscreen layouts,
+  animations and rotating tips, and Masonry for adaptive content layouts.
+- Add four-direction InfiniteScroll loading with touch gestures, nonlinear
+  resistance, release rebound and stable reading anchors when prepending content.
+- Add rolling NumberTicker transitions across changing digit counts and formats.
+- Refine ImageViewer toolbar placement and optional counters, connected irregular
+  InventoryGrid item outlines, and Loading and Guide interaction defaults.
+- Improve icon catalog scrolling and compact previews; expand documentation
+  configuration controls, translations and installed-package regression checks.
+
+Release candidate. Publication is confirmed only after registry archive and
+clean React 18/19 installation verification.
+
 ## 0.8.0 - 2026-10-26
 
 - Respect explicit Textarea rows, including a one-row editor, and add optional
