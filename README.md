@@ -77,7 +77,7 @@ package and the main branch may contain different features.*
 
 ## Find Your Components
 
-The published **0.8.0** package includes these core components:
+The published **0.9.0** package includes these core components:
 
 | Use | Components |
 | --- | --- |
@@ -120,6 +120,12 @@ Pagination controls and row-based Textarea automatic sizing. This release also
 includes the unpublished 0.7.0 candidate. Version 0.8.0 is published on npm and
 verified with React 18 and 19. Documentation has unified example anchors and
 compound API groups, a resizable shell and compact mobile search.
+
+**New in 0.9.0:** Guide, fullscreen Loading layouts, four-direction InfiniteScroll,
+Masonry, rolling NumberTicker values, and filled/color-configurable PencilIcon
+rendering. The documentation includes 47 simplified multicolor icon presets.
+The public package is verified with React 18 and 19.
+
 See [Releases](https://github.com/inkrajs/inkra/releases),
 the [changelog](./CHANGELOG.md) and
 [package API](./packages/inkra/README.md) for the full scope and known limits.

@@ -70,7 +70,7 @@ Inkra 提供 ESM、TypeScript 声明和 CSS，React 与 React DOM 作为 peer de
 
 ## 找到你需要的组件
 
-已发布的 **0.8.0** 包包含以下基础组件：
+已发布的 **0.9.0** 包包含以下基础组件：
 
 | 用途 | 组件 |
 | --- | --- |
@@ -105,6 +105,11 @@ InputNumber 支持组合键步进与长按连续调整，并改进弹层动画�
 异形物品放置 InventoryGrid、分页配置，以及按正文行数增长的 Textarea 自动高度。
 本版包含未发布的 0.7.0 候选，已发布到 npm 并通过 React 18 和 19 的正式安装验证。
 文档统一了示例锚点与复合组件 API 分组，采用可调整侧栏的布局和紧凑的移动搜索。
+
+**0.9.0 新增：** Guide、全屏 Loading 布局、四向 InfiniteScroll、Masonry、
+NumberTicker 数字滚动，以及支持填充和自定义配色的 PencilIcon。
+文档包含 47 个简洁彩色图标预设。正式包已通过 React 18 和 19 的公开安装验证。
+
 详见[版本发布](https://github.com/inkrajs/inkra/releases)。
 完整范围与已知限制见[更新日志](./CHANGELOG.md)和[组件 API](./packages/inkra/README.md)。
 
