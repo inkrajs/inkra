@@ -15,8 +15,11 @@
 - Improve icon catalog scrolling and compact previews; expand documentation
   configuration controls, translations and installed-package regression checks.
 
-Release candidate. Publication is confirmed only after registry archive and
-clean React 18/19 installation verification.
+Published as `@inkra/react@0.9.0` with the `latest` npm dist-tag and the
+`react-v0.9.0` GitHub Release, from commit
+`156648e347c9b7086949081e08868132f923dccf`.
+The public archive matches the approved candidate; clean registry installations
+passed with React 18 and 19. Release run: `40398411054`.
 
 ## 0.8.0 - 2026-10-26
 

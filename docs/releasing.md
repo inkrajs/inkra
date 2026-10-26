@@ -1,7 +1,7 @@
 # React Package Releases
 
 Repository: inkrajs/inkra. Package: @inkra/react. First release: 0.1.0.
-Version 0.8.0 is published and registry-verified. Future source versions remain
+Version 0.9.0 is published and registry-verified. Future source versions remain
 candidates until their own registry verification passes.
 Website deployment does not publish an npm package.
 
@@ -113,6 +113,24 @@ validated the trusted publisher through a successful OIDC publication.
   Its tag remains unchanged. Version 0.8.0 includes both the earlier Layout/Grid
   work and the merged Textarea sizing additions.
 
+## Version 0.9.0 Record
+
+- Source/tag: 156648e347c9b7086949081e08868132f923dccf / react-v0.9.0.
+- Release run: 40398411054, successful on 2026-10-27 (Asia/Shanghai).
+- Validation docs: 5b35dc57cec17197159176e3caee30976aca349e.
+- All 109 browser checks and the complete report gate passed. OIDC publication,
+  public archive comparison and clean React 18/19 installations passed.
+- GitHub Release was created only after registry verification succeeded.
+- Public archive SHA-256:
+  3f17134f2cc57b864ce2e8a47e41730e197c79e779a7629db46bfa574d0febae.
+- Earlier runs stopped before upload while docs tests were repaired: a missing
+  tracked historical pixel baseline, a geometry measurement during animation,
+  and compatibility between numeric full-suite shard arguments and newer
+  selection-plan report verification. The source tag was never changed.
+- Initial post-upload installation saw npm index propagation lag (ETARGET).
+  Only failed verification jobs were rerun after registry availability; package
+  validation, browser results and upload were retained, with no duplicate publish.
+
 ## Pipeline
 
 Use the manually dispatched **Release npm package** workflow, publish.yml.
@@ -139,7 +157,7 @@ and the exact docs consumer's build, browser smoke and homepage tests.
 
 Validation uploads the exact npm candidate after package checks. A separate
 docs-build job prepares it once, followed by four independent browser runners
-with two workers each. All 99 checks, including the homepage, must be accounted
+with two workers each. All registered checks, including the homepage, must be accounted
 for by the docs-verified gate before publishing or registry verification.
 The build artifact alone is not release approval. Per-check timings and failure
 logs are retained for 14 days. Rerun failed jobs, not the entire workflow, when
