@@ -6,10 +6,13 @@ import { PencilSurface } from '../PencilSurface.js';
 
 export type SliderSize = 'sm' | 'md' | 'lg';
 export type SliderVariant = 'standard' | 'inset';
+export type SliderThumbAlignment = 'edge' | 'contain';
 
 export interface SliderProps extends Omit<SliderPrimitive.SliderProps, 'children' | 'asChild'> {
   size?: SliderSize;
   variant?: SliderVariant;
+  /** Align thumb centers with track endpoints, or retain the inset hit-target bounds. */
+  thumbAlignment?: SliderThumbAlignment;
   seed?: string | number;
   thumbLabels?: readonly string[];
   getValueLabel?: (value: number, index: number) => string;
@@ -36,6 +39,7 @@ export const Slider = forwardRef<HTMLSpanElement, SliderProps>(function Slider(
     orientation = 'horizontal',
     seed,
     size = 'md',
+    thumbAlignment = 'edge',
     thumbLabels,
     value,
     variant = 'standard',
@@ -114,6 +118,7 @@ export const Slider = forwardRef<HTMLSpanElement, SliderProps>(function Slider(
     className={['inkra-slider', className].filter(Boolean).join(' ')}
     data-size={size}
     data-variant={variant}
+    data-thumb-alignment={thumbAlignment}
     dir={resolvedDir}
     disabled={disabled}
     form={radixFormId}
@@ -136,6 +141,7 @@ export const Slider = forwardRef<HTMLSpanElement, SliderProps>(function Slider(
       </span>
     </SliderPrimitive.Track>
     {values.map((current, index) => {
+      const position = reversed ? 100 - percentage(current) : percentage(current);
       const thumbLabel = thumbLabels?.[index];
       const labelledBy = thumbLabel ? undefined : ariaLabelledBy;
       const label = thumbLabel ?? (ariaLabel ? `${ariaLabel}${values.length > 1 ? ` ${index + 1}` : ''}` : labelledBy ? undefined : `Value${values.length > 1 ? ` ${index + 1}` : ''}`);
@@ -148,6 +154,7 @@ export const Slider = forwardRef<HTMLSpanElement, SliderProps>(function Slider(
           aria-valuenow={current}
           aria-valuetext={getValueLabel?.(current, index) ?? ariaValueText}
           className="inkra-slider__thumb"
+          style={{ '--inkra-slider-thumb-offset': `${position - 50}%` } as CSSProperties}
         >
           <PencilSurface as="span" aria-hidden="true" className="inkra-slider__thumb-surface" variant="paper" radius={8} seed={`${resolvedSeed}-thumb-${index}`}>
             <PencilSurface as="span" className="inkra-slider__focus-ring" variant="outline" radius={8} seed={`${resolvedSeed}-focus-${index}`} />
@@ -162,3 +169,6 @@ export const Slider = forwardRef<HTMLSpanElement, SliderProps>(function Slider(
     })}
   </SliderPrimitive.Root>;
 });
+
+export { CircularSlider } from './circular.js';
+export type { CircularSliderProps } from './circular.js';

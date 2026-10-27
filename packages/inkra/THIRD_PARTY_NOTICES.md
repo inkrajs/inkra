@@ -1,5 +1,14 @@
 # Third-Party Notices
 
+## Xiaolai SC
+
+`dist/assets/ui-hand-xiaolai*.woff2` contains Xiaolai SC Regular v3.120 by LXGW,
+converted to WOFF2 and split into common and extended character sets without
+dropping mapped characters. It is registered as `Inkra Xiaolai` in CSS.
+Source: https://github.com/lxgw/kose-font/releases/tag/v3.120
+License: SIL Open Font License 1.1, reproduced in `Xiaolai-OFL.txt`.
+This font is not covered by Inkra's MIT software license.
+
 ## Trip Map Hand font subset
 
 `dist/assets/ui-hand-yozai.woff2` is a web subset of Yozai Light v0.868 by LXGW, derived from work by Y.Oz. The subset uses the modified family name `Trip Map Hand` and is included to provide the handwriting geometry used by Inkra's pencil-text renderer.

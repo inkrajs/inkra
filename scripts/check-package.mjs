@@ -12,12 +12,12 @@ const packageJson = JSON.parse(await readFile(new URL('../packages/inkra/package
 const [pack] = JSON.parse(execFileSync('npm', ['pack', '--workspace=@inkra/react', '--ignore-scripts', '--json', '--pack-destination', fileURLToPath(directory)], { cwd: root, encoding: 'utf8' }));
 const paths = new Set(pack.files.map(file => file.path));
 for (const file of paths) {
-  assert(/^(dist\/|README\.md$|LICENSE$|THIRD_PARTY_NOTICES\.md$|Yozai-OFL\.txt$|package\.json$)/.test(file), `Unexpected package entry: ${file}`);
+  assert(/^(dist\/|README\.md$|LICENSE$|THIRD_PARTY_NOTICES\.md$|Yozai-OFL\.txt$|Xiaolai-OFL\.txt$|package\.json$)/.test(file), `Unexpected package entry: ${file}`);
   assert(!/\.map$|node_modules|\.env|\.test\./.test(file), `Unexpected development artifact: ${file}`);
 }
 const targets = value => typeof value === 'string' ? [value] : Object.values(value).flatMap(targets);
 for (const entry of targets(packageJson.exports)) assert(paths.has(entry.replace(/^\.\//, '')), `Missing exported file: ${entry}`);
-for (const path of ['LICENSE', 'THIRD_PARTY_NOTICES.md', 'Yozai-OFL.txt', 'dist/assets/ui-hand-yozai.woff2']) assert(paths.has(path), `Missing required asset: ${path}`);
+for (const path of ['LICENSE', 'THIRD_PARTY_NOTICES.md', 'Yozai-OFL.txt', 'Xiaolai-OFL.txt', 'dist/assets/ui-hand-xiaolai.woff2', 'dist/assets/ui-hand-yozai.woff2']) assert(paths.has(path), `Missing required asset: ${path}`);
 assert.equal(pack.version, packageJson.version);
 assert.equal(pack.name, '@inkra/react');
 assert.equal(pack.filename, archiveName(packageJson));

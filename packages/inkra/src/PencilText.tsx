@@ -145,6 +145,8 @@ function paintText(
   glyphSeed: number,
 ): boolean {
   const style = getComputedStyle(element);
+  // Plain mode retains the selectable source and font metrics, without painting.
+  if (readRenderToken(style, '--inkra-letter-effect', 1, 0, 1) === 0) return false;
   const { width: localWidth, height: localHeight } = localBorderBox(element, style);
   if (!localWidth || !localHeight || text.length > 4096 || !source.firstChild) return false;
   const size = Number.parseFloat(style.fontSize);
@@ -307,7 +309,7 @@ const PencilTextImplementation = forwardRef<HTMLElement, PencilTextImplementatio
           ...['color', 'font-family', 'font-size', 'font-weight', 'font-style', 'line-height', 'text-align', 'text-indent',
             'letter-spacing', 'white-space', 'word-break', 'overflow-wrap', 'direction',
             'padding-top', 'padding-left', 'padding-right', 'padding-bottom',
-            '--inkra-letter-variation', '--inkra-letter-breaks', '--inkra-letter-outline',
+            '--inkra-letter-effect', '--inkra-letter-variation', '--inkra-letter-breaks', '--inkra-letter-outline',
             '--inkra-letter-fill', '--inkra-letter-grain'].map(name => style.getPropertyValue(name)),
         ]);
       };

@@ -98,6 +98,17 @@
   width: var(--inkra-slider-thumb-size);
 }
 
+/* Radix insets its measured hit target by half a thumb at each endpoint.
+   Translate the whole target back so its visual center follows the track;
+   percentages use the actual thumb box and preserve its 44px hit area. */
+.inkra-slider[data-thumb-alignment="edge"] .inkra-slider__thumb {
+  translate: var(--inkra-slider-thumb-offset) 0;
+}
+
+.inkra-slider[data-thumb-alignment="edge"][data-orientation="vertical"] .inkra-slider__thumb {
+  translate: 0 var(--inkra-slider-thumb-offset);
+}
+
 .inkra-slider__thumb:focus-visible {
   outline: none;
 }

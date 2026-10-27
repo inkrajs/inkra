@@ -1,5 +1,7 @@
 @import "./tokens.css";
 
+@import "./assets/xiaolai.css";
+
 @font-face {
   font-family: "Trip Map Hand";
   font-style: normal;
@@ -129,13 +131,13 @@
 .inkra-pencil-text__source {
   color: inherit;
   font: inherit;
-  font-family: "Trip Map Hand", "HanziPen SC", "Hannotate SC", "Kaiti SC", "STKaiti", cursive;
   font-kerning: none;
   font-variant-ligatures: none;
   letter-spacing: 0;
 }
 
 .inkra-pencil-text {
+  font-family: var(--inkra-font-hand);
   display: inline-block;
   max-width: 100%;
   min-width: 0;
@@ -216,7 +218,7 @@
   color: var(--inkra-on-accent, var(--inkra-accent-strong));
   cursor: pointer;
   display: inline-flex;
-  font-family: "Trip Map Hand", "HanziPen SC", "Hannotate SC", "Kaiti SC", "STKaiti", cursive;
+  font-family: var(--inkra-font-hand);
   font-weight: var(--inkra-weight-regular);
   justify-content: center;
   letter-spacing: var(--inkra-letter-spacing);

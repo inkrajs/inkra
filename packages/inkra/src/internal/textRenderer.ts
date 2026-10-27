@@ -20,14 +20,14 @@ export interface PencilTextSprite {
 }
 
 export const pencilLettering: PencilLetteringSettings = Object.freeze({
-  variation: 0.2,
-  breaks: 0.5,
-  outline: 0.9,
-  fill: 0.9,
-  grain: 0.6,
+  variation: 0.1,
+  breaks: 0.31,
+  outline: 0.44,
+  fill: 0.85,
+  grain: 0.4,
 });
 
-export const pencilHandwriting = '"Trip Map Hand","HanziPen SC","Hannotate SC","Kaiti SC","STKaiti",cursive';
+export const pencilHandwriting = '"Inkra Xiaolai","Trip Map Hand","Kaiti SC","STKaiti",cursive';
 
 const TEXT_PIXEL_LIMIT = 524288;
 export function boundedTextResolution(width: number, height: number, dpr: number): number {
@@ -42,6 +42,22 @@ export function boundedTextResolution(width: number, height: number, dpr: number
 const textCache = new BoundedCache<PencilTextSprite>(160, 16 * 1024 * 1024);
 const glyphCache = new BoundedCache<PencilTextSprite>(512, 8 * 1024 * 1024);
 const clamp = (value: number): number => Math.max(0, Math.min(1, value));
+
+// Keep the ES2020 build usable in browsers without Intl.Segmenter. Falling back
+// to one shaping run is safer than separating a base glyph from its marks.
+type GraphemeSegmenter = { segment(text: string): Iterable<{ segment: string }> };
+const Segmenter = (Intl as typeof Intl & {
+  Segmenter?: new (locale?: string, options?: { granularity: 'grapheme' }) => GraphemeSegmenter;
+}).Segmenter;
+const graphemeSegmenter = Segmenter ? new Segmenter(undefined, { granularity: 'grapheme' }) : undefined;
+const asciiText = /^[\x20-\x7e]*$/;
+
+function letteringUnits(text: string): string[] {
+  if (asciiText.test(text)) return Array.from(text);
+  return graphemeSegmenter
+    ? Array.from(graphemeSegmenter.segment(text), entry => entry.segment)
+    : [text];
+}
 
 function hash(x: number, y: number, seed: number): number {
   let value = Math.imul(x ^ seed, 374761393) ^ Math.imul(y, 668265263);
@@ -120,12 +136,14 @@ export function renderPencilText(
   if (text.length > 256 || !Number.isFinite(size) || size <= 0 || size > 128) {
     throw new RangeError('Pencil text exceeds the bounded renderer input');
   }
+  // Normalize only this decorative rendering copy, never the selectable DOM.
+  text = text.normalize('NFC');
   let resolution = Math.max(2, Math.min(4, Math.ceil(dpr * 2)));
   const font = `${options.style ?? 'normal'} ${options.weight ?? '400'} ${size}px ${family}`;
   const fontReady = document.fonts?.check(font, text) ?? false;
   const key = cache ? JSON.stringify([
     PENCIL_RENDERER_VERSION,
-    'adaptive-text-raster-v1',
+    'grapheme-text-raster-v2',
     text,
     size,
     font,
@@ -150,7 +168,7 @@ export function renderPencilText(
   const rgb = measure.getImageData(0, 0, 1, 1).data;
   measure.font = font;
   measure.fontKerning = 'none';
-  const characters = Array.from(text);
+  const characters = letteringUnits(text);
   const widths = characters.map(character => measure.measureText(character).width);
   const advance = Math.ceil(widths.reduce((sum, width) => sum + width, 0));
   const padding = 5;
@@ -169,9 +187,9 @@ export function renderPencilText(
   const context = mask.getContext('2d', { willReadFrequently: true });
   if (!context) throw new Error('Canvas 2D is unavailable');
   context.scale(resolution, resolution);
-  // Plain Latin labels can reuse bounded character sprites. Complex scripts and
-  // private editable text retain the original whole-line rendering path.
-  if (cache && options.glyphSeed !== undefined && /^[\x20-\x7e]+$/.test(text)) {
+  // Plain Latin labels reuse bounded character sprites. Other text is measured
+  // and painted as complete grapheme clusters, with one material pass per line.
+  if (cache && options.glyphSeed !== undefined && text.length > 0 && asciiText.test(text)) {
     let left = 0;
     characters.forEach((character, index) => {
       if (character !== ' ') {

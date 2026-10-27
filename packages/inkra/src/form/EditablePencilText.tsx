@@ -148,6 +148,8 @@ function paintEditableText(
   multiline: boolean,
   composition: CompositionRange | null,
 ): boolean {
+  const style = getComputedStyle(control);
+  if (readRenderToken(style, '--inkra-letter-effect', 1, 0, 1) === 0) return false;
   const width = control.clientWidth;
   const height = control.clientHeight;
   const target = canvas.getContext('2d');
@@ -157,7 +159,6 @@ function paintEditableText(
     || width < 2 || height < 2 || width * height * dpr ** 2 > 2 * 1024 * 1024) return false;
   const content = editableText(control);
   if (content.text.length > MAX_EDITABLE_TEXT) return false;
-  const style = getComputedStyle(control);
   if (style.direction === 'rtl' || complexScript.test(content.text)) return false;
   const fontSize = Number.parseFloat(style.fontSize);
   if (!Number.isFinite(fontSize) || fontSize <= 0) return false;
@@ -276,7 +277,7 @@ export function EditablePencilText({
         ...['font-family', 'font-size', 'line-height', 'text-align', 'text-indent',
           'letter-spacing', 'white-space', 'word-break', 'overflow-wrap', 'direction', 'tab-size',
           'padding-top', 'padding-left', 'padding-right', 'padding-bottom',
-          '--inkra-letter-variation', '--inkra-letter-breaks', '--inkra-letter-outline',
+          '--inkra-letter-effect', '--inkra-letter-variation', '--inkra-letter-breaks', '--inkra-letter-outline',
           '--inkra-letter-fill', '--inkra-letter-grain',
           '--inkra-editable-text-color', '--inkra-editable-placeholder-color'].map(name => style.getPropertyValue(name)),
       ]);

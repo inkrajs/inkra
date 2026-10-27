@@ -13,7 +13,7 @@ This is the inkrajs/inkra React component library. Documentation is owned by the
 - Keep semantic HTML and selectable text. Decorative drawing must not determine layout or intercept input.
 - Never equate a successful build with visual or real-device acceptance.
 - Do not register accounts, publish packages, push, or deploy without explicit user authorization.
-- User requests independent Codex chats for parallel work, not subagents. Do not spawn subagents.
+- The user requests parallel work for separable implementation, documentation and verification tasks. Delegate bounded subtasks with explicit file ownership; the main chat must monitor progress, resolve blockers and verify the integrated result. Keep dependent edits sequential and avoid concurrent writes to the same files. Create user-owned Codex chats only when explicitly requested.
 
 ## Initial Delivery
 

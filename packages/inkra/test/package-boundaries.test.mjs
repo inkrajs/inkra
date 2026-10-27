@@ -10,8 +10,8 @@ test('optional public family subpaths reference the existing identities',async()
   const mod=await import(new URL('../'+part.import,import.meta.url));
   for(const [key,value] of Object.entries(mod)) if(key in root)assert.equal(value,root[key],`${name}:${key}`);
  }
- assert.equal(Object.keys(root).length,281);
- for (const name of ['Loading', 'InfiniteScroll', 'Masonry']) assert(name in root, name);
+ assert.equal(Object.keys(root).length,282);
+ for (const name of ['Loading', 'InfiniteScroll', 'Masonry', 'CircularSlider']) assert(name in root, name);
  assert.ok(root.ThemeProvider);
  assert.ok(pkg.exports['./theme']);
  for (const name of ['Markdown', 'ColorSwatch', 'MediaViewer', 'formatColorPaint', 'InkraProvider', 'useInkraLocale', 'createInkraTranslator', 'resolveInkraLocale', 'inkraLocales']) assert(name in root, name);
