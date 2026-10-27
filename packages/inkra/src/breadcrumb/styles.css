@@ -55,7 +55,7 @@
   align-items: center;
   box-sizing: border-box;
   display: inline-flex;
-  font-family: "Trip Map Hand", "HanziPen SC", "Hannotate SC", "Kaiti SC", "STKaiti", cursive;
+  font-family: var(--inkra-font-hand);
   font-size: var(--inkra-breadcrumb-item-font-size);
   gap: var(--inkra-breadcrumb-item-gap);
   justify-content: center;

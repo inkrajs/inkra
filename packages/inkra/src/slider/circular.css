@@ -1,0 +1,53 @@
+.inkra-circular-slider {
+  box-sizing: border-box;
+  color: var(--inkra-ink);
+  cursor: pointer;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--inkra-circular-slider-diameter);
+  height: var(--inkra-circular-slider-diameter);
+  position: relative;
+  touch-action: none;
+  user-select: none;
+  vertical-align: middle;
+  outline: none;
+}
+.inkra-circular-slider[data-disabled] { cursor: not-allowed; opacity: .55; }
+.inkra-circular-slider[data-readonly] { cursor: default; }
+.inkra-circular-slider__arc { position: absolute; inset: 16px; pointer-events: none; }
+.inkra-circular-slider__track, .inkra-circular-slider__range { position: absolute; inset: 0; }
+.inkra-circular-slider__track { color: var(--inkra-ink-muted); opacity: .3; }
+.inkra-circular-slider__range { color: var(--inkra-accent-strong); }
+/* ProgressRing shares the stable pencil texture; these scoped rules also support slider-only styles. */
+.inkra-circular-slider .inkra-progress__ring { color: inherit; }
+.inkra-circular-slider .inkra-progress__ring,
+.inkra-circular-slider .inkra-progress__ring-rotation,
+.inkra-circular-slider .inkra-progress__ring-direction,
+.inkra-circular-slider .inkra-progress__ring-ink,
+.inkra-circular-slider .inkra-progress__ring-fallback { display: block; position: absolute; inset: 0; width: 100%; height: 100%; }
+.inkra-circular-slider .inkra-progress__ring-ink { visibility: hidden; }
+.inkra-circular-slider .inkra-progress__ring-ink[data-ready="true"] { visibility: visible; }
+.inkra-circular-slider .inkra-progress__ring-ink[data-ready="true"] + .inkra-progress__ring-fallback { visibility: hidden; }
+.inkra-circular-slider__center { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 5px; box-sizing: border-box; width: var(--inkra-circular-slider-center-width); max-height: var(--inkra-circular-slider-center-height); min-width: 0; overflow: hidden; pointer-events: none; text-align: center; }
+.inkra-circular-slider__center-icon { display: flex; align-items: center; justify-content: center; flex: none; width: min(var(--inkra-circular-slider-center-icon-size), 100%); height: var(--inkra-circular-slider-center-icon-size); }
+.inkra-circular-slider__center-icon > * { max-width: 100%; max-height: 100%; }
+.inkra-circular-slider__center-content { width: 100%; min-width: 0; max-width: 100%; max-height: var(--inkra-circular-slider-center-height); overflow-wrap: anywhere; }
+.inkra-circular-slider__center-content > * { max-width: 100%; }
+.inkra-circular-slider__value { display: block; white-space: nowrap; max-width: 100%; pointer-events: none; text-align: center; font-size: var(--inkra-circular-slider-center-font-size); line-height: var(--inkra-circular-slider-center-line-height); }
+.inkra-circular-slider__thumb { position: absolute; transform: translate(-50%, -50%); width: var(--inkra-touch-target); height: var(--inkra-touch-target); display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.inkra-circular-slider__thumb-surface { display: block !important; width: var(--inkra-circular-slider-thumb-size); height: var(--inkra-circular-slider-thumb-size); border-radius: 50%; }
+.inkra-circular-slider__focus-ring { --inkra-ink: var(--inkra-focus); position: absolute !important; inset: -4px; opacity: 0; pointer-events: none; }
+.inkra-circular-slider:focus-visible .inkra-circular-slider__focus-ring { opacity: 1; }
+@media (forced-colors: active) {
+  .inkra-circular-slider__track { color: GrayText; opacity: 1; }
+  .inkra-circular-slider__range { color: Highlight; }
+  .inkra-circular-slider__thumb-surface { border: 2px solid ButtonText; background: Canvas; }
+  .inkra-circular-slider:focus-visible .inkra-circular-slider__thumb-surface { outline: var(--inkra-focus-width) solid Highlight; outline-offset: var(--inkra-focus-offset); }
+  .inkra-circular-slider__focus-ring { display: none !important; }
+}
+@media (forced-colors: active), print {
+  .inkra-circular-slider .inkra-progress__ring-ink[data-ready="true"] { visibility: hidden; }
+  .inkra-circular-slider .inkra-progress__ring-ink[data-ready="true"] + .inkra-progress__ring-fallback { visibility: visible; }
+}

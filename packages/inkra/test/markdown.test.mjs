@@ -290,7 +290,7 @@ test('Markdown source and styles retain parser, theme and responsive contracts',
   assert.match(styles, /\.inkra-selection-control\.inkra-markdown__task-checkbox \{[\s\S]*grid-template-columns: 18px;[\s\S]*min-height: 0;/);
   assert.match(styles, /\.inkra-markdown__code-text \{[\s\S]*--inkra-letter-fill: 0\.24;[\s\S]*font-family: inherit;/);
   assert.match(styles, /\.inkra-markdown__code-text > \.inkra-pencil-text__source \{ font-family: inherit; \}/);
-  assert.match(styles, /\.inkra-markdown__code-surface \{[\s\S]*background: transparent;[\s\S]*font-family: "Trip Map Hand", var\(--inkra-font-hand\);[\s\S]*overflow-x: auto;[\s\S]*overflow-wrap: normal;/);
+  assert.match(styles, /\.inkra-markdown__code-surface \{[\s\S]*background: transparent;[\s\S]*font-family: var\(--inkra-font-hand\);[\s\S]*overflow-x: auto;[\s\S]*overflow-wrap: normal;/);
   assert.match(styles, /\.inkra-markdown__code-surface \.inkra-pencil-text,[\s\S]*max-width: none;[\s\S]*overflow-wrap: normal;/);
   assert.match(styles, /\.token-keyword,[\s\S]*color: var\(--inkra-danger\)/);
   assert.match(styles, /\.token-string,[\s\S]*color: var\(--inkra-success-foreground\)/);

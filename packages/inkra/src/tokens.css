@@ -1,3 +1,16 @@
+:root {
+  /* Color scopes inherit the selected typeface and lettering material. */
+  --inkra-font-hand: "Inkra Xiaolai", "Trip Map Hand", "Kaiti SC", "STKaiti", cursive;
+  --inkra-font-body: var(--inkra-font-hand);
+  --inkra-font-display: var(--inkra-font-hand);
+  --inkra-font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --inkra-letter-variation: 0.1;
+  --inkra-letter-breaks: 0.31;
+  --inkra-letter-outline: 0.44;
+  --inkra-letter-fill: 0.85;
+  --inkra-letter-grain: 0.4;
+}
+
 :root,
 [data-theme="light"],
 [data-inkra-theme="light"],
@@ -98,11 +111,6 @@
   --inkra-overlay: rgb(24 35 28 / 20%);
   --inkra-shadow-overlay: 0 3px 12px rgb(24 35 28 / 20%);
 
-  --inkra-font-hand: "HanziPen SC", "Hannotate SC", "Kaiti SC", "STKaiti",
-    "Trip Map Hand", cursive;
-  --inkra-font-body: var(--inkra-font-hand);
-  --inkra-font-display: var(--inkra-font-hand);
-  --inkra-font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   --inkra-text-xs: 12px;
   --inkra-text-sm: 13px;
   --inkra-text-md: 15px;
@@ -194,11 +202,6 @@
   --inkra-quiet-wash-strength: 0.18;
   --inkra-badge-wash-strength: 0.25;
 
-  --inkra-letter-variation: 0.2;
-  --inkra-letter-breaks: 0.5;
-  --inkra-letter-outline: 0.9;
-  --inkra-letter-fill: 0.9;
-  --inkra-letter-grain: 0.6;
   --inkra-paper-tile-size: 384px;
   --inkra-render-dpr-cap: 2;
 }

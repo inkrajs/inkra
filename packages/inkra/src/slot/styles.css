@@ -64,7 +64,7 @@
 
 .inkra-slot__empty-mark {
   color: var(--inkra-ink-muted);
-  font-family: "Trip Map Hand", "HanziPen SC", "Hannotate SC", "Kaiti SC", "STKaiti", cursive;
+  font-family: var(--inkra-font-hand);
   font-size: calc(var(--inkra-slot-size) * 0.4);
   line-height: 1;
 }

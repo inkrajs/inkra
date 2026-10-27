@@ -496,7 +496,8 @@
     "README.md",
     "LICENSE",
     "THIRD_PARTY_NOTICES.md",
-    "Yozai-OFL.txt"
+    "Yozai-OFL.txt",
+    "Xiaolai-OFL.txt"
   ],
   "sideEffects": [
     "**/*.css"

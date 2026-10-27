@@ -26,7 +26,9 @@ test('Text tiers retain distinct luminance and readable paper pairings', () => {
       .map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4);
     return .2126 * r + .7152 * g + .0722 * b;
   };
-  for (const [dark, block] of [[false, tokens.split('}')[0]], [true, tokens.split('[data-inkra-theme="dark"] {')[1].split('}')[0]]]) {
+  const light = tokens.match(/\[data-inkra-theme="light"\][^{]*\{([^}]+)\}/)?.[1];
+  assert.ok(light, 'the explicit light theme has its own color declarations');
+  for (const [dark, block] of [[false, light], [true, tokens.split('[data-inkra-theme="dark"] {')[1].split('}')[0]]]) {
     const value = name => luminance(block.match(new RegExp(`--inkra-${name}: (#[a-f0-9]{6});`))[1]);
     const tiers = ['ink', 'ink-muted', 'ink-subtle'].map(value);
     assert.ok(dark ? tiers[0] > tiers[1] && tiers[1] > tiers[2] : tiers[0] < tiers[1] && tiers[1] < tiers[2]);

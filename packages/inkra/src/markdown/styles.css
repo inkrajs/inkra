@@ -232,7 +232,7 @@
 .inkra-markdown__code-surface {
   background: transparent;
   color: var(--inkra-ink);
-  font-family: "Trip Map Hand", var(--inkra-font-hand);
+  font-family: var(--inkra-font-hand);
   font-size: var(--inkra-text-md);
   font-weight: var(--inkra-weight-regular);
   line-height: 1.8;

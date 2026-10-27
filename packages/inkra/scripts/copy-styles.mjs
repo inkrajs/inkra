@@ -3,6 +3,9 @@ import { copyFile, mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
 await mkdir(new URL('../dist/assets', import.meta.url), { recursive: true });
 
 await Promise.all([
+  copyFile(new URL("../src/assets/ui-hand-xiaolai.woff2", import.meta.url), new URL("../dist/assets/ui-hand-xiaolai.woff2", import.meta.url)),
+  copyFile(new URL("../src/assets/ui-hand-xiaolai-extended.woff2", import.meta.url), new URL("../dist/assets/ui-hand-xiaolai-extended.woff2", import.meta.url)),
+  copyFile(new URL("../src/assets/xiaolai.css", import.meta.url), new URL("../dist/assets/xiaolai.css", import.meta.url)),
   copyFile(new URL('../src/tokens.css', import.meta.url), new URL('../dist/tokens.css', import.meta.url)),
   copyFile(
     new URL('../src/assets/ui-hand-yozai.woff2', import.meta.url),
@@ -11,7 +14,7 @@ await Promise.all([
 ]);
 
 const styles = await Promise.all([
-  'styles.css', 'form/styles.css', 'input-number/styles.css', 'slider/styles.css',
+  'styles.css', 'form/styles.css', 'input-number/styles.css', 'slider/styles.css', 'slider/circular.css',
   'selection/selection.css', 'overlay/styles.css', 'select/styles.css', 'tabs/styles.css',
   'guide/styles.css',
   'loading/styles.css', 'infinite-scroll/styles.css', 'masonry/styles.css',
@@ -48,6 +51,7 @@ const stylePaths = (await readdir(new URL('../src/', import.meta.url), { recursi
 for (const path of stylePaths) {
   const name = path.split('/')[0];
   const parts = [await readFile(new URL(`../src/${path}`, import.meta.url), 'utf8')];
+  if (name === 'slider') parts.push(await readFile(new URL('../src/slider/circular.css', import.meta.url), 'utf8'));
   if (name === 'image-viewer') parts.push(await readFile(new URL('../src/image-viewer/video.css', import.meta.url), 'utf8'));
   await writeFile(new URL(`../dist/styles/${name}.css`, import.meta.url), parts.join('\n'));
 }

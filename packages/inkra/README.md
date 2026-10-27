@@ -644,10 +644,28 @@ completed image, including its fills, exterior strokes and badge.
 
 ### Rendering tokens
 
+`ThemeProvider` accepts typography through `tokens`. Set
+`--inkra-font-hand`, `--inkra-font-body` and `--inkra-font-display` to CSS font
+stacks (load your chosen font separately). Set `--inkra-letter-effect: 0` to
+display plain selectable text in that font, without the pencil canvas.
+The default is 1 (enabled). This inherited toggle preserves all lettering
+parameters and does not affect icons, surface fills or borders.
+
+```tsx
+<ThemeProvider tokens={{
+  '--inkra-font-hand': '"Inkra Xiaolai", cursive',
+  '--inkra-font-body': '"Inkra Xiaolai", cursive',
+  '--inkra-font-display': '"Inkra Xiaolai", cursive',
+  '--inkra-letter-effect': 0,
+}}>
+  <Button>普通字体效果</Button>
+</ThemeProvider>
+```
+
 `PencilText` reads `--inkra-letter-variation`, `--inkra-letter-breaks`,
 `--inkra-letter-outline`, `--inkra-letter-fill`, and `--inkra-letter-grain` from
 its computed style. Values are clamped to 0-1; missing or invalid values use the
-default lettering preset (0.20, 0.50, 0.90, 0.90, 0.60 respectively). Apply these tokens to an ancestor to customize all
+default Xiaolai lettering preset (0.10, 0.31, 0.44, 0.85, 0.40 respectively, revised 2026-10-28). Apply these tokens to an ancestor to customize all
 text within that scope without changing layout, selectable text, or labels.
 
 `PencilLine` reads `--inkra-stroke-width` (0.3-3) and
@@ -672,7 +690,13 @@ unavailable-canvas fallbacks remain intact.
 
 ## Font license
 
-The package includes `Trip Map Hand`, a modified web subset of Yozai Light v0.868, under the SIL Open Font License 1.1. The font is not covered by Inkra's MIT software license. See `THIRD_PARTY_NOTICES.md` and `Yozai-OFL.txt` in the package.
+The default font is Xiaolai SC Regular v3.120, registered as `Inkra Xiaolai`.
+Common and extended characters are separate WOFF2 resources loaded through
+`unicode-range`. Override `--inkra-font-hand` to choose another font; the source
+text and canvas use the same computed family. The package also retains
+`Trip Map Hand`, a web subset of Yozai Light v0.868, for compatibility.
+Both fonts use SIL OFL 1.1, separately from Inkra's MIT software license.
+See `THIRD_PARTY_NOTICES.md`, `Xiaolai-OFL.txt` and `Yozai-OFL.txt`.
 
 ## Development
 
@@ -683,3 +707,25 @@ npm run pack:check
 ```
 
 `npm test` builds the package before running the SSR and determinism tests. `pack:check` prints the files that would be included without publishing anything.
+
+## Slider endpoints and circular dragging
+
+Slider and RangeSlider use `thumbAlignment="edge"` by default: the thumb center
+reaches either end of the track. Set `thumbAlignment="contain"` to keep the
+previous inset positioning. This setting is independent of the visual variant.
+
+`CircularSlider` is an optional single-value control exported from
+`@inkra/react` and `@inkra/react/slider`. It supports controlled and uncontrolled
+values, min/max/step, pointer and touch dragging, keyboard controls, disabled
+and read-only states, form submission/reset, and a configurable arc. Angles are
+measured clockwise from the top; `startAngle={0} sweepAngle={360}` draws a full
+ring. `clockwise` controls the value direction. Arrow Right/Up increase,
+Arrow Left/Down decrease, Home/End reach bounds and Page keys take larger steps.
+Give the control an accessible name and use `getValueLabel` for units.
+
+Use `centerIcon` for a decorative icon. The default center displays the value;
+set `showValue={false}` for an icon alone. `centerContent` accepts a React node
+or `(value: number) => ReactNode`, overriding the default value display when
+provided; `null` hides the text. Strings and numbers retain the pencil text
+appearance. Center content is inert and hidden from accessibility APIs;
+keep the slider's `aria-label` and `getValueLabel` meaningful independently.

@@ -25,7 +25,7 @@
 
 .inkra-number-ticker__native-value {
   font: inherit;
-  font-family: "Trip Map Hand", "HanziPen SC", "Hannotate SC", "Kaiti SC", "STKaiti", cursive;
+  font-family: var(--inkra-font-hand);
 }
 
 .inkra-number-ticker__reels {

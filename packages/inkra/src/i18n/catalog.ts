@@ -15,6 +15,8 @@ export const messageRows = [
   ['graph.nodeMoved', 'Moved selected node. New position, x: {x}, y: {y}', '已移动所选节点。新位置：x {x}，y {y}', '選択したノードを移動しました。新しい位置：x {x}、y {y}', '선택한 노드가 이동했습니다. 새 위치: x {x}, y {y}', 'Nœud sélectionné déplacé. Nouvelle position : x {x}, y {y}'],
   ['graph.edgeInstructions', 'Press enter or space to select an edge. You can then press delete to remove it or escape to cancel.', '按 Enter 或空格选择连线，按 Delete 删除，按 Escape 取消。', 'Enter または Space でエッジを選択し、Delete で削除、Escape でキャンセルします。', 'Enter 또는 Space로 연결선을 선택하고 Delete로 삭제하거나 Escape로 취소하세요.', 'Appuyez sur Entrée ou Espace pour sélectionner un lien, Suppr pour le supprimer ou Échap pour annuler.'],
   ['graph.handle', 'Handle', '连接点', '接続点', '연결점', 'Point de connexion'],
+  ['switch.on', 'On', '开', 'オン', '켜짐', 'Oui'],
+  ['switch.off', 'Off', '关', 'オフ', '꺼짐', 'Non'],
   ['common.close', 'Close', '关闭', '閉じる', '닫기', 'Fermer'],
   ['common.cancel', 'Cancel', '取消', 'キャンセル', '취소', 'Annuler'],
   ['common.save', 'Save', '保存', '保存', '저장', 'Enregistrer'],
