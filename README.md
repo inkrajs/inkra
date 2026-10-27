@@ -77,12 +77,12 @@ package and the main branch may contain different features.*
 
 ## Find Your Components
 
-The published **0.9.0** package includes these core components:
+The published **0.10.0** package includes these core components:
 
 | Use | Components |
 | --- | --- |
 | Actions | Button, ButtonLink, ButtonGroup |
-| Forms | Field, Input, InputNumber, Textarea, Select, Checkbox, RadioGroup, Switch, Slider |
+| Forms | Field, Input, InputNumber, Textarea, Select, Checkbox, RadioGroup, Switch, Slider, RangeSlider, CircularSlider |
 | Navigation | Tabs, Breadcrumb, DropdownMenu |
 | Content and feedback | Card, Table, Accordion, Avatar, Badge, Alert, Progress, Skeleton, Separator |
 | Overlays | Popover, Overlay, Tooltip |
@@ -125,6 +125,13 @@ compound API groups, a resizable shell and compact mobile search.
 Masonry, rolling NumberTicker values, and filled/color-configurable PencilIcon
 rendering. The documentation includes 47 simplified multicolor icon presets.
 The public package is verified with React 18 and 19.
+
+**New in 0.10.0:** CircularSlider, an optional circular Switch, endpoint-aligned
+linear slider thumbs, Xiaolai as the default font, a scoped lettering-effect
+toggle, improved grapheme rendering and softer action/selection washes.
+Set `thumbAlignment="contain"` to retain the previous inset slider geometry.
+The docs add 29 font choices, per-font settings, saved custom palettes and
+outline/filled/multicolor design comparisons.
 
 See [Releases](https://github.com/inkrajs/inkra/releases),
 the [changelog](./CHANGELOG.md) and

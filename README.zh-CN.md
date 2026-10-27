@@ -70,12 +70,12 @@ Inkra 提供 ESM、TypeScript 声明和 CSS，React 与 React DOM 作为 peer de
 
 ## 找到你需要的组件
 
-已发布的 **0.9.0** 包包含以下基础组件：
+已发布的 **0.10.0** 包包含以下基础组件：
 
 | 用途 | 组件 |
 | --- | --- |
 | 操作 | Button、ButtonLink、ButtonGroup |
-| 表单输入 | Field、Input、InputNumber、Textarea、Select、Checkbox、RadioGroup、Switch、Slider |
+| 表单输入 | Field、Input、InputNumber、Textarea、Select、Checkbox、RadioGroup、Switch、Slider、RangeSlider、CircularSlider |
 | 导航 | Tabs、Breadcrumb、DropdownMenu |
 | 内容与反馈 | Card、Table、Accordion、Avatar、Badge、Alert、Progress、Skeleton、Separator |
 | 弹层 | Popover、Overlay、Tooltip |
@@ -109,6 +109,11 @@ InputNumber 支持组合键步进与长按连续调整，并改进弹层动画�
 **0.9.0 新增：** Guide、全屏 Loading 布局、四向 InfiniteScroll、Masonry、
 NumberTicker 数字滚动，以及支持填充和自定义配色的 PencilIcon。
 文档包含 47 个简洁彩色图标预设。正式包已通过 React 18 和 19 的公开安装验证。
+
+**0.10.0 新增：** CircularSlider、Switch 可选圆环外观、直线滑块端点对齐，
+默认小赖字体、按作用域关闭文字彩铅效果、组合字符绘制改进，以及更柔和的操作与选中态铺色。
+设置 `thumbAlignment="contain"` 可保留原有端部留白。文档新增 29 款字体、各字体独立参数、
+自定义颜色记忆，以及图标描线、填充、彩色对照。
 
 详见[版本发布](https://github.com/inkrajs/inkra/releases)。
 完整范围与已知限制见[更新日志](./CHANGELOG.md)和[组件 API](./packages/inkra/README.md)。

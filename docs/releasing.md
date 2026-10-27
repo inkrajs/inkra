@@ -1,7 +1,7 @@
 # React Package Releases
 
 Repository: inkrajs/inkra. Package: @inkra/react. First release: 0.1.0.
-Version 0.9.0 is published and registry-verified. Future source versions remain
+Version 0.10.0 is published and registry-verified. Future source versions remain
 candidates until their own registry verification passes.
 Website deployment does not publish an npm package.
 
@@ -130,6 +130,30 @@ validated the trusted publisher through a successful OIDC publication.
 - Initial post-upload installation saw npm index propagation lag (ETARGET).
   Only failed verification jobs were rerun after registry availability; package
   validation, browser results and upload were retained, with no duplicate publish.
+
+## Version 0.10.0 Record
+
+- Source/tag: 7276448d5feaa0ded2a6d949262f271c584c33b0 / react-v0.10.0.
+- Release run: 40584353977, successful on 2026-10-28 (Asia/Shanghai).
+- Validation docs: 7115fec0e6ae784e22e319b31b8b1bbfe165acb2.
+- All 115 browser checks passed exactly once across four shards. Component
+  tests recorded 830 passes and six existing skips; React 18/19 installed-package
+  SSR/types and hydration checks passed.
+- OIDC publication, public archive comparison and clean React 18/19 registry
+  installations passed. The latest npm dist-tag points to 0.10.0; GitHub Release
+  creation followed successful registry verification.
+- Public archive SHA-256:
+  825248a09ebb90c75facd1da9cc0b0ac13c78ae43370714cdc2b4f9a3a79ac81.
+- Earlier run 40581292913 stopped before upload. Docs fixes preserved single-Escape
+  drawer dismissal by suppressing the Reset tooltip on automatic initial focus,
+  and updated stale font-gallery expectations to the current single-line cards
+  and localized preview headings. Exact text, font, pixel and focus checks remain.
+  The package tag and archive stayed unchanged.
+- Registry docs consumer: 75147251ed0aef67e5d1bc7fddd3f1373b67509f.
+- Website source: 1a8e15208c71bfdeec376bb891312edbc959925d.
+  Deployment run 40587570889 passed production assets/direct-route checks and
+  Pages publication. Live version.json reports the matching website/docs/library
+  revisions and registry package integrity.
 
 ## Pipeline
 
