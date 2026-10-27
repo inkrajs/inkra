@@ -358,8 +358,8 @@ test('Surface washes preserve pencil geometry with readability-adjusted theme st
   );
 
   assert.deepEqual(PENCIL_ACTION_WASH, {
-    lightStrength: 0.2,
-    darkStrength: 0.12,
+    lightStrength: 0.15,
+    darkStrength: 0.09,
   });
   assert.deepEqual(PENCIL_QUIET_WASH, {
     lightStrength: 0.12,
@@ -371,8 +371,8 @@ test('Surface washes preserve pencil geometry with readability-adjusted theme st
   }
   assert.deepEqual(PENCIL_SELECTION_WASH, {
     angle: -45,
-    lightStrength: 0.2,
-    darkStrength: 0.12,
+    lightStrength: 0.15,
+    darkStrength: 0.09,
     spacing: 2,
     roughness: 3,
     inset: 2,
@@ -532,8 +532,8 @@ test('Built styles and font assets expose the real pencil enhancement', () => {
   assert.match(buttonImplementation, /onAuxClick: handleAuxClick/);
   assert.doesNotMatch(buttonImplementation, /role: "button"/);
   assert.match(surfaceImplementation, /danger: \{ radius: 7, width: 0\.75, passes: 2, strength: 0\.18 \}/);
-  assert.match(surfaceImplementation, /lightStrength: 0\.2/);
-  assert.match(surfaceImplementation, /darkStrength: 0\.12/);
+  assert.match(surfaceImplementation, /lightStrength: 0\.15/);
+  assert.match(surfaceImplementation, /darkStrength: 0\.09/);
   assert.ok(existsSync(new URL('../dist/assets/ui-hand-yozai.woff2', import.meta.url)));
   assert.ok(existsSync(new URL('../Yozai-OFL.txt', import.meta.url)));
 });

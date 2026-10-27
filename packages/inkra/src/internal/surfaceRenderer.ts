@@ -40,8 +40,8 @@ interface SurfaceStyle {
 }
 
 export const PENCIL_ACTION_WASH = Object.freeze({
-  lightStrength: 0.2,
-  darkStrength: 0.12,
+  lightStrength: 0.15,
+  darkStrength: 0.09,
 });
 
 export const PENCIL_QUIET_WASH = Object.freeze({
