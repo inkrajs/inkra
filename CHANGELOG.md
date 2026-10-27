@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.10.0 - 2026-10-28
+
+- Add CircularSlider with configurable full rings or open arcs, pointer/touch
+  dragging, keyboard and form support, and icon/text center content.
+- Add the optional circular Switch appearance with a persistent quiet track,
+  animated colored arc, configurable center content and reduced-motion support.
+- Align Slider and RangeSlider thumb centers with track endpoints by default;
+  set `thumbAlignment="contain"` to retain the previous inset positioning.
+- Use Xiaolai SC as the default handwriting font, with revised lettering
+  presets and unicode-range font resources. The package now includes about
+  11.9 MB of Xiaolai WOFF2 assets; browsers load character ranges as needed.
+  Custom font tokens and the existing Yozai fallback remain available.
+- Add `--inkra-letter-effect: 0` to disable decorative lettering while keeping
+  the selected font and selectable DOM text. Preserve font/material overrides
+  across nested color themes and render combining characters as grapheme units.
+- Soften action and selection washes by 25%, preserving theme colors and
+  user-configured rendering parameters.
+- Expand the companion documentation with multilingual font previews,
+  per-font presets, saved custom palettes, circular theme controls and
+  outline/filled/multicolor design comparisons.
+
+Release candidate. Publication is confirmed only after registry archive and
+clean React 18/19 installation verification.
+
 ## 0.9.0 - 2026-10-27
 
 - Add PencilIcon filled rendering, custom fill colors and authored multicolor
