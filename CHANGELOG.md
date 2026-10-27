@@ -21,8 +21,11 @@
   per-font presets, saved custom palettes, circular theme controls and
   outline/filled/multicolor design comparisons.
 
-Release candidate. Publication is confirmed only after registry archive and
-clean React 18/19 installation verification.
+Published as `@inkra/react@0.10.0` with the `latest` npm dist-tag and the
+`react-v0.10.0` GitHub Release, from commit
+`7276448d5feaa0ded2a6d949262f271c584c33b0`.
+The public archive matches the approved candidate; clean registry installations
+passed with React 18 and 19. All 115 browser checks passed. Release run: `40584353977`.
 
 ## 0.9.0 - 2026-10-27
 
