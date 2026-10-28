@@ -28,8 +28,12 @@ import { ExactDecimal } from './precision.js';
 import { RollingValue } from './RollingValue.js';
 import { createRollingMotion, rollingTokens, sameRollingTokens } from './rolling.js';
 import type { RollingFrame, RollingMotionColumn } from './rolling.js';
+import { MorphValue } from './MorphValue.js';
+import { morphTokenMapping } from './morph.js';
+import { createMorphMotion, measureMorphWidths } from './morph-motion.js';
+import type { MorphFrame, MorphMotion } from './morph-motion.js';
 
-export type NumberTickerAnimation = 'count' | 'roll';
+export type NumberTickerAnimation = 'count' | 'roll' | 'morph';
 export type NumberTickerRollDirection = 'auto' | 'up' | 'down';
 
 export interface NumberTickerRenderDetails {
@@ -125,6 +129,8 @@ export const NumberTicker = forwardRef<HTMLSpanElement, NumberTickerProps>(funct
   const [roll, setRoll] = useState<{ columns: RollingMotionColumn[]; direction: 'up' | 'down' } | null>(null);
   const [rollProgress, setRollProgress] = useState(1);
   const rollFrameRef = useRef<RollingFrame | null>(null);
+  const [morph, setMorph] = useState<MorphMotion | null>(null);
+  const morphFrameRef = useRef<MorphFrame | null>(null);
   const reducedMotion = usePrefersReducedMotion();
   const localeKey = Array.isArray(locale) ? locale.join('\u0000') : locale;
   const formatOptionsKey = JSON.stringify(formatOptions ?? {});
@@ -144,12 +150,18 @@ export const NumberTicker = forwardRef<HTMLSpanElement, NumberTickerProps>(funct
   );
   useImperativeHandle(forwardedRef, () => rootRef.current as HTMLSpanElement);
   const rollRequested = animation === 'roll' && !renderValue;
-  const finalTokens = useMemo(() => rollRequested ? rollingTokens(formatter.formatToParts(value)) : [], [formatter, value, rollRequested]);
+  const morphRequested = animation === 'morph' && !renderValue;
+  const finalParts = useMemo(() => rollRequested || morphRequested ? formatter.formatToParts(value) : [], [formatter, value, rollRequested, morphRequested]);
+  const finalTokens = useMemo(() => rollingTokens(finalParts), [finalParts]);
   // Keep exact large values readable without creating thousands of painted reels.
   const useRoll = rollRequested && finalTokens.length <= 128;
+  const useMorph = morphRequested && finalTokens.length <= 128;
+  const useTokens = useRoll || useMorph;
   const settledTokensRef = useRef(finalTokens);
+  const morphPartsRef = useRef(finalParts);
   const previousFormatterRef = useRef(formatter);
   const previousUseRollRef = useRef(useRoll);
+  const previousAnimationRef = useRef(animation);
   const columns = useMemo(() => roll?.columns ?? createRollingMotion(finalTokens, finalTokens, 'up'), [roll, finalTokens]);
 
   useBrowserLayoutEffect(() => {
@@ -182,12 +194,13 @@ export const NumberTicker = forwardRef<HTMLSpanElement, NumberTickerProps>(funct
     const from = displayedRef.current;
     const formatChanged = previousFormatterRef.current !== formatter;
     previousFormatterRef.current = formatter;
-    const modeChanged = previousUseRollRef.current !== useRoll;
+    const modeChanged = previousUseRollRef.current !== useRoll || previousAnimationRef.current !== animation;
     previousUseRollRef.current = useRoll;
+    previousAnimationRef.current = animation;
     if (!animate || reduceImmediately || formatChanged || modeChanged
-      || (useRoll && !rollFrameRef.current && sameRollingTokens(settledTokensRef.current, finalTokens))
-      || (rollRequested && (!useRoll || settledTokensRef.current.length > 128))
-      || !canAnimateTickerValue(from, value, duration)) {
+      || (useTokens && !rollFrameRef.current && (!morphFrameRef.current || morphFrameRef.current.progress >= 1) && sameRollingTokens(settledTokensRef.current, finalTokens))
+      || ((rollRequested || morphRequested) && (!useTokens || settledTokensRef.current.length > 128))
+      || (!canAnimateTickerValue(from, value, duration) && !(useMorph && canAnimateTickerValue(previousTarget, value, duration)))) {
       displayedRef.current = value;
       setDisplayedValue(value);
       setAnnouncedValue(value);
@@ -196,10 +209,35 @@ export const NumberTicker = forwardRef<HTMLSpanElement, NumberTickerProps>(funct
       setRollProgress(1);
       settledTokensRef.current = finalTokens;
       rollFrameRef.current = null;
+      setMorph(null);
+      morphFrameRef.current = null;
+      morphPartsRef.current = finalParts;
       return undefined;
     }
 
-    if (useRoll) {
+    if (useMorph) {
+      const direction = rollDirection === 'auto'
+        ? (new ExactDecimal(String(value)).gt(String(previousTarget)) ? 'up' : 'down') : rollDirection;
+      const previousTokens = morphFrameRef.current?.motion.tokens ?? settledTokensRef.current;
+      const zeroPart = formatter.formatToParts(0).find(part => part.type === 'integer')?.value ?? '0';
+      const zero = Array.from(zeroPart).slice(-1)[0] ?? '0';
+      const mapping = morphTokenMapping(morphPartsRef.current, finalParts, previousTarget, value, zero);
+      const motion = createMorphMotion(previousTokens, finalTokens, mapping, direction,
+        measureMorphWidths(rootRef.current, [...previousTokens, ...finalTokens]), morphFrameRef.current ?? undefined);
+      // Bound interrupted layers as well as formatted target token counts.
+      if (motion.glyphs.length > 512) {
+        displayedRef.current = value; setDisplayedValue(value); setAnnouncedValue(value); setAnimating(false);
+        setMorph(null); morphFrameRef.current = null; morphPartsRef.current = finalParts;
+        settledTokensRef.current = finalTokens; setRoll(null); rollFrameRef.current = null; setRollProgress(1);
+        return undefined;
+      }
+      setMorph(motion);
+      morphFrameRef.current = { motion, progress: 0 };
+      morphPartsRef.current = finalParts;
+      setRoll(null); rollFrameRef.current = null;
+      setRollProgress(0);
+    } else if (useRoll) {
+      setMorph(null); morphFrameRef.current = null;
       const direction = rollDirection === 'auto'
         ? (new ExactDecimal(String(value)).gt(String(from)) ? 'up' : 'down') : rollDirection;
       const nextColumns = createRollingMotion(settledTokensRef.current, finalTokens, direction, rollFrameRef.current ?? undefined);
@@ -209,6 +247,7 @@ export const NumberTicker = forwardRef<HTMLSpanElement, NumberTickerProps>(funct
     } else {
       setRoll(null);
       rollFrameRef.current = null;
+      setMorph(null); morphFrameRef.current = null;
     }
     let startTime: number | null = null;
     setAnimating(true);
@@ -219,9 +258,10 @@ export const NumberTicker = forwardRef<HTMLSpanElement, NumberTickerProps>(funct
       const bounded = Number.isFinite(eased) ? Math.min(1, Math.max(0, eased)) : progress;
       const next = interpolateTickerValue(from, value, bounded);
       displayedRef.current = next;
-      if (useRoll) {
+      if (useTokens) {
         setRollProgress(bounded);
         if (rollFrameRef.current) rollFrameRef.current.progress = bounded;
+        if (morphFrameRef.current) morphFrameRef.current.progress = bounded;
       } else setDisplayedValue(next);
       if (progress < 1) {
         frameRef.current = requestAnimationFrame(tick);
@@ -235,6 +275,7 @@ export const NumberTicker = forwardRef<HTMLSpanElement, NumberTickerProps>(funct
         setRollProgress(1);
         settledTokensRef.current = finalTokens;
         rollFrameRef.current = null;
+        if (morphFrameRef.current) morphFrameRef.current.progress = 1;
       }
     };
     frameRef.current = requestAnimationFrame(tick);
@@ -245,7 +286,7 @@ export const NumberTicker = forwardRef<HTMLSpanElement, NumberTickerProps>(funct
         frameRef.current = null;
       }
     };
-  }, [animate, deltaDuration, duration, easing, reducedMotion, showDelta, value, useRoll, rollRequested, rollDirection, formatter]);
+  }, [animate, deltaDuration, duration, easing, reducedMotion, showDelta, value, useRoll, useMorph, useTokens, rollRequested, morphRequested, rollDirection, formatter, animation]);
 
   useEffect(() => () => {
     if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
@@ -259,7 +300,8 @@ export const NumberTicker = forwardRef<HTMLSpanElement, NumberTickerProps>(funct
     .filter(Boolean).join(' ');
   const accessibleLabel = getValueLabel?.(announcedValue, announcedFormattedValue) ?? defaultAccessibleLabel;
   const valueContent = renderValue?.(displayedValue, { animating, formattedValue })
-    ?? (useRoll ? <RollingValue columns={columns} progress={roll ? rollProgress : 1} direction={roll?.direction ?? 'up'} /> : animating
+    ?? (useMorph ? <MorphValue tokens={finalTokens} motion={morph} progress={morph ? rollProgress : 1} />
+      : useRoll ? <RollingValue columns={columns} progress={roll ? rollProgress : 1} direction={roll?.direction ?? 'up'} /> : animating
       ? <span className="inkra-number-ticker__native-value">{formattedValue}</span>
       : <PencilText seed={`number-ticker-${finalFormattedValue}`}>{finalFormattedValue}</PencilText>);
   const deltaContent = delta === null ? null : (() => {

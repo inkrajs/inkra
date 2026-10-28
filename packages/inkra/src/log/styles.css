@@ -13,8 +13,6 @@
 }
 
 .inkra-log[data-toolbar="true"] { grid-template-rows: auto minmax(var(--inkra-touch-target), 1fr); }
-.inkra-log:has(> .inkra-log__latest) { grid-template-rows: minmax(var(--inkra-touch-target), 1fr) auto; }
-.inkra-log[data-toolbar="true"]:has(> .inkra-log__latest) { grid-template-rows: auto minmax(var(--inkra-touch-target), 1fr) auto; }
 
 .inkra-log__toolbar {
   align-items: center;
@@ -158,21 +156,15 @@
 }
 
 .inkra-log__latest {
-  align-items: center;
   display: flex;
-  justify-content: flex-end;
-  max-inline-size: 100%;
-  min-inline-size: 0;
-  padding: var(--inkra-space-2) var(--inkra-space-3);
-  position: relative;
+  inset-block-end: clamp(0px, calc(100% - var(--inkra-touch-target)), var(--inkra-space-2));
+  inset-inline-end: var(--inkra-space-3);
+  position: absolute;
   z-index: 2;
 }
 
-.inkra-log__latest-divider {
-  color: var(--inkra-border);
-  inset-block-start: -4px;
-  inset-inline: 0;
-  position: absolute;
+.inkra-log__latest .inkra-button__surface {
+  background: var(--inkra-paper);
 }
 
 @container (max-width: 36rem) {
@@ -188,11 +180,6 @@
   .inkra-log__follow-control .inkra-button__content,
   .inkra-log__follow-control .inkra-button__label,
   .inkra-log__follow-control .inkra-pencil-text__source { min-inline-size: 0; white-space: normal; overflow-wrap: anywhere; }
-  .inkra-log__latest .inkra-button { inline-size: 100%; }
-  .inkra-log__latest .inkra-button__surface { height: auto; inline-size: 100%; max-inline-size: 100%; min-height: var(--inkra-button-visual-height); padding-block: var(--inkra-space-2); }
-  .inkra-log__latest .inkra-button__content,
-  .inkra-log__latest .inkra-button__label,
-  .inkra-log__latest .inkra-pencil-text__source { min-inline-size: 0; white-space: normal; overflow-wrap: anywhere; }
 }
 
 @media (forced-colors: active) {

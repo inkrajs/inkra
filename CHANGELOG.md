@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- Replace Log's full-width latest footer with a floating icon button in the
+  viewport's bottom end corner, retaining localized labels and keyboard access.
+
+- Add `NumberTicker`'s optional `animation="morph"`: compatible decimal shifts
+  retain full-width pencil glyphs, move the decimal point, and reveal entering
+  zeros with simultaneous translation and fading inside a clipped viewport.
+  Ordinary changes retain place-aligned rolling; `count` and `roll` stay available.
+- Add documentation mode switching and reversible decimal-shift examples.
+
 ## 0.10.0 - 2026-10-28
 
 - Add CircularSlider with configurable full rings or open arcs, pointer/touch

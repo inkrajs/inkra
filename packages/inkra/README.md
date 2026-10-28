@@ -487,14 +487,35 @@ shrinking values and sign changes expand or collapse the affected columns.
 Grouping, signs, currency and compact units remain formatted text, not digit
 reels. `rollDirection="auto"` rolls up for increasing values and down for
 decreasing values; `up` or `down` fixes the direction. `duration` and `easing`
-apply to both modes. The default `animation="count"` retains value interpolation.
+apply to all modes. The default `animation="count"` retains value interpolation.
 `renderValue` takes precedence over the built-in reels. Changing the formatting
 or animation mode settles immediately, as do disabled/reduced motion, invalid
 durations, and transitions with more than 128 formatted tokens. Exact strings
-and bigint values retain their original precision in either mode.
+and bigint values retain their original precision in every mode.
 
 ```tsx
 <NumberTicker value={amount} animation="roll" rollDirection="auto" duration={650} />
+```
+
+Use `animation="morph"` to preserve digit identities during exact nonzero,
+same-sign multiplication or division by a power of ten. For example, `1 → 100`
+moves the existing `1` left and reveals `00` from the right; `12.34 → 123.4`
+preserves all four digits while the decimal moves. The displayed significand and
+decimal shift must agree with the exact values after formatting. Other changes,
+including carries, sign changes, unit changes and exponent notation, use
+place-aligned vertical rolling. This mode does not search for arbitrary matching
+digits or reorder repeated glyphs.
+
+Glyph widths stay fixed: motion uses position, clipping and a smooth opacity
+fade rather than stretching text. Rapid updates continue from visible positions
+and opacity. Keep the caller's container right-aligned to hold the numeric right
+edge fixed as its width changes, and allow enough space for the formatted value;
+the animation is clipped within its number area. The default duration is 420ms.
+
+```tsx
+<div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+  <NumberTicker value={amount} animation="morph" duration={420} />
+</div>
 ```
 
 Set `compact` to follow `locale` (Chinese units for `zh`, English units otherwise),
@@ -570,7 +591,10 @@ technology; decorative affixes are not announced twice.
 
 `Log` renders caller-ordered records with stable ids, optional level filters and
 pause/follow controls. It follows only append updates while the viewport remains
-near the bottom. The named scroll region supports Home/End and intentionally is
+near the bottom. When scrolled away or paused, a localized icon button floats
+at the viewport's bottom end corner without adding a footer row. Clicking it
+returns focus to the scroll region and resumes following or jumps to the latest
+record. The named scroll region supports Home/End and intentionally is
 not a live region, so a long stream is not repeatedly announced. Log does not
 provide persistence, virtualization or transport.
 
