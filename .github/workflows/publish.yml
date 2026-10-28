@@ -117,7 +117,7 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: package-lock.json
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: npm-candidate
           path: .release
@@ -147,7 +147,7 @@ jobs:
         with:
           node-version: 24
           package-manager-cache: false
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: npm-candidate
           path: .release
@@ -243,10 +243,10 @@ jobs:
           repository: inkrajs/docs
           ref: ${{ env.DOCS_REF }}
           persist-credentials: false
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: release-docs-input
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: release-browser-plan
           path: .ci-plan
@@ -313,11 +313,11 @@ jobs:
         with:
           node-version: 24
           package-manager-cache: false
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: release-browser-plan
           path: .ci-plan
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: npm-candidate
           path: .release
@@ -325,7 +325,7 @@ jobs:
         shell: bash
         run: |
           node -e 'const fs=require("fs");const sha=JSON.parse(fs.readFileSync(".release/manifest.json")).sha256;if(!/^[0-9a-f]{64}$/.test(sha))throw Error("Invalid candidate digest");fs.appendFileSync(process.env.GITHUB_ENV,"EXPECTED_CANDIDATE_SHA256="+sha+"\n")'
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         if: needs.docs-build.outputs.browser_selected_count != '0'
         with:
           pattern: release-browser-report-*
@@ -359,7 +359,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
           package-manager-cache: false
       - run: npm install --global npm@11.21.0 --ignore-scripts
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: npm-candidate
           path: .release
@@ -395,7 +395,7 @@ jobs:
           node-version: 24
           package-manager-cache: false
       - run: npm install --global npm@11.21.0 --ignore-scripts
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: npm-candidate
           path: .release
@@ -421,7 +421,7 @@ jobs:
         with:
           node-version: 24
           package-manager-cache: false
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: npm-candidate
           path: .release
