@@ -13,9 +13,20 @@ on:
         description: Exact inkrajs/docs commit used to test this candidate
         required: true
         type: string
+      local_validation_pr:
+        description: Optional inkrajs/docs PR containing a local-test declaration for docs_ref (otherwise discover its PR)
+        required: false
+        type: string
+        default: ''
+      component_validation_pr:
+        description: Optional inkrajs/inkra PR containing local component-test declarations for the selected release source
+        required: false
+        type: string
+        default: ''
 
 permissions:
   contents: read
+  pull-requests: read
 
 concurrency:
   group: npm-release
@@ -48,13 +59,38 @@ jobs:
         id: source
         run: node scripts/release.mjs source
       - run: npm ci --ignore-scripts
+      - name: Resolve trusted component local-test declaration
+        id: component-local
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          TARGET_SHA: ${{ github.sha }}
+          PR_NUMBER: ${{ inputs.component_validation_pr }}
+          OUTPUT_PATH: .release/component-local-validation.json
+        run: node scripts/resolve-pr-local-validation.mjs
       - run: npm run check
+        if: steps.component-local.outputs.accepted != 'true'
+      - name: Required contracts and locally confirmed component inventory
+        if: steps.component-local.outputs.accepted == 'true'
+        env:
+          REACT_VERSION: 19.3.1
+        run: |
+          npm run check:contracts
+          LOCAL_VALIDATION_REPORT=.release/component-local-validation.json node scripts/component-local-validation.mjs
       - name: Verify the same archive with React 18
         run: npm run check:installed
         env:
           REACT_VERSION: 18.3.1
       - name: Verify candidate identity
         run: node scripts/release.mjs candidate
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: release-component-local-validation
+          path: .release/component-local-validation*.json
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: npm-candidate
@@ -97,6 +133,11 @@ jobs:
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      browser_matrix: ${{ steps.browser-plan.outputs.matrix }}
+      browser_shard_count: ${{ steps.browser-plan.outputs.shard_count }}
+      browser_selected_count: ${{ steps.browser-plan.outputs.selected_count }}
+      browser_plan_digest: ${{ steps.browser-plan.outputs.plan_digest }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -123,8 +164,9 @@ jobs:
         run: |
           test -f scripts/check-browser-reports.mjs
           test -f scripts/run-browser-ci.sh
+          test -f scripts/browser-local-validation.mjs
           test -f scripts/test/icon-edge-baseline.test.mjs
-          node --test scripts/test/browser-report.test.mjs scripts/test/browser-incremental-workflow.test.mjs scripts/test/icon-edge-baseline.test.mjs
+          node --test scripts/test/browser-report.test.mjs scripts/test/browser-incremental-workflow.test.mjs scripts/test/icon-edge-baseline.test.mjs scripts/test/browser-local-validation.test.mjs
           BROWSER_SHARD=1/4 BROWSER_INCLUDE_HOMEPAGE=true node scripts/browser-smoke.mjs --list
       - name: Prepare this exact archive in the docs consumer
         run: npm run prepare:library -- .. --lockfile-only
@@ -138,6 +180,34 @@ jobs:
         working-directory: .consumer
       - run: npm run build
         working-directory: .consumer
+      - name: Bind local confirmations to the verified release archive
+        shell: bash
+        run: |
+          node -e 'const fs=require("fs");const sha=JSON.parse(fs.readFileSync(".release/manifest.json")).sha256;if(!/^[0-9a-f]{64}$/.test(sha))throw Error("Invalid candidate digest");fs.appendFileSync(process.env.GITHUB_ENV,"EXPECTED_CANDIDATE_SHA256="+sha+"\n")'
+      - name: Resolve trusted docs local-test declaration
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: inkrajs/docs
+          TARGET_SHA: ${{ env.DOCS_REF }}
+          PR_NUMBER: ${{ inputs.local_validation_pr }}
+          OUTPUT_PATH: .consumer/.ci-plan/local-validation.json
+        run: node scripts/resolve-pr-local-validation.mjs
+      - name: Plan release browser coverage and apply exact local confirmations
+        id: browser-plan
+        working-directory: .consumer
+        env:
+          BROWSER_INCLUDE_HOMEPAGE: 'true'
+        shell: bash
+        run: |
+          base="$(node -e 'const r=require("./.ci-plan/local-validation.json");console.log(r.base || process.env.DOCS_REF)')"
+          node scripts/select-browser-checks.mjs --event release --base "$base" --tested "$DOCS_REF" --output .ci-plan/browser-selection.json
+          node scripts/browser-local-validation.mjs --plan .ci-plan/browser-selection.json --attestation .ci-plan/local-validation.json --environment chromium-playwright1.64.1-react19.3.1 --candidate library-candidate.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-browser-plan
+          path: .consumer/.ci-plan/*.json
+          include-hidden-files: true
+          if-no-files-found: error
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-docs-input
@@ -157,6 +227,7 @@ jobs:
 
   browser:
     needs: docs-build
+    if: needs.docs-build.outputs.browser_selected_count != '0'
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea
@@ -165,7 +236,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        shard: ${{ fromJSON(needs.docs-build.outputs.browser_matrix) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -175,6 +246,10 @@ jobs:
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: release-docs-input
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: release-browser-plan
+          path: .ci-plan
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: 24
@@ -195,7 +270,10 @@ jobs:
       - name: Validate installed-package browser interactions
         run: bash scripts/run-browser-ci.sh
         env:
-          BROWSER_SHARD: ${{ matrix.shard }}/4
+          BROWSER_SHARD: ${{ matrix.shard }}/${{ needs.docs-build.outputs.browser_shard_count }}
+          BROWSER_SELECTION_PLAN: .ci-plan/browser-selection.json
+          EXPECTED_BROWSER_PLAN_DIGEST: ${{ needs.docs-build.outputs.browser_plan_digest }}
+          EXPECTED_TESTED_REVISION: ${{ env.DOCS_REF }}
           BROWSER_INCLUDE_HOMEPAGE: 'true'
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
@@ -219,7 +297,13 @@ jobs:
           HYDRATION_RESULT: ${{ needs.hydration.result }}
           BUILD_RESULT: ${{ needs.docs-build.result }}
           BROWSER_RESULT: ${{ needs.browser.result }}
-        run: test "$PACKAGE_RESULT" = success && test "$HYDRATION_RESULT" = success && test "$BUILD_RESULT" = success && test "$BROWSER_RESULT" = success
+          SELECTED_COUNT: ${{ needs.docs-build.outputs.browser_selected_count }}
+        shell: bash
+        run: |
+          test "$PACKAGE_RESULT" = success
+          test "$HYDRATION_RESULT" = success
+          test "$BUILD_RESULT" = success
+          [[ "$BROWSER_RESULT" = success || ( "$SELECTED_COUNT" = 0 && "$BROWSER_RESULT" = skipped ) ]]
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: inkrajs/docs
@@ -231,12 +315,28 @@ jobs:
           package-manager-cache: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
+          name: release-browser-plan
+          path: .ci-plan
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: npm-candidate
+          path: .release
+      - name: Bind coverage gate to the verified candidate digest
+        shell: bash
+        run: |
+          node -e 'const fs=require("fs");const sha=JSON.parse(fs.readFileSync(".release/manifest.json")).sha256;if(!/^[0-9a-f]{64}$/.test(sha))throw Error("Invalid candidate digest");fs.appendFileSync(process.env.GITHUB_ENV,"EXPECTED_CANDIDATE_SHA256="+sha+"\n")'
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        if: needs.docs-build.outputs.browser_selected_count != '0'
+        with:
           pattern: release-browser-report-*
           path: .ci-results
           merge-multiple: true
       - name: Require complete browser coverage
-        run: node scripts/check-browser-reports.mjs .ci-results 4
+        run: node scripts/check-browser-reports.mjs .ci-results .ci-plan/browser-selection.json
         env:
+          BROWSER_JOB_RESULT: ${{ needs.browser.result }}
+          EXPECTED_BROWSER_PLAN_DIGEST: ${{ needs.docs-build.outputs.browser_plan_digest }}
+          EXPECTED_TESTED_REVISION: ${{ env.DOCS_REF }}
           BROWSER_INCLUDE_HOMEPAGE: 'true'
 
   publish:

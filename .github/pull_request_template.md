@@ -13,3 +13,8 @@ What changed and why? Link the related issue when available.
 ## Evidence / 证据
 
 Add relevant screenshots and commands. Distinguish automated checks from manual or device acceptance.
+
+Authorized maintainers may add an exact-commit `ci-local-validation` JSON
+declaration following [the local-test confirmation guide](https://github.com/inkrajs/inkra/blob/main/docs/releasing.md#explicit-local-test-confirmations).
+Include the tested environment, report URL and reason. Omit the declaration when
+online tests should run normally.

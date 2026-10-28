@@ -1,0 +1,981 @@
+{
+  "schemaVersion": 1,
+  "allowed_users": [
+    {
+      "id": 51358815,
+      "login": "NWYLZW"
+    }
+  ],
+  "allowed_groups": {
+    "component:accordion-refinement": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:accordion": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:agenda-layout-performance": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:alert-dialog-refinement": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:audio-player-refinement": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:audio-player": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:bounded-output-runtime": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:breadcrumb": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:carousel-performance": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:carousel-refinement": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:carousel": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:choice-grid-refinement": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:choice-grid": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:circular-slider-math": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:circular-slider": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:circular-switch": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:collection-memoization-edges-runtime": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:collection-selection-subtrees-runtime": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:collection-updates-runtime": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:collection-updates-ssr": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:collection-wrappers-runtime": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:color-gradient": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:color-picker-refinement": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:color-picker": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:color-swatch": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:command-refinement": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:component-memoization": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:components": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:content": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:context-menu": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:data-table-model-contract": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:data-table-refinement": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:display": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:dockable-panel": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:dockable-performance": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:editable": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:expansion-data": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:expansion-dates": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:expansion-exports": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:expansion-feedback": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:expansion-flows": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:expansion-navigation": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:expansion-overlays": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:flip": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:form-control-performance": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:form": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:grid": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:guide": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:heatmap": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:hotkey": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:hover-card": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:i18n": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:icon-fill": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:icon-lifecycle": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:icon-stroke-controls": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:image-cropper": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:image-viewer": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:infinite-scroll": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:input-number-model": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:input-number": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:input": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:inventory-grid": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:inventory-outline": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:keypad": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:layout-swipe": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:layout-types": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:layout": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:library-motion": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:loading-source": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:loading": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:log-refinement": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:log": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:markdown": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:masonry": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:media-performance": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:media-surface-integration": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:menu-refinement": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:node-graph": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:number-ticker-morph": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:number-ticker-rolling": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:number-ticker": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:overflow-list": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:overlay-performance": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:overlay": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:package-boundaries": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:paged-collections-runtime": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:pagination-options": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:pagination-refinement": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:pan-zoom": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:pencil-helper-performance": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:pencil-text": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:picker-shared-control": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:progress-ring-performance": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:property-extensions": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:radar": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:range-slider": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:rating-refinement": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:rating": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:render-defaults": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:render-performance": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:render-tokens": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:resizable": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:scroll-area": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:search-select-refinement": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:segmented-progress": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:select-stepper-audit": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:select-stepper": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:select": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:selection-refinement": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:selection": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:slider-refinement": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:slider": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:slot": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:sortable": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:sparkline": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:surface-budget": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:surface-visibility": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:tabs-refinement": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:tabs": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:tag-input": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:text-performance": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:text-raster": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:textarea-counter": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:textarea-sizing": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:theme": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:toast": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:tooltip": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:transfer": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:travel": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:tree-refinement": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:tree-select-refinement": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:tree-select": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:tree-timeline-regression": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:typewriter": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:upload-refinement": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:video-resource": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "component:virtual-list": [
+      "node22-react18.3.1",
+      "node24-react19.3.1"
+    ],
+    "browser:log": [
+      "chromium-playwright1.64.1-react19.3.1"
+    ],
+    "browser:number-ticker": [
+      "chromium-playwright1.64.1-react19.3.1"
+    ]
+  },
+  "component_groups": {
+    "component:accordion-refinement": [
+      "packages/inkra/test/accordion-refinement.test.mjs"
+    ],
+    "component:accordion": [
+      "packages/inkra/test/accordion.test.mjs"
+    ],
+    "component:agenda-layout-performance": [
+      "packages/inkra/test/agenda-layout-performance.test.mjs"
+    ],
+    "component:alert-dialog-refinement": [
+      "packages/inkra/test/alert-dialog-refinement.test.mjs"
+    ],
+    "component:audio-player-refinement": [
+      "packages/inkra/test/audio-player-refinement.test.mjs"
+    ],
+    "component:audio-player": [
+      "packages/inkra/test/audio-player.test.mjs"
+    ],
+    "component:bounded-output-runtime": [
+      "packages/inkra/test/bounded-output-runtime.test.mjs"
+    ],
+    "component:breadcrumb": [
+      "packages/inkra/test/breadcrumb.test.mjs"
+    ],
+    "component:carousel-performance": [
+      "packages/inkra/test/carousel-performance.test.mjs"
+    ],
+    "component:carousel-refinement": [
+      "packages/inkra/test/carousel-refinement.test.mjs"
+    ],
+    "component:carousel": [
+      "packages/inkra/test/carousel.test.mjs"
+    ],
+    "component:choice-grid-refinement": [
+      "packages/inkra/test/choice-grid-refinement.test.mjs"
+    ],
+    "component:choice-grid": [
+      "packages/inkra/test/choice-grid.test.mjs"
+    ],
+    "component:circular-slider-math": [
+      "packages/inkra/test/circular-slider-math.test.mjs"
+    ],
+    "component:circular-slider": [
+      "packages/inkra/test/circular-slider.test.mjs"
+    ],
+    "component:circular-switch": [
+      "packages/inkra/test/circular-switch.test.mjs"
+    ],
+    "component:collection-memoization-edges-runtime": [
+      "packages/inkra/test/collection-memoization-edges-runtime.test.mjs"
+    ],
+    "component:collection-selection-subtrees-runtime": [
+      "packages/inkra/test/collection-selection-subtrees-runtime.test.mjs"
+    ],
+    "component:collection-updates-runtime": [
+      "packages/inkra/test/collection-updates-runtime.test.mjs"
+    ],
+    "component:collection-updates-ssr": [
+      "packages/inkra/test/collection-updates-ssr.test.mjs"
+    ],
+    "component:collection-wrappers-runtime": [
+      "packages/inkra/test/collection-wrappers-runtime.test.mjs"
+    ],
+    "component:color-gradient": [
+      "packages/inkra/test/color-gradient.test.mjs"
+    ],
+    "component:color-picker-refinement": [
+      "packages/inkra/test/color-picker-refinement.test.mjs"
+    ],
+    "component:color-picker": [
+      "packages/inkra/test/color-picker.test.mjs"
+    ],
+    "component:color-swatch": [
+      "packages/inkra/test/color-swatch.test.mjs"
+    ],
+    "component:command-refinement": [
+      "packages/inkra/test/command-refinement.test.mjs"
+    ],
+    "component:component-memoization": [
+      "packages/inkra/test/component-memoization.test.mjs"
+    ],
+    "component:components": [
+      "packages/inkra/test/components.test.mjs"
+    ],
+    "component:content": [
+      "packages/inkra/test/content.test.mjs"
+    ],
+    "component:context-menu": [
+      "packages/inkra/test/context-menu.test.mjs"
+    ],
+    "component:data-table-model-contract": [
+      "packages/inkra/test/data-table-model-contract.test.mjs"
+    ],
+    "component:data-table-refinement": [
+      "packages/inkra/test/data-table-refinement.test.mjs"
+    ],
+    "component:display": [
+      "packages/inkra/test/display.test.mjs"
+    ],
+    "component:dockable-panel": [
+      "packages/inkra/test/dockable-panel.test.mjs"
+    ],
+    "component:dockable-performance": [
+      "packages/inkra/test/dockable-performance.test.mjs"
+    ],
+    "component:editable": [
+      "packages/inkra/test/editable.test.mjs"
+    ],
+    "component:expansion-data": [
+      "packages/inkra/test/expansion-data.test.mjs"
+    ],
+    "component:expansion-dates": [
+      "packages/inkra/test/expansion-dates.test.mjs"
+    ],
+    "component:expansion-exports": [
+      "packages/inkra/test/expansion-exports.test.mjs"
+    ],
+    "component:expansion-feedback": [
+      "packages/inkra/test/expansion-feedback.test.mjs"
+    ],
+    "component:expansion-flows": [
+      "packages/inkra/test/expansion-flows.test.mjs"
+    ],
+    "component:expansion-navigation": [
+      "packages/inkra/test/expansion-navigation.test.mjs"
+    ],
+    "component:expansion-overlays": [
+      "packages/inkra/test/expansion-overlays.test.mjs"
+    ],
+    "component:flip": [
+      "packages/inkra/test/flip.test.mjs"
+    ],
+    "component:form-control-performance": [
+      "packages/inkra/test/form-control-performance.test.mjs"
+    ],
+    "component:form": [
+      "packages/inkra/test/form.test.mjs"
+    ],
+    "component:grid": [
+      "packages/inkra/test/grid.test.mjs"
+    ],
+    "component:guide": [
+      "packages/inkra/test/guide.test.mjs"
+    ],
+    "component:heatmap": [
+      "packages/inkra/test/heatmap.test.mjs"
+    ],
+    "component:hotkey": [
+      "packages/inkra/test/hotkey.test.mjs"
+    ],
+    "component:hover-card": [
+      "packages/inkra/test/hover-card.test.mjs"
+    ],
+    "component:i18n": [
+      "packages/inkra/test/i18n.test.mjs"
+    ],
+    "component:icon-fill": [
+      "packages/inkra/test/icon-fill.test.mjs"
+    ],
+    "component:icon-lifecycle": [
+      "packages/inkra/test/icon-lifecycle.test.mjs"
+    ],
+    "component:icon-stroke-controls": [
+      "packages/inkra/test/icon-stroke-controls.test.mjs"
+    ],
+    "component:image-cropper": [
+      "packages/inkra/test/image-cropper.test.mjs"
+    ],
+    "component:image-viewer": [
+      "packages/inkra/test/image-viewer.test.mjs"
+    ],
+    "component:infinite-scroll": [
+      "packages/inkra/test/infinite-scroll.test.mjs"
+    ],
+    "component:input-number-model": [
+      "packages/inkra/test/input-number-model.test.mjs"
+    ],
+    "component:input-number": [
+      "packages/inkra/test/input-number.test.mjs"
+    ],
+    "component:input": [
+      "packages/inkra/test/input.test.mjs"
+    ],
+    "component:inventory-grid": [
+      "packages/inkra/test/inventory-grid.test.mjs"
+    ],
+    "component:inventory-outline": [
+      "packages/inkra/test/inventory-outline.test.mjs"
+    ],
+    "component:keypad": [
+      "packages/inkra/test/keypad.test.mjs"
+    ],
+    "component:layout-swipe": [
+      "packages/inkra/test/layout-swipe.test.mjs"
+    ],
+    "component:layout-types": [
+      "packages/inkra/test/layout-types.test.mjs"
+    ],
+    "component:layout": [
+      "packages/inkra/test/layout.test.mjs"
+    ],
+    "component:library-motion": [
+      "packages/inkra/test/library-motion.test.mjs"
+    ],
+    "component:loading-source": [
+      "packages/inkra/test/loading-source.test.mjs"
+    ],
+    "component:loading": [
+      "packages/inkra/test/loading.test.mjs"
+    ],
+    "component:log-refinement": [
+      "packages/inkra/test/log-refinement.test.mjs"
+    ],
+    "component:log": [
+      "packages/inkra/test/log.test.mjs",
+      "packages/inkra/test/log-refinement.test.mjs"
+    ],
+    "component:markdown": [
+      "packages/inkra/test/markdown.test.mjs"
+    ],
+    "component:masonry": [
+      "packages/inkra/test/masonry.test.mjs"
+    ],
+    "component:media-performance": [
+      "packages/inkra/test/media-performance.test.mjs"
+    ],
+    "component:media-surface-integration": [
+      "packages/inkra/test/media-surface-integration.test.mjs"
+    ],
+    "component:menu-refinement": [
+      "packages/inkra/test/menu-refinement.test.mjs"
+    ],
+    "component:node-graph": [
+      "packages/inkra/test/node-graph.test.mjs"
+    ],
+    "component:number-ticker-morph": [
+      "packages/inkra/test/number-ticker-morph.test.mjs"
+    ],
+    "component:number-ticker-rolling": [
+      "packages/inkra/test/number-ticker-rolling.test.mjs"
+    ],
+    "component:number-ticker": [
+      "packages/inkra/test/number-ticker-morph.test.mjs",
+      "packages/inkra/test/number-ticker-rolling.test.mjs",
+      "packages/inkra/test/number-ticker.test.mjs"
+    ],
+    "component:overflow-list": [
+      "packages/inkra/test/overflow-list.test.mjs"
+    ],
+    "component:overlay-performance": [
+      "packages/inkra/test/overlay-performance.test.mjs"
+    ],
+    "component:overlay": [
+      "packages/inkra/test/overlay.test.mjs"
+    ],
+    "component:package-boundaries": [
+      "packages/inkra/test/package-boundaries.test.mjs"
+    ],
+    "component:paged-collections-runtime": [
+      "packages/inkra/test/paged-collections-runtime.test.mjs"
+    ],
+    "component:pagination-options": [
+      "packages/inkra/test/pagination-options.test.mjs"
+    ],
+    "component:pagination-refinement": [
+      "packages/inkra/test/pagination-refinement.test.mjs"
+    ],
+    "component:pan-zoom": [
+      "packages/inkra/test/pan-zoom.test.mjs"
+    ],
+    "component:pencil-helper-performance": [
+      "packages/inkra/test/pencil-helper-performance.test.mjs"
+    ],
+    "component:pencil-text": [
+      "packages/inkra/test/pencil-text.test.mjs"
+    ],
+    "component:picker-shared-control": [
+      "packages/inkra/test/picker-shared-control.test.mjs"
+    ],
+    "component:progress-ring-performance": [
+      "packages/inkra/test/progress-ring-performance.test.mjs"
+    ],
+    "component:property-extensions": [
+      "packages/inkra/test/property-extensions.test.mjs"
+    ],
+    "component:radar": [
+      "packages/inkra/test/radar.test.mjs"
+    ],
+    "component:range-slider": [
+      "packages/inkra/test/range-slider.test.mjs"
+    ],
+    "component:rating-refinement": [
+      "packages/inkra/test/rating-refinement.test.mjs"
+    ],
+    "component:rating": [
+      "packages/inkra/test/rating.test.mjs"
+    ],
+    "component:render-defaults": [
+      "packages/inkra/test/render-defaults.test.mjs"
+    ],
+    "component:render-performance": [
+      "packages/inkra/test/render-performance.test.mjs"
+    ],
+    "component:render-tokens": [
+      "packages/inkra/test/render-tokens.test.mjs"
+    ],
+    "component:resizable": [
+      "packages/inkra/test/resizable.test.mjs"
+    ],
+    "component:scroll-area": [
+      "packages/inkra/test/scroll-area.test.mjs"
+    ],
+    "component:search-select-refinement": [
+      "packages/inkra/test/search-select-refinement.test.mjs"
+    ],
+    "component:segmented-progress": [
+      "packages/inkra/test/segmented-progress.test.mjs"
+    ],
+    "component:select-stepper-audit": [
+      "packages/inkra/test/select-stepper-audit.test.mjs"
+    ],
+    "component:select-stepper": [
+      "packages/inkra/test/select-stepper.test.mjs"
+    ],
+    "component:select": [
+      "packages/inkra/test/select.test.mjs"
+    ],
+    "component:selection-refinement": [
+      "packages/inkra/test/selection-refinement.test.mjs"
+    ],
+    "component:selection": [
+      "packages/inkra/test/selection.test.mjs"
+    ],
+    "component:slider-refinement": [
+      "packages/inkra/test/slider-refinement.test.mjs"
+    ],
+    "component:slider": [
+      "packages/inkra/test/slider.test.mjs"
+    ],
+    "component:slot": [
+      "packages/inkra/test/slot.test.mjs"
+    ],
+    "component:sortable": [
+      "packages/inkra/test/sortable.test.mjs"
+    ],
+    "component:sparkline": [
+      "packages/inkra/test/sparkline.test.mjs"
+    ],
+    "component:surface-budget": [
+      "packages/inkra/test/surface-budget.test.mjs"
+    ],
+    "component:surface-visibility": [
+      "packages/inkra/test/surface-visibility.test.mjs"
+    ],
+    "component:tabs-refinement": [
+      "packages/inkra/test/tabs-refinement.test.mjs"
+    ],
+    "component:tabs": [
+      "packages/inkra/test/tabs.test.mjs"
+    ],
+    "component:tag-input": [
+      "packages/inkra/test/tag-input.test.mjs"
+    ],
+    "component:text-performance": [
+      "packages/inkra/test/text-performance.test.mjs"
+    ],
+    "component:text-raster": [
+      "packages/inkra/test/text-raster.test.mjs"
+    ],
+    "component:textarea-counter": [
+      "packages/inkra/test/textarea-counter.test.mjs"
+    ],
+    "component:textarea-sizing": [
+      "packages/inkra/test/textarea-sizing.test.mjs"
+    ],
+    "component:theme": [
+      "packages/inkra/test/theme.test.mjs"
+    ],
+    "component:toast": [
+      "packages/inkra/test/toast.test.mjs"
+    ],
+    "component:tooltip": [
+      "packages/inkra/test/tooltip.test.mjs"
+    ],
+    "component:transfer": [
+      "packages/inkra/test/transfer.test.mjs"
+    ],
+    "component:travel": [
+      "packages/inkra/test/travel.test.mjs"
+    ],
+    "component:tree-refinement": [
+      "packages/inkra/test/tree-refinement.test.mjs"
+    ],
+    "component:tree-select-refinement": [
+      "packages/inkra/test/tree-select-refinement.test.mjs"
+    ],
+    "component:tree-select": [
+      "packages/inkra/test/tree-select.test.mjs"
+    ],
+    "component:tree-timeline-regression": [
+      "packages/inkra/test/tree-timeline-regression.test.mjs"
+    ],
+    "component:typewriter": [
+      "packages/inkra/test/typewriter.test.mjs"
+    ],
+    "component:upload-refinement": [
+      "packages/inkra/test/upload-refinement.test.mjs"
+    ],
+    "component:video-resource": [
+      "packages/inkra/test/video-resource.test.mjs"
+    ],
+    "component:virtual-list": [
+      "packages/inkra/test/virtual-list.test.mjs"
+    ]
+  }
+}

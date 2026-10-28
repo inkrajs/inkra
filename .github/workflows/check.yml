@@ -2,20 +2,62 @@ name: Check
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, edited, ready_for_review]
   push:
     branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
+  pull-requests: read
 
 concurrency:
   group: check-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  local-validation:
+    name: Resolve trusted local tests
+    runs-on: ubuntu-latest
+    outputs:
+      accepted: ${{ steps.resolve.outputs.accepted }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          path: .trusted-ci
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: 24
+      - name: Resolve declaration using trusted base code and GitHub editor identity
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          TARGET_SHA: ${{ github.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          OUTPUT_PATH: .release/local-validation.json
+        shell: bash
+        run: |
+          mkdir -p .release
+          if [[ -f .trusted-ci/scripts/resolve-pr-local-validation.mjs ]]; then
+            node .trusted-ci/scripts/resolve-pr-local-validation.mjs
+          else
+            node -e 'require("fs").writeFileSync(process.env.OUTPUT_PATH, JSON.stringify({accepted:false,declarations:[],reasons:[{code:"policy-bootstrap",detail:"Base revision has no local-validation policy; normal CI runs"}]}))'
+          fi
+          node -e 'require("fs").appendFileSync(process.env.GITHUB_OUTPUT,"accepted="+JSON.parse(require("fs").readFileSync(process.env.OUTPUT_PATH)).accepted+"\n")'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: local-validation
+          path: .release/local-validation.json
+          include-hidden-files: true
+          if-no-files-found: error
   package:
     name: Node ${{ matrix.node }} / React ${{ matrix.react }}
+    needs: local-validation
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -38,12 +80,21 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
       - run: npm ci --ignore-scripts
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: local-validation
+          path: .release
       - name: Full validation
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && needs.local-validation.outputs.accepted != 'true'
         run: npm run check
       - name: Required repository, release, build and installed-package contracts
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' || needs.local-validation.outputs.accepted == 'true'
         run: npm run check:contracts
+      - name: Full component inventory with explicitly confirmed local groups
+        if: github.event_name != 'pull_request' && needs.local-validation.outputs.accepted == 'true'
+        run: node scripts/component-local-validation.mjs
+        env:
+          LOCAL_VALIDATION_REPORT: .release/local-validation.json
       - name: Plan affected component tests
         if: github.event_name == 'pull_request'
         run: >-
@@ -55,6 +106,8 @@ jobs:
       - name: Run affected component tests
         if: github.event_name == 'pull_request'
         run: node scripts/run-component-tests.mjs --plan .release/component-test-plan.json
+        env:
+          LOCAL_VALIDATION_REPORT: .release/local-validation.json
       - name: Publish component test plan summary
         if: always() && github.event_name == 'pull_request'
         run: |

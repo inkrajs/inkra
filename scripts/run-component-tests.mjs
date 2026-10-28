@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { formatPlanSummary, validatePlan } from './component-test-plan.mjs';
+import { selectLocallyValidatedTests } from './component-local-validation.mjs';
 
 function option(name) {
   const index = process.argv.indexOf(name);
@@ -13,7 +14,8 @@ function option(name) {
 const root = resolve(option('--root') ?? fileURLToPath(new URL('../', import.meta.url)));
 const planPath = resolve(root, option('--plan') ?? '.release/component-test-plan.json');
 const plan = JSON.parse(await readFile(planPath, 'utf8'));
-const { selected } = validatePlan(plan, root);
+const { selected: planned } = validatePlan(plan, root);
+const { selected } = await selectLocallyValidatedTests(root, planned, process.env.LOCAL_VALIDATION_REPORT);
 console.log(formatPlanSummary(plan));
 
 if (selected.length === 0) {
