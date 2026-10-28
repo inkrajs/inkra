@@ -142,6 +142,15 @@ does not prove the same package, docs, lockfile, suite and runtime were checked.
 A later optimization needs an exact-input verification record and a fail-closed
 fallback to full validation. Changed-file selection also needs a dependency map.
 
+The 2026-10-28 local-test confirmation mechanism is a separate, explicit path:
+an allowed maintainer attests named local groups for an exact PR head/base,
+environment and candidate archive. Release CI resolves that authorization from
+GitHub and records confirmed groups alongside fresh online results. It does not
+infer a cross-run cache hit or relabel local confirmations as cloud execution.
+Unconfirmed coverage retains full online selection; source, build, archive,
+hydration and registry gates remain required. Dynamic browser shard counts follow
+the remaining online checks and the final gate verifies their exact plan.
+
 Rollback by reverting these pipeline commits through normal review. Keep source
 and archive identity gates, publication serialization and existing immutable tags.
 Do not disable tests or change release pins just to shorten a failing run.

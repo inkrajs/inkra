@@ -8,6 +8,7 @@ dist/
 .local/
 .release/
 .consumer/
+.trusted-ci/
 coverage/
 playwright-report/
 test-results/

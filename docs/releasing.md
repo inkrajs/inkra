@@ -161,7 +161,7 @@ Use the manually dispatched **Release npm package** workflow, publish.yml.
 Select an exact inkrajs/docs commit in docs_ref; the docs consumer must import
 the scoped package. Pushing main or a tag does not publish automatically.
 There is no default docs revision. Select a commit containing the browser
-sharding/report scripts and lockfile-only candidate preparation. Merge that
+sharding/report scripts, browser local-confirmation support and lockfile-only candidate preparation. Merge that
 docs tooling before using this release workflow; an older consumer fails the
 compatibility check rather than silently running the full suite four times.
 
@@ -180,18 +180,83 @@ exports, license/font assets, React 18/19 installed SSR/types/hydration checks,
 and the exact docs consumer's build, browser smoke and homepage tests.
 
 Validation uploads the exact npm candidate after package checks. A separate
-docs-build job prepares it once, followed by four independent browser runners
-with two workers each. React 18/19 hydration runs alongside docs preparation,
+docs-build job prepares it once and creates a full browser coverage plan. Explicitly
+confirmed local groups may then be removed from online execution; the remaining
+checks use up to four independent browser runners with two workers each.
+React 18/19 hydration runs alongside docs preparation,
 against that same archive. Browser jobs use the immutable Playwright image matching
 the lockfile; update its digest and runtime check together when changing Playwright.
 Docs report-contract and portable-baseline tests run before the browser matrix.
-Compatible docs revisions balance shards from recorded timings, never omit checks.
-All registered checks, including the homepage, must be accounted
-for by the docs-verified gate before publishing or registry verification.
+Compatible docs revisions balance shards from recorded timings. All registered
+checks, including the homepage, must be accounted for as online passes or exact,
+authorized local confirmations by the docs-verified gate before publishing or
+registry verification. Local confirmations are labelled as such, not as online passes.
 The build artifact alone is not release approval. Per-check timings and failure
 logs are retained for 14 days. Rerun failed jobs, not the entire workflow, when
 only a browser shard or registry verification failed; successful package/build
 jobs and shards remain reusable within the same run.
+
+### Explicit Local-Test Confirmations
+
+A trusted maintainer may attest local results in the description of the docs PR
+used by `docs_ref`. The optional `local_validation_pr` workflow input selects
+that PR explicitly; otherwise the resolver discovers a PR associated with the
+exact docs commit. No declaration keeps the complete online browser suite.
+
+The description contains one JSON fence:
+
+```ci-local-validation
+{
+  "schemaVersion": 1,
+  "tested_commit": "<full docs PR head SHA>",
+  "base_commit": "<full docs PR base SHA>",
+  "candidate_sha256": "<SHA-256 of the locally tested library archive>",
+  "local_passed": [
+    {
+      "group": "browser:log",
+      "environments": ["chromium-playwright1.64.1-react19.3.1"],
+      "evidence": "https://github.com/inkrajs/docs/pull/123#issuecomment-123",
+      "reason": "Local Log browser tests passed, including keyboard and narrow layout"
+    }
+  ]
+}
+```
+
+Replace all placeholders with actual identities and a report URL containing the
+local command/results. The fence records a maintainer's confirmation, not
+independent proof that an AI or local machine executed the tests.
+The resolver reads the current description editor (or its author when unedited)
+from authenticated GitHub data and checks their immutable numeric user ID against
+the policy at the PR's base commit. A PR cannot expand its own eligible users or
+groups. Accepted groups also require the exact declared environment and candidate
+archive SHA-256. Added commits, a changed base, an unexpected merge tree, a changed
+archive, an unauthorized editor or an absent policy leaves ordinary checks in
+place or rejects an invalid request; none grants an implicit exemption.
+
+For a merged PR, the target docs commit must be that PR's merge commit and its
+tree must equal the declared head's tree. The browser plan records the declaration,
+group-to-check mapping and source identity; both the workers and final gate consume
+the same plan digest. A skipped browser job is valid only when that trusted plan
+contains zero online checks. The final gate still checks exact coverage and rejects
+missing, duplicate, failed or mismatched reports.
+
+Only eligible module tests can be locally confirmed. Package/source checks,
+production build, React 18/19 installed-package and hydration checks, archive
+identity, registry verification and publication conditions continue to run.
+This feature requires no new npm publication and does not automatically dispatch
+one. Roll out the compatible docs tooling before using it in a release.
+
+Component unit tests have a separate root-repository declaration. The optional
+`component_validation_pr` input selects the `inkrajs/inkra` PR corresponding
+to the exact selected release source; otherwise its associated PR is discovered.
+Use a group such as `component:log` and the exact release lane
+`node24-react19.3.1`. Its head/base/tree and current description editor are
+validated by the same resolver. The accepted path still runs
+`npm run check:contracts` (repository/release-tool tests, type/build, package
+and installed-consumer checks), then executes every component test file except
+the explicitly confirmed groups. React 18 installed verification remains
+unconditional. The receipt and per-file local/online inventory are retained in
+`release-component-local-validation`; they never replace registry acceptance.
 
 After upload, registry verification retries only HTTP 404 with bounded backoff
 for up to five minutes. Authentication, rate-limit, server, network and integrity
