@@ -316,21 +316,23 @@ export const Log = forwardRef<HTMLDivElement, LogProps>(function Log(
             })}
           </ol> : <div className="inkra-log__empty">{renderText(isEmpty ? (empty ?? labels.empty) : (noMatches ?? labels.noMatches))}</div>}
         </div>
+        {showLatest ? <div className="inkra-log__latest">
+          <Button
+            aria-label={resolvedPaused ? labels.resume : labels.latest}
+            data-tooltip={resolvedPaused ? labels.resume : labels.latest}
+            title={resolvedPaused ? labels.resume : labels.latest}
+            size="icon-sm"
+            variant="secondary"
+            onClick={() => {
+              viewportRef.current?.focus({ preventScroll: true });
+              if (resolvedPaused) changePaused(false);
+              else scrollToLatest();
+            }}
+          >
+            <PencilIcon paths={followPaths} size={20} sourceSize={24} />
+          </Button>
+        </div> : null}
       </div>
-      {showLatest ? <div className="inkra-log__latest">
-        <PencilLine className="inkra-log__latest-divider" seed="inkra-log-latest-divider" />
-        <Button
-          size="sm"
-          startIcon={<PencilIcon paths={followPaths} size={18} sourceSize={24} />}
-          variant="secondary"
-          onClick={() => {
-            if (resolvedPaused) changePaused(false);
-            else scrollToLatest();
-          }}
-        >
-          {resolvedPaused ? labels.resume : labels.latest}
-        </Button>
-      </div> : null}
     </PencilSurface>
   );
 });

@@ -82,17 +82,23 @@ test('Log controlled filter and pause requests do not mutate controlled state lo
   assert.doesNotMatch(source, /setUncontrolledPaused\(nextPaused\)[\s\S]{0,80}else/);
 });
 
-test('Log viewport uses pencil focus and a non-overlapping latest footer', () => {
+test('Log viewport uses pencil focus and a compact floating latest action', () => {
   assert.match(source, /className="inkra-log__viewport-frame"/);
   assert.match(source, /className="inkra-log__focus-ring"/);
   assert.match(source, /const showLatest = \(!nearBottom \|\| resolvedPaused\) && visibleItems\.length > 0/);
-  assert.match(source, /<PencilLine className="inkra-log__latest-divider"/);
+  assert.doesNotMatch(source, /inkra-log__latest-divider/);
+  assert.match(source, /aria-label=\{resolvedPaused \? labels.resume : labels.latest\}/);
+  assert.match(source, /data-tooltip=\{resolvedPaused \? labels.resume : labels.latest\}/);
+  assert.match(source, /size="icon-sm"/);
+  assert.match(source, /viewportRef.current\?\.focus\(\{ preventScroll: true \}\)/);
   assert.match(styles, /\.inkra-log__focus-ring \{[\s\S]*--inkra-accent-strong: var\(--inkra-focus\)/);
   assert.match(styles, /viewport-frame:has\(\.inkra-log__viewport:focus-visible\)[^}]*opacity: 1/);
-  assert.match(styles, /\.inkra-log:has\(> \.inkra-log__latest\)[\s\S]*grid-template-rows: minmax\(var\(--inkra-touch-target\), 1fr\) auto/);
-  assert.match(styles, /\.inkra-log__latest \{[\s\S]*position: relative/);
   const latestBlock = styles.match(/\.inkra-log__latest \{([^}]+)\}/)?.[1] ?? '';
-  assert.doesNotMatch(latestBlock, /position: absolute/);
+  assert.match(latestBlock, /position: absolute/);
+  assert.match(latestBlock, /inset-block-end: clamp\(0px, calc\(100% - var\(--inkra-touch-target\)\), var\(--inkra-space-2\)\)/);
+  assert.match(latestBlock, /inset-inline-end: var\(--inkra-space-3\)/);
+  assert.doesNotMatch(latestBlock, /(?:inline-size|padding):/);
+  assert.doesNotMatch(styles, /\.inkra-log[^}]*:has\(> \.inkra-log__latest\)/);
   assert.match(styles, /\.inkra-pencil-surface\.inkra-log__focus-ring \{ display: none !important/);
   assert.match(styles, /forced-colors: active[\s\S]*outline: var\(--inkra-focus-width\) solid Highlight/);
 });
@@ -112,6 +118,6 @@ test('Log latest scroll respects reduced motion and narrow controls wrap safely'
   assert.match(styles, /\.inkra-log__filters > \.inkra-button \.inkra-pencil-text__source[\s\S]*white-space: normal; overflow-wrap: anywhere/);
   assert.match(styles, /\.inkra-log__follow-control \.inkra-pencil-text__source[\s\S]*white-space: normal; overflow-wrap: anywhere/);
   assert.match(styles, /\.inkra-log__follow-control \.inkra-button__surface \{[^}]*height: auto[^}]*min-height: var\(--inkra-button-visual-height\)/);
-  assert.match(styles, /\.inkra-log__latest \.inkra-button__surface \{[^}]*height: auto[^}]*min-height: var\(--inkra-button-visual-height\)/);
+  assert.doesNotMatch(styles, /\.inkra-log__latest \.inkra-button[^}]*inline-size: 100%/);
   assert.doesNotMatch(styles, /inkra-log__(?:follow-control|latest)[^}]*min-(?:block-size|height): var\(--inkra-touch-target\)/);
 });
