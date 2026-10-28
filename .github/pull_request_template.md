@@ -14,6 +14,9 @@ What changed and why? Link the related issue when available.
 
 Add relevant screenshots and commands. Distinguish automated checks from manual or device acceptance.
 
+Before creating or updating this PR, evaluate [the AI CI guide](https://github.com/inkrajs/inkra/blob/main/docs/ai-ci-guide.md).
+Authorized agents should proactively reuse eligible, actually passing local
+results rather than run duplicate full checks or wait for another user prompt.
 Authorized maintainers may add an exact-commit `ci-local-validation` JSON
 declaration following [the local-test confirmation guide](https://github.com/inkrajs/inkra/blob/main/docs/releasing.md#explicit-local-test-confirmations).
 Include the tested environment, report URL and reason. Omit the declaration when
