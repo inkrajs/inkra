@@ -23,7 +23,10 @@ Read `AGENTS.md` and `docs/design-standard.md` before visual changes.
 
 ## Verification
 
-Run `npm run check` in the library. It tests an installed tarball and does not
+Choose meaningful affected local checks first and follow [the AI CI guide](docs/ai-ci-guide.md)
+when preparing a PR. Eligible, already-passing local checks can be confirmed through
+the exact-commit declaration; avoid duplicate full runs on unchanged inputs.
+`npm run check` is the full library validation. It tests an installed tarball and does not
 require the docs checkout. In the docs checkout, run `npm run build`, start its
 dev server on port 4180, then run:
 
@@ -48,8 +51,10 @@ Selection follows parsed source imports, re-exports, reverse transitive
 consumers, source-reading tests and recursive test fixtures/helpers. Changed
 tests run directly. Unknown paths, unmapped helpers, deleted/renamed source,
 package/lock/compiler/build changes, missing history or an unsafe Git range run
-the full component suite. Pushes to `main`, manual checks and release workflows
-continue to use full `npm run check` validation.
+the full component suite. Without an accepted local-test confirmation, pushes to
+`main`, manual checks and release workflows retain full validation. Accepted
+confirmations remove only explicitly eligible module checks; required contracts
+and installed-consumer checks remain.
 
 ## Pull Requests and Licensing
 
