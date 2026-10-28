@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.11.0 - 2026-10-28
+
 - Replace Log's full-width latest footer with a floating icon button in the
   viewport's bottom end corner, retaining localized labels and keyboard access.
 
@@ -10,6 +12,10 @@
   zeros with simultaneous translation and fading inside a clipped viewport.
   Ordinary changes retain place-aligned rolling; `count` and `roll` stay available.
 - Add documentation mode switching and reversible decimal-shift examples.
+- Keep all 87 component previews basic by default and order supplemental demos
+  from common single capabilities to combinations and boundary cases.
+- Add trusted exact-commit local-test confirmations and AI delivery guidance
+  while preserving mandatory build, package and release verification.
 
 ## 0.10.0 - 2026-10-28
 
