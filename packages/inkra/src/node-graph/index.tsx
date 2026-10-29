@@ -121,6 +121,14 @@ export interface NodeGraphControlLabels {
   fitView: string;
 }
 
+export interface NodeGraphControlsOptions {
+  zoomIn?: boolean;
+  zoomOut?: boolean;
+  fitView?: boolean;
+  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+}
+export type NodeGraphExtraControls = ReactNode | ((api: NodeGraphRef) => ReactNode);
+
 export interface NodeGraphRootProps<
   NodeType extends NodeGraphNode = NodeGraphNode,
   EdgeType extends NodeGraphEdge = NodeGraphEdge,
@@ -138,7 +146,8 @@ export interface NodeGraphRootProps<
   renderEdgeLabel?: (edge: EdgeType) => ReactNode;
   readOnly?: boolean;
   emptyState?: ReactNode;
-  controls?: boolean;
+  controls?: boolean | NodeGraphControlsOptions;
+  extraControls?: NodeGraphExtraControls;
   controlLabels?: Partial<NodeGraphControlLabels>;
   fitView?: boolean;
   fitViewOptions?: FitViewOptions<NodeType>;
@@ -152,6 +161,7 @@ export interface NodeGraphRootProps<
   zoomOnPinch?: boolean;
   connectOnClick?: boolean;
   onlyRenderVisibleElements?: boolean;
+  hideAttribution?: boolean;
 }
 
 interface NodeRendererData extends NodeGraphNodeData {
@@ -598,6 +608,10 @@ function NodeGraphConnectionLine({ fromX, fromY, toX, toY, fromPosition, toPosit
 }
 
 export interface NodeGraphControlsProps extends HTMLAttributes<HTMLDivElement> {
+  zoomIn?: boolean;
+  zoomOut?: boolean;
+  fitView?: boolean;
+  extraControls?: NodeGraphExtraControls;
   fitViewOptions?: FitViewOptions;
   zoomInLabel?: string;
   zoomOutLabel?: string;
@@ -608,6 +622,11 @@ function NodeGraphControls(inkraProps: NodeGraphControlsProps) {
   const { t } = useInkraLocale();
   const {
   className,
+  children,
+  zoomIn = true,
+  zoomOut = true,
+  fitView = true,
+  extraControls,
   fitViewOptions,
   zoomInLabel = t('common.zoomIn'),
   zoomOutLabel = t('common.zoomOut'),
@@ -615,24 +634,34 @@ function NodeGraphControls(inkraProps: NodeGraphControlsProps) {
   ...props
 } = inkraProps;
   const flow = useReactFlow();
+  const api: NodeGraphRef = {
+    zoomIn: () => flow.zoomIn(),
+    zoomOut: () => flow.zoomOut(),
+    fitView: options => flow.fitView(options ?? fitViewOptions),
+    getViewport: () => flow.getViewport(),
+  };
+  const extra = typeof extraControls === 'function' ? extraControls(api) : extraControls;
   const actions = [
-    { label: zoomInLabel, paths: zoomInPaths, run: () => flow.zoomIn() },
-    { label: zoomOutLabel, paths: zoomOutPaths, run: () => flow.zoomOut() },
-    { label: fitViewLabel, paths: fitViewPaths, run: () => flow.fitView(fitViewOptions) },
-  ] as const;
+    { id: 'zoomIn', enabled: zoomIn, label: zoomInLabel, paths: zoomInPaths, run: api.zoomIn },
+    { id: 'zoomOut', enabled: zoomOut, label: zoomOutLabel, paths: zoomOutPaths, run: api.zoomOut },
+    { id: 'fitView', enabled: fitView, label: fitViewLabel, paths: fitViewPaths, run: () => api.fitView() },
+  ].filter(action => action.enabled);
+  if (!actions.length && extra == null && children == null) return null;
   return <div {...props} className={['inkra-node-graph__controls', 'nopan', className].filter(Boolean).join(' ')}>
     {actions.map(action => <PencilSurface
       as="button"
       aria-label={action.label}
       className="inkra-node-graph__control"
       data-tooltip={action.label}
-      key={action.label}
+      key={action.id}
       onClick={() => void action.run()}
       variant="paper"
     >
       <PencilSurface aria-hidden="true" as="span" className="inkra-node-graph__control-focus" radius={6} seed={`node-graph-${action.label}-focus`} variant="outline" />
       <PencilIcon decorative paths={action.paths} size={22} sourceSize={24} seed={`node-graph-${action.label}`} />
     </PencilSurface>)}
+    {extra}
+    {children}
   </div>;
 }
 
@@ -670,6 +699,7 @@ function NodeGraphRootInner<
   readOnly = false,
   emptyState = t('graph.empty'),
   controls = true,
+  extraControls,
   controlLabels,
   fitView = false,
   fitViewOptions,
@@ -683,6 +713,7 @@ function NodeGraphRootInner<
   zoomOnPinch = true,
   connectOnClick = true,
   onlyRenderVisibleElements = false,
+  hideAttribution = false,
   className,
   style,
   'aria-label': ariaLabel = t('graph.label'),
@@ -791,10 +822,15 @@ function NodeGraphRootInner<
         connectOnClick={connectOnClick && !readOnly}
         connectionLineComponent={NodeGraphConnectionLine}
         onlyRenderVisibleElements={onlyRenderVisibleElements}
+        proOptions={{ hideAttribution }}
         noDragClassName="nodrag"
         noPanClassName="nopan"
       >
-        {controls && <Panel position="bottom-left"><NodeGraphControls
+        {controls !== false && <Panel position={typeof controls === 'object' ? controls.position ?? 'bottom-left' : 'bottom-left'}><NodeGraphControls
+          zoomIn={typeof controls === 'object' ? controls.zoomIn : undefined}
+          zoomOut={typeof controls === 'object' ? controls.zoomOut : undefined}
+          fitView={typeof controls === 'object' ? controls.fitView : undefined}
+          extraControls={extraControls}
           fitViewLabel={controlLabels?.fitView}
           fitViewOptions={fitViewOptions as FitViewOptions}
           zoomInLabel={controlLabels?.zoomIn}

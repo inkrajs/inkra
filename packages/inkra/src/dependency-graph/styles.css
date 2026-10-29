@@ -1,0 +1,33 @@
+.inkra-dependency-graph__node { position: relative; width: 100%; height: 100%; }
+.inkra-dependency-graph__anchor.react-flow__handle { position: absolute; width: 0; height: 0; min-width: 0; min-height: 0; border: 0; opacity: 0; pointer-events: none; }
+.inkra-dependency-graph__card, .inkra-dependency-graph__icon-button { box-sizing: border-box; width: 100%; height: 100%; padding: 14px 16px; border: 0; font: inherit; color: var(--inkra-ink); text-align: start; display: flex; flex-direction: column; gap: 6px; pointer-events: auto; }
+.inkra-dependency-graph__card--custom { padding: 0; }
+.inkra-dependency-graph__header { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.inkra-dependency-graph__icon { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+.inkra-dependency-graph__title { appearance: none; background: none; border: 0; padding: 0; margin: 0; min-width: 0; flex: 1; font: inherit; color: inherit; text-align: start; font-weight: 600; cursor: pointer; }
+.inkra-dependency-graph__title > * { max-width: 100%; }
+.inkra-dependency-graph__actions { display: flex; align-items: center; flex: 0 0 auto; gap: 4px; margin-inline-start: auto; }
+.inkra-dependency-graph__body { min-height: 0; overflow: auto; font-size: var(--inkra-text-sm); color: var(--inkra-ink-muted); }
+.inkra-dependency-graph__footer { display: flex; align-items: center; gap: 8px; margin-top: auto; }
+.inkra-dependency-graph__icon-button { align-items: center; justify-content: center; padding: 10px; cursor: pointer; }
+.inkra-dependency-graph__card:focus-visible, .inkra-dependency-graph__title:focus-visible, .inkra-dependency-graph__icon-button:focus-visible { outline: 0; }
+.inkra-dependency-graph__focus { --inkra-accent-strong: var(--inkra-focus); position: absolute !important; inset: -5px; pointer-events: none; opacity: 0; }
+.inkra-dependency-graph__card:focus-visible > .inkra-dependency-graph__focus,
+.inkra-dependency-graph__card--custom:focus-visible .inkra-dependency-graph__focus,
+.inkra-dependency-graph__card:has(.inkra-dependency-graph__title:focus-visible) > .inkra-dependency-graph__focus,
+.inkra-dependency-graph__icon-button:focus-visible > .inkra-dependency-graph__focus { opacity: 1; }
+.inkra-dependency-graph__node[data-disabled] { opacity: .55; }
+.inkra-dependency-graph__title:disabled, .inkra-dependency-graph__icon-button:disabled { cursor: not-allowed; }
+.inkra-dependency-graph__status { font-size: var(--inkra-text-sm); color: var(--inkra-ink-muted); }
+.inkra-dependency-graph__node[data-status="completed"] .inkra-dependency-graph__status { color: var(--inkra-success); }
+.inkra-dependency-graph__node[data-status="available"] .inkra-dependency-graph__status,
+.inkra-dependency-graph__node[data-status="active"] .inkra-dependency-graph__status { color: var(--inkra-accent-strong); }
+.inkra-dependency-graph__highlight { position: absolute !important; inset: -3px; pointer-events: none; }
+.inkra-dependency-graph__node[data-dimmed], .inkra-dependency-graph__edge[data-dimmed] { opacity: .5; }
+.inkra-dependency-graph__edge { color: var(--inkra-ink-muted); }
+.inkra-dependency-graph__edge[data-highlighted], .inkra-dependency-graph__edge--highlighted { color: var(--inkra-accent-strong); }
+@media (forced-colors: active) {
+  .inkra-dependency-graph__card:focus-visible, .inkra-dependency-graph__title:focus-visible, .inkra-dependency-graph__icon-button:focus-visible { outline: var(--inkra-focus-width) solid Highlight; outline-offset: 4px; }
+  .inkra-dependency-graph__focus { display: none !important; }
+  .inkra-dependency-graph__node[data-dimmed], .inkra-dependency-graph__edge[data-dimmed] { opacity: 1; }
+}

@@ -92,3 +92,5 @@ export { createPencilPath, createPencilPoints } from './pencil.js';
 export type { PencilPathOptions, PencilPoint } from './pencil.js';
 export { InventoryGrid, assertInventoryContainers, projectInventoryMove, rotateInventoryCells, validateInventoryPlacement } from './inventory-grid/index.js';
 export type { InventoryGridProps, InventoryGridLabels, InventoryItemRenderState, InventoryCell, InventoryChangeDetails, InventoryContainer, InventoryItem, InventoryPlacement, InventoryPlacementContext, InventoryPlacementResult, InventoryPlacementRule, InventoryRotation } from './inventory-grid/index.js';
+
+export * from './dependency-graph/index.js';
