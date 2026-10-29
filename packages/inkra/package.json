@@ -489,7 +489,13 @@
     "./styles/tree-select.css": "./dist/styles/tree-select.css",
     "./styles/typewriter.css": "./dist/styles/typewriter.css",
     "./styles/upload.css": "./dist/styles/upload.css",
-    "./styles/virtual-list.css": "./dist/styles/virtual-list.css"
+    "./styles/virtual-list.css": "./dist/styles/virtual-list.css",
+    "./dependency-graph": {
+      "types": "./dist/dependency-graph/index.d.ts",
+      "import": "./dist/dependency-graph/index.js",
+      "default": "./dist/dependency-graph/index.js"
+    },
+    "./styles/dependency-graph.css": "./dist/styles/dependency-graph.css"
   },
   "files": [
     "dist",

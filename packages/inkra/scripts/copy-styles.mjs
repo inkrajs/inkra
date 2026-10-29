@@ -24,7 +24,7 @@ const styles = await Promise.all([
   'choice-grid/styles.css', 'color-swatch/styles.css', 'color-picker/styles.css', 'context-menu/styles.css',
   'dockable-panel/styles.css', 'editable/styles.css', 'flip/styles.css',
   'heatmap/styles.css', 'hover-card/styles.css', 'image-cropper/styles.css',
-  'image-viewer/styles.css', 'image-viewer/video.css', 'keypad/styles.css', 'node-graph/styles.css',
+  'image-viewer/styles.css', 'image-viewer/video.css', 'keypad/styles.css', 'node-graph/styles.css', 'dependency-graph/styles.css',
   'overflow-list/styles.css', 'pan-zoom/styles.css', 'radar/styles.css',
   'rating/styles.css', 'resizable/styles.css',
   'scroll-area/styles.css', 'sortable/styles.css', 'inventory-grid/styles.css',
@@ -51,6 +51,7 @@ const stylePaths = (await readdir(new URL('../src/', import.meta.url), { recursi
 for (const path of stylePaths) {
   const name = path.split('/')[0];
   const parts = [await readFile(new URL(`../src/${path}`, import.meta.url), 'utf8')];
+  if (name === 'dependency-graph') parts.unshift(await readFile(new URL('../src/node-graph/styles.css', import.meta.url), 'utf8'));
   if (name === 'slider') parts.push(await readFile(new URL('../src/slider/circular.css', import.meta.url), 'utf8'));
   if (name === 'image-viewer') parts.push(await readFile(new URL('../src/image-viewer/video.css', import.meta.url), 'utf8'));
   await writeFile(new URL(`../dist/styles/${name}.css`, import.meta.url), parts.join('\n'));
