@@ -12,6 +12,7 @@ This is the inkrajs/inkra React component library. Documentation is owned by the
 - New or changed icon geometry must support both PencilIcon outline and filled variants. Preserve holes and open-symbol semantics; provide filledPaths for shapes that need a dedicated silhouette, and validate both variants at small sizes.
 - Keep semantic HTML and selectable text. Decorative drawing must not determine layout or intercept input.
 - Never equate a successful build with visual or real-device acceptance.
+- Keep the root READMEs concise and appealing: lead with the project, visual preview, a few core strengths, minimal installation and documentation links. Put version-by-version updates in CHANGELOG.md and delivery/CI records in their own guides; do not append them to the README.
 - Do not register accounts, publish packages, push, or deploy without explicit user authorization.
 - The user requests parallel work for separable implementation, documentation and verification tasks. Delegate bounded subtasks with explicit file ownership; the main chat must monitor progress, resolve blockers and verify the integrated result. Keep dependent edits sequential and avoid concurrent writes to the same files. Create user-owned Codex chats only when explicitly requested.
 
