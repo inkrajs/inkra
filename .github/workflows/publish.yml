@@ -23,10 +23,16 @@ on:
         required: false
         type: string
         default: ''
+      force_browser:
+        description: Ignore historical browser results and refresh the complete non-locally-confirmed suite
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
   pull-requests: read
+  actions: read
 
 concurrency:
   group: npm-release
@@ -35,6 +41,7 @@ concurrency:
 env:
   RELEASE_ACTION: ${{ inputs.action || 'validate' }}
   DOCS_REF: ${{ inputs.docs_ref }}
+  BROWSER_REUSE_ENVIRONMENT: node24-workers2-mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea
 
 jobs:
   validate:
@@ -134,10 +141,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     outputs:
-      browser_matrix: ${{ steps.browser-plan.outputs.matrix }}
-      browser_shard_count: ${{ steps.browser-plan.outputs.shard_count }}
-      browser_selected_count: ${{ steps.browser-plan.outputs.selected_count }}
-      browser_plan_digest: ${{ steps.browser-plan.outputs.plan_digest }}
+      browser_matrix: ${{ steps.browser-reuse.outputs.matrix }}
+      browser_shard_count: ${{ steps.browser-reuse.outputs.shard_count }}
+      browser_selected_count: ${{ steps.browser-reuse.outputs.selected_count }}
+      browser_plan_digest: ${{ steps.browser-reuse.outputs.plan_digest }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -158,13 +165,17 @@ jobs:
           repository: inkrajs/docs
           ref: ${{ env.DOCS_REF }}
           path: .consumer
+          fetch-depth: 0
           persist-credentials: false
+      - name: Require reviewed docs tooling before recording reusable evidence
+        run: git -C .consumer merge-base --is-ancestor "$DOCS_REF" origin/main
       - name: Require docs sharding support
         working-directory: .consumer
         run: |
           test -f scripts/check-browser-reports.mjs
           test -f scripts/run-browser-ci.sh
           test -f scripts/browser-local-validation.mjs
+          test -f scripts/browser-reuse.mjs
           test -f scripts/test/icon-edge-baseline.test.mjs
           node --test scripts/test/browser-report.test.mjs scripts/test/browser-incremental-workflow.test.mjs scripts/test/icon-edge-baseline.test.mjs scripts/test/browser-local-validation.test.mjs
           BROWSER_SHARD=1/4 BROWSER_INCLUDE_HOMEPAGE=true node scripts/browser-smoke.mjs --list
@@ -177,6 +188,9 @@ jobs:
           cache: npm
           cache-dependency-path: .consumer/package-lock.json
       - run: npm ci --ignore-scripts
+        working-directory: .consumer
+      - name: Verify content-based browser reuse contracts
+        run: node --test scripts/test/browser-reuse.test.mjs
         working-directory: .consumer
       - run: npm run build
         working-directory: .consumer
@@ -202,6 +216,20 @@ jobs:
           base="$(node -e 'const r=require("./.ci-plan/local-validation.json");console.log(r.base || process.env.DOCS_REF)')"
           node scripts/select-browser-checks.mjs --event release --base "$base" --tested "$DOCS_REF" --output .ci-plan/browser-selection.json
           node scripts/browser-local-validation.mjs --plan .ci-plan/browser-selection.json --attestation .ci-plan/local-validation.json --environment chromium-playwright1.64.1-react19.3.1 --candidate library-candidate.json
+      - name: Restore authenticated successful release browser history
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BROWSER_BASELINE_OUTPUT: .consumer/.ci-plan/browser-baseline.json
+        run: node scripts/restore-browser-baseline.mjs
+      - name: Fingerprint inputs and reuse only unchanged passing browser checks
+        id: browser-reuse
+        working-directory: .consumer
+        env:
+          BROWSER_INCLUDE_HOMEPAGE: 'true'
+          BROWSER_REUSE_FORCE_FULL: ${{ inputs.force_browser }}
+        run: |
+          node scripts/browser-reuse.mjs inventory --output .ci-plan/browser-inputs.json
+          node scripts/browser-reuse.mjs apply --plan .ci-plan/browser-selection.json --inputs .ci-plan/browser-inputs.json --baseline .ci-plan/browser-baseline.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-browser-plan
@@ -338,6 +366,14 @@ jobs:
           EXPECTED_BROWSER_PLAN_DIGEST: ${{ needs.docs-build.outputs.browser_plan_digest }}
           EXPECTED_TESTED_REVISION: ${{ env.DOCS_REF }}
           BROWSER_INCLUDE_HOMEPAGE: 'true'
+          BROWSER_REUSE_RECEIPT: 'true'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-browser-reuse
+          path: .ci-results/browser-reuse-receipt.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 90
 
   publish:
     needs: [validate, docs-verified]

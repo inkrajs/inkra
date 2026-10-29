@@ -36,7 +36,7 @@ test('docs report CLI and portable fixtures are tested before expensive browser 
   assert.match(section('docs-verified'), /check-browser-reports.mjs \.ci-results \.ci-plan\/browser-selection.json/);
 });
 
-test('release coverage starts full and only trusted candidate-bound local results can reduce it', () => {
+test('release coverage starts full before local confirmations and authenticated historical reuse', () => {
   assert.match(workflow, /local_validation_pr:[\s\S]*required: false[\s\S]*default: ''/);
   assert.match(section('validate'), /run: npm run check/);
   assert.match(section('docs-build'), /test -f scripts\/browser-local-validation.mjs/);
@@ -74,7 +74,7 @@ test('local component confirmations preserve build, package and installed-consum
 });
 
 test('selected release shards and final gate share one exact coverage plan', () => {
-  assert.match(section('docs-build'), /browser_plan_digest: \$\{\{ steps.browser-plan.outputs.plan_digest \}\}/);
+  assert.match(section('docs-build'), /browser_plan_digest: \$\{\{ steps.browser-reuse.outputs.plan_digest \}\}/);
   assert.match(section('browser'), /if: needs.docs-build.outputs.browser_selected_count != '0'/);
   assert.match(section('browser'), /shard: \$\{\{ fromJSON\(needs.docs-build.outputs.browser_matrix\) \}\}/);
   assert.match(section('browser'), /BROWSER_SHARD: \$\{\{ matrix.shard \}\}\/\$\{\{ needs.docs-build.outputs.browser_shard_count \}\}/);
@@ -86,6 +86,29 @@ test('selected release shards and final gate share one exact coverage plan', () 
   }
   assert.match(section('docs-verified'), /BROWSER_JOB_RESULT: \$\{\{ needs.browser.result \}\}/);
   assert.match(section('docs-verified'), /if: needs.docs-build.outputs.browser_selected_count != '0'[\s\S]*pattern: release-browser-report-/);
+});
+
+test('history is resolved read-only and fingerprinted before the final matrix is published', () => {
+  const build = section('docs-build');
+  assert.match(workflow, /actions: read/);
+  assert.match(workflow, /force_browser:[\s\S]*type: boolean\n\s+default: false/);
+  assert.match(workflow, /BROWSER_REUSE_ENVIRONMENT: node24-workers2-mcr\.microsoft\.com\/playwright:v1\.64\.1-noble@sha256:/);
+  assert.match(build, /node scripts\/restore-browser-baseline\.mjs/);
+  assert.match(build, /path: \.consumer\n\s+fetch-depth: 0/);
+  assert.match(build, /run: git -C \.consumer merge-base --is-ancestor "\$DOCS_REF" origin\/main/);
+  assert(build.indexOf('git -C .consumer merge-base') < build.indexOf('Require docs sharding support'));
+  assert.match(build, /BROWSER_REUSE_FORCE_FULL: \$\{\{ inputs.force_browser \}\}/);
+  assert.match(build, /node scripts\/browser-reuse\.mjs inventory --output \.ci-plan\/browser-inputs\.json/);
+  assert.match(build, /node scripts\/browser-reuse\.mjs apply --plan \.ci-plan\/browser-selection\.json --inputs \.ci-plan\/browser-inputs\.json --baseline \.ci-plan\/browser-baseline\.json/);
+  assert(build.indexOf('node scripts/browser-local-validation.mjs') < build.indexOf('node scripts/browser-reuse.mjs apply'));
+  assert(build.indexOf('node scripts/browser-reuse.mjs apply') < build.indexOf('name: release-browser-plan'));
+  for (const output of ['matrix', 'shard_count', 'selected_count', 'plan_digest']) {
+    assert(build.includes(`steps.browser-reuse.outputs.${output}`));
+  }
+  const gate = section('docs-verified');
+  assert.match(gate, /BROWSER_REUSE_RECEIPT: 'true'/);
+  assert(gate.indexOf('node scripts/check-browser-reports.mjs') < gate.indexOf('name: release-browser-reuse'));
+  assert.match(gate, /path: \.ci-results\/browser-reuse-receipt\.json[\s\S]*if-no-files-found: error\n\s+retention-days: 90/);
 });
 
 test('release prerequisites accept skipped browsers only for a trusted zero-selection output', () => {
