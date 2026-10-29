@@ -1,6 +1,6 @@
 {
   "name": "@inkra/react",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "Hand-drawn React controls with native semantics and deterministic decoration.",
   "type": "module",
   "license": "MIT",

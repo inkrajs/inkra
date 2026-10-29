@@ -17,6 +17,41 @@ Inkra components require a React client boundary. Next.js and React Server Compo
 
 ## Usage
 
+### Dependency Graphs
+
+`DependencyGraph.Root` lays out skill trees, technology trees and other directed
+dependency graphs without manual node positions:
+
+```tsx
+import '@inkra/react/styles.css';
+import { DependencyGraph } from '@inkra/react';
+
+<DependencyGraph.Root
+  nodes={[
+    { id: 'basics', label: 'Basics', status: 'completed' },
+    { id: 'practice', label: 'Practice', status: 'available' },
+    { id: 'mastery', label: 'Mastery', status: 'locked' },
+  ]}
+  edges={[
+    { id: 'basics-practice', source: 'basics', target: 'practice' },
+    { id: 'practice-mastery', source: 'practice', target: 'mastery' },
+  ]}
+/>;
+```
+
+The application owns unlock rules and progress. Nodes support icon, content,
+actions and footer regions; `nodeVariant="icon"` shows compact icon nodes.
+`renderNode` owns the complete node appearance, including frameless images.
+Its `renderSurface` helper can wrap both faces of a Flip card so the border and
+paper rotate together. Node/edge `sourceAnchor` and `targetAnchor` accept
+normalized `{ x, y, position? }` coordinates; edge settings override node defaults.
+
+Configure individual viewport actions with
+`controls={{ zoomIn: true, zoomOut: false, fitView: true }}`, or hide the toolbar
+with `controls={false}`. `extraControls` appends custom buttons and can receive
+the viewport API. The standalone entry is `@inkra/react/dependency-graph`;
+its optional stylesheet is `@inkra/react/styles/dependency-graph.css`.
+
 ### Guided And Asynchronous Experiences
 
 `Guide.Root`, `Guide.Trigger` and `Guide.Step` compose a targeted walkthrough.

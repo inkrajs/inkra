@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+## 0.12.0 - 2026-10-30
+
+- Add DependencyGraph for skill trees, technology trees and synthesis recipes,
+  with automatic four-direction layout, prerequisite/path highlighting,
+  controlled selection, status labels and invalid-input diagnostics.
+- Support card regions, icon-only nodes and complete custom node renderers.
+  Compose Flip with renderSurface so the paper and border turn with each face.
+- Add normalized node/edge anchors for frameless image diagrams; individual
+  edges can override node defaults to meet different points in the artwork.
+- Make NodeGraph and DependencyGraph viewport controls configurable: hide
+  individual actions or the whole toolbar, choose a corner and append custom
+  buttons with access to viewport operations.
+- Include the component subpath, declarations, localized labels and optional
+  stylesheet with its required NodeGraph canvas rules.
+
 ## 0.11.0 - 2026-10-28
 
 - Replace Log's full-width latest footer with a floating icon button in the
