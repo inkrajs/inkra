@@ -14,163 +14,51 @@
 <p align="center">
   <a href="https://inkrajs.github.io/">Playground</a> ·
   <a href="https://inkrajs.github.io/docs/getting-started">Documentation</a> ·
-  <a href="https://www.npmjs.com/package/@inkra/react">npm</a> ·
-  <a href="https://github.com/inkrajs/inkra/releases">Releases</a>
+  <a href="https://www.npmjs.com/package/@inkra/react">npm</a>
 </p>
 
-A pencil-styled React component library. Compose familiar controls with paper
-texture, soft color and hand-drawn strokes, while real HTML handles input,
-selection and keyboard interaction.
-
-## Get Started
-
-Install Inkra in your React project:
-
-```sh
-npm install @inkra/react
-```
-
-Import the styles once, then use the components:
-
-```tsx
-import '@inkra/react/styles.css';
-import { Button, Field, Input } from '@inkra/react';
-
-export function NoteForm() {
-  return (
-    <form onSubmit={event => event.preventDefault()}>
-      <Field label="A name for your idea">
-        <Input name="title" placeholder="Something worth keeping" clearable />
-      </Field>
-      <Button type="submit">Save a little inspiration</Button>
-    </form>
-  );
-}
-```
-
-Inkra ships ESM, TypeScript declarations and CSS, with React and React DOM as
-peer dependencies. React 18 and 19 are the tested release targets. See
-[rendering support](./docs/rendering.md) for SSR and framework-specific limits.
-
-## A Little Pencil, Real Components
+A hand-drawn React component library with pencil lettering, textured strokes
+and soft washes of color.
 
 <p align="center">
   <a href="https://inkrajs.github.io/">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="./assets/preview-dark.png">
-      <img src="./assets/preview-light.png" alt="Inkra playground with a project form, calendar and journey map" width="1100">
+      <img src="./assets/preview-light.png" alt="Inkra form, calendar and journey map" width="1100">
     </picture>
   </a>
 </p>
 
-*Real playground screenshots from the development version. The published npm
-package and the main branch may contain different features.*
+- **Pencil, down to the letters.** Handwritten text, paper texture and expressive lines.
+- **Familiar interactions.** Type, select, copy and navigate with the keyboard.
+- **Make it yours.** Customize colors, fonts and strokes, in light or dark.
+- **Build beyond the basics.** Compose forms, layouts, maps and skill trees.
 
-- **Familiar interactions.** Forms, menus, dialogs and navigation use semantic
-  HTML and established interaction primitives.
-- **A consistent hand.** The same drawing seed produces stable pencil marks;
-  decorative canvases do not own layout or intercept input.
-- **Room for your palette.** CSS tokens control color, paper, lettering,
-  outlines and shading. Light and dark themes share the same components.
-- **Examples you can touch.** Adjust properties in the bilingual playground,
-  inspect the code and explore combinations such as forms, calendars and maps.
-
-## Find Your Components
-
-The published **0.10.0** package includes these core components:
-
-| Use | Components |
-| --- | --- |
-| Actions | Button, ButtonLink, ButtonGroup |
-| Forms | Field, Input, InputNumber, Textarea, Select, Checkbox, RadioGroup, Switch, Slider, RangeSlider, CircularSlider |
-| Navigation | Tabs, Breadcrumb, DropdownMenu |
-| Content and feedback | Card, Table, Accordion, Avatar, Badge, Alert, Progress, Skeleton, Separator |
-| Overlays | Popover, Overlay, Tooltip |
-| Dates and maps | Calendar, DayAgenda, JourneyMap |
-| Drawing | PencilIcon, PencilText, PencilSurface, PencilLine |
-
-**New in 0.2.0:** richer forms and overlays, layout primitives, media
-controls (AudioPlayer, Carousel, ImageViewer, ImageCropper), graph and canvas
-interactions (NodeGraph, Sortable, PanZoom), data views (Log, Radar, Heatmap,
-Sparkline, VirtualList) and circular Progress.
-
-**New in 0.3.0:** exact bigint and decimal-string NumberTicker values, configurable
-units and rounding, InputNumber modifier steps and hold repetition, popup motion,
-password examples and localized, collapsible playground settings.
-
-**New in 0.4.3:** theme-aligned Markdown, ColorSwatch and gradient editing,
-built-in Editable text/select editors, full-viewport image/video viewing, Tabs
-overflow controls, independent Toast queues and expanded icon stroke controls.
-Rendering and documentation performance are improved, with simpler primary
-previews and a nine-icon size/pressure/gap playground.
-
-**New in 0.5.0:** five-language component dictionaries with typed overrides and
-nested InkraProvider inheritance, plus a scoped ThemeProvider for theme mode,
-palette, text, line and fill customization. Documentation adds matching provider
-playgrounds and five-language navigation; reference translations remain partial.
-
-**New in 0.6.0:** pencil-underlined Breadcrumb links, leading/trailing icons,
-dropdown and context-menu composition, and aligned Select.Stepper actions.
-Documentation adds resizable/collapsible Layout compositions and stable header
-breadcrumbs.
-
-**New in 0.8.0:** shared Layout header/sidebar columns and mobile edge gestures,
-resizable Grid tracks and dashboard tiles, irregular InventoryGrid placement,
-Pagination controls and row-based Textarea automatic sizing. This release also
-includes the unpublished 0.7.0 candidate. Version 0.8.0 is published on npm and
-verified with React 18 and 19. Documentation has unified example anchors and
-compound API groups, a resizable shell and compact mobile search.
-
-**New in 0.9.0:** Guide, fullscreen Loading layouts, four-direction InfiniteScroll,
-Masonry, rolling NumberTicker values, and filled/color-configurable PencilIcon
-rendering. The documentation includes 47 simplified multicolor icon presets.
-The public package is verified with React 18 and 19.
-
-**New in 0.10.0:** CircularSlider, an optional circular Switch, endpoint-aligned
-linear slider thumbs, Xiaolai as the default font, a scoped lettering-effect
-toggle, improved grapheme rendering and softer action/selection washes.
-Set `thumbAlignment="contain"` to retain the previous inset slider geometry.
-The docs add 29 font choices, per-font settings, saved custom palettes and
-outline/filled/multicolor design comparisons.
-
-See [Releases](https://github.com/inkrajs/inkra/releases),
-the [changelog](./CHANGELOG.md) and
-[package API](./packages/inkra/README.md) for the full scope and known limits.
-
-## Work on Inkra
-
-Use Node.js 22.12+ and npm:
+## Get started
 
 ```sh
-git clone https://github.com/inkrajs/inkra.git
-cd inkra
-npm ci
-npm run build
-npm run check
+npm install @inkra/react
 ```
 
-Checks cover the repository, component tests and a separately installed
-package's types, SSR and assets. Run `npm run check:installed -- --browser`
-for the additional browser hydration checks.
+```tsx
+import '@inkra/react/styles.css';
+import { Button } from '@inkra/react';
 
-The playground lives in [inkrajs/docs](https://github.com/inkrajs/docs).
-To preview local library changes, follow its candidate preparation instructions;
-it installs a verified package archive, never a source alias.
-Website deployment and npm releases are separate workflows.
+export function App() {
+  return <Button>Save a little inspiration</Button>;
+}
+```
 
-## Documentation and Feedback
+The stylesheet includes the default fonts and design tokens.
+Explore and edit working examples in the [documentation](https://inkrajs.github.io/docs/getting-started).
 
-- [Getting started](https://inkrajs.github.io/docs/getting-started)
-- [Component API](./packages/inkra/README.md)
-- [Design standards](./docs/design-standard.md)
-- [Contributing](./CONTRIBUTING.md)
-- [Issues and feature requests](https://github.com/inkrajs/inkra/issues)
-- [Release guide](./docs/releasing.md) and [repository organization](./docs/organization-structure.md)
+## Explore
 
-For security reports, follow [SECURITY.md](./SECURITY.md) instead of a public issue.
+[Components](https://inkrajs.github.io/docs/components/button) ·
+[Theming](https://inkrajs.github.io/docs/theming) ·
+[Changelog](./CHANGELOG.md) ·
+[Contributing](./CONTRIBUTING.md) ·
+[Issues](https://github.com/inkrajs/inkra/issues)
 
-## License
-
-Inkra is [MIT licensed](./LICENSE). The bundled font uses SIL OFL 1.1;
-other bundled assets retain their own terms. See the
-[third-party notices](./packages/inkra/THIRD_PARTY_NOTICES.md).
+[MIT license](./LICENSE). Fonts and other bundled assets retain their own
+[licenses](./packages/inkra/THIRD_PARTY_NOTICES.md).
