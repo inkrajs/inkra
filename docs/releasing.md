@@ -161,8 +161,10 @@ Use the manually dispatched **Release npm package** workflow, publish.yml.
 Select an exact inkrajs/docs commit in docs_ref; the docs consumer must import
 the scoped package. Pushing main or a tag does not publish automatically.
 There is no default docs revision. Select a commit containing the browser
-sharding/report scripts, browser local-confirmation support and lockfile-only candidate preparation. Merge that
-docs tooling before using this release workflow; an older consumer fails the
+sharding/report scripts, browser input-fingerprint/reuse support, browser local-confirmation support and lockfile-only candidate preparation. Merge that
+docs tooling before using this release workflow; `docs_ref` must be an ancestor
+of `inkrajs/docs` main, checked by the source workflow before executing consumer
+tooling. An unmerged docs revision cannot mint a trusted reuse receipt; an older consumer fails the
 compatibility check rather than silently running the full suite four times.
 
 | Action | Ref | Effect |
@@ -180,28 +182,77 @@ exports, license/font assets, React 18/19 installed SSR/types/hydration checks,
 and the exact docs consumer's build, browser smoke and homepage tests.
 
 Validation uploads the exact npm candidate after package checks. A separate
-docs-build job prepares it once and creates a full browser coverage plan. Explicitly
-confirmed local groups may then be removed from online execution; the remaining
+docs-build job prepares it once and creates a full browser coverage inventory.
+Exact local confirmations and matching historical online passes may remove checks
+from the execution plan; changed or unproven inputs remain selected. The remaining
 checks use up to four independent browser runners with two workers each.
 React 18/19 hydration runs alongside docs preparation,
 against that same archive. Browser jobs use the immutable Playwright image matching
 the lockfile; update its digest and runtime check together when changing Playwright.
 Docs report-contract and portable-baseline tests run before the browser matrix.
 Compatible docs revisions balance shards from recorded timings. All registered
-checks, including the homepage, must be accounted for as online passes or exact,
-authorized local confirmations by the docs-verified gate before publishing or
-registry verification. Local confirmations are labelled as such, not as online passes.
+checks, including the homepage, must be accounted for as current online passes,
+exact authorized local confirmations, or matching historical online passes by the
+docs-verified gate before publishing or registry verification. The summary labels
+these sources separately; reuse is not a claim that a test ran again.
 The build artifact alone is not release approval. Per-check timings and failure
 logs are retained for 14 days. Rerun failed jobs, not the entire workflow, when
 only a browser shard or registry verification failed; successful package/build
 jobs and shards remain reusable within the same run.
+
+### Automatic Reuse of Unchanged Browser Results
+
+Release browser checks use per-check content fingerprints instead of requiring the
+entire npm tarball hash to remain unchanged. A package version or archive identity
+change alone need not rerun unrelated checks when their actual tested inputs match.
+The inventory includes the check and its helpers/fixtures, relevant documentation
+examples, installed library modules and transitive dependencies, shared styles,
+assets, build/test configuration and runtime/dependency identity. Shared or unknown
+impact broadens invalidation conservatively; missing ownership is not permission to
+skip a check.
+
+The docs-build job creates `.ci-plan/browser-inputs.json` with
+`node scripts/browser-reuse.mjs inventory --output .ci-plan/browser-inputs.json`.
+After applying any exact local confirmations, it applies the trusted historical
+baseline using `node scripts/browser-reuse.mjs apply --plan
+.ci-plan/browser-selection.json --inputs .ci-plan/browser-inputs.json --baseline
+.ci-plan/browser-baseline.json`. Do not substitute a hand-written baseline or
+silence a fingerprint mismatch to force a smaller plan.
+
+`scripts/restore-browser-baseline.mjs` selects a successful `workflow_dispatch`
+run of `.github/workflows/publish.yml` in `inkrajs/inkra` whose source commit is an
+ancestor of the current release source. It downloads the `release-browser-reuse`
+artifact, checks the GitHub archive digest and binds its receipt to the actual run,
+attempt and source commit. An arbitrary PR artifact, a failed/incomplete run or an
+expired artifact cannot supply successful historical coverage.
+
+The final report gate still accounts for every registered check exactly once.
+It checks current shard results, exact local confirmations and matching historical
+input fingerprints, rejecting missing, duplicate, failed or inconsistent coverage.
+With `BROWSER_REUSE_RECEIPT=true`, the gate emits
+`.ci-results/browser-reuse-receipt.json`; the workflow retains the verified receipt
+as `release-browser-reuse` for 90 days. Reused entries keep their original online
+pass run and time; reuse cannot renew the 90-day age limit or turn a local
+confirmation into an online pass.
+
+No compatible successful baseline means normal execution. The first release after
+this tooling is merged must establish a receipt; older releases without per-check
+input identities cannot be retroactively treated as proof. Subsequent releases
+reuse matching checks automatically and rerun changed, new or expired entries.
+Set the optional `force_browser` dispatch input to `true` to refresh all browser
+checks remaining after exact local confirmations; this bypasses historical reuse
+without changing local-attestation policy.
+Mandatory source/package/build, installed-consumer, hydration and public-registry
+checks continue to run. Component unit-test local declarations remain a separate
+mechanism; this receipt does not claim historical unit-test reuse.
 
 ### Explicit Local-Test Confirmations
 
 A trusted maintainer may attest local results in the description of the docs PR
 used by `docs_ref`. The optional `local_validation_pr` workflow input selects
 that PR explicitly; otherwise the resolver discovers a PR associated with the
-exact docs commit. No declaration keeps the complete online browser suite.
+exact docs commit. No declaration grants no local exemption; independent historical
+reuse may still remove checks whose inputs and trusted prior results match.
 
 The description contains one JSON fence:
 
