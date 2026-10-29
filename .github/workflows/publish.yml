@@ -90,7 +90,7 @@ jobs:
           REACT_VERSION: 18.3.1
       - name: Verify candidate identity
         run: node scripts/release.mjs candidate
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: release-component-local-validation
@@ -98,7 +98,7 @@ jobs:
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 14
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: npm-candidate
           path: |
@@ -230,13 +230,13 @@ jobs:
         run: |
           node scripts/browser-reuse.mjs inventory --output .ci-plan/browser-inputs.json
           node scripts/browser-reuse.mjs apply --plan .ci-plan/browser-selection.json --inputs .ci-plan/browser-inputs.json --baseline .ci-plan/browser-baseline.json
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-browser-plan
           path: .consumer/.ci-plan/*.json
           include-hidden-files: true
           if-no-files-found: error
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-docs-input
           path: |
@@ -246,7 +246,7 @@ jobs:
             .consumer/vendor/*.tgz
           include-hidden-files: true
           if-no-files-found: error
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-docs-build
           path: .consumer/dist/
@@ -303,7 +303,7 @@ jobs:
           EXPECTED_BROWSER_PLAN_DIGEST: ${{ needs.docs-build.outputs.browser_plan_digest }}
           EXPECTED_TESTED_REVISION: ${{ env.DOCS_REF }}
           BROWSER_INCLUDE_HOMEPAGE: 'true'
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: release-browser-report-${{ matrix.shard }}
@@ -367,7 +367,7 @@ jobs:
           EXPECTED_TESTED_REVISION: ${{ env.DOCS_REF }}
           BROWSER_INCLUDE_HOMEPAGE: 'true'
           BROWSER_REUSE_RECEIPT: 'true'
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-browser-reuse
           path: .ci-results/browser-reuse-receipt.json
