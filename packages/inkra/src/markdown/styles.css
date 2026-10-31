@@ -1,4 +1,5 @@
 .inkra-markdown {
+  inline-size: 100%;
   color: var(--inkra-ink);
   font-family: var(--inkra-font-body);
   font-size: var(--inkra-text-md);
