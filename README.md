@@ -5,7 +5,7 @@
   </picture>
 </p>
 
-<p align="center">English | <a href="./README.zh-CN.md">简体中文</a></p>
+<p align="center">English | <a href="./README.zh-CN.md">简体中文</a> | <a href="./README.ja.md">日本語</a> | <a href="./README.ko.md">한국어</a> | <a href="./README.fr.md">Français</a></p>
 
 <h1 align="center">Inkra</h1>
 
