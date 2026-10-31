@@ -36,6 +36,15 @@
 
 ## 使いはじめる
 
+お使いの AI に送ってください：
+
+```text
+次のガイドに従って、既存の構成とテーマを保ちながら、このプロジェクトに Inkra を導入してください：
+https://inkrajs.github.io/start.md
+```
+
+手動でインストールする場合：
+
 ```sh
 npm install @inkra/react
 ```
@@ -56,6 +65,7 @@ export function App() {
 
 [コンポーネント](https://inkrajs.github.io/docs/components/button) ·
 [テーマ設定](https://inkrajs.github.io/docs/theming) ·
+[AI 導入ガイド](https://inkrajs.github.io/start.md) ·
 [変更履歴](./CHANGELOG.md) ·
 [コントリビューション](./CONTRIBUTING.md) ·
 [不具合・要望](https://github.com/inkrajs/inkra/issues)

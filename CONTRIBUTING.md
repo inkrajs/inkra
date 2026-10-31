@@ -21,6 +21,16 @@ Read `AGENTS.md` and `docs/design-standard.md` before visual changes.
 - Check keyboard focus, portal themes, light/dark, RTL and reduced motion.
 - Keep changes focused and preserve other contributors' work.
 
+## Design with AI
+
+Ask your assistant to follow the [AI setup guide](https://inkrajs.github.io/start.md)
+for application adoption. It adapts to the runtime and repository, reuses existing
+setup, and loads component or design guidance as needed. The
+[Inkra entry guide](skills/inkra/README.md) also documents manual installation.
+The independent [docs skill](skills/inkra-docs/README.md) covers component APIs;
+the [design skill](skills/inkra-design/README.md) covers interface composition.
+These consumer guides do not replace this repository's contribution rules.
+
 ## Verification
 
 Choose meaningful affected local checks first and follow [the AI CI guide](docs/ai-ci-guide.md)

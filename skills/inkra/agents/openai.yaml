@@ -1,0 +1,4 @@
+interface:
+  display_name: "Inkra"
+  short_description: "Find the right Inkra skills for your product task"
+  default_prompt: "Use $inkra to choose components and build an interface for my application."

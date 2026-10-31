@@ -1,0 +1,4 @@
+interface:
+  display_name: "Inkra Docs"
+  short_description: "Find Inkra components, APIs and integration guidance"
+  default_prompt: "Use $inkra-docs to find components and compatible API examples for this project."

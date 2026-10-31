@@ -35,6 +35,15 @@
 
 ## 开始使用
 
+把这段话发给你的 AI：
+
+```text
+请按照这份指南，把 Inkra 接入当前项目，并沿用现有项目结构和主题：
+https://inkrajs.github.io/start.md
+```
+
+也可以手动安装：
+
 ```sh
 npm install @inkra/react
 ```
@@ -55,6 +64,7 @@ export function App() {
 
 [组件](https://inkrajs.github.io/docs/components/button) ·
 [主题定制](https://inkrajs.github.io/docs/theming) ·
+[AI 接入指南](https://inkrajs.github.io/start.md) ·
 [更新日志](./CHANGELOG.md) ·
 [贡献指南](./CONTRIBUTING.md) ·
 [问题反馈](https://github.com/inkrajs/inkra/issues)

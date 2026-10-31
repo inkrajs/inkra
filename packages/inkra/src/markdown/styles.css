@@ -1,4 +1,5 @@
 .inkra-markdown {
+  inline-size: 100%;
   color: var(--inkra-ink);
   font-family: var(--inkra-font-body);
   font-size: var(--inkra-text-md);
@@ -203,6 +204,7 @@
 .inkra-markdown__code-text > .inkra-pencil-text__source { font-family: inherit; }
 
 .inkra-markdown__code-frame {
+  inline-size: 100%;
   margin-block: 0 var(--inkra-space-4);
   max-width: 100%;
   min-width: 0;

@@ -36,6 +36,15 @@ au crayon, des traits texturés et de douces touches de couleur.
 
 ## Bien démarrer
 
+Envoyez ceci à votre assistant IA :
+
+```text
+Suis ce guide pour intégrer Inkra au projet actuel, en conservant sa structure et son thème :
+https://inkrajs.github.io/start.md
+```
+
+Ou installez la bibliothèque manuellement :
+
 ```sh
 npm install @inkra/react
 ```
@@ -56,6 +65,7 @@ Essayez et modifiez des exemples interactifs dans la [documentation](https://ink
 
 [Composants](https://inkrajs.github.io/docs/components/button) ·
 [Thèmes](https://inkrajs.github.io/docs/theming) ·
+[Guide de mise en place avec l’IA](https://inkrajs.github.io/start.md) ·
 [Historique des versions](./CHANGELOG.md) ·
 [Contribuer](./CONTRIBUTING.md) ·
 [Signaler un problème](https://github.com/inkrajs/inkra/issues)
