@@ -1,0 +1,4 @@
+interface:
+  display_name: "Inkra Design"
+  short_description: "Compose product interfaces and custom icons with Inkra"
+  default_prompt: "Use $inkra-design to organize components and interactions for my application."

@@ -36,6 +36,15 @@ and soft washes of color.
 
 ## Get started
 
+Send this to your AI assistant:
+
+```text
+Follow this guide to set up Inkra in the current project, preserving its structure and theme:
+https://inkrajs.github.io/start.md
+```
+
+Or install it manually:
+
 ```sh
 npm install @inkra/react
 ```
@@ -56,6 +65,7 @@ Explore and edit working examples in the [documentation](https://inkrajs.github.
 
 [Components](https://inkrajs.github.io/docs/components/button) ·
 [Theming](https://inkrajs.github.io/docs/theming) ·
+[AI setup guide](https://inkrajs.github.io/start.md) ·
 [Changelog](./CHANGELOG.md) ·
 [Contributing](./CONTRIBUTING.md) ·
 [Issues](https://github.com/inkrajs/inkra/issues)

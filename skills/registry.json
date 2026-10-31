@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "skills": [
+    {
+      "name": "inkra",
+      "description": "Discover and combine independent Inkra skills for an application task.",
+      "whenToUse": "Start here for adopting Inkra, choosing components or building an interface.",
+      "entryUrl": "https://inkrajs.github.io/skills/inkra/SKILL.md",
+      "readmeUrl": "https://inkrajs.github.io/skills/inkra/README.md",
+      "downloadUrl": "https://inkrajs.github.io/skills/inkra.zip"
+    },
+    {
+      "name": "inkra-docs",
+      "description": "Find version-aware components, public APIs, examples and integration guidance.",
+      "whenToUse": "Component discovery, comparison, setup, API questions and usage troubleshooting.",
+      "entryUrl": "https://inkrajs.github.io/skills/inkra-docs/SKILL.md",
+      "readmeUrl": "https://inkrajs.github.io/skills/inkra-docs/README.md",
+      "downloadUrl": "https://inkrajs.github.io/skills/inkra-docs.zip"
+    },
+    {
+      "name": "inkra-design",
+      "description": "Organize Inkra components into usable business interfaces and custom appearances.",
+      "whenToUse": "Business flows, state/data composition, layout, themes, responsive interaction and custom icons.",
+      "entryUrl": "https://inkrajs.github.io/skills/inkra-design/SKILL.md",
+      "readmeUrl": "https://inkrajs.github.io/skills/inkra-design/README.md",
+      "downloadUrl": "https://inkrajs.github.io/skills/inkra-design.zip"
+    }
+  ]
+}
