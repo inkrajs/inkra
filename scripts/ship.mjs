@@ -150,6 +150,10 @@ export function verifyDocsPin(sourcePackage, currentPackage, currentCandidate, m
   } else assert.deepEqual(currentCandidate, manifest, 'Registry source metadata changed');
 }
 
+export function verifyLiveOrigin(response) {
+  assert.equal(new URL(response.url).origin, 'https://inkrajs.github.io', 'Live verification redirected outside the Inkra website');
+}
+
 export async function ship(input, { execute = false, until, run = processRunner, sleep = pause, request = fetch, base = root, print = console.log } = {}) {
   const plan = normalizePlan(input, base);
   const directory = resolve(base, '.release/ship', plan.id);
@@ -342,7 +346,8 @@ export async function ship(input, { execute = false, until, run = processRunner,
     await step('live-verified', async () => {
       const deadline = Date.now() + 120000;
       while (Date.now() < deadline) {
-        const response = await request(`https://inkrajs.github.io/version.json?ship=${encodeURIComponent(siteRevision)}`, { redirect: 'error', signal: AbortSignal.timeout(15000) });
+        const response = await request(`https://inkrajs.github.io/version.json?ship=${encodeURIComponent(siteRevision)}`, { redirect: 'follow', signal: AbortSignal.timeout(15000) });
+        verifyLiveOrigin(response);
         if (response.ok) {
           const version = await response.json();
           if (version.site === siteRevision && version.docs === docsRevision && version.library === (state.sources.library || candidate.revision)) {
@@ -350,7 +355,8 @@ export async function ship(input, { execute = false, until, run = processRunner,
             assert.equal(version.package.version, candidate.version, 'Live package version differs');
             assert.equal(version.package.integrity, candidate.integrity, 'Live package identity differs');
             for (const path of plan.livePaths) {
-              const result = await request(new URL(path, 'https://inkrajs.github.io'), { redirect: 'error', signal: AbortSignal.timeout(15000) });
+              const result = await request(new URL(path, 'https://inkrajs.github.io'), { redirect: 'follow', signal: AbortSignal.timeout(15000) });
+              verifyLiveOrigin(result);
               assert(result.ok, `Live route failed: ${path}`); await result.body?.cancel();
             }
             return { version, paths: plan.livePaths, checks: 'Source identity and HTTP routes; browser checks ran in website CI' };
