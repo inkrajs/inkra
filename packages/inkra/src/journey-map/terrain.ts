@@ -41,7 +41,24 @@ export function mapFeatures(data: GeoJsonObject): Feature[] {
   return [{ type: 'Feature', properties: {}, geometry: data as Geometry }];
 }
 
-export function paintTerrain(ctx: CanvasRenderingContext2D, data: GeoJsonObject, project: Project, width: number, height: number, dark: boolean, defaultKind = 'land') {
+/** Conservative x bounds of polygon edges inside a horizontal strip.
+ * Hole rings may widen the bounds, but never remove visible fill. */
+export function terrainRowBounds(rings: readonly (readonly PencilPoint[])[], top: number, bottom: number): readonly [number, number] | undefined {
+  let left = Infinity, right = -Infinity;
+  for (const ring of rings) for (let i = 0; i < ring.length; i++) {
+    const [ax, ay] = ring[i], [bx, by] = ring[(i + 1) % ring.length];
+    if ((ay < top && by < top) || (ay > bottom && by > bottom)) continue;
+    if (!Number.isFinite(ax) || !Number.isFinite(ay) || !Number.isFinite(bx) || !Number.isFinite(by)) return [-Infinity, Infinity];
+    if (ay === by) { left = Math.min(left, ax, bx); right = Math.max(right, ax, bx); continue; }
+    const low = Math.max(0, Math.min(1, (top - ay) / (by - ay)));
+    const high = Math.max(0, Math.min(1, (bottom - ay) / (by - ay)));
+    const x1 = ax + (bx - ax) * low, x2 = ax + (bx - ax) * high;
+    left = Math.min(left, x1, x2); right = Math.max(right, x1, x2);
+  }
+  return left <= right ? [left, right] : undefined;
+}
+
+export function paintTerrain(ctx: CanvasRenderingContext2D, data: GeoJsonObject, project: Project, width: number, height: number, dark: boolean, defaultKind = 'land', terrainViewport = false) {
   for (const [featureIndex, feature] of mapFeatures(data).entries()) {
     const geometry = feature.geometry;
     if (!geometry) continue;
@@ -69,7 +86,14 @@ export function paintTerrain(ctx: CanvasRenderingContext2D, data: GeoJsonObject,
       const spacing = kind === 'forest' ? 9 : 13;
       const seed = 21000 + featureIndex * 43 + polygonIndex;
       for (let row = Math.floor((top - origin[1]) / spacing); row <= Math.ceil((bottom - origin[1]) / spacing); row++) {
-        for (let col = Math.floor((left - origin[0]) / 36); col <= Math.ceil((right - origin[0]) / 36); col++) {
+        // Jitter, the 44px hatch, category glyphs and pencil bleed all fit this
+        // envelope. Keep the original world-grid indices and per-cell seeds.
+        const rowY = origin[1] + row * spacing;
+        const band = terrainViewport ? terrainRowBounds(rings, rowY - 25, rowY + 20) : [left, right];
+        if (!band) continue;
+        const first = Math.max(Math.floor((left - origin[0]) / 36), terrainViewport ? Math.ceil((band[0] - origin[0] - 68) / 36) : -Infinity);
+        const last = Math.min(Math.ceil((right - origin[0]) / 36), terrainViewport ? Math.floor((band[1] - origin[0] + 17) / 36) : Infinity);
+        for (let col = first; col <= last; col++) {
           const cell = (seed ^ Math.imul(col, 73856093) ^ Math.imul(row, 19349663)) >>> 0;
           const rng = seededRandom(cell);
           if (rng() < .2) continue;
