@@ -12,7 +12,7 @@ import { paintTerrain, paintStop, paintSea } from './terrain.js';
 import { MapScale } from './MapScale.js';
 import { seedToNumber } from '../internal/random.js';
 import { PENCIL_RENDERER_VERSION } from '../internal/cache.js';
-import { JourneyBaseBitmap, journeyCanvasSize, prepareJourneyCanvas, resolveJourneyMapRendering, type JourneyMapRendering } from './rendering.js';
+import { JourneyBaseBitmap, journeyAnimationMs, journeyCanvasSize, journeyFocusZoom, journeyPanRegions, prepareJourneyCanvas, resolveJourneyMapRendering, type JourneyMapRendering } from './rendering.js';
 
 export type { JourneyMapRendering, JourneyMapRenderingOptions } from './rendering.js';
 
@@ -39,7 +39,14 @@ export interface JourneyMapProps extends HTMLAttributes<HTMLDivElement> {
   scrollWheelZoom?: boolean;
   showControls?: boolean;
   showPlaceList?: boolean;
+  /** Focus pin/list clicks and later selectedPlace changes; initial view stays fitted. */
   focusSelectedPlace?: boolean;
+  /** Magnification relative to the initial overview, 1..64; default 2. */
+  focusZoomScale?: number;
+  /** Animate programmatic view changes; reduced-motion preference always wins. */
+  animate?: boolean;
+  /** View transition duration in milliseconds, 0..5000; default 420. */
+  animationDuration?: number;
   /** Auto uses bounded base caching, backing-store reuse and offscreen stroke rejection. */
   rendering?: JourneyMapRendering;
   labels?: { zoomIn: string; zoomOut: string; reset: string; unavailable: string; attribution?: string };
@@ -48,7 +55,7 @@ const defaults = (t: InkraTranslate) => ({ zoomIn: t('common.zoomIn'), zoomOut: 
 const noRoutes: readonly JourneyRoute[] = [];
 const valid = (place: JourneyPlace) => Number.isFinite(place.latitude) && Number.isFinite(place.longitude) && Math.abs(place.latitude) <= 85 && Math.abs(place.longitude) <= 180;
 
-export function JourneyMap({ places, routes = noRoutes, geography, landCover, water, selectedPlace, onPlaceSelect, attribution, attributionDisplay = 'inline', height = 480, maxFitZoom = 12, background = 'sea', interactive = true, scrollWheelZoom = false, showControls = true, showPlaceList = false, focusSelectedPlace = false, rendering = 'auto', labels: labelOverrides, className, ...props }: JourneyMapProps) {
+export function JourneyMap({ places, routes = noRoutes, geography, landCover, water, selectedPlace, onPlaceSelect, attribution, attributionDisplay = 'inline', height = 480, maxFitZoom = 12, background = 'sea', interactive = true, scrollWheelZoom = false, showControls = true, showPlaceList = false, focusSelectedPlace = true, focusZoomScale = 2, animate = true, animationDuration = 420, rendering = 'auto', labels: labelOverrides, className, ...props }: JourneyMapProps) {
   const { t } = useInkraLocale();
   const labels = { ...defaults(t), ...labelOverrides };
   const root = useRef<HTMLDivElement>(null);
@@ -56,6 +63,9 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
   const mapRef = useRef<Leaflet.Map | null>(null);
   const fitRef = useRef<() => void>(() => {});
   const paintRef = useRef<() => void>(() => {});
+  const viewRef = useRef<(center: Leaflet.LatLngExpression, zoom: number) => void>(() => {});
+  const zoomRef = useRef<(delta: number) => void>(() => {});
+  const focusRef = useRef<(place: JourneyPlace) => void>(() => {});
   const fitZoomRef = useRef(2);
   const selectionRef = useRef(onPlaceSelect);
   selectionRef.current = onPlaceSelect;
@@ -64,6 +74,14 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
   const [placeLabels, setPlaceLabels] = useState<{ place: JourneyPlace; node: HTMLElement }[]>([]);
   const selectedRef = useRef(selectedPlace);
   selectedRef.current = selectedPlace;
+  const previousSelection = useRef({ place: selectedPlace, scale: focusZoomScale });
+  const viewOptions = useRef({ animate, animationDuration, focusSelectedPlace, focusZoomScale });
+  viewOptions.current = { animate, animationDuration, focusSelectedPlace, focusZoomScale };
+  const selectPlace = (place: JourneyPlace, fromList = false) => {
+    if (viewOptions.current.focusSelectedPlace) focusRef.current(place);
+    else if (fromList && mapRef.current) viewRef.current([place.latitude, place.longitude], mapRef.current.getZoom());
+    selectionRef.current?.(place);
+  };
   const markersRef = useRef<{ place: JourneyPlace; marker: Leaflet.Marker }[]>([]);
   const renderingOptions = resolveJourneyMapRendering(rendering);
   const renderingRef = useRef(renderingOptions);
@@ -100,88 +118,179 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
       const routePoints = routes.map(route => route.coordinates.filter(([lat, lng]) => Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 85 && Math.abs(lng) <= 180).map(([lat, lng]) => L.latLng(lat, lng)));
       const all = [...points.map(place => L.latLng(place.latitude, place.longitude)), ...boundaries.flat(), ...routePoints.flat()];
       let fitted = false;
-      const fit = () => {
+      const fit = (animated = false) => {
         map.invalidateSize();
         const size = map.getSize();
         if (size.x <= 0 || size.y <= 0) return;
-        if (all.length) map.fitBounds(L.latLngBounds(all), { padding: [44, 44], maxZoom: Number.isFinite(maxFitZoom) ? Math.max(0, Math.min(20, maxFitZoom)) : 12, animate: false });
-        fitZoomRef.current = map.getZoom();
+        if (all.length) {
+          const bounds = L.latLngBounds(all);
+          const zoom = Math.min(map.getBoundsZoom(bounds, false, L.point(88, 88)), Number.isFinite(maxFitZoom) ? Math.max(0, Math.min(20, maxFitZoom)) : 12);
+          const center = map.unproject(map.project(bounds.getSouthWest(), zoom).add(map.project(bounds.getNorthEast(), zoom)).divideBy(2), zoom);
+          fitZoomRef.current = zoom;
+          if (animated) viewRef.current(center, zoom);
+          else map.setView(center, zoom, { animate: false });
+        } else fitZoomRef.current = map.getZoom();
         fitted = true;
       };
-      fitRef.current = fit;
+      fitRef.current = () => fit(true);
       const canvas = document.createElement('canvas');
       canvas.className = 'inkra-journey-map__ink';
       canvas.setAttribute('aria-hidden', 'true');
       host.current.append(canvas);
       const base = new JourneyBaseBitmap();
+      const pinSurfaces: { place: JourneyPlace; canvas: HTMLCanvasElement; key: string; restore: () => void }[] = [];
+      const paintPins = () => {
+        const style = getComputedStyle(host.current!);
+        const ink = style.getPropertyValue('--inkra-accent-strong').trim();
+        const paper = style.getPropertyValue('--inkra-paper').trim();
+        const size = journeyCanvasSize(44, 44, window.devicePixelRatio || 1)!;
+        for (const pin of pinSurfaces) {
+          const selected = selectedRef.current === pin.place.id;
+          const key = JSON.stringify([PENCIL_RENDERER_VERSION, ink, paper, size.dpr, selected]);
+          if (pin.key === key) continue;
+          const context = prepareJourneyCanvas(pin.canvas, size, true);
+          if (!context) continue;
+          paintStop(context, 22, 22, seedToNumber(pin.place.id), ink, paper, selected);
+          pin.key = key;
+        }
+      };
       let frame = 0;
+      let animating = false, preparingView = false;
+      let activeView: { center: Leaflet.LatLng; zoom: number } | undefined;
       let paintOrigin = map.containerPointToLatLng([0, 0]), paintZoom = map.getZoom();
+      let paintWidth = 0, paintHeight = 0, previousSignature = '', previousKey = '';
       const paint = () => {
         frame = 0;
-        const { x: width, y: height } = map.getSize();
-        const size = journeyCanvasSize(width, height, window.devicePixelRatio || 1);
+        const viewport = map.getSize();
+        if (!viewport.x || !viewport.y) return;
+        // A small reserve keeps ordinary pans on the compositor. Larger pans
+        // replenish only exposed strips, within the same backing-store budgets.
+        let padding = 64;
+        let size = journeyCanvasSize(viewport.x + padding * 2, viewport.y + padding * 2, window.devicePixelRatio || 1);
+        if (!size) { padding = 0; size = journeyCanvasSize(viewport.x, viewport.y, window.devicePixelRatio || 1); }
         if (!size) { base.clear(); canvas.width = canvas.height = 0; return; }
+        const { width, height } = size;
         const options = renderingRef.current;
         // Release the old snapshot before resizing the main canvas so the two
         // live backing stores stay within the combined six-Mi-pixel budget.
         if (!options.cacheBase || canvas.width !== size.pixelWidth || canvas.height !== size.pixelHeight) base.clear();
         const context = prepareJourneyCanvas(canvas, size, options.reuseCanvas);
         if (!context) return;
-        canvas.style.transform = '';
-        paintOrigin = map.containerPointToLatLng([0, 0]);
-        paintZoom = map.getZoom();
+        const zoom = map.getZoom();
         const style = getComputedStyle(host.current!);
         const paper = style.getPropertyValue('--inkra-paper').trim();
         const dark = Number.parseInt(paper.replace('#', '').slice(0, 2), 16) < 100;
         const border = style.getPropertyValue('--inkra-border-strong').trim();
         const accent = style.getPropertyValue('--inkra-accent').trim();
-        const markerInk = style.getPropertyValue('--inkra-accent-strong').trim();
-        const project = (position: number[]): [number, number] => { const point = map.latLngToContainerPoint([position[1], position[0]]); return [point.x, point.y]; };
+        const project = (position: number[]): [number, number] => { const point = map.latLngToContainerPoint([position[1], position[0]]); return [point.x + padding, point.y + padding]; };
         const origin = project([0, 0]);
         // Data belongs to this effect instance. Its cleanup releases the bitmap;
         // the remaining key covers every base-pixel input that can change in it.
-        const baseKey = JSON.stringify([PENCIL_RENDERER_VERSION, 'journey-base-v1', background, width, height, size.pixelWidth, size.pixelHeight, size.dpr,
-          paintZoom, origin[0], origin[1], paper, dark, border, accent, options.boundaryViewport, options.terrainViewport]);
-        const draw = (line: Leaflet.LatLng[], color: string, seed: number, weight: number) => {
-          const projected = line.map(point => { const p = map.latLngToContainerPoint(point); return [p.x, p.y] as [number, number]; });
+        const signature = JSON.stringify([PENCIL_RENDERER_VERSION, 'journey-base-v2', background, width, height, size.pixelWidth, size.pixelHeight, size.dpr,
+          zoom, paper, dark, border, accent, options.boundaryViewport, options.terrainViewport]);
+        const baseKey = signature + JSON.stringify(origin);
+        const draw = (line: Leaflet.LatLng[], color: string, seed: number, weight: number, x: number, y: number, w: number, h: number) => {
+          const projected = line.map(point => { const p = map.latLngToContainerPoint(point); return [p.x + padding - x, p.y + padding - y] as [number, number]; });
           pencilStroke(context, projected, color, weight, seed, .3, 3, false, { grain: .7, breaks: .15, variation: .8, gain: 2.5, step: .8,
-            ...(options.boundaryViewport ? { viewport: [width, height] as const, viewportTop: -8 } : {}) });
+            ...(options.boundaryViewport ? { viewport: [w, h] as const, viewportTop: -8 } : {}) });
         };
         if (!options.cacheBase || !base.restore(context, baseKey)) {
-          if (background === 'sea') paintSea(context, width, height, origin);
-          if (geography) paintTerrain(context, geography, project, width, height, dark, 'land', options.terrainViewport);
-          if (landCover) paintTerrain(context, landCover, project, width, height, dark, 'land', options.terrainViewport);
-          if (water) paintTerrain(context, water, project, width, height, dark, 'water', options.terrainViewport);
-          boundaries.forEach((line, i) => draw(line, border, i + 137, 1.2));
-          routePoints.forEach((line, i) => draw(line, accent, i + 717, 2));
+          const oldOrigin = map.latLngToContainerPoint(paintOrigin);
+          const offsetX = (oldOrigin.x + padding) * size.dpr, offsetY = (oldOrigin.y + padding) * size.dpr;
+          const pixelX = Math.round(offsetX), pixelY = Math.round(offsetY);
+          const dx = pixelX / size.dpr, dy = pixelY / size.dpr;
+          // Fractional backing-pixel copies would repeatedly blur pencil ink.
+          // Geographic round trips can add tiny floating-point residue.
+          const aligned = Math.abs(offsetX - pixelX) < 1e-6 && Math.abs(offsetY - pixelY) < 1e-6;
+          const shifted = options.cacheBase && previousSignature === signature && aligned
+            && Math.abs(dx) < width && Math.abs(dy) < height
+            && base.restore(context, previousKey, [pixelX, pixelY]);
+          const regions = shifted ? journeyPanRegions(width, height, dx, dy) : [[0, 0, width, height] as const];
+          for (const [x, y, w, h] of regions) {
+            context.save(); context.translate(x, y);
+            context.beginPath(); context.rect(0, 0, w, h); context.clip();
+            const localProject = (position: number[]): [number, number] => { const p = project(position); return [p[0] - x, p[1] - y]; };
+            if (background === 'sea') paintSea(context, w, h, localProject([0, 0]));
+            if (geography) paintTerrain(context, geography, localProject, w, h, dark, 'land', options.terrainViewport);
+            if (landCover) paintTerrain(context, landCover, localProject, w, h, dark, 'land', options.terrainViewport);
+            if (water) paintTerrain(context, water, localProject, w, h, dark, 'water', options.terrainViewport);
+            boundaries.forEach((line, i) => draw(line, border, i + 137, 1.2, x, y, w, h));
+            routePoints.forEach((line, i) => draw(line, accent, i + 717, 2, x, y, w, h));
+            context.restore();
+          }
           if (options.cacheBase) base.capture(canvas, size, baseKey);
         }
-        points.forEach(place => {
-          const p = map.latLngToContainerPoint([place.latitude, place.longitude]);
-          paintStop(context, p.x, p.y, seedToNumber(place.id), markerInk, paper, selectedRef.current === place.id);
-        });
+        previousSignature = signature; previousKey = baseKey;
+        paintOrigin = map.containerPointToLatLng([-padding, -padding]); paintZoom = zoom;
+        paintWidth = width; paintHeight = height;
+        canvas.style.transformOrigin = '0 0';
+        canvas.style.transform = `translate(${-padding}px, ${-padding}px)`;
       };
-      const schedule = () => { if (!frame) frame = requestAnimationFrame(paint); };
+      const schedule = () => { paintPins(); if (!animating && !frame) frame = requestAnimationFrame(paint); };
       paintRef.current = schedule;
+      viewRef.current = (center, targetZoom) => {
+        const target = L.latLng(center);
+        const zoom = Math.max(map.getMinZoom(), Math.min(map.getMaxZoom(), targetZoom));
+        if (activeView?.center.equals(target) && activeView.zoom === zoom) return;
+        map.stop(); animating = false; activeView = undefined;
+        const settings = viewOptions.current;
+        const duration = journeyAnimationMs(settings.animate, settings.animationDuration, matchMedia('(prefers-reduced-motion: reduce)').matches);
+        if (!duration || (map.getCenter().equals(target) && map.getZoom() === zoom)) {
+          map.setView(target, zoom, { animate: false });
+          if (frame) cancelAnimationFrame(frame);
+          paint();
+          return;
+        }
+        const start = map.getCenter(), startZoom = map.getZoom(), viewport = map.getSize();
+        const from = map.project(start, startZoom), to = map.project(target, startZoom);
+        const extent = Math.max(viewport.x, viewport.y);
+        // Bound Leaflet's flyTo camera envelope (rho² < 2.1), including its
+        // temporary zoom-out. Rasterize it once, then transform that bitmap.
+        const span = extent * (1 + map.getZoomScale(startZoom, zoom)) + 2.1 * from.distanceTo(to);
+        const scale = Math.max((Math.abs(to.x - from.x) + viewport.x * span / extent) / viewport.x,
+          (Math.abs(to.y - from.y) + viewport.y * span / extent) / viewport.y);
+        const overview = map.unproject(from.add(to).divideBy(2), startZoom);
+        animating = true; preparingView = true;
+        if (frame) cancelAnimationFrame(frame); frame = 0;
+        map.setView(overview, startZoom - Math.log2(scale), { animate: false });
+        paint();
+        map.setView(start, startZoom, { animate: false });
+        preparingView = false; activeView = { center: target, zoom };
+        map.flyTo(target, zoom, { animate: true, duration: duration / 1000 });
+      };
+      zoomRef.current = delta => viewRef.current(activeView?.center ?? map.getCenter(), (activeView?.zoom ?? map.getZoom()) + delta);
+      focusRef.current = place => viewRef.current([place.latitude, place.longitude], journeyFocusZoom(fitZoomRef.current, viewOptions.current.focusZoomScale));
       const restore = () => { base.clear(); schedule(); };
       canvas.addEventListener('contextrestored', restore);
       // Reuse the existing raster during a pan; repaint geographical detail on rest.
       const translate = () => {
         const point = map.latLngToContainerPoint(paintOrigin);
+        const scale = map.getZoomScale(map.getZoom(), paintZoom);
         canvas.style.transformOrigin = '0 0';
-        canvas.style.transform = `translate(${point.x}px, ${point.y}px) scale(${map.getZoomScale(map.getZoom(), paintZoom)})`;
+        canvas.style.transform = `translate(${point.x}px, ${point.y}px) scale(${scale})`;
+        const viewport = map.getSize();
+        if (!animating && (point.x > 0 || point.y > 0 || point.x + paintWidth * scale < viewport.x || point.y + paintHeight * scale < viewport.y)) schedule();
       };
-      const settle = () => { canvas.style.transform = ''; paintOrigin = map.containerPointToLatLng([0, 0]); paintZoom = map.getZoom(); schedule(); };
+      const settle = () => { if (preparingView) return; animating = false; activeView = undefined; schedule(); };
       map.on('move', translate);
       map.on('moveend zoomend resize', settle);
-      map.on('dragstart', () => map.stop());
+      map.on('dragstart', () => { map.stop(); animating = false; activeView = undefined; });
       const labelNodes: { place: JourneyPlace; node: HTMLElement }[] = [];
       markersRef.current = points.map(place => {
+        const symbol = document.createElement('span');
+        symbol.className = 'inkra-journey-map__symbol';
+        const ink = document.createElement('canvas');
+        ink.className = 'inkra-journey-map__stop';
+        ink.setAttribute('aria-hidden', 'true');
         const node = document.createElement('span');
         node.className = 'inkra-journey-map__pin';
+        symbol.append(ink, node);
+        const pin = { place, canvas: ink, key: '', restore: () => { pin.key = ''; paintPins(); } };
+        ink.addEventListener('contextrestored', pin.restore);
+        pinSurfaces.push(pin);
         labelNodes.push({ place, node });
-        const marker = L.marker([place.latitude, place.longitude], { icon: L.divIcon({ html: node, className: 'inkra-journey-map__marker', iconSize: [44, 44], iconAnchor: [22, 22] }), keyboard: true, title: place.label, alt: place.label }).addTo(map);
-        marker.on('click', () => selectionRef.current?.(place));
+        const marker = L.marker([place.latitude, place.longitude], { icon: L.divIcon({ html: symbol, className: 'inkra-journey-map__marker', iconSize: [44, 44], iconAnchor: [22, 22] }), keyboard: true, title: place.label, alt: place.label }).addTo(map);
+        marker.on('click', () => selectPlace(place));
         marker.getElement()?.setAttribute('aria-pressed', String(selectedRef.current === place.id));
         return { place, marker };
       });
@@ -203,22 +312,18 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
       const resolutionChanged = () => { watchResolution(); schedule(); };
       watchResolution();
       fit(); schedule(); setReady(true);
-      cleanup = () => { cancelAnimationFrame(frame); observer.disconnect(); appearance.disconnect(); scheme.removeEventListener('change', schedule); resolution.removeEventListener('change', resolutionChanged); canvas.removeEventListener('contextrestored', restore); base.clear(); map.remove(); canvas.width = canvas.height = 0; canvas.remove(); mapRef.current = null; markersRef.current = []; paintRef.current = () => {}; };
+      cleanup = () => { cancelAnimationFrame(frame); observer.disconnect(); appearance.disconnect(); scheme.removeEventListener('change', schedule); resolution.removeEventListener('change', resolutionChanged); canvas.removeEventListener('contextrestored', restore); base.clear(); pinSurfaces.forEach(pin => { pin.canvas.removeEventListener('contextrestored', pin.restore); pin.canvas.width = pin.canvas.height = 0; }); map.remove(); canvas.width = canvas.height = 0; canvas.remove(); mapRef.current = null; markersRef.current = []; paintRef.current = () => {}; viewRef.current = () => {}; zoomRef.current = () => {}; focusRef.current = () => {}; };
     }).catch(() => { if (!cancelled) { setFailed(true); cleanup?.(); cleanup = undefined; } });
     return () => { cancelled = true; cleanup?.(); };
   }, [places, routes, geography, landCover, water, maxFitZoom, background]);
   useEffect(() => {
     markersRef.current.forEach(({ place, marker }) => marker.getElement()?.setAttribute('aria-pressed', String(selectedPlace === place.id)));
     paintRef.current();
+    const changed = previousSelection.current.place !== selectedPlace || previousSelection.current.scale !== focusZoomScale;
+    previousSelection.current = { place: selectedPlace, scale: focusZoomScale };
     const place = markersRef.current.find(item => item.place.id === selectedPlace)?.place;
-    if (focusSelectedPlace && place) {
-      const map = mapRef.current;
-      map?.stop();
-      const targetZoom = fitZoomRef.current + Math.log2(10);
-      if (matchMedia('(prefers-reduced-motion: reduce)').matches) map?.setView([place.latitude, place.longitude], targetZoom, { animate: false });
-      else map?.flyTo([place.latitude, place.longitude], targetZoom, { duration: .85 });
-    }
-  }, [selectedPlace, focusSelectedPlace, ready]);
+    if (focusSelectedPlace && changed && place) focusRef.current(place);
+  }, [selectedPlace, focusSelectedPlace, focusZoomScale, ready]);
   useEffect(() => { paintRef.current(); }, [renderingOptions.boundaryViewport, renderingOptions.terrainViewport, renderingOptions.reuseCanvas, renderingOptions.cacheBase]);
   useEffect(() => {
     const map = mapRef.current;
@@ -240,14 +345,14 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
       </Popover.Root></div>}
       <div ref={host} className="inkra-journey-map__host" aria-label={props['aria-label'] ?? t('map.label')} />
       {showControls && <div className="inkra-journey-map__tools">
-        <Button size="icon" variant="ghost" disabled={!ready} aria-label={labels.zoomIn} title={labels.zoomIn} onClick={() => { mapRef.current?.stop(); mapRef.current?.zoomIn(); }}><TravelIcon name="plus" /></Button>
-        <Button size="icon" variant="ghost" disabled={!ready} aria-label={labels.zoomOut} title={labels.zoomOut} onClick={() => { mapRef.current?.stop(); mapRef.current?.zoomOut(); }}><TravelIcon name="minus" /></Button>
+        <Button size="icon" variant="ghost" disabled={!ready} aria-label={labels.zoomIn} title={labels.zoomIn} onClick={() => zoomRef.current(1)}><TravelIcon name="plus" /></Button>
+        <Button size="icon" variant="ghost" disabled={!ready} aria-label={labels.zoomOut} title={labels.zoomOut} onClick={() => zoomRef.current(-1)}><TravelIcon name="minus" /></Button>
         <Button size="icon" variant="ghost" disabled={!ready} aria-label={labels.reset} title={labels.reset} onClick={() => { mapRef.current?.stop(); fitRef.current(); }}><TravelIcon name="reset" /></Button>
       </div>}
       {ready && <MapScale map={mapRef.current} />}
       {failed && <p role="status">{labels.unavailable}</p>}
     </div>
     {attributionDisplay === 'inline' && <p className="inkra-journey-map__attribution">{attribution}</p>}
-    {(showPlaceList || !ready || failed) && <ol className="inkra-journey-map__places">{places.filter(valid).map((place, index) => <li key={place.id}><button type="button" aria-pressed={selectedPlace === place.id} onClick={() => { mapRef.current?.panTo([place.latitude, place.longitude], { animate: false }); onPlaceSelect?.(place); }}><span aria-hidden="true">{index + 1}</span><PencilText>{place.label}</PencilText></button></li>)}</ol>}
+    {(showPlaceList || !ready || failed) && <ol className="inkra-journey-map__places">{places.filter(valid).map((place, index) => <li key={place.id}><button type="button" aria-pressed={selectedPlace === place.id} onClick={() => selectPlace(place, true)}><span aria-hidden="true">{index + 1}</span><PencilText>{place.label}</PencilText></button></li>)}</ol>}
   </div>;
 }

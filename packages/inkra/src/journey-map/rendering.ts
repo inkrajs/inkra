@@ -12,6 +12,16 @@ export interface JourneyMapRenderingOptions {
 
 export type JourneyMapRendering = 'auto' | 'legacy' | JourneyMapRenderingOptions;
 
+export function journeyAnimationMs(animate: boolean, duration: number, reducedMotion: boolean): number {
+  if (!animate || reducedMotion) return 0;
+  return Number.isFinite(duration) ? Math.max(0, Math.min(duration, 5000)) : 420;
+}
+
+export function journeyFocusZoom(overviewZoom: number, scale: number): number {
+  const ratio = Number.isFinite(scale) && scale >= 1 ? Math.min(scale, 64) : 2;
+  return overviewZoom + Math.log2(ratio);
+}
+
 export function resolveJourneyMapRendering(rendering: JourneyMapRendering = 'auto'): Required<JourneyMapRenderingOptions> {
   if (rendering === 'legacy') return { boundaryViewport: false, terrainViewport: false, reuseCanvas: false, cacheBase: false };
   const options = typeof rendering === 'object' ? rendering : {};
@@ -34,6 +44,15 @@ export interface JourneyCanvasSize {
   pixelWidth: number;
   pixelHeight: number;
   dpr: number;
+}
+
+/** Non-overlapping newly exposed strips after moving an existing base bitmap. */
+export function journeyPanRegions(width: number, height: number, dx: number, dy: number): readonly (readonly [number, number, number, number])[] {
+  if (Math.abs(dx) >= width || Math.abs(dy) >= height) return [[0, 0, width, height]];
+  const regions: [number, number, number, number][] = [];
+  if (dx) regions.push([dx > 0 ? 0 : width + dx, 0, Math.abs(dx), height]);
+  if (dy) regions.push([Math.max(0, dx), dy > 0 ? 0 : height + dy, width - Math.abs(dx), Math.abs(dy)]);
+  return regions;
 }
 
 /** Pure and SSR safe: browser DPR is supplied by the caller. */
@@ -80,14 +99,14 @@ export class JourneyBaseBitmap {
   private key: string | undefined;
   private readonly invalidate = () => { this.key = undefined; };
 
-  restore(context: CanvasRenderingContext2D, key: string): boolean {
+  restore(context: CanvasRenderingContext2D, key: string, offset: readonly [number, number] = [0, 0]): boolean {
     if (key !== this.key || !this.canvas) return false;
     const cachedContext = this.canvas.getContext('2d');
     if (!cachedContext || cachedContext.isContextLost?.()) { this.clear(); return false; }
     try {
       context.save();
       context.setTransform(1, 0, 0, 1, 0, 0);
-      context.drawImage(this.canvas, 0, 0);
+      context.drawImage(this.canvas, offset[0], offset[1]);
       return true;
     } catch {
       this.clear();

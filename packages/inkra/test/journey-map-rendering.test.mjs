@@ -4,7 +4,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { JourneyMap } from '../dist/journey-map/index.js';
 import { pencilStroke } from '../dist/internal/stroke.js';
-import { JourneyBaseBitmap, journeyCanvasSize, prepareJourneyCanvas, resolveJourneyMapRendering } from '../dist/journey-map/rendering.js';
+import { JourneyBaseBitmap, journeyAnimationMs, journeyCanvasSize, journeyFocusZoom, journeyPanRegions, prepareJourneyCanvas, resolveJourneyMapRendering } from '../dist/journey-map/rendering.js';
 
 test('rendering strategies are SSR safe and preserve the same native fallback', () => {
   const props = { places: [{ id: 'lake', label: 'Lake', latitude: -43, longitude: 170 }], attribution: 'Source', selectedPlace: 'lake' };
@@ -15,9 +15,26 @@ test('rendering strategies are SSR safe and preserve the same native fallback', 
     assert.match(html, /aria-pressed="true"/);
     assert.doesNotMatch(html, /rendering=/);
   }
+  const immediate = renderToStaticMarkup(createElement(JourneyMap, { ...props, animate: false, animationDuration: 0, focusZoomScale: 4 }));
+  assert.equal(immediate, reference, 'view options do not leak into DOM or change SSR');
   assert.deepEqual(resolveJourneyMapRendering({ boundaryViewport: false, reuseCanvas: undefined }), {
     boundaryViewport: false, terrainViewport: true, reuseCanvas: true, cacheBase: true,
   });
+});
+
+test('programmatic motion honors explicit opt-out and reduced motion, with absolute overview magnification', () => {
+  assert.equal(journeyAnimationMs(true, 420, false), 420);
+  assert.equal(journeyAnimationMs(false, 420, false), 0);
+  assert.equal(journeyAnimationMs(true, 420, true), 0);
+  assert.equal(journeyAnimationMs(true, 0, false), 0);
+  assert.equal(journeyAnimationMs(true, NaN, false), 420);
+  assert.equal(journeyAnimationMs(true, 9000, false), 5000);
+  assert.equal(journeyFocusZoom(5, 1), 5);
+  assert.equal(journeyFocusZoom(5, 2), 6);
+  assert.equal(journeyFocusZoom(5, 4), 7);
+  assert.equal(journeyFocusZoom(5, 128), 11);
+  assert.equal(journeyFocusZoom(5, NaN), 6);
+  assert.equal(journeyFocusZoom(5, 0), 6);
 });
 
 test('offscreen rejection preserves visible border strokes including the map top', () => {
@@ -162,6 +179,19 @@ test('terrain row envelopes conservatively retain polygon strips and holes', asy
     const [left, right] = terrainRowBounds([diagonal], y - 25, y + 20);
     for (let pointY = Math.max(0, y - 25); pointY <= Math.min(100, y + 20); pointY += 1) {
       assert(left <= pointY && right >= pointY + 20, 'Every potentially visible polygon point remains inside the row envelope');
+    }
+  }
+});
+
+
+test('pan replenishment covers every newly exposed pixel exactly once in all directions', () => {
+  const width = 100, height = 80;
+  for (const dx of [-150, -20, 0, 20, 150]) for (const dy of [-100, -15, 0, 15, 100]) {
+    const regions = journeyPanRegions(width, height, dx, dy);
+    for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+      const uncovered = x < dx || x >= width + dx || y < dy || y >= height + dy;
+      const covered = regions.filter(([left, top, w, h]) => x >= left && x < left + w && y >= top && y < top + h).length;
+      assert.equal(covered, Number(uncovered), `offset ${dx},${dy} at ${x},${y}`);
     }
   }
 });
