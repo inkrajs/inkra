@@ -26,6 +26,10 @@ export interface JourneyMapProps extends HTMLAttributes<HTMLDivElement> {
   attribution: string;
   attributionDisplay?: 'inline' | 'popover';
   height?: number;
+  /** Maximum zoom used by fit/reset; 0..20, default 12. Use 18 for street-scale data. */
+  maxFitZoom?: number;
+  /** Paper suits street diagrams without an ocean layer; default sea. */
+  background?: 'sea' | 'paper';
   /** Controls viewport gestures, not place selection or explicit zoom buttons. */
   interactive?: boolean;
   scrollWheelZoom?: boolean;
@@ -38,7 +42,7 @@ const defaults = (t: InkraTranslate) => ({ zoomIn: t('common.zoomIn'), zoomOut: 
 const noRoutes: readonly JourneyRoute[] = [];
 const valid = (place: JourneyPlace) => Number.isFinite(place.latitude) && Number.isFinite(place.longitude) && Math.abs(place.latitude) <= 85 && Math.abs(place.longitude) <= 180;
 
-export function JourneyMap({ places, routes = noRoutes, geography, landCover, water, selectedPlace, onPlaceSelect, attribution, attributionDisplay = 'inline', height = 480, interactive = true, scrollWheelZoom = false, showControls = true, showPlaceList = false, focusSelectedPlace = false, labels: labelOverrides, className, ...props }: JourneyMapProps) {
+export function JourneyMap({ places, routes = noRoutes, geography, landCover, water, selectedPlace, onPlaceSelect, attribution, attributionDisplay = 'inline', height = 480, maxFitZoom = 12, background = 'sea', interactive = true, scrollWheelZoom = false, showControls = true, showPlaceList = false, focusSelectedPlace = false, labels: labelOverrides, className, ...props }: JourneyMapProps) {
   const { t } = useInkraLocale();
   const labels = { ...defaults(t), ...labelOverrides };
   const root = useRef<HTMLDivElement>(null);
@@ -91,7 +95,7 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
         map.invalidateSize();
         const size = map.getSize();
         if (size.x <= 0 || size.y <= 0) return;
-        if (all.length) map.fitBounds(L.latLngBounds(all), { padding: [44, 44], maxZoom: 12, animate: false });
+        if (all.length) map.fitBounds(L.latLngBounds(all), { padding: [44, 44], maxZoom: Number.isFinite(maxFitZoom) ? Math.max(0, Math.min(20, maxFitZoom)) : 12, animate: false });
         fitZoomRef.current = map.getZoom();
         fitted = true;
       };
@@ -119,7 +123,7 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
         const paper = style.getPropertyValue('--inkra-paper').trim();
         const dark = Number.parseInt(paper.replace('#', '').slice(0, 2), 16) < 100;
         const project = (position: number[]): [number, number] => { const point = map.latLngToContainerPoint([position[1], position[0]]); return [point.x, point.y]; };
-        paintSea(context, width, height, project([0, 0]));
+        if (background === 'sea') paintSea(context, width, height, project([0, 0]));
         if (geography) paintTerrain(context, geography, project, width, height, dark);
         if (landCover) paintTerrain(context, landCover, project, width, height, dark);
         if (water) paintTerrain(context, water, project, width, height, dark, 'water');
@@ -169,7 +173,7 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
       cleanup = () => { cancelAnimationFrame(frame); observer.disconnect(); appearance.disconnect(); scheme.removeEventListener('change', schedule); map.remove(); canvas.remove(); mapRef.current = null; markersRef.current = []; paintRef.current = () => {}; };
     }).catch(() => { if (!cancelled) { setFailed(true); cleanup?.(); cleanup = undefined; } });
     return () => { cancelled = true; cleanup?.(); };
-  }, [places, routes, geography, landCover, water]);
+  }, [places, routes, geography, landCover, water, maxFitZoom, background]);
   useEffect(() => {
     markersRef.current.forEach(({ place, marker }) => marker.getElement()?.setAttribute('aria-pressed', String(selectedPlace === place.id)));
     paintRef.current();
