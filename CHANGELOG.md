@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+## 0.13.0 - 2026-11-02
+
+- Improve JourneyMap rendering with bounded static-base caching, offscreen stroke
+  rejection, terrain-row culling and backing-store reuse. Preserve ink appearance
+  and retain configurable independent rendering strategies.
+- Replenish exposed pan regions instead of leaving clipped raster edges. Release
+  snapshots before resizing and retain bounded canvas allocation and recovery.
+- Animate zoom buttons, reset and API-driven focus by default; support `animate`
+  and `animationDuration`, while honoring reduced-motion preference.
+- Focus pin/list clicks and later selection changes by default. Configure
+  `focusSelectedPlace` and overview-relative `focusZoomScale` (default 2);
+  initial mounting retains the overview and repeated picks do not compound zoom.
+- Keep pin artwork at a fixed screen size in its own marker layer during zoom.
+- Support paper backgrounds and street-scale fit limits with `background` and
+  `maxFitZoom`. Update the companion docs controls and remove excess preview space.
+
 ## 0.12.0 - 2026-10-30
 
 - Add DependencyGraph for skill trees, technology trees and synthesis recipes,

@@ -57,3 +57,29 @@ acceptance therefore remains unverified. WebKit's roughly one-second docs zoom
 paint is still visibly expensive; the optimization does not eliminate all lag.
 No Safari CI gate is added. Future browser-specific presets should follow
 measured regressions; callers can already choose any combination of the flags.
+
+## View interaction
+
+The raster includes a bounded 64 CSS-pixel reserve around the viewport. Panning
+uses transforms while that reserve covers the viewport; a larger pan shifts the
+cached base and paints only the newly exposed strips. Fractional backing-pixel
+offsets use direct drawing to avoid accumulating blur. Zoom, data and appearance
+changes still rebuild the relevant base. The existing bitmap budgets also apply
+to the reserve; if it cannot fit, the viewport-sized rendering path remains.
+
+Programmatic zoom buttons, reset and selection focus animate by default over
+420 ms. Set `animate={false}` or `animationDuration={0}` for immediate changes;
+reduced-motion preference always disables animation. The animation prepares a
+camera-covering raster once, transforms it during the flight and repaints detail
+on completion, rather than repainting terrain every animation frame. Dragging
+or another view command can interrupt the flight.
+Pins have independent 44 CSS-pixel canvases in Leaflet's marker layer: they move
+with their coordinates while keeping a constant screen size throughout zoom.
+Selection, theme, DPR and context restoration update only the affected pin ink.
+
+Pin/list clicks and later `selectedPlace` changes focus by default. Initial
+mounting keeps the overview. Set `focusSelectedPlace={false}` to disable automatic
+focus; `focusZoomScale` defaults to 2 and accepts 1..64 times the overview.
+Repeated selection uses that absolute target rather than compounding the zoom.
+The earlier static-selection measurements above predate this animated default;
+use `focusSelectedPlace={false}` when measuring selection-only cache costs.
