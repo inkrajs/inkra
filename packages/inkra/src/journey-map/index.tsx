@@ -11,6 +11,10 @@ import { TravelIcon } from '../internal/travelIcons.js';
 import { paintTerrain, paintStop, paintSea } from './terrain.js';
 import { MapScale } from './MapScale.js';
 import { seedToNumber } from '../internal/random.js';
+import { PENCIL_RENDERER_VERSION } from '../internal/cache.js';
+import { JourneyBaseBitmap, journeyCanvasSize, prepareJourneyCanvas, resolveJourneyMapRendering, type JourneyMapRendering } from './rendering.js';
+
+export type { JourneyMapRendering, JourneyMapRenderingOptions } from './rendering.js';
 
 export interface JourneyPlace { id: string; label: string; latitude: number; longitude: number }
 export interface JourneyRoute { id: string; coordinates: readonly (readonly [number, number])[] }
@@ -36,13 +40,15 @@ export interface JourneyMapProps extends HTMLAttributes<HTMLDivElement> {
   showControls?: boolean;
   showPlaceList?: boolean;
   focusSelectedPlace?: boolean;
+  /** Auto uses bounded base caching, backing-store reuse and offscreen stroke rejection. */
+  rendering?: JourneyMapRendering;
   labels?: { zoomIn: string; zoomOut: string; reset: string; unavailable: string; attribution?: string };
 }
 const defaults = (t: InkraTranslate) => ({ zoomIn: t('common.zoomIn'), zoomOut: t('common.zoomOut'), reset: t('common.resetView'), unavailable: t('map.unavailable') });
 const noRoutes: readonly JourneyRoute[] = [];
 const valid = (place: JourneyPlace) => Number.isFinite(place.latitude) && Number.isFinite(place.longitude) && Math.abs(place.latitude) <= 85 && Math.abs(place.longitude) <= 180;
 
-export function JourneyMap({ places, routes = noRoutes, geography, landCover, water, selectedPlace, onPlaceSelect, attribution, attributionDisplay = 'inline', height = 480, maxFitZoom = 12, background = 'sea', interactive = true, scrollWheelZoom = false, showControls = true, showPlaceList = false, focusSelectedPlace = false, labels: labelOverrides, className, ...props }: JourneyMapProps) {
+export function JourneyMap({ places, routes = noRoutes, geography, landCover, water, selectedPlace, onPlaceSelect, attribution, attributionDisplay = 'inline', height = 480, maxFitZoom = 12, background = 'sea', interactive = true, scrollWheelZoom = false, showControls = true, showPlaceList = false, focusSelectedPlace = false, rendering = 'auto', labels: labelOverrides, className, ...props }: JourneyMapProps) {
   const { t } = useInkraLocale();
   const labels = { ...defaults(t), ...labelOverrides };
   const root = useRef<HTMLDivElement>(null);
@@ -59,6 +65,9 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
   const selectedRef = useRef(selectedPlace);
   selectedRef.current = selectedPlace;
   const markersRef = useRef<{ place: JourneyPlace; marker: Leaflet.Marker }[]>([]);
+  const renderingOptions = resolveJourneyMapRendering(rendering);
+  const renderingRef = useRef(renderingOptions);
+  renderingRef.current = renderingOptions;
   useEffect(() => {
     let cancelled = false;
     let cleanup: (() => void) | undefined;
@@ -104,42 +113,58 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
       canvas.className = 'inkra-journey-map__ink';
       canvas.setAttribute('aria-hidden', 'true');
       host.current.append(canvas);
+      const base = new JourneyBaseBitmap();
       let frame = 0;
       let paintOrigin = map.containerPointToLatLng([0, 0]), paintZoom = map.getZoom();
       const paint = () => {
         frame = 0;
         const { x: width, y: height } = map.getSize();
-        if (!width || !height) return;
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
-        canvas.style.width = `${width}px`; canvas.style.height = `${height}px`;
-        const context = canvas.getContext('2d');
+        const size = journeyCanvasSize(width, height, window.devicePixelRatio || 1);
+        if (!size) { base.clear(); canvas.width = canvas.height = 0; return; }
+        const options = renderingRef.current;
+        // Release the old snapshot before resizing the main canvas so the two
+        // live backing stores stay within the combined six-Mi-pixel budget.
+        if (!options.cacheBase || canvas.width !== size.pixelWidth || canvas.height !== size.pixelHeight) base.clear();
+        const context = prepareJourneyCanvas(canvas, size, options.reuseCanvas);
         if (!context) return;
         canvas.style.transform = '';
         paintOrigin = map.containerPointToLatLng([0, 0]);
         paintZoom = map.getZoom();
-        context.scale(dpr, dpr);
         const style = getComputedStyle(host.current!);
         const paper = style.getPropertyValue('--inkra-paper').trim();
         const dark = Number.parseInt(paper.replace('#', '').slice(0, 2), 16) < 100;
+        const border = style.getPropertyValue('--inkra-border-strong').trim();
+        const accent = style.getPropertyValue('--inkra-accent').trim();
+        const markerInk = style.getPropertyValue('--inkra-accent-strong').trim();
         const project = (position: number[]): [number, number] => { const point = map.latLngToContainerPoint([position[1], position[0]]); return [point.x, point.y]; };
-        if (background === 'sea') paintSea(context, width, height, project([0, 0]));
-        if (geography) paintTerrain(context, geography, project, width, height, dark);
-        if (landCover) paintTerrain(context, landCover, project, width, height, dark);
-        if (water) paintTerrain(context, water, project, width, height, dark, 'water');
+        const origin = project([0, 0]);
+        // Data belongs to this effect instance. Its cleanup releases the bitmap;
+        // the remaining key covers every base-pixel input that can change in it.
+        const baseKey = JSON.stringify([PENCIL_RENDERER_VERSION, 'journey-base-v1', background, width, height, size.pixelWidth, size.pixelHeight, size.dpr,
+          paintZoom, origin[0], origin[1], paper, dark, border, accent, options.boundaryViewport, options.terrainViewport]);
         const draw = (line: Leaflet.LatLng[], color: string, seed: number, weight: number) => {
           const projected = line.map(point => { const p = map.latLngToContainerPoint(point); return [p.x, p.y] as [number, number]; });
-          pencilStroke(context, projected, color, weight, seed, .3, 3, false, { grain: .7, breaks: .15, variation: .8, gain: 2.5, step: .8 });
+          pencilStroke(context, projected, color, weight, seed, .3, 3, false, { grain: .7, breaks: .15, variation: .8, gain: 2.5, step: .8,
+            ...(options.boundaryViewport ? { viewport: [width, height] as const, viewportTop: -8 } : {}) });
         };
-        boundaries.forEach((line, i) => draw(line, style.getPropertyValue('--inkra-border-strong').trim(), i + 137, 1.2));
-        routePoints.forEach((line, i) => draw(line, style.getPropertyValue('--inkra-accent').trim(), i + 717, 2));
+        if (!options.cacheBase || !base.restore(context, baseKey)) {
+          if (background === 'sea') paintSea(context, width, height, origin);
+          if (geography) paintTerrain(context, geography, project, width, height, dark, 'land', options.terrainViewport);
+          if (landCover) paintTerrain(context, landCover, project, width, height, dark, 'land', options.terrainViewport);
+          if (water) paintTerrain(context, water, project, width, height, dark, 'water', options.terrainViewport);
+          boundaries.forEach((line, i) => draw(line, border, i + 137, 1.2));
+          routePoints.forEach((line, i) => draw(line, accent, i + 717, 2));
+          if (options.cacheBase) base.capture(canvas, size, baseKey);
+        }
         points.forEach(place => {
           const p = map.latLngToContainerPoint([place.latitude, place.longitude]);
-          paintStop(context, p.x, p.y, seedToNumber(place.id), style.getPropertyValue('--inkra-accent-strong').trim(), paper, selectedRef.current === place.id);
+          paintStop(context, p.x, p.y, seedToNumber(place.id), markerInk, paper, selectedRef.current === place.id);
         });
       };
       const schedule = () => { if (!frame) frame = requestAnimationFrame(paint); };
       paintRef.current = schedule;
+      const restore = () => { base.clear(); schedule(); };
+      canvas.addEventListener('contextrestored', restore);
       // Reuse the existing raster during a pan; repaint geographical detail on rest.
       const translate = () => {
         const point = map.latLngToContainerPoint(paintOrigin);
@@ -169,8 +194,16 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
       }
       const scheme = matchMedia('(prefers-color-scheme: dark)');
       scheme.addEventListener('change', schedule);
+      let resolution: MediaQueryList;
+      const watchResolution = () => {
+        resolution?.removeEventListener('change', resolutionChanged);
+        resolution = matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
+        resolution.addEventListener('change', resolutionChanged);
+      };
+      const resolutionChanged = () => { watchResolution(); schedule(); };
+      watchResolution();
       fit(); schedule(); setReady(true);
-      cleanup = () => { cancelAnimationFrame(frame); observer.disconnect(); appearance.disconnect(); scheme.removeEventListener('change', schedule); map.remove(); canvas.remove(); mapRef.current = null; markersRef.current = []; paintRef.current = () => {}; };
+      cleanup = () => { cancelAnimationFrame(frame); observer.disconnect(); appearance.disconnect(); scheme.removeEventListener('change', schedule); resolution.removeEventListener('change', resolutionChanged); canvas.removeEventListener('contextrestored', restore); base.clear(); map.remove(); canvas.width = canvas.height = 0; canvas.remove(); mapRef.current = null; markersRef.current = []; paintRef.current = () => {}; };
     }).catch(() => { if (!cancelled) { setFailed(true); cleanup?.(); cleanup = undefined; } });
     return () => { cancelled = true; cleanup?.(); };
   }, [places, routes, geography, landCover, water, maxFitZoom, background]);
@@ -186,6 +219,7 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
       else map?.flyTo([place.latitude, place.longitude], targetZoom, { duration: .85 });
     }
   }, [selectedPlace, focusSelectedPlace, ready]);
+  useEffect(() => { paintRef.current(); }, [renderingOptions.boundaryViewport, renderingOptions.terrainViewport, renderingOptions.reuseCanvas, renderingOptions.cacheBase]);
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
