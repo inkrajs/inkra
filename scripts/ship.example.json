@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "my-reviewed-change",
+  "title": "Deploy the reviewed Inkra changes",
+  "library": { "directory": ".", "ref": "HEAD" },
+  "docs": { "directory": "apps/docs", "ref": "HEAD" },
+  "website": { "directory": "../inkra-website" },
+  "livePaths": ["/docs/components/journey-map"],
+  "pollSeconds": 15,
+  "timeoutMinutes": 45
+}
