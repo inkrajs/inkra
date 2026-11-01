@@ -144,7 +144,7 @@ async function fixture(t, { loseMergeResponse = false } = {}) {
     if (/\/pulls\/\d+$/.test(path)) return JSON.stringify(prs[key]);
     throw new Error('Unexpected GitHub read ' + path);
   };
-  const request = async url => ({ ok: true, json: async () => ({ site: three, docs: two, library: a, package: { name: candidate.name, version: candidate.version, integrity: candidate.integrity } }), body: { cancel: async () => {} } });
+  const request = async url => ({ url: String(url), ok: true, json: async () => ({ site: three, docs: two, library: a, package: { name: candidate.name, version: candidate.version, integrity: candidate.integrity } }), body: { cancel: async () => {} } });
   return { root, run, request, calls, getBuildCount: () => buildCount };
 }
 
@@ -187,4 +187,23 @@ test('stale local-test receipts stop before any push or PR creation', async t =>
   await assert.rejects(ship({ ...plan, library: { ...plan.library, localValidation: path } }, { base: fx.root, execute: true, run: fx.run, request: fx.request, print: () => {} }), /another head/);
   assert.equal(fx.calls.some(c => c.command === 'git' && c.args[0] === 'push'), false);
   assert.equal(fx.calls.some(c => c.command === 'gh' && c.args.includes('POST')), false);
+});
+
+
+test('live verification follows canonical same-origin page redirects', async t => {
+  const fx = await fixture(t);
+  const request = async (url, options) => {
+    assert.equal(options.redirect, 'follow');
+    const response = await fx.request(url);
+    response.url = String(url).includes('/version.json') ? String(url) : String(url).replace(/\/?$/, '/');
+    return response;
+  };
+  const result = await ship(plan, { base: fx.root, execute: true, run: fx.run, request, print: () => {} });
+  assert.equal(result.currentStep, 'complete');
+});
+
+test('a live redirect outside the website is rejected', async t => {
+  const fx = await fixture(t);
+  const request = async url => ({ ...await fx.request(url), url: 'https://example.org/moved' });
+  await assert.rejects(ship(plan, { base: fx.root, execute: true, run: fx.run, request, print: () => {} }), /redirected outside/);
 });
