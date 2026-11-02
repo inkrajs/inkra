@@ -26,7 +26,8 @@ export function MapScale({ map }: { map: Map | null }) {
       setLabel(distance >= 1000 ? `${distance / 1000} km` : `${Number(distance.toPrecision(3))} m`);
       const dpr = Math.min(devicePixelRatio || 1, 2);
       canvas.width = Math.ceil((width + 4) * dpr); canvas.height = 12 * dpr;
-      canvas.style.width = `${width + 4}px`;
+      const cssWidth = `${width + 4}px`;
+      if (canvas.style.width !== cssWidth) canvas.style.width = cssWidth;
       const context = canvas.getContext('2d');
       if (!context) return;
       context.scale(dpr, dpr);

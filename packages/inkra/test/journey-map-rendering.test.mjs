@@ -219,7 +219,7 @@ test('prototype property names use the same terrain fallback as other unknown so
     return fills;
   };
   for (const role of ['land', 'water']) for (const id of ['toString', 'constructor', '__proto__', 'hasOwnProperty']) {
-    assert.deepEqual(colors(id, role), colors(undefined, role));
+    assert.deepEqual(colors(id, role), colors('unknown-source', role));
   }
   assert.notDeepEqual(colors('unknown-source', 'water'), colors('unknown-source', 'land'));
   assert.deepEqual(colors('urban', 'water'), colors('urban', 'land'), 'Known explicit categories still win');
