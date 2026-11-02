@@ -574,7 +574,7 @@
     "react-easy-crop": "^6.2.4",
     "react-grid-layout": "^2.3.0",
     "react-markdown": "^10.1.0",
-    "react-resizable-panels": "^4.14.8",
+    "react-resizable-panels": "^4.15.0",
     "react-zoom-pan-pinch": "^4.2.0",
     "remark-gfm": "^4.0.1"
   }
