@@ -1,34 +1,40 @@
 import type { GeoJsonObject, Feature, FeatureCollection, Geometry, Position } from 'geojson';
 import { pencilStroke, type PencilPoint } from '../internal/stroke.js';
+import { defaultJourneyMapPalette, resolveJourneyMapPalette, type ResolvedJourneyMapPalette, type JourneyMapPigment } from './palette.js';
 import { seededRandom } from '../internal/random.js';
 
 type Project = (position: Position) => PencilPoint;
-// Palette, anchored hatch and category glyphs adapted from adventure/pencil/brush.js.
-const palette: Record<string, [string, string]> = {
-  land: ['#e6e2af', '#83924a'], forest: ['#a7c7ad', '#3c7356'], crop: ['#e6c17b', '#9c7536'],
-  shrub: ['#c8c38f', '#797742'], bare: ['#cec4d9', '#83708e'], snow: ['#f4f5f1', '#94afb7'],
-  wetland: ['#a6c7c6', '#437e82'], urban: ['#d49b8b', '#975b4f'], water: ['#87bbc0', '#4d91a0'],
-};
+// Anchored hatch and category glyphs adapted from adventure/pencil/brush.js.
 const stroke = (ctx: CanvasRenderingContext2D, points: PencilPoint[], color: string, seed: number, width = .6) =>
   pencilStroke(ctx, points, color, width, seed, .3, 1, false, { variation: 1, breaks: .45, grain: .78, gain: 1.7, step: 1 });
 
-let seaTile: HTMLCanvasElement | undefined;
-export function paintSea(ctx: CanvasRenderingContext2D, width: number, height: number, anchor: PencilPoint) {
-  if (!seaTile) {
-    seaTile = document.createElement('canvas'); seaTile.width = seaTile.height = 512;
-    const ink = seaTile.getContext('2d');
-    if (!ink) { seaTile = undefined; return; }
+let seaMask: HTMLCanvasElement | undefined, seaTile: HTMLCanvasElement | undefined, seaColor: string | undefined;
+export function paintSea(ctx: CanvasRenderingContext2D, width: number, height: number, anchor: PencilPoint, colors: Required<JourneyMapPigment> = defaultJourneyMapPalette.sea) {
+  if (!seaMask) {
+    seaMask = document.createElement('canvas'); seaMask.width = seaMask.height = 512;
+    const ink = seaMask.getContext('2d');
+    if (!ink) { seaMask = undefined; return; }
     const rng = seededRandom(4801);
     for (let i = 0; i < 320; i++) {
       const x = rng() * 512, y = rng() * 512, length = 9 + rng() * 49;
       ink.globalAlpha = .1 + rng() * .2;
       for (const [dx, dy] of [[0, 0], [-512, 0], [0, 512], [-512, 512]]) {
         ink.save(); ink.translate(dx, dy);
-        stroke(ink, [[x, y], [x + length * .5, y - length * .09], [x + length, y - length * .18]], '#4d91a0', 8100 + i, .5 + i % 4 * .1);
+        stroke(ink, [[x, y], [x + length * .5, y - length * .09], [x + length, y - length * .18]], '#000000', 8100 + i, .5 + i % 4 * .1);
         ink.restore();
       }
     }
   }
+  // One fixed alpha mask + one reusable color tile: 2 MiB RGBA total.
+  // Color edits tint the existing pencil marks instead of sampling them again.
+  if (!seaTile) { seaTile = document.createElement('canvas'); seaTile.width = seaTile.height = 512; }
+  if (seaColor !== colors.stroke) {
+    const ink = seaTile.getContext('2d'); if (!ink) return;
+    ink.clearRect(0, 0, 512, 512); ink.drawImage(seaMask, 0, 0);
+    ink.globalCompositeOperation = 'source-in'; ink.fillStyle = colors.stroke; ink.fillRect(0, 0, 512, 512);
+    ink.globalCompositeOperation = 'source-over'; seaColor = colors.stroke;
+  }
+  if (colors.fill !== 'transparent') { ctx.save(); ctx.fillStyle = colors.fill; ctx.fillRect(0, 0, width, height); ctx.restore(); }
   const pattern = ctx.createPattern(seaTile, 'repeat');
   if (!pattern) return;
   pattern.setTransform(new DOMMatrix().translate(anchor[0], anchor[1]));
@@ -58,14 +64,15 @@ export function terrainRowBounds(rings: readonly (readonly PencilPoint[])[], top
   return left <= right ? [left, right] : undefined;
 }
 
-export function paintTerrain(ctx: CanvasRenderingContext2D, data: GeoJsonObject, project: Project, width: number, height: number, dark: boolean, defaultKind = 'land', terrainViewport = false) {
+export function paintTerrain(ctx: CanvasRenderingContext2D, data: GeoJsonObject, project: Project, width: number, height: number, dark: boolean, defaultKind = 'land', terrainViewport = false, colors?: ResolvedJourneyMapPalette) {
+  const resolved = colors ?? resolveJourneyMapPalette(undefined, dark);
   for (const [featureIndex, feature] of mapFeatures(data).entries()) {
     const geometry = feature.geometry;
     if (!geometry) continue;
     const polygons = geometry.type === 'MultiPolygon' ? geometry.coordinates : geometry.type === 'Polygon' ? [geometry.coordinates] : [];
-    const kind = String(feature.properties?.id ?? defaultKind);
-    const fallback = Object.prototype.hasOwnProperty.call(palette, defaultKind) ? palette[defaultKind] : palette.land;
-    const [fill, ink] = Object.prototype.hasOwnProperty.call(palette, kind) ? palette[kind] : fallback;
+    const kind = String(feature.properties?.mapRole ?? feature.properties?.id ?? defaultKind);
+    const fallback = Object.prototype.hasOwnProperty.call(resolved.terrain, defaultKind) ? resolved.terrain[defaultKind] : resolved.terrain.land;
+    const { fill, stroke: ink } = Object.prototype.hasOwnProperty.call(resolved.terrain, kind) ? resolved.terrain[kind] : fallback;
     for (const [polygonIndex, polygon] of polygons.entries()) {
       const rings = polygon.map(ring => ring.map(project));
       let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
@@ -79,7 +86,7 @@ export function paintTerrain(ctx: CanvasRenderingContext2D, data: GeoJsonObject,
       ctx.save(); ctx.beginPath();
       for (const ring of rings) { ring.forEach(([x, y], index) => index ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.closePath(); }
       ctx.clip('evenodd');
-      if (defaultKind === 'land' && kind === 'land') { ctx.fillStyle = dark ? '#191d1e' : '#fdfcf8'; ctx.fillRect(left, top, right - left, bottom - top); }
+      if (defaultKind === 'land' && kind === 'land') { ctx.fillStyle = resolved.landBase; ctx.fillRect(left, top, right - left, bottom - top); }
       ctx.fillStyle = fill; ctx.globalAlpha = dark ? .16 : .45; ctx.fillRect(left, top, right - left, bottom - top);
       ctx.globalAlpha = dark ? .75 : .65;
       // Anchor the sampling lattice to geographic coordinates, never the viewport.
@@ -100,10 +107,10 @@ export function paintTerrain(ctx: CanvasRenderingContext2D, data: GeoJsonObject,
           if (rng() < .2) continue;
           const x = origin[0] + col * 36 + rng() * 12, y = origin[1] + row * spacing + rng() * 5;
           const length = 14 + rng() * 30;
-          stroke(ctx, [[x, y], [x + length * .45, y - length * .14], [x + length, y - length * .28]], dark ? fill : ink, cell, .65);
-          if (kind === 'forest') stroke(ctx, [[x - 3, y], [x, y - 7], [x + 3, y], [x, y - 4], [x, y + 2]], dark ? fill : ink, cell + 1);
-          else if (kind === 'bare') stroke(ctx, [[x - 5, y + 3], [x, y - 5], [x + 5, y + 3]], dark ? fill : ink, cell + 1);
-          else if (kind === 'crop') stroke(ctx, [[x - 3, y - 3], [x + 5, y - 1], [x + 4, y + 3]], dark ? fill : ink, cell + 1);
+          stroke(ctx, [[x, y], [x + length * .45, y - length * .14], [x + length, y - length * .28]], ink, cell, .65);
+          if (kind === 'forest') stroke(ctx, [[x - 3, y], [x, y - 7], [x + 3, y], [x, y - 4], [x, y + 2]], ink, cell + 1);
+          else if (kind === 'bare') stroke(ctx, [[x - 5, y + 3], [x, y - 5], [x + 5, y + 3]], ink, cell + 1);
+          else if (kind === 'crop') stroke(ctx, [[x - 3, y - 3], [x + 5, y - 1], [x + 4, y + 3]], ink, cell + 1);
         }
       }
       ctx.restore();

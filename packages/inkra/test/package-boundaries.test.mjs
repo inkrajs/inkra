@@ -10,7 +10,9 @@ test('optional public family subpaths reference the existing identities',async()
   const mod=await import(new URL('../'+part.import,import.meta.url));
   for(const [key,value] of Object.entries(mod)) if(key in root)assert.equal(value,root[key],`${name}:${key}`);
  }
- assert.equal(Object.keys(root).length,286);
+ assert.equal(Object.keys(root).length,287);
+ assert.ok(root.defaultJourneyMapPalette);
+ assert.ok(Object.isFrozen(root.defaultJourneyMapPalette));
  for (const name of ['DependencyGraph', 'DependencyGraphRoot', 'layoutDependencyGraph', 'getDependencyGraphHighlight']) assert(name in root, name);
  assert.equal(root.DependencyGraph.Root, root.DependencyGraphRoot);
  assert.ok(pkg.exports['./dependency-graph']);

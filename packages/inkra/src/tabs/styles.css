@@ -77,3 +77,10 @@
   .inkra-pencil-surface.inkra-tabs__selection, .inkra-pencil-surface.inkra-tabs__focus-ring { display: none !important; }
   .inkra-tabs__overflow-icon > [data-pencil-icon-ready] + svg { display: block; }
 }
+
+/* Keep the original label in the accessibility tree when using icon-only tabs. */
+.inkra-tabs__trigger[data-label-collapsed] > .inkra-tabs__label { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); clip-path: inset(50%); white-space: nowrap; flex: none; }
+/* Natural-width measurement is independent of the current collapsed layout. */
+.inkra-tabs__list[data-measuring-labels] > .inkra-tabs__trigger > .inkra-tabs__label { position: static !important; width: max-content !important; height: auto !important; max-width: none !important; margin: 0 !important; clip: auto !important; clip-path: none !important; overflow: visible !important; flex: none !important; display: inline-flex; }
+.inkra-tabs__list[data-measuring-labels] > .inkra-tabs__trigger > .inkra-tabs__label .inkra-pencil-text { width: max-content !important; max-width: none !important; }
+@media print { .inkra-tabs__trigger[data-label-collapsed] > .inkra-tabs__label { position: static; width: auto; height: auto; margin: 0; clip: auto; clip-path: none; overflow: visible; } }
