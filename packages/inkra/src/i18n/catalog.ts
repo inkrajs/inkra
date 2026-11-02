@@ -160,6 +160,7 @@ export const messageRows = [
   ['table.ascending', '{column}: sorted ascending', '{column}：升序', '{column}：昇順', '{column}: 오름차순 정렬', '{column} : tri croissant'],
   ['table.descending', '{column}: sorted descending', '{column}：降序', '{column}：降順', '{column}: 내림차순 정렬', '{column} : tri décroissant'],
   ['video.error', 'Video playback could not start.', '无法开始播放视频。', '動画を再生できませんでした。', '동영상을 재생할 수 없습니다.', 'Impossible de démarrer la vidéo.'],
+  ['map.features', 'Map annotations', '\u5730\u56fe\u6807\u6ce8', '\u5730\u56f3\u306e\u6ce8\u91c8', '\uc9c0\ub3c4 \ud45c\uc2dc', 'Annotations de la carte'],
   ['map.credits', 'Map credits', '地图来源', '地図の出典', '지도 출처', 'Crédits de la carte'],
   ['overflow.more', 'More items ({count})', '更多项目（{count}）', 'その他の項目（{count}）', '항목 더 보기 ({count})', 'Autres éléments ({count})'],
   ['panZoom.instructions', 'Use arrow keys to pan, plus or minus to zoom, and 0 to reset.', '使用方向键平移，加减号缩放，按 0 重置。', '矢印キーで移動、プラス・マイナスで拡大縮小、0 でリセットします。', '방향키로 이동하고 더하기/빼기로 확대/축소하며 0으로 초기화합니다.', 'Utilisez les flèches pour déplacer, plus ou moins pour zoomer, et 0 pour réinitialiser.'],

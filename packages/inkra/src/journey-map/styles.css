@@ -19,3 +19,14 @@
 .inkra-journey-map__places button { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px; border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; }
 .inkra-journey-map__places button[aria-pressed="true"] { text-decoration: underline; text-underline-offset: 4px; }
 .inkra-journey-map button:focus-visible, .inkra-journey-map__marker:focus-visible { outline: 2px solid var(--inkra-focus); outline-offset: -2px; }
+
+.inkra-journey-map__portal-owner { display: contents; }
+.inkra-journey-map__custom-icon { display: grid; place-items: center; width: 44px; height: 44px; color: var(--inkra-accent-strong); }
+.inkra-journey-map__custom-icon[hidden], .inkra-journey-map__stop[hidden] { display: none; }
+.inkra-journey-map__caption { position: absolute; transform: translate(-50%, -50%); width: max-content; max-width: 150px; pointer-events: none; }
+.inkra-journey-map__feature-label { padding: 3px 8px; font-size: 12px; line-height: 1.5; text-align: center; color: var(--inkra-ink); }
+.inkra-journey-map__feature-label[data-selected="true"] { color: var(--inkra-accent-strong); }
+.inkra-journey-map__features { display: flex; flex-wrap: wrap; list-style: none; gap: 8px; padding: 0; margin: 8px 0 0; }
+.inkra-journey-map__features button { min-height: 44px; padding: 8px; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
+.inkra-journey-map__features [aria-pressed="true"] { text-decoration: underline; text-underline-offset: 4px; }
+.inkra-journey-map__feature-hit:focus-visible { outline: 2px solid var(--inkra-focus); outline-offset: 2px; }
