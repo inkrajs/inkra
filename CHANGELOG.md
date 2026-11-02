@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.14.0 - 2026-11-02
+
+- Add custom JourneyMap pin icons/images and styled, selectable routes.
+- Add GeoJSON Polygon/MultiPolygon areas with holes, labels and feature lists.
+- Support trackpad pinch independently of ordinary wheel scrolling, including
+  Safari gesture events, while preserving touchscreen zoom and fixed pin sizes.
+- Preserve water-layer colors when source features carry non-category ids.
+
 ## 0.13.0 - 2026-11-02
 
 - Improve JourneyMap rendering with bounded static-base caching, offscreen stroke
