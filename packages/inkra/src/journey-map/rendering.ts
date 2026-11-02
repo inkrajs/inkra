@@ -56,12 +56,13 @@ export function journeyPanRegions(width: number, height: number, dx: number, dy:
 }
 
 /** Pure and SSR safe: browser DPR is supplied by the caller. */
-export function journeyCanvasSize(width: number, height: number, requestedDpr: number): JourneyCanvasSize | undefined {
+export function journeyCanvasSize(width: number, height: number, requestedDpr: number, allowDownsample = false): JourneyCanvasSize | undefined {
   if (![width, height].every(value => Number.isFinite(value) && value > 0)) return;
   const requested = Number.isFinite(requestedDpr) ? Math.max(1, Math.min(requestedDpr, 2)) : 1;
   const dpr = Math.min(requested, MAX_SIDE / width, MAX_SIDE / height, Math.sqrt(MAX_LAYER_PIXELS / (width * height)));
-  if (dpr < 1) return;
+  if (!(Number.isFinite(dpr) && dpr > 0) || (!allowDownsample && dpr < 1)) return;
   const pixelWidth = Math.round(width * dpr), pixelHeight = Math.round(height * dpr);
+  if (pixelWidth < 1 || pixelHeight < 1) return;
   // Round-down adjustment prevents rounding the two sides over the pixel budget.
   const boundedDpr = pixelWidth * pixelHeight > MAX_LAYER_PIXELS
     ? Math.min(dpr, Math.floor(width * dpr) / width, Math.floor(height * dpr) / height) : dpr;
