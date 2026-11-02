@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.15.0 - 2026-11-03
+
 - Add adaptive icon-only Tabs labels with accessible names and focus/hover hints.
 - Add four-direction marker following content, adjustable gaps and custom
   ReactNode display slots that remain attached during movement and zoom.
