@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+- Add adaptive icon-only Tabs labels with accessible names and focus/hover hints.
+- Add four-direction marker following content, adjustable gaps and custom
+  ReactNode display slots that remain attached during movement and zoom.
+
+- Add partial JourneyMap palettes for terrain, sea, roads and boundaries, including
+  custom categories, CSS theme colors and dark overrides. Repaint only the base
+  while retaining the camera, markers and selection; keep ocean textures bounded.
+
+- Add configurable JourneyMap label outlines, text/pin sizing and colors. Default
+  to a 3px theme-paper halo, 12px labels, 18px artwork and #4c7952 pin pigment;
+  retain a minimum 44px hit target and per-place color overrides.
+- Add independent multiple selection for places, custom icons/images, routes and
+  areas, with controlled ID arrays, keyboard toggling and visible selection.
+- Reconcile marker position/content updates without rebuilding or refitting the
+  map. Add optional shared/per-place transitions, pause/resume, retargeting and
+  onReady notification; keep trajectories and roaming rules in the application.
+
 ## 0.14.0 - 2026-11-02
 
 - Add custom JourneyMap pin icons/images and styled, selectable routes.

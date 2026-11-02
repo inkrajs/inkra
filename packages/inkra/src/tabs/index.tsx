@@ -10,6 +10,10 @@ import { PencilSurface } from '../PencilSurface.js';
 import { PencilText } from '../PencilText.js';
 import { PencilLine } from '../PencilLine.js';
 import { useSelectionDrawing } from '../internal/useSelectionDrawing.js';
+import { Tooltip } from '../tooltip/Tooltip.js';
+import { useBrowserLayoutEffect } from '../internal/useBrowserLayoutEffect.js';
+import { useTabsLabels, type TabsLabelVisibility } from './useLabels.js';
+export type { TabsLabelVisibility } from './useLabels.js';
 import { revealTab, useTabsOverflow, type TabsOverflow } from './useOverflow.js';
 
 export type { TabsOverflow } from './useOverflow.js';
@@ -36,6 +40,8 @@ export interface TabsListProps extends Primitive.TabsListProps {
   divided?: boolean;
   /** Horizontal overflow interaction. Vertical lists retain native scrolling. */
   overflow?: TabsOverflow;
+  /** Hide icon-backed labels only when they do not fit; text-only tabs retain their names. */
+  labelVisibility?: TabsLabelVisibility;
   moreLabel?: string;
   scrollPreviousLabel?: string;
   scrollNextLabel?: string;
@@ -53,6 +59,7 @@ const AnimatedContext = createContext(true);
 const OrientationContext = createContext<'horizontal' | 'vertical'>('horizontal');
 const DividedContext = createContext(false);
 const ChangeContext = createContext<(value: string) => void>(() => {});
+const LabelsContext = createContext(false);
 const HiddenContext = createContext<ReadonlySet<string>>(new Set());
 
 const Root = forwardRef<HTMLDivElement, TabsProps>(function TabsRoot(
@@ -80,15 +87,17 @@ const Root = forwardRef<HTMLDivElement, TabsProps>(function TabsRoot(
 const List = forwardRef<HTMLDivElement, TabsListProps>(function TabsList(inkraProps, ref) {
   const { t } = useInkraLocale();
   const {
-  className, align = 'start', fullWidth = false, divided = false, overflow = 'scroll',
+  className, align = 'start', fullWidth = false, divided = false, overflow = 'scroll', labelVisibility = 'always',
   moreLabel = t('tabs.more'), scrollPreviousLabel = t('tabs.previous'), scrollNextLabel = t('tabs.next'),
   onFocusCapture, ...props
 } = inkraProps;
   const current = useContext(ValueContext);
   const change = useContext(ChangeContext);
-  const mode = useContext(OrientationContext) === 'horizontal' ? overflow : 'scroll';
+  const vertical = useContext(OrientationContext) === 'vertical';
+  const mode = vertical ? 'scroll' : overflow;
   const state = useTabsOverflow(mode, current);
   const { listRef } = state;
+  const collapsed = useTabsLabels(listRef, state.containerRef, labelVisibility, fullWidth, vertical, mode === 'menu');
   const hidden = useMemo(() => new Set(mode === 'menu' ? state.items.map(item => item.value) : []), [mode, state.items]);
   const selectionPending = useRef(false);
   const setRef = useCallback((node: HTMLDivElement | null) => {
@@ -96,12 +105,12 @@ const List = forwardRef<HTMLDivElement, TabsListProps>(function TabsList(inkraPr
     if (typeof ref === 'function') ref(node);
     else if (ref) ref.current = node;
   }, [listRef, ref]);
-  const list = <Primitive.List {...props} ref={setRef} data-overflow={mode} data-align={align} data-full-width={fullWidth || undefined} data-divided={divided || undefined} className={['inkra-tabs__list', className].filter(Boolean).join(' ')} onFocusCapture={event => {
+  const list = <Primitive.List {...props} ref={setRef} data-label-visibility={labelVisibility} data-overflow={mode} data-align={align} data-full-width={fullWidth || undefined} data-divided={divided || undefined} className={['inkra-tabs__list', className].filter(Boolean).join(' ')} onFocusCapture={event => {
     onFocusCapture?.(event);
     if (!event.defaultPrevented && mode !== 'menu') revealTab(listRef.current, (event.target as HTMLElement).closest<HTMLElement>('[data-tabs-value]'));
   }} />;
   const directionIcon = (previous: boolean) => <OverflowIcon left={previous !== state.rtl} />;
-  return <DividedContext.Provider value={divided}><HiddenContext.Provider value={hidden}>
+  return <Tooltip.Provider delayDuration={300}><LabelsContext.Provider value={collapsed}><DividedContext.Provider value={divided}><HiddenContext.Provider value={hidden}>
     {mode === 'scroll' ? list : <div className="inkra-tabs__overflow" data-overflow={mode} data-has-overflow={state.overflowing || undefined} ref={state.containerRef}>
       {mode === 'buttons' && state.overflowing && <Button size="icon" variant="ghost" className="inkra-tabs__scroll-button" aria-label={scrollPreviousLabel} title={scrollPreviousLabel} disabled={!state.previous} onClick={() => state.scroll(-1)}>{directionIcon(true)}</Button>}
       {list}
@@ -123,7 +132,7 @@ const List = forwardRef<HTMLDivElement, TabsListProps>(function TabsList(inkraPr
         </DropdownMenu.Content></DropdownMenu.Portal>
       </DropdownMenu.Root>}
     </div>}
-  </HiddenContext.Provider></DividedContext.Provider>;
+  </HiddenContext.Provider></DividedContext.Provider></LabelsContext.Provider></Tooltip.Provider>;
 });
 
 const Trigger = forwardRef<HTMLButtonElement, TabsTriggerProps>(function TabsTrigger({ value, className, children, startIcon, endIcon, overflowLabel, ...props }, ref) {
@@ -131,16 +140,23 @@ const Trigger = forwardRef<HTMLButtonElement, TabsTriggerProps>(function TabsTri
   const divided = useContext(DividedContext);
   const orientation = useContext(OrientationContext);
   const hidden = useContext(HiddenContext).has(value);
+  const collapsed = useContext(LabelsContext) && Boolean(startIcon || endIcon);
+  const labelRef = useRef<HTMLSpanElement>(null);
+  const [measuredLabel, setMeasuredLabel] = useState('');
+  const [tooltipOpen, setTooltipOpen] = useState(false);
+  const tooltipLabel = props['aria-label'] ?? overflowLabel ?? (typeof children === 'string' || typeof children === 'number' ? String(children) : measuredLabel);
+  useBrowserLayoutEffect(() => { if (collapsed) setMeasuredLabel(labelRef.current?.textContent ?? ''); }, [collapsed, children]);
   const surface = useRef<HTMLSpanElement>(null);
   useSelectionDrawing(surface, current === value, useContext(AnimatedContext));
-  return <Primitive.Trigger {...props} value={value} ref={ref} data-tabs-value={value} data-overflow-label={overflowLabel} data-overflow-hidden={hidden || undefined} aria-hidden={hidden || props['aria-hidden']} inert={hidden || undefined} className={['inkra-tabs__trigger', className].filter(Boolean).join(' ')}>
+  const trigger = <Primitive.Trigger {...props} value={value} ref={ref} data-tabs-value={value} data-label-collapsed={collapsed || undefined} data-overflow-label={overflowLabel} data-overflow-hidden={hidden || undefined} aria-hidden={hidden || props['aria-hidden']} inert={hidden || undefined} className={['inkra-tabs__trigger', className].filter(Boolean).join(' ')}>
     {divided && <PencilLine className="inkra-tabs__divider" orientation={orientation === 'horizontal' ? 'vertical' : 'horizontal'} seed={`tab-divider-${value}`} />}
     <PencilSurface as="span" aria-hidden="true" className="inkra-tabs__selection" variant="selection" seed={`tab-${value}`} ref={surface} />
     <PencilSurface as="span" aria-hidden="true" className="inkra-tabs__focus-ring" variant="outline" seed={`tab-${value}-focus`} />
     {startIcon && <span className="inkra-tabs__icon" aria-hidden="true">{startIcon}</span>}
-    <span className="inkra-tabs__label">{typeof children === 'string' ? <PencilText>{children}</PencilText> : children}</span>
+    <span ref={labelRef} className="inkra-tabs__label">{typeof children === 'string' ? <PencilText>{children}</PencilText> : children}</span>
     {endIcon && <span className="inkra-tabs__icon" aria-hidden="true">{endIcon}</span>}
   </Primitive.Trigger>;
+  return <Tooltip.Root open={Boolean(collapsed && tooltipLabel && !hidden && tooltipOpen)} onOpenChange={next => setTooltipOpen(Boolean(next && collapsed && !hidden))}><Tooltip.Trigger asChild>{trigger}</Tooltip.Trigger>{collapsed && tooltipLabel && !hidden && <Tooltip.Portal><Tooltip.Content>{tooltipLabel}</Tooltip.Content></Tooltip.Portal>}</Tooltip.Root>;
 });
 
 const Content = forwardRef<HTMLDivElement, TabsContentProps>(function TabsContent({ className, value, ...props }, ref) {

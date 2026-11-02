@@ -1,17 +1,27 @@
+import type { JourneyPlaceAnimation } from './motion.js';
 import type { ReactNode } from 'react';
 import type { MultiPolygon, Polygon, Position } from 'geojson';
 import { pencilStroke } from '../internal/stroke.js';
 import { seedToNumber } from '../internal/random.js';
 
+export type JourneyPlaceLabelPosition = 'top' | 'bottom' | 'left' | 'right';
 export interface JourneyPlace {
+  /** Stable, unique identity; coordinate/content updates reuse this marker. */
   id: string;
   label: string;
+  /** Optional following display slot. label remains the accessible name. null hides the slot. */
+  labelContent?: ReactNode;
+  labelPosition?: JourneyPlaceLabelPosition;
+  /** -32..128 CSS px; 0 by default. Negative values compensate transparent artwork padding. */
+  labelGap?: number;
   latitude: number;
   longitude: number;
   /** CSS color, including theme variables. */
   color?: string;
   /** Replace the default pencil pin; its native 44px target and label remain. */
   icon?: ReactNode;
+  /** Per-marker override for coordinate transitions; trajectory generation stays outside the map. */
+  transition?: JourneyPlaceAnimation;
 }
 
 export interface JourneyRoute {

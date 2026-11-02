@@ -4,14 +4,16 @@
 .inkra-journey-map__ink { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 350; }
 .inkra-journey-map__tools { position: absolute; z-index: 600; inset-block-end: 9px; inset-inline-start: 9px; display: grid; gap: 4px; }
 .inkra-journey-map__marker { display: grid; place-items: center; }
-.inkra-journey-map__symbol, .inkra-journey-map__stop { display: block; width: 44px; height: 44px; }
+.inkra-journey-map__symbol { position: relative; display: grid; place-items: center; width: 100%; height: 100%; }
+.inkra-journey-map__stop { display: block; width: var(--inkra-map-pin-size, 18px); height: var(--inkra-map-pin-size, 18px); }
+
 .inkra-journey-map__stop { pointer-events: none; }
-.inkra-journey-map__pin { position: absolute; top: 37px; left: 50%; transform: translateX(-50%); width: max-content; max-width: 140px; text-align: center; color: var(--inkra-ink); font: 14px/1.4 var(--inkra-font-hand); }
-.inkra-journey-map__marker[aria-pressed="true"] .inkra-journey-map__pin { color: var(--inkra-accent-strong); }
-.inkra-journey-map__orientation { position: absolute; bottom: 18px; right: 18px; z-index: 600; display: flex; align-items: end; gap: 12px; pointer-events: none; }
-.inkra-journey-map__scale { display: grid; justify-items: center; gap: 1px; font-size: 13px; line-height: 22px; }
+.inkra-journey-map__pin { position: absolute; top: calc(50% + var(--inkra-map-label-extent) + var(--inkra-map-label-gap, 0px)); left: 50%; transform: translateX(-50%); width: max-content; max-width: 140px; text-align: center; color: var(--inkra-map-label-color, var(--inkra-ink)); font: var(--inkra-map-label-font-size, 12px)/1.4 var(--inkra-font-hand); }
+.inkra-journey-map__marker[aria-pressed="true"] .inkra-journey-map__pin { color: var(--inkra-map-label-color, var(--inkra-accent-strong)); }
+.inkra-journey-map__orientation { position: absolute; bottom: 18px; right: 18px; z-index: 600; display: flex; align-items: end; gap: 12px; pointer-events: none; color: var(--inkra-map-label-color, var(--inkra-ink)); }
+.inkra-journey-map__scale { display: grid; justify-items: center; gap: 1px; font-size: var(--inkra-map-label-font-size, 12px); line-height: 1.5; }
 .inkra-journey-map__scale canvas { display: block; height: 12px; }
-.inkra-journey-map__compass { display: grid; justify-items: center; width: 34px; height: 50px; font-size: 14px; line-height: 20px; }
+.inkra-journey-map__compass { display: grid; justify-items: center; width: 34px; min-height: 50px; font-size: var(--inkra-map-label-font-size, 12px); line-height: 1.4; }
 .inkra-journey-map__attribution { margin: 8px 0; color: var(--inkra-ink-muted); font-size: 12px; }
 .inkra-journey-map__credits { position: absolute; inset-block-start: 8px; inset-inline-end: 8px; z-index: 600; }
 .inkra-journey-map__credits-content { width: min(340px, calc(100vw - 40px)); }
@@ -21,12 +23,35 @@
 .inkra-journey-map button:focus-visible, .inkra-journey-map__marker:focus-visible { outline: 2px solid var(--inkra-focus); outline-offset: -2px; }
 
 .inkra-journey-map__portal-owner { display: contents; }
-.inkra-journey-map__custom-icon { display: grid; place-items: center; width: 44px; height: 44px; color: var(--inkra-accent-strong); }
+.inkra-journey-map__custom-icon { position: relative; display: grid; place-items: center; width: 44px; height: 44px; color: var(--inkra-map-pin-color, var(--inkra-accent-strong)); transform: scale(var(--inkra-map-pin-scale, 0.409091)); }
 .inkra-journey-map__custom-icon[hidden], .inkra-journey-map__stop[hidden] { display: none; }
 .inkra-journey-map__caption { position: absolute; transform: translate(-50%, -50%); width: max-content; max-width: 150px; pointer-events: none; }
-.inkra-journey-map__feature-label { padding: 3px 8px; font-size: 12px; line-height: 1.5; text-align: center; color: var(--inkra-ink); }
-.inkra-journey-map__feature-label[data-selected="true"] { color: var(--inkra-accent-strong); }
+.inkra-journey-map__feature-label { font-size: var(--inkra-map-label-font-size, 12px); line-height: 1.5; text-align: center; color: var(--inkra-map-label-color, var(--inkra-ink)); }
+.inkra-journey-map__feature-label[data-selected="true"] { color: var(--inkra-map-label-color, var(--inkra-accent-strong)); }
 .inkra-journey-map__features { display: flex; flex-wrap: wrap; list-style: none; gap: 8px; padding: 0; margin: 8px 0 0; }
 .inkra-journey-map__features button { min-height: 44px; padding: 8px; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
 .inkra-journey-map__features [aria-pressed="true"] { text-decoration: underline; text-underline-offset: 4px; }
 .inkra-journey-map__feature-hit:focus-visible { outline: 2px solid var(--inkra-focus); outline-offset: 2px; }
+
+/* Native glyph outlines sit behind the existing pencil canvas without adding
+   label surfaces, extra rasters or changing selectable text and hit geometry. */
+.inkra-journey-map[data-label-halo="true"] :is(.inkra-journey-map__pin[data-label-custom="false"], .inkra-journey-map__feature-label, .inkra-journey-map__orientation) .inkra-pencil-text__source {
+  -webkit-text-stroke-width: var(--inkra-map-label-halo-width, 6px);
+  -webkit-text-stroke-color: var(--inkra-map-label-halo-color, var(--inkra-paper));
+  paint-order: stroke fill;
+}
+@media (forced-colors: active), print {
+  .inkra-journey-map[data-label-halo="true"] :is(.inkra-journey-map__pin[data-label-custom="false"], .inkra-journey-map__feature-label, .inkra-journey-map__orientation) .inkra-pencil-text__source {
+    -webkit-text-stroke-width: 0;
+  }
+}
+
+.inkra-journey-map__custom-selection { position: absolute !important; inset: -4px; pointer-events: none; color: inherit; }
+
+.inkra-journey-map__symbol { --inkra-map-label-extent: calc(var(--inkra-map-pin-size, 18px) * 15 / 44); }
+.inkra-journey-map__symbol[data-custom="true"] { --inkra-map-label-extent: calc(var(--inkra-map-pin-size, 18px) / 2); }
+.inkra-journey-map__symbol[data-label-position="top"] .inkra-journey-map__pin { top: calc(50% - var(--inkra-map-label-extent) - var(--inkra-map-label-gap, 0px)); left: 50%; transform: translate(-50%, -100%); }
+.inkra-journey-map__symbol[data-label-position="left"] .inkra-journey-map__pin { top: 50%; left: calc(50% - var(--inkra-map-label-extent) - var(--inkra-map-label-gap, 0px)); transform: translate(-100%, -50%); }
+.inkra-journey-map__symbol[data-label-position="right"] .inkra-journey-map__pin { top: 50%; left: calc(50% + var(--inkra-map-label-extent) + var(--inkra-map-label-gap, 0px)); transform: translateY(-50%); }
+.inkra-journey-map__pin[data-label-custom="true"] { max-width: none; }
+.inkra-journey-map__label-content { display: inline-flex; align-items: center; gap: 4px; }
