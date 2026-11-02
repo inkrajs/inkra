@@ -17,6 +17,7 @@ import { JourneyBaseBitmap, journeyAnimationMs, journeyCanvasSize, journeyFocusZ
 
 export type { JourneyMapRendering, JourneyMapRenderingOptions } from './rendering.js';
 
+import { attachJourneyTrackpad } from './trackpad.js';
 import { areaPolygons, journeyAreaLabel, paintJourneyArea, validJourneyArea, type JourneyArea, type JourneyPlace, type JourneyRoute } from './annotations.js';
 export type { JourneyArea, JourneyPlace, JourneyRoute } from './annotations.js';
 export interface JourneyMapProps extends HTMLAttributes<HTMLDivElement> {
@@ -43,6 +44,7 @@ export interface JourneyMapProps extends HTMLAttributes<HTMLDivElement> {
   background?: 'sea' | 'paper';
   /** Controls viewport gestures, not place selection or explicit zoom buttons. */
   interactive?: boolean;
+  /** Ordinary wheel scrolling only; trackpad pinch remains enabled while interactive. */
   scrollWheelZoom?: boolean;
   showControls?: boolean;
   showPlaceList?: boolean;
@@ -412,6 +414,7 @@ export function JourneyMap({ places, routes = noRoutes, areas = noAreas, selecte
       if (interactive) handler.enable(); else handler.disable();
     }
     if (interactive && scrollWheelZoom) map.scrollWheelZoom.enable(); else map.scrollWheelZoom.disable();
+    if (interactive && host.current) return attachJourneyTrackpad(host.current, map);
   }, [interactive, scrollWheelZoom, ready]);
   return <div {...props} ref={root} className={['inkra-journey-map', className].filter(Boolean).join(' ')}>
     {placeLabels.map(({ place, node, icon }) => <span key={place.id} className="inkra-journey-map__portal-owner">
