@@ -4,6 +4,8 @@ type GestureInput = Event & { scale?: number; clientX?: number; clientY?: number
 
 /** Trackpad pinch is independent of ordinary wheel scrolling and native touch zoom. */
 export function attachJourneyTrackpad(host: HTMLElement, map: Map): () => void {
+  let active = true;
+  const alive = () => active && Boolean(map.getPane('mapPane'));
   let frame = 0;
   let pending: { zoom: number; point: Point } | undefined;
   let gesture: { zoom: number; scale: number; point: Point } | undefined;
@@ -13,7 +15,7 @@ export function attachJourneyTrackpad(host: HTMLElement, map: Map): () => void {
   const clamp = (zoom: number) => Math.max(map.getMinZoom(), Math.min(map.getMaxZoom(), zoom));
   const apply = () => {
     frame = 0;
-    if (!pending) return;
+    if (!alive() || !pending) return;
     const { point, zoom } = pending;
     pending = undefined;
     const snap = map.options.zoomSnap ?? 0;
@@ -21,10 +23,12 @@ export function attachJourneyTrackpad(host: HTMLElement, map: Map): () => void {
     // final view and the coordinate under the pointer can drift.
     const target = snap > 0 ? clamp(Math.round(zoom / snap) * snap) : zoom;
     if (target !== map.getZoom()) map.setZoomAround(point, target, { animate: false });
+    if (!alive()) return;
     // Preserve sub-snap movement across a wheel burst instead of losing tiny deltas.
     remainder = zoom - map.getZoom();
   };
   const queue = (zoom: number, point: Point) => {
+    if (!alive()) return;
     pending = { zoom: clamp(zoom), point };
     if (!frame) frame = requestAnimationFrame(apply);
   };
@@ -38,6 +42,7 @@ export function attachJourneyTrackpad(host: HTMLElement, map: Map): () => void {
   };
   const stop = (event: Event) => { event.preventDefault(); event.stopImmediatePropagation(); };
   const wheel = (event: WheelEvent) => {
+    if (!alive()) return;
     if (!event.ctrlKey) return; // Plain two-finger scrolling continues to the page.
     if (!Number.isFinite(event.deltaY)) return;
     stop(event);
@@ -50,14 +55,17 @@ export function attachJourneyTrackpad(host: HTMLElement, map: Map): () => void {
     queue((pending?.zoom ?? map.getZoom() + remainder) - pixels / (100 * Math.LN2), pointAt(event));
   };
   const start = (event: Event) => {
+    if (!alive()) return;
     if (touching) return; // Leaflet owns physical touchscreen pinch.
     const input = event as GestureInput;
     stop(event); map.stop();
+    if (!alive()) return;
     if (frame) cancelAnimationFrame(frame);
     frame = 0; pending = undefined; remainder = 0;
     gesture = { zoom: map.getZoom(), scale: input.scale && input.scale > 0 && Number.isFinite(input.scale) ? input.scale : 1, point: pointAt(input) };
   };
   const change = (event: Event) => {
+    if (!alive()) return;
     if (!gesture || touching) return;
     stop(event);
     const scale = (event as GestureInput).scale;
@@ -68,6 +76,7 @@ export function attachJourneyTrackpad(host: HTMLElement, map: Map): () => void {
     gesture = undefined;
   };
   const touch = (event: TouchEvent) => {
+    if (!alive()) return;
     touching = event.touches.length > 0;
     if (touching && gesture) {
       gesture = undefined; pending = undefined;
@@ -81,8 +90,11 @@ export function attachJourneyTrackpad(host: HTMLElement, map: Map): () => void {
   host.addEventListener('gestureend', end, { passive: false });
   for (const type of ['touchstart', 'touchend', 'touchcancel'] as const) host.addEventListener(type, touch, { capture: true, passive: true });
   const cleanup = () => {
+    if (!active) return;
+    active = false;
     map.off('unload', cleanup);
     if (frame) cancelAnimationFrame(frame);
+    frame = 0; pending = undefined; gesture = undefined;
     host.removeEventListener('wheel', wheel, true);
     host.removeEventListener('gesturestart', start);
     host.removeEventListener('gesturechange', change);

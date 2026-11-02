@@ -12,6 +12,7 @@ import { TravelIcon } from '../internal/travelIcons.js';
 import { paintTerrain, paintStop, paintSea } from './terrain.js';
 import { MapScale } from './MapScale.js';
 import { seedToNumber } from '../internal/random.js';
+import { createJourneyLeafletMap } from './lifecycle.js';
 import { PENCIL_RENDERER_VERSION } from '../internal/cache.js';
 import { JourneyBaseBitmap, journeyAnimationMs, journeyCanvasSize, journeyFocusZoom, journeyPanRegions, prepareJourneyCanvas, resolveJourneyMapRendering, type JourneyMapRendering } from './rendering.js';
 
@@ -79,6 +80,7 @@ export interface JourneyMapProps extends HTMLAttributes<HTMLDivElement> {
   onPlaceSelect?: (place: JourneyPlace) => void;
   attribution: string;
   attributionDisplay?: 'inline' | 'popover';
+  /** Viewport height in CSS px; minimum 240, default 480. Nonfinite values use the default. */
   height?: number;
   /** Maximum zoom used by fit/reset; 0..20, default 12. Use 18 for street-scale data. */
   maxFitZoom?: number;
@@ -112,7 +114,8 @@ const valid = (place: JourneyPlace) => Number.isFinite(place.latitude) && Number
 
 export function JourneyMap({ places, routes = noRoutes, areas = noAreas, selectedRoute, onRouteSelect, selectedArea, onAreaSelect, showFeatureList = false, labelHalo = true, labelFontSize = 12, labelPosition = 'bottom', labelGap = 0, renderPlaceLabel, labelColor, pinSize = 18, pinColor = '#4c7952', placeTransition = false, onReady, selectionMode = 'single', selectedPlaces, onSelectedPlacesChange, selectedRoutes, onSelectedRoutesChange, selectedAreas, onSelectedAreasChange, palette, geography, landCover, water, selectedPlace, onPlaceSelect, attribution, attributionDisplay = 'inline', height = 480, maxFitZoom = 12, background = 'sea', interactive = true, scrollWheelZoom = false, showControls = true, showPlaceList = false, focusSelectedPlace = true, focusZoomScale = 2, animate = true, animationDuration = 420, rendering = 'auto', labels: labelOverrides, className, style, ...props }: JourneyMapProps) {
   const { t } = useInkraLocale();
-  const labels = { ...defaults(t), ...labelOverrides };
+  const defaultLabels = defaults(t);
+  const labels = { ...defaultLabels, ...labelOverrides, features: labelOverrides?.features ?? defaultLabels.features };
   const halo = typeof labelHalo === 'object' && labelHalo ? labelHalo : {};
   const haloWidth = Number.isFinite(halo.width) ? Math.max(0, halo.width!) : 3;
   const fontSize = Number.isFinite(labelFontSize) ? Math.max(8, Math.min(96, labelFontSize)) : 12;
@@ -169,7 +172,9 @@ export function JourneyMap({ places, routes = noRoutes, areas = noAreas, selecte
   const viewOptions = useRef({ animate, animationDuration, focusSelectedPlace, focusZoomScale });
   viewOptions.current = { animate, animationDuration, focusSelectedPlace, focusZoomScale };
   const selectPlace = (place: JourneyPlace, fromList = false) => {
+    const selectionMap = mapRef.current;
     const active = placeSelection.select(place);
+    if (selectionMap && (mapRef.current !== selectionMap || !selectionMap.getPane('mapPane'))) return;
     if (active && viewOptions.current.focusSelectedPlace) focusRef.current(place);
     else if (active && fromList && mapRef.current) viewRef.current([place.latitude, place.longitude], mapRef.current.getZoom());
   };
@@ -185,9 +190,11 @@ export function JourneyMap({ places, routes = noRoutes, areas = noAreas, selecte
     setPlaceLabels([]); setFeatureLabels([]); featureHits.current = [];
     void import('leaflet').then(L => {
       if (cancelled || !host.current) return;
-      const map = L.map(host.current, { zoomControl: false, attributionControl: false, scrollWheelZoom: false, zoomSnap: .1, zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false }).setView([0, 0], 2);
+      let disposed = false;
+      const map = createJourneyLeafletMap(L.Map, host.current, { zoomControl: false, attributionControl: false, scrollWheelZoom: false, zoomSnap: .1, zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false }).setView([0, 0], 2);
+      const alive = () => !disposed && !cancelled && Boolean(map.getPane('mapPane'));
       mapRef.current = map;
-      cleanup = () => { map.remove(); mapRef.current = null; markersRef.current = []; };
+      cleanup = () => { disposed = true; map.remove(); mapRef.current = null; markersRef.current = []; };
       const boundaries: { points: Leaflet.LatLng[]; role: string }[] = [];
       if (geography) {
         const layer = L.geoJSON(geography);
@@ -221,10 +228,11 @@ export function JourneyMap({ places, routes = noRoutes, areas = noAreas, selecte
         const path = layer.getElement(); if (!path) return;
         path.classList.add('inkra-journey-map__feature-hit');
         featureHits.current.push({ kind, id, label, path });
-        layer.on('click', select);
+        const pick = () => { if (alive()) select(); };
+        layer.on('click', pick);
         path.addEventListener('keydown', event => {
           const key = (event as KeyboardEvent).key;
-          if (key === 'Enter' || key === ' ') { event.preventDefault(); event.stopPropagation(); select(); }
+          if (key === 'Enter' || key === ' ') { event.preventDefault(); event.stopPropagation(); pick(); }
         });
       };
       areaLayers.forEach((group, i) => {
@@ -241,7 +249,9 @@ export function JourneyMap({ places, routes = noRoutes, areas = noAreas, selecte
       setFeatureLabels(captions);
       let fitted = false, markersInitialized = false;
       const fit = (animated = false) => {
+        if (!alive()) return;
         map.invalidateSize();
+        if (!alive()) return;
         const size = map.getSize();
         if (size.x <= 0 || size.y <= 0) return;
         const all = [...placesRef.current.filter(valid).map(place => L.latLng(place.latitude, place.longitude)), ...staticBounds];
@@ -271,9 +281,10 @@ export function JourneyMap({ places, routes = noRoutes, areas = noAreas, selecte
       };
       const pinSurfaces = markersRef.current;
       const pinsById = new Map<string, typeof pinSurfaces[number]>();
-      const motion = new JourneyPlaceMotion((id, position) => pinsById.get(id)?.marker.setLatLng([position.latitude, position.longitude]));
+      const motion = new JourneyPlaceMotion((id, position) => { if (alive()) pinsById.get(id)?.marker.setLatLng([position.latitude, position.longitude]); });
       const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
       const paintPins = () => {
+        if (!alive()) return;
         const style = getComputedStyle(host.current!);
         const defaultInk = style.getPropertyValue('--inkra-map-pin-color').trim() || style.getPropertyValue('--inkra-accent-strong').trim();
         const paper = style.getPropertyValue('--inkra-paper').trim();
@@ -302,13 +313,14 @@ export function JourneyMap({ places, routes = noRoutes, areas = noAreas, selecte
       let paintWidth = 0, paintHeight = 0, previousSignature = '', previousKey = '';
       const paint = () => {
         frame = 0;
+        if (!alive()) return;
         const viewport = map.getSize();
         if (!viewport.x || !viewport.y) return;
         // A small reserve keeps ordinary pans on the compositor. Larger pans
         // replenish only exposed strips, within the same backing-store budgets.
         let padding = 64;
         let size = journeyCanvasSize(viewport.x + padding * 2, viewport.y + padding * 2, window.devicePixelRatio || 1);
-        if (!size) { padding = 0; size = journeyCanvasSize(viewport.x, viewport.y, window.devicePixelRatio || 1); }
+        if (!size) { padding = 0; size = journeyCanvasSize(viewport.x, viewport.y, window.devicePixelRatio || 1, true); }
         if (!size) { base.clear(); canvas.width = canvas.height = 0; return; }
         const { width, height } = size;
         const options = renderingRef.current;
@@ -380,13 +392,16 @@ export function JourneyMap({ places, routes = noRoutes, areas = noAreas, selecte
         canvas.style.transformOrigin = '0 0';
         canvas.style.transform = `translate(${-padding}px, ${-padding}px)`;
       };
-      const schedule = () => { paintPins(); if (!animating && !frame) frame = requestAnimationFrame(paint); };
+      const schedule = () => { if (!alive()) return; paintPins(); if (!animating && !frame) frame = requestAnimationFrame(paint); };
       paintRef.current = schedule;
       viewRef.current = (center, targetZoom) => {
+        if (!alive()) return;
         const target = L.latLng(center);
         const zoom = Math.max(map.getMinZoom(), Math.min(map.getMaxZoom(), targetZoom));
         if (activeView?.center.equals(target) && activeView.zoom === zoom) return;
-        map.stop(); animating = false; activeView = undefined;
+        map.stop();
+        if (!alive()) return;
+        animating = false; activeView = undefined;
         const settings = viewOptions.current;
         const duration = journeyAnimationMs(settings.animate, settings.animationDuration, matchMedia('(prefers-reduced-motion: reduce)').matches);
         if (!duration || (map.getCenter().equals(target) && map.getZoom() === zoom)) {
@@ -406,10 +421,14 @@ export function JourneyMap({ places, routes = noRoutes, areas = noAreas, selecte
         const overview = map.unproject(from.add(to).divideBy(2), startZoom);
         animating = true; preparingView = true;
         if (frame) cancelAnimationFrame(frame); frame = 0;
-        map.setView(overview, startZoom - Math.log2(scale), { animate: false });
-        paint();
-        map.setView(start, startZoom, { animate: false });
-        preparingView = false; activeView = { center: target, zoom };
+        try {
+          map.setView(overview, startZoom - Math.log2(scale), { animate: false });
+          if (!alive()) return;
+          paint();
+          map.setView(start, startZoom, { animate: false });
+        } finally { preparingView = false; }
+        if (!alive()) return;
+        activeView = { center: target, zoom };
         map.flyTo(target, zoom, { animate: true, duration: duration / 1000 });
       };
       zoomRef.current = delta => viewRef.current(activeView?.center ?? map.getCenter(), (activeView?.zoom ?? map.getZoom()) + delta);
@@ -418,6 +437,7 @@ export function JourneyMap({ places, routes = noRoutes, areas = noAreas, selecte
       canvas.addEventListener('contextrestored', restore);
       // Reuse the existing raster during a pan; repaint geographical detail on rest.
       const translate = () => {
+        if (!alive()) return;
         const point = map.latLngToContainerPoint(paintOrigin);
         const scale = map.getZoomScale(map.getZoom(), paintZoom);
         canvas.style.transformOrigin = '0 0';
@@ -425,11 +445,13 @@ export function JourneyMap({ places, routes = noRoutes, areas = noAreas, selecte
         const viewport = map.getSize();
         if (!animating && (point.x > 0 || point.y > 0 || point.x + paintWidth * scale < viewport.x || point.y + paintHeight * scale < viewport.y)) schedule();
       };
-      const settle = () => { if (preparingView) return; animating = false; activeView = undefined; schedule(); };
+      const settle = () => { if (!alive() || preparingView) return; animating = false; activeView = undefined; schedule(); };
       map.on('move', translate);
       map.on('moveend zoomend resize', settle);
-      map.on('dragstart', () => { map.stop(); animating = false; activeView = undefined; });
+      const stopDrag = () => { if (!alive()) return; map.stop(); animating = false; activeView = undefined; };
+      map.on('dragstart', stopDrag);
       syncPlacesRef.current = () => {
+        if (!alive()) return;
         const nextPlaces = placesRef.current.filter(valid);
         const ids = new Set(nextPlaces.map(place => place.id));
         let contentChanged = pinSurfaces.length !== nextPlaces.length || pinSurfaces.some((pin, i) => pin.place.id !== nextPlaces[i]?.id);
@@ -451,7 +473,7 @@ export function JourneyMap({ places, routes = noRoutes, areas = noAreas, selecte
             const record = pin;
             pin.restore = () => { record.key = ''; paintPins(); };
             ink.addEventListener('contextrestored', pin.restore);
-            marker.on('click', () => selectPlace(record.place));
+            marker.on('click', () => { if (alive()) selectPlace(record.place); });
             pinsById.set(place.id, pin); contentChanged = true;
           } else if (pin.place.label !== place.label || pin.place.color !== place.color || pin.place.icon !== place.icon || pin.place.labelContent !== place.labelContent) contentChanged = true;
           pin.place = place;
@@ -475,6 +497,7 @@ export function JourneyMap({ places, routes = noRoutes, areas = noAreas, selecte
         if (markersInitialized && !fitted && nextPlaces.length) { fit(); schedule(); }
       };
       resizePinsRef.current = () => {
+        if (!alive()) return;
         const hitSize = Math.max(44, pinSizeRef.current);
         for (const { marker } of markersRef.current) {
           // Keep the native marker and portal nodes: resizing must not reset the camera.
@@ -487,11 +510,11 @@ export function JourneyMap({ places, routes = noRoutes, areas = noAreas, selecte
       syncPlacesRef.current(); markersInitialized = true;
       const motionPreferenceChanged = () => syncPlacesRef.current();
       reducedMotion.addEventListener('change', motionPreferenceChanged);
-      const observer = new ResizeObserver(() => { map.invalidateSize(); if (!fitted) fit(); schedule(); });
+      const observer = new ResizeObserver(() => { if (!alive()) return; map.invalidateSize(); if (!alive()) return; if (!fitted) fit(); schedule(); });
       observer.observe(host.current);
       const appearance = new MutationObserver(schedule);
       for (let element: HTMLElement | null = host.current; element; element = element.parentElement) {
-        appearance.observe(element, { attributes: true, attributeFilter: ['data-theme', 'data-inkra-theme', 'style'] });
+        appearance.observe(element, { attributes: true, attributeFilter: ['data-theme', 'data-inkra-theme', 'style', 'class'] });
       }
       const scheme = matchMedia('(prefers-color-scheme: dark)');
       scheme.addEventListener('change', schedule);
@@ -501,10 +524,12 @@ export function JourneyMap({ places, routes = noRoutes, areas = noAreas, selecte
         resolution = matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
         resolution.addEventListener('change', resolutionChanged);
       };
-      const resolutionChanged = () => { watchResolution(); schedule(); };
+      const resolutionChanged = () => { if (!alive()) return; watchResolution(); schedule(); };
       watchResolution();
-      fit(); schedule(); setReady(true);
-      cleanup = () => { motion.clear(); reducedMotion.removeEventListener('change', motionPreferenceChanged); cancelAnimationFrame(frame); observer.disconnect(); appearance.disconnect(); scheme.removeEventListener('change', schedule); resolution.removeEventListener('change', resolutionChanged); canvas.removeEventListener('contextrestored', restore); base.clear(); colorProbe.remove(); pinSurfaces.forEach(pin => { pin.canvas.removeEventListener('contextrestored', pin.restore); pin.canvas.width = pin.canvas.height = 0; }); map.remove(); canvas.width = canvas.height = 0; canvas.remove(); mapRef.current = null; markersRef.current = []; featureHits.current = []; paintRef.current = () => {}; resizePinsRef.current = () => {}; syncPlacesRef.current = () => {}; viewRef.current = () => {}; zoomRef.current = () => {}; focusRef.current = () => {}; };
+      cleanup = () => { disposed = true; map.off('move', translate); map.off('moveend zoomend resize', settle); map.off('dragstart', stopDrag); motion.clear(); reducedMotion.removeEventListener('change', motionPreferenceChanged); cancelAnimationFrame(frame); observer.disconnect(); appearance.disconnect(); scheme.removeEventListener('change', schedule); resolution.removeEventListener('change', resolutionChanged); canvas.removeEventListener('contextrestored', restore); base.clear(); colorProbe.remove(); pinSurfaces.forEach(pin => { pin.canvas.removeEventListener('contextrestored', pin.restore); pin.canvas.width = pin.canvas.height = 0; }); map.remove(); canvas.width = canvas.height = 0; canvas.remove(); mapRef.current = null; markersRef.current = []; featureHits.current = []; paintRef.current = () => {}; resizePinsRef.current = () => {}; syncPlacesRef.current = () => {}; viewRef.current = () => {}; zoomRef.current = () => {}; focusRef.current = () => {}; fitRef.current = () => {}; };
+      fit();
+      if (!alive()) return;
+      schedule(); setReady(true);
     }).catch(() => { if (!cancelled) { setFailed(true); cleanup?.(); cleanup = undefined; } });
     return () => { cancelled = true; cleanup?.(); };
   }, [routes, areas, geography, landCover, water, maxFitZoom, background]);
@@ -560,7 +585,7 @@ export function JourneyMap({ places, routes = noRoutes, areas = noAreas, selecte
       </span>;
     })}
     {featureLabels.map(({ kind, id, label, node }) => createPortal(<PencilText className="inkra-journey-map__feature-label" data-selected={(kind === 'area' ? areaSelection.ids : routeSelection.ids).has(id)}>{label}</PencilText>, node, `${kind}:${id}`))}
-    <div className="inkra-journey-map__viewport" style={{ height: Math.max(240, Math.min(800, height)) }}>
+    <div className="inkra-journey-map__viewport" style={{ height: Number.isFinite(height) ? Math.max(240, height) : 480 }}>
       {attributionDisplay === 'popover' && <div className="inkra-journey-map__credits"><Popover.Root>
         <Popover.Trigger asChild><Button size="icon" variant="ghost" aria-label={labels.attribution ?? t('map.credits')} title={labels.attribution ?? t('map.credits')}><TravelIcon name="info" /></Button></Popover.Trigger>
         <Popover.Portal><Popover.Content align="end" sideOffset={8} collisionPadding={20} className="inkra-journey-map__credits-content">
