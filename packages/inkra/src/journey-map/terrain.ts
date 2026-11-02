@@ -64,7 +64,7 @@ export function paintTerrain(ctx: CanvasRenderingContext2D, data: GeoJsonObject,
     if (!geometry) continue;
     const polygons = geometry.type === 'MultiPolygon' ? geometry.coordinates : geometry.type === 'Polygon' ? [geometry.coordinates] : [];
     const kind = String(feature.properties?.id ?? defaultKind);
-    const [fill, ink] = palette[kind] ?? palette.land;
+    const [fill, ink] = palette[kind] ?? palette[defaultKind] ?? palette.land;
     for (const [polygonIndex, polygon] of polygons.entries()) {
       const rings = polygon.map(ring => ring.map(project));
       let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;

@@ -1,10 +1,11 @@
 import { useInkraLocale, type InkraTranslate } from '../i18n/index.js';
-import { useEffect, useRef, useState, type HTMLAttributes } from 'react';
+import { useEffect, useMemo, useRef, useState, type HTMLAttributes } from 'react';
 import { createPortal } from 'react-dom';
 import type * as Leaflet from 'leaflet';
 import type { GeoJsonObject } from 'geojson';
 import { Button } from '../Button.js';
 import { Popover } from '../overlay/index.js';
+import { PencilSurface } from '../PencilSurface.js';
 import { PencilText } from '../PencilText.js';
 import { pencilStroke } from '../internal/stroke.js';
 import { TravelIcon } from '../internal/travelIcons.js';
@@ -16,12 +17,19 @@ import { JourneyBaseBitmap, journeyAnimationMs, journeyCanvasSize, journeyFocusZ
 
 export type { JourneyMapRendering, JourneyMapRenderingOptions } from './rendering.js';
 
-export interface JourneyPlace { id: string; label: string; latitude: number; longitude: number }
-export interface JourneyRoute { id: string; coordinates: readonly (readonly [number, number])[] }
+import { attachJourneyTrackpad } from './trackpad.js';
+import { areaPolygons, journeyAreaLabel, paintJourneyArea, validJourneyArea, type JourneyArea, type JourneyPlace, type JourneyRoute } from './annotations.js';
+export type { JourneyArea, JourneyPlace, JourneyRoute } from './annotations.js';
 export interface JourneyMapProps extends HTMLAttributes<HTMLDivElement> {
   places: readonly JourneyPlace[];
   /** [latitude, longitude]. Supplied geometry only; no routing or travel-time inference. */
   routes?: readonly JourneyRoute[];
+  areas?: readonly JourneyArea[];
+  selectedRoute?: string;
+  onRouteSelect?: (route: JourneyRoute) => void;
+  selectedArea?: string;
+  onAreaSelect?: (area: JourneyArea) => void;
+  showFeatureList?: boolean;
   geography?: GeoJsonObject;
   landCover?: GeoJsonObject;
   water?: GeoJsonObject;
@@ -36,6 +44,7 @@ export interface JourneyMapProps extends HTMLAttributes<HTMLDivElement> {
   background?: 'sea' | 'paper';
   /** Controls viewport gestures, not place selection or explicit zoom buttons. */
   interactive?: boolean;
+  /** Ordinary wheel scrolling only; trackpad pinch remains enabled while interactive. */
   scrollWheelZoom?: boolean;
   showControls?: boolean;
   showPlaceList?: boolean;
@@ -49,15 +58,21 @@ export interface JourneyMapProps extends HTMLAttributes<HTMLDivElement> {
   animationDuration?: number;
   /** Auto uses bounded base caching, backing-store reuse and offscreen stroke rejection. */
   rendering?: JourneyMapRendering;
-  labels?: { zoomIn: string; zoomOut: string; reset: string; unavailable: string; attribution?: string };
+  labels?: { zoomIn: string; zoomOut: string; reset: string; unavailable: string; attribution?: string; features?: string };
 }
-const defaults = (t: InkraTranslate) => ({ zoomIn: t('common.zoomIn'), zoomOut: t('common.zoomOut'), reset: t('common.resetView'), unavailable: t('map.unavailable') });
+const defaults = (t: InkraTranslate) => ({ zoomIn: t('common.zoomIn'), zoomOut: t('common.zoomOut'), reset: t('common.resetView'), unavailable: t('map.unavailable'), features: t('map.features') });
 const noRoutes: readonly JourneyRoute[] = [];
+const noAreas: readonly JourneyArea[] = [];
 const valid = (place: JourneyPlace) => Number.isFinite(place.latitude) && Number.isFinite(place.longitude) && Math.abs(place.latitude) <= 85 && Math.abs(place.longitude) <= 180;
 
-export function JourneyMap({ places, routes = noRoutes, geography, landCover, water, selectedPlace, onPlaceSelect, attribution, attributionDisplay = 'inline', height = 480, maxFitZoom = 12, background = 'sea', interactive = true, scrollWheelZoom = false, showControls = true, showPlaceList = false, focusSelectedPlace = true, focusZoomScale = 2, animate = true, animationDuration = 420, rendering = 'auto', labels: labelOverrides, className, ...props }: JourneyMapProps) {
+export function JourneyMap({ places, routes = noRoutes, areas = noAreas, selectedRoute, onRouteSelect, selectedArea, onAreaSelect, showFeatureList = false, geography, landCover, water, selectedPlace, onPlaceSelect, attribution, attributionDisplay = 'inline', height = 480, maxFitZoom = 12, background = 'sea', interactive = true, scrollWheelZoom = false, showControls = true, showPlaceList = false, focusSelectedPlace = true, focusZoomScale = 2, animate = true, animationDuration = 420, rendering = 'auto', labels: labelOverrides, className, ...props }: JourneyMapProps) {
   const { t } = useInkraLocale();
   const labels = { ...defaults(t), ...labelOverrides };
+  const usableAreas = useMemo(() => areas.filter(validJourneyArea), [areas]);
+  const annotationSelection = useRef({ selectedRoute, onRouteSelect, selectedArea, onAreaSelect });
+  annotationSelection.current = { selectedRoute, onRouteSelect, selectedArea, onAreaSelect };
+  const featureHits = useRef<{ kind: 'route' | 'area'; id: string; label: string; path: Element }[]>([]);
+  const [featureLabels, setFeatureLabels] = useState<{ kind: 'route' | 'area'; id: string; label: string; node: HTMLElement }[]>([]);
   const root = useRef<HTMLDivElement>(null);
   const host = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Leaflet.Map | null>(null);
@@ -71,7 +86,7 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
   selectionRef.current = onPlaceSelect;
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
-  const [placeLabels, setPlaceLabels] = useState<{ place: JourneyPlace; node: HTMLElement }[]>([]);
+  const [placeLabels, setPlaceLabels] = useState<{ place: JourneyPlace; node: HTMLElement; icon: HTMLElement }[]>([]);
   const selectedRef = useRef(selectedPlace);
   selectedRef.current = selectedPlace;
   const previousSelection = useRef({ place: selectedPlace, scale: focusZoomScale });
@@ -91,7 +106,7 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
     let cleanup: (() => void) | undefined;
     setReady(false);
     setFailed(false);
-    setPlaceLabels([]);
+    setPlaceLabels([]); setFeatureLabels([]); featureHits.current = [];
     void import('leaflet').then(L => {
       if (cancelled || !host.current) return;
       const map = L.map(host.current, { zoomControl: false, attributionControl: false, scrollWheelZoom: false, zoomSnap: .1, zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false }).setView([0, 0], 2);
@@ -116,7 +131,37 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
         layer.eachLayer(collect);
       }
       const routePoints = routes.map(route => route.coordinates.filter(([lat, lng]) => Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 85 && Math.abs(lng) <= 180).map(([lat, lng]) => L.latLng(lat, lng)));
-      const all = [...points.map(place => L.latLng(place.latitude, place.longitude)), ...boundaries.flat(), ...routePoints.flat()];
+      const all = [...points.map(place => L.latLng(place.latitude, place.longitude)), ...boundaries.flat(), ...routePoints.flat(), ...usableAreas.flatMap(area => areaPolygons(area.geometry).flat(2).map(([lng, lat]) => L.latLng(lat, lng)))];
+      const areaLayers = usableAreas.map(area => L.geoJSON(area.geometry, { style: { color: area.color || 'var(--inkra-accent)', weight: 1, opacity: 0, fillOpacity: 0 }, bubblingMouseEvents: false }));
+      const routeLayers = routePoints.map((line, i) => L.polyline(line, { color: routes[i].color || 'var(--inkra-accent)', weight: 18, opacity: 0, bubblingMouseEvents: false }));
+      const captions: { kind: 'route' | 'area'; id: string; label: string; node: HTMLElement }[] = [];
+      const caption = (kind: 'route' | 'area', id: string, label: string, position: Leaflet.LatLngExpression) => {
+        const node = document.createElement('span'); node.className = 'inkra-journey-map__caption';
+        const marker = L.marker(position, { interactive: false, keyboard: false, icon: L.divIcon({ html: node, className: 'inkra-journey-map__caption-marker', iconSize: [0, 0] }) }).addTo(map);
+        marker.getElement()?.setAttribute('aria-hidden', 'true'); captions.push({ kind, id, label, node });
+      };
+      const hit = (layer: Leaflet.Path, kind: 'route' | 'area', id: string, label: string, select: () => void) => {
+        const path = layer.getElement(); if (!path) return;
+        path.classList.add('inkra-journey-map__feature-hit');
+        featureHits.current.push({ kind, id, label, path });
+        layer.on('click', select);
+        path.addEventListener('keydown', event => {
+          const key = (event as KeyboardEvent).key;
+          if (key === 'Enter' || key === ' ') { event.preventDefault(); event.stopPropagation(); select(); }
+        });
+      };
+      areaLayers.forEach((group, i) => {
+        const area = usableAreas[i]; group.addTo(map);
+        group.eachLayer(layer => { if (layer instanceof L.Path) hit(layer, 'area', area.id, area.label, () => annotationSelection.current.onAreaSelect?.(area)); });
+        const [lng, lat] = journeyAreaLabel(area); caption('area', area.id, area.label, [lat, lng]);
+      });
+      routeLayers.forEach((layer, i) => {
+        const route = routes[i]; layer.addTo(map);
+        if (routePoints[i].length < 2) return;
+        hit(layer, 'route', route.id, route.label || route.id, () => annotationSelection.current.onRouteSelect?.(route));
+        if (route.label) caption('route', route.id, route.label, routePoints[i][Math.floor((routePoints[i].length - 1) / 2)]);
+      });
+      setFeatureLabels(captions);
       let fitted = false;
       const fit = (animated = false) => {
         map.invalidateSize();
@@ -141,11 +186,15 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
       const pinSurfaces: { place: JourneyPlace; canvas: HTMLCanvasElement; key: string; restore: () => void }[] = [];
       const paintPins = () => {
         const style = getComputedStyle(host.current!);
-        const ink = style.getPropertyValue('--inkra-accent-strong').trim();
+        const defaultInk = style.getPropertyValue('--inkra-accent-strong').trim();
         const paper = style.getPropertyValue('--inkra-paper').trim();
         const size = journeyCanvasSize(44, 44, window.devicePixelRatio || 1)!;
         for (const pin of pinSurfaces) {
+          if (pin.place.icon !== undefined && pin.place.icon !== null && pin.place.icon !== false) continue;
           const selected = selectedRef.current === pin.place.id;
+          pin.canvas.style.color = defaultInk;
+          if (pin.place.color) pin.canvas.style.color = pin.place.color;
+          const ink = getComputedStyle(pin.canvas).color;
           const key = JSON.stringify([PENCIL_RENDERER_VERSION, ink, paper, size.dpr, selected]);
           if (pin.key === key) continue;
           const context = prepareJourneyCanvas(pin.canvas, size, true);
@@ -182,12 +231,19 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
         const dark = Number.parseInt(paper.replace('#', '').slice(0, 2), 16) < 100;
         const border = style.getPropertyValue('--inkra-border-strong').trim();
         const accent = style.getPropertyValue('--inkra-accent').trim();
+        const colors = featureHits.current.map(item => getComputedStyle(item.path).stroke || accent);
+        const colorLookup = new Map(featureHits.current.map((item, i) => [`${item.kind}:${item.id}`, colors[i]]));
+        const featureColor = (kind: 'route' | 'area', id: string) => {
+          const color = colorLookup.get(`${kind}:${id}`);
+          return color && color !== 'none' ? color : accent;
+        };
+        const selection = annotationSelection.current;
         const project = (position: number[]): [number, number] => { const point = map.latLngToContainerPoint([position[1], position[0]]); return [point.x + padding, point.y + padding]; };
         const origin = project([0, 0]);
         // Data belongs to this effect instance. Its cleanup releases the bitmap;
         // the remaining key covers every base-pixel input that can change in it.
         const signature = JSON.stringify([PENCIL_RENDERER_VERSION, 'journey-base-v2', background, width, height, size.pixelWidth, size.pixelHeight, size.dpr,
-          zoom, paper, dark, border, accent, options.boundaryViewport, options.terrainViewport]);
+          zoom, paper, dark, border, accent, colors, selection.selectedRoute, selection.selectedArea, options.boundaryViewport, options.terrainViewport]);
         const baseKey = signature + JSON.stringify(origin);
         const draw = (line: Leaflet.LatLng[], color: string, seed: number, weight: number, x: number, y: number, w: number, h: number) => {
           const projected = line.map(point => { const p = map.latLngToContainerPoint(point); return [p.x + padding - x, p.y + padding - y] as [number, number]; });
@@ -215,7 +271,11 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
             if (landCover) paintTerrain(context, landCover, localProject, w, h, dark, 'land', options.terrainViewport);
             if (water) paintTerrain(context, water, localProject, w, h, dark, 'water', options.terrainViewport);
             boundaries.forEach((line, i) => draw(line, border, i + 137, 1.2, x, y, w, h));
-            routePoints.forEach((line, i) => draw(line, accent, i + 717, 2, x, y, w, h));
+            [...usableAreas].sort((a, b) => Number(a.id === selection.selectedArea) - Number(b.id === selection.selectedArea)).forEach(area => paintJourneyArea(context, area, localProject, w, h, featureColor('area', area.id), selection.selectedArea === area.id));
+            routePoints.map((line, i) => ({ line, route: routes[i] })).sort((a, b) => Number(a.route.id === selection.selectedRoute) - Number(b.route.id === selection.selectedRoute)).forEach(({ line, route }) => {
+              const width = Number.isFinite(route.width) ? Math.max(.5, Math.min(8, route.width!)) : 2;
+              draw(line, featureColor('route', route.id), seedToNumber(route.id), width + (route.id === selection.selectedRoute ? 1 : 0), x, y, w, h);
+            });
             context.restore();
           }
           if (options.cacheBase) base.capture(canvas, size, baseKey);
@@ -275,7 +335,7 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
       map.on('move', translate);
       map.on('moveend zoomend resize', settle);
       map.on('dragstart', () => { map.stop(); animating = false; activeView = undefined; });
-      const labelNodes: { place: JourneyPlace; node: HTMLElement }[] = [];
+      const labelNodes: { place: JourneyPlace; node: HTMLElement; icon: HTMLElement }[] = [];
       markersRef.current = points.map(place => {
         const symbol = document.createElement('span');
         symbol.className = 'inkra-journey-map__symbol';
@@ -284,11 +344,14 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
         ink.setAttribute('aria-hidden', 'true');
         const node = document.createElement('span');
         node.className = 'inkra-journey-map__pin';
-        symbol.append(ink, node);
+        const icon = document.createElement('span'); icon.className = 'inkra-journey-map__custom-icon'; if (place.color) icon.style.color = place.color;
+        const custom = place.icon !== undefined && place.icon !== null && place.icon !== false;
+        ink.hidden = custom; icon.hidden = !custom;
+        symbol.append(ink, icon, node);
         const pin = { place, canvas: ink, key: '', restore: () => { pin.key = ''; paintPins(); } };
         ink.addEventListener('contextrestored', pin.restore);
         pinSurfaces.push(pin);
-        labelNodes.push({ place, node });
+        labelNodes.push({ place, node, icon });
         const marker = L.marker([place.latitude, place.longitude], { icon: L.divIcon({ html: symbol, className: 'inkra-journey-map__marker', iconSize: [44, 44], iconAnchor: [22, 22] }), keyboard: true, title: place.label, alt: place.label }).addTo(map);
         marker.on('click', () => selectPlace(place));
         marker.getElement()?.setAttribute('aria-pressed', String(selectedRef.current === place.id));
@@ -312,10 +375,10 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
       const resolutionChanged = () => { watchResolution(); schedule(); };
       watchResolution();
       fit(); schedule(); setReady(true);
-      cleanup = () => { cancelAnimationFrame(frame); observer.disconnect(); appearance.disconnect(); scheme.removeEventListener('change', schedule); resolution.removeEventListener('change', resolutionChanged); canvas.removeEventListener('contextrestored', restore); base.clear(); pinSurfaces.forEach(pin => { pin.canvas.removeEventListener('contextrestored', pin.restore); pin.canvas.width = pin.canvas.height = 0; }); map.remove(); canvas.width = canvas.height = 0; canvas.remove(); mapRef.current = null; markersRef.current = []; paintRef.current = () => {}; viewRef.current = () => {}; zoomRef.current = () => {}; focusRef.current = () => {}; };
+      cleanup = () => { cancelAnimationFrame(frame); observer.disconnect(); appearance.disconnect(); scheme.removeEventListener('change', schedule); resolution.removeEventListener('change', resolutionChanged); canvas.removeEventListener('contextrestored', restore); base.clear(); pinSurfaces.forEach(pin => { pin.canvas.removeEventListener('contextrestored', pin.restore); pin.canvas.width = pin.canvas.height = 0; }); map.remove(); canvas.width = canvas.height = 0; canvas.remove(); mapRef.current = null; markersRef.current = []; featureHits.current = []; paintRef.current = () => {}; viewRef.current = () => {}; zoomRef.current = () => {}; focusRef.current = () => {}; };
     }).catch(() => { if (!cancelled) { setFailed(true); cleanup?.(); cleanup = undefined; } });
     return () => { cancelled = true; cleanup?.(); };
-  }, [places, routes, geography, landCover, water, maxFitZoom, background]);
+  }, [places, routes, areas, geography, landCover, water, maxFitZoom, background]);
   useEffect(() => {
     markersRef.current.forEach(({ place, marker }) => marker.getElement()?.setAttribute('aria-pressed', String(selectedPlace === place.id)));
     paintRef.current();
@@ -324,6 +387,25 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
     const place = markersRef.current.find(item => item.place.id === selectedPlace)?.place;
     if (focusSelectedPlace && changed && place) focusRef.current(place);
   }, [selectedPlace, focusSelectedPlace, focusZoomScale, ready]);
+  useEffect(() => {
+    for (const item of featureHits.current) {
+      const enabled = item.kind === 'route' ? Boolean(onRouteSelect) : Boolean(onAreaSelect);
+      const selected = item.id === (item.kind === 'route' ? selectedRoute : selectedArea);
+      (item.path as HTMLElement).style.pointerEvents = enabled ? 'auto' : 'none';
+      item.path.setAttribute('role', enabled ? 'button' : 'img');
+      item.path.setAttribute('tabindex', enabled ? '0' : '-1');
+      item.path.setAttribute('aria-label', item.label);
+      if (enabled) item.path.setAttribute('aria-pressed', String(selected)); else item.path.removeAttribute('aria-pressed');
+    }
+    // Keep native hit order consistent with the painted selected-on-top order.
+    const order = [...featureHits.current].sort((a, b) => {
+      if (a.kind !== b.kind) return a.kind === 'area' ? -1 : 1;
+      const selected = a.kind === 'area' ? selectedArea : selectedRoute;
+      return Number(a.id === selected) - Number(b.id === selected);
+    });
+    for (const item of order) item.path.parentNode?.appendChild(item.path);
+    paintRef.current();
+  }, [selectedRoute, selectedArea, Boolean(onRouteSelect), Boolean(onAreaSelect), ready]);
   useEffect(() => { paintRef.current(); }, [renderingOptions.boundaryViewport, renderingOptions.terrainViewport, renderingOptions.reuseCanvas, renderingOptions.cacheBase]);
   useEffect(() => {
     const map = mapRef.current;
@@ -332,9 +414,14 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
       if (interactive) handler.enable(); else handler.disable();
     }
     if (interactive && scrollWheelZoom) map.scrollWheelZoom.enable(); else map.scrollWheelZoom.disable();
+    if (interactive && host.current) return attachJourneyTrackpad(host.current, map);
   }, [interactive, scrollWheelZoom, ready]);
   return <div {...props} ref={root} className={['inkra-journey-map', className].filter(Boolean).join(' ')}>
-    {placeLabels.map(({ place, node }) => createPortal(<PencilText>{place.label}</PencilText>, node, place.id))}
+    {placeLabels.map(({ place, node, icon }) => <span key={place.id} className="inkra-journey-map__portal-owner">
+      {createPortal(<PencilText>{place.label}</PencilText>, node)}
+      {createPortal(place.icon, icon)}
+    </span>)}
+    {featureLabels.map(({ kind, id, label, node }) => createPortal(<PencilSurface variant="paper" radius={4} className="inkra-journey-map__feature-label" data-selected={id === (kind === 'area' ? selectedArea : selectedRoute)}><PencilText>{label}</PencilText></PencilSurface>, node, `${kind}:${id}`))}
     <div className="inkra-journey-map__viewport" style={{ height: Math.max(240, Math.min(800, height)) }}>
       {attributionDisplay === 'popover' && <div className="inkra-journey-map__credits"><Popover.Root>
         <Popover.Trigger asChild><Button size="icon" variant="ghost" aria-label={labels.attribution ?? t('map.credits')} title={labels.attribution ?? t('map.credits')}><TravelIcon name="info" /></Button></Popover.Trigger>
@@ -354,5 +441,9 @@ export function JourneyMap({ places, routes = noRoutes, geography, landCover, wa
     </div>
     {attributionDisplay === 'inline' && <p className="inkra-journey-map__attribution">{attribution}</p>}
     {(showPlaceList || !ready || failed) && <ol className="inkra-journey-map__places">{places.filter(valid).map((place, index) => <li key={place.id}><button type="button" aria-pressed={selectedPlace === place.id} onClick={() => selectPlace(place, true)}><span aria-hidden="true">{index + 1}</span><PencilText>{place.label}</PencilText></button></li>)}</ol>}
+    {(showFeatureList || !ready || failed) && (routes.length > 0 || usableAreas.length > 0) && <ol className="inkra-journey-map__features" aria-label={labels.features}>
+      {routes.map(route => <li key={`route:${route.id}`}>{onRouteSelect ? <button type="button" aria-pressed={selectedRoute === route.id} onClick={() => onRouteSelect(route)}><PencilText>{route.label || route.id}</PencilText></button> : <PencilText>{route.label || route.id}</PencilText>}</li>)}
+      {usableAreas.map(area => <li key={`area:${area.id}`}>{onAreaSelect ? <button type="button" aria-pressed={selectedArea === area.id} onClick={() => onAreaSelect(area)}><PencilText>{area.label}</PencilText></button> : <PencilText>{area.label}</PencilText>}</li>)}
+    </ol>}
   </div>;
 }

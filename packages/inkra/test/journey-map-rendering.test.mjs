@@ -195,3 +195,19 @@ test('pan replenishment covers every newly exposed pixel exactly once in all dir
     }
   }
 });
+
+
+test('source identifiers do not change unclassified water into land', async () => {
+  const { paintTerrain } = await import('../dist/journey-map/terrain.js');
+  const geometry = { type: 'Polygon', coordinates: [[[0, 0], [50, 0], [50, 50], [0, 50], [0, 0]]] };
+  const colors = (id, role) => {
+    const fills = [];
+    const ctx = { globalAlpha: 1, save() {}, restore() {}, beginPath() {}, moveTo() {}, lineTo() {}, closePath() {}, clip() {}, stroke() {},
+      fillRect() { fills.push(this.fillStyle); } };
+    paintTerrain(ctx, { type: 'Feature', geometry, properties: { id } }, p => p, 100, 100, false, role);
+    return fills;
+  };
+  assert.deepEqual(colors(1159127099, 'water'), colors(undefined, 'water'), 'natural feature ids retain the water-layer palette');
+  assert.notDeepEqual(colors(1159127099, 'water'), colors(1159127099, 'land'));
+  assert.deepEqual(colors('urban', 'water'), colors('urban', 'land'), 'explicit known terrain categories still override the layer default');
+});
