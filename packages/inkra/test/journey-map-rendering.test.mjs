@@ -196,6 +196,35 @@ test('pan replenishment covers every newly exposed pixel exactly once in all dir
   }
 });
 
+test('large logical hosts can downsample within existing backing budgets without changing their CSS size', () => {
+  for (const [width, height] of [[1920, 2500], [3440, 1440], [3840, 2160]]) {
+    assert.equal(journeyCanvasSize(width, height, 2), undefined, 'Default helper behavior remains unchanged');
+    const size = journeyCanvasSize(width, height, 2, true);
+    assert.equal(size.width, width); assert.equal(size.height, height);
+    assert.ok(size.dpr > 0 && size.dpr < 1);
+    assert.ok(size.pixelWidth * size.pixelHeight <= 4 * 1024 * 1024);
+    assert.ok(size.pixelWidth <= 8192 && size.pixelHeight <= 8192);
+  }
+  assert.equal(journeyCanvasSize(300, 1e100, 2, true), undefined);
+});
+
+test('prototype property names use the same terrain fallback as other unknown source identifiers', async () => {
+  const { paintTerrain } = await import('../dist/journey-map/terrain.js');
+  const geometry = { type: 'Polygon', coordinates: [[[0, 0], [50, 0], [50, 50], [0, 50], [0, 0]]] };
+  const colors = (id, role) => {
+    const fills = [];
+    const ctx = { globalAlpha: 1, save() {}, restore() {}, beginPath() {}, moveTo() {}, lineTo() {}, closePath() {}, clip() {}, stroke() {},
+      fillRect() { fills.push(this.fillStyle); } };
+    paintTerrain(ctx, { type: 'Feature', geometry, properties: { id } }, p => p, 100, 100, false, role);
+    return fills;
+  };
+  for (const role of ['land', 'water']) for (const id of ['toString', 'constructor', '__proto__', 'hasOwnProperty']) {
+    assert.deepEqual(colors(id, role), colors(undefined, role));
+  }
+  assert.notDeepEqual(colors('unknown-source', 'water'), colors('unknown-source', 'land'));
+  assert.deepEqual(colors('urban', 'water'), colors('urban', 'land'), 'Known explicit categories still win');
+});
+
 
 test('source identifiers do not change unclassified water into land', async () => {
   const { paintTerrain } = await import('../dist/journey-map/terrain.js');

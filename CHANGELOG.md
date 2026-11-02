@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Honor JourneyMap viewport heights above 800 CSS pixels while keeping canvas
+  backing stores bounded and retaining the 480px default for nonfinite inputs.
+- Ignore stale map, scale and trackpad callbacks after removal; refresh geographic
+  ink and the scale when inherited theme styles or classes change.
+- Keep unknown terrain identifiers on the layer's default palette, including
+  identifiers that match JavaScript prototype properties.
+
 ## 0.14.0 - 2026-11-02
 
 - Add custom JourneyMap pin icons/images and styled, selectable routes.

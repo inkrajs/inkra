@@ -10,9 +10,10 @@ export function MapScale({ map }: { map: Map | null }) {
   const [label, setLabel] = useState('');
   useEffect(() => {
     if (!map || !bar.current) return;
+    let active = true;
     const draw = () => {
       const canvas = bar.current;
-      if (!canvas) return;
+      if (!active || !canvas || !map.getPane('mapPane')) return;
       const size = map.getSize();
       if (!size.x || !size.y) return;
       const maxWidth = Math.min(112, Math.max(58, size.x * .22));
@@ -39,11 +40,11 @@ export function MapScale({ map }: { map: Map | null }) {
     map.on('moveend zoomend resize', draw);
     const observer = new MutationObserver(draw);
     for (let element: HTMLElement | null = bar.current; element; element = element.parentElement) {
-      observer.observe(element, { attributes: true, attributeFilter: ['data-theme', 'data-inkra-theme'] });
+      observer.observe(element, { attributes: true, attributeFilter: ['data-theme', 'data-inkra-theme', 'style', 'class'] });
     }
     const scheme = matchMedia('(prefers-color-scheme: dark)');
     scheme.addEventListener('change', draw);
-    return () => { map.off('moveend zoomend resize', draw); observer.disconnect(); scheme.removeEventListener('change', draw); };
+    return () => { active = false; map.off('moveend zoomend resize', draw); observer.disconnect(); scheme.removeEventListener('change', draw); };
   }, [map]);
   return <div className="inkra-journey-map__orientation" aria-hidden="true">
     <div className="inkra-journey-map__scale"><PencilText>{label}</PencilText><canvas ref={bar} /></div>
