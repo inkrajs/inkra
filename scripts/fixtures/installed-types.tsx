@@ -6,6 +6,30 @@ import { Loading, type LoadingProps } from '@inkra/react/loading';
 import { InfiniteScroll, type InfiniteScrollLoadContext } from '@inkra/react/infinite-scroll';
 import { Masonry } from '@inkra/react/masonry';
 import { NumberTicker } from '@inkra/react/number-ticker';
+import { JourneyMap, type JourneyBuildingData, type JourneyMarker, type JourneyMapDataUpdateMode, type JourneyMapProps, type JourneyRoute } from '@inkra/react/journey-map';
+
+const mapPeople = [{ id: 'person', label: 'Synthetic person', latitude: 0, longitude: 0 }] as const satisfies readonly JourneyMarker[];
+const mapRoads = [{ id: 'path', type: 'trail', coordinates: [[0, 0], [.01, .01]] }] as const satisfies readonly JourneyRoute[];
+const mapBuildings: JourneyBuildingData = { type: 'FeatureCollection', features: [] };
+const mapStyles = { trail: { color: 'var(--inkra-accent)', width: 2, dash: [6, 4] } } satisfies NonNullable<JourneyMapProps['routeStyles']>;
+const mapUpdateMode: JourneyMapDataUpdateMode = 'preserve-view';
+// @ts-expect-error Data update mode must express either the default fit or view preservation.
+const invalidMapUpdateMode: JourneyMapDataUpdateMode = 'hidden';
+// @ts-expect-error Marker IDs are stable strings.
+const invalidMapPerson: JourneyMarker = { id: 12, label: 'Invalid', latitude: 0, longitude: 0 };
+// @ts-expect-error Feather strength is numeric, not a CSS opacity string.
+const invalidMapFeather: JourneyMapProps['markerAvatarFeather'] = { width: 4, strength: '50%' };
+export function InstalledMapCompatibilityExample() {
+  return <JourneyMap places={[{ id: 'place', label: 'Synthetic place', latitude: 0, longitude: 0, labelPosition: 'left', labelGap: 8, transition: false }]}
+    attribution="Synthetic map" markers={mapPeople} selectedMarker={null} markerPresentation="avatar-stack" markerAvatarFeather={{ width: 4, strength: 1 }}
+    renderMarker={(_person, state) => <span aria-hidden="true">{state.selected ? 'A' : 'B'}</span>} onMarkerSelect={person => { const id: string = person.id; }}
+    routes={mapRoads} routeStyles={mapStyles} landCoverBoundaryStyles={{ crop: { dash: [5, 3] } }}
+    buildings={mapBuildings} buildingStyles={{ workshop: { fill: '#ab7755' } }} onZoomChange={zoom => { const finiteZoom: number = zoom; }}
+    dataUpdateMode={mapUpdateMode} rendering={{ featureViewport: true }} maxFitZoom={20} fitMaxZoom={24} focusSelectedPlace={false} height={1080}
+    labelHalo={{ width: 2 }} labelFontSize={14} labelPosition="right" labelGap={6} pinSize={44}
+    palette={{ terrain: { forest: { fill: '#88aa88' } } }} placeTransition={{ duration: 600, easing: 'ease-in-out' }}
+    selectionMode="multiple" selectedPlaces={['place']} selectedRoutes={['path']} selectedAreas={[]} onSelectedPlacesChange={ids => { const values: readonly string[] = ids; }} />;
+}
 
 const loaderProps = { mode: 'fullscreen', preset: 'scene-bottom', slots: { 'bottom-start': <button>Character</button> }, tips: ['Tip'], progress: null } satisfies LoadingProps;
 // @ts-expect-error Slot names must be one of the six public positions.

@@ -1,5 +1,7 @@
 /** Independent rendering strategies; omitted options inherit the auto defaults. */
 export interface JourneyMapRenderingOptions {
+  /** Opt-in whole-feature rejection before projection; uncertain bounds stay visible. */
+  featureViewport?: boolean;
   /** Reject offscreen boundary/route stroke segments without changing their samples. */
   boundaryViewport?: boolean;
   /** Skip terrain cells whose entire ink envelope misses the polygon row band. */
@@ -23,9 +25,10 @@ export function journeyFocusZoom(overviewZoom: number, scale: number): number {
 }
 
 export function resolveJourneyMapRendering(rendering: JourneyMapRendering = 'auto'): Required<JourneyMapRenderingOptions> {
-  if (rendering === 'legacy') return { boundaryViewport: false, terrainViewport: false, reuseCanvas: false, cacheBase: false };
+  if (rendering === 'legacy') return { featureViewport: false, boundaryViewport: false, terrainViewport: false, reuseCanvas: false, cacheBase: false };
   const options = typeof rendering === 'object' ? rendering : {};
   return {
+    featureViewport: options.featureViewport === true,
     boundaryViewport: options.boundaryViewport ?? true,
     terrainViewport: options.terrainViewport ?? true,
     reuseCanvas: options.reuseCanvas ?? true,

@@ -64,9 +64,11 @@ export function terrainRowBounds(rings: readonly (readonly PencilPoint[])[], top
   return left <= right ? [left, right] : undefined;
 }
 
-export function paintTerrain(ctx: CanvasRenderingContext2D, data: GeoJsonObject, project: Project, width: number, height: number, dark: boolean, defaultKind = 'land', terrainViewport = false, colors?: ResolvedJourneyMapPalette) {
+export function paintTerrain(ctx: CanvasRenderingContext2D, data: GeoJsonObject, project: Project, width: number, height: number, dark: boolean, defaultKind = 'land', terrainViewport = false, colors?: ResolvedJourneyMapPalette, keepFeature?: (feature: Feature) => boolean) {
   const resolved = colors ?? resolveJourneyMapPalette(undefined, dark);
   for (const [featureIndex, feature] of mapFeatures(data).entries()) {
+    // Keep the original feature index: it owns the geographic material seed.
+    if (keepFeature && !keepFeature(feature)) continue;
     const geometry = feature.geometry;
     if (!geometry) continue;
     const polygons = geometry.type === 'MultiPolygon' ? geometry.coordinates : geometry.type === 'Polygon' ? [geometry.coordinates] : [];

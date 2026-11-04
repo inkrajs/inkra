@@ -10,6 +10,8 @@ export const messageRows = [
   ['sparkline.missing', 'Point {index}: missing', '第 {index} 点：缺失', '点 {index}：欠損', '지점 {index}: 누락', 'Point {index} : manquant'],
   ['common.clear', 'Clear', '清空', '消去', '지우기', 'Effacer'],
   ['map.label', 'Map', '地图', '地図', '지도', 'Carte'],
+  ['map.markers', 'Map markers', '地图标记', '地図マーカー', '지도 마커', 'Repères de la carte'],
+  ['map.showMarkers', 'Show all {count} markers', '显示全部 {count} 个标记', '{count} 件のマーカーをすべて表示', '마커 {count}개 모두 보기', 'Afficher les {count} repères'],
   ['graph.nodeInstructions', 'Press enter or space to select a node. Press delete to remove it and escape to cancel.', '按 Enter 或空格选择节点，按 Delete 删除，按 Escape 取消。', 'Enter または Space でノードを選択し、Delete で削除、Escape でキャンセルします。', 'Enter 또는 Space로 노드를 선택하고 Delete로 삭제하거나 Escape로 취소하세요.', 'Appuyez sur Entrée ou Espace pour sélectionner un nœud, Suppr pour le supprimer et Échap pour annuler.'],
   ['graph.nodeMoveInstructions', 'Press enter or space to select a node. You can then use the arrow keys to move the node around. Press delete to remove it and escape to cancel.', '按 Enter 或空格选择节点，使用方向键移动，按 Delete 删除，按 Escape 取消。', 'Enter または Space でノードを選択し、矢印キーで移動します。Delete で削除、Escape でキャンセルします。', 'Enter 또는 Space로 노드를 선택하고 방향키로 이동합니다. Delete로 삭제하거나 Escape로 취소하세요.', 'Appuyez sur Entrée ou Espace pour sélectionner un nœud, puis utilisez les flèches pour le déplacer. Suppr le supprime et Échap annule.'],
   ['graph.nodeMoved', 'Moved selected node. New position, x: {x}, y: {y}', '已移动所选节点。新位置：x {x}，y {y}', '選択したノードを移動しました。新しい位置：x {x}、y {y}', '선택한 노드가 이동했습니다. 새 위치: x {x}, y {y}', 'Nœud sélectionné déplacé. Nouvelle position : x {x}, y {y}'],

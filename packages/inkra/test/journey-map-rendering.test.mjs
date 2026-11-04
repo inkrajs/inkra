@@ -9,7 +9,7 @@ import { JourneyBaseBitmap, journeyAnimationMs, journeyCanvasSize, journeyFocusZ
 test('rendering strategies are SSR safe and preserve the same native fallback', () => {
   const props = { places: [{ id: 'lake', label: 'Lake', latitude: -43, longitude: 170 }], attribution: 'Source', selectedPlace: 'lake' };
   const reference = renderToStaticMarkup(createElement(JourneyMap, props));
-  for (const rendering of ['auto', 'legacy', { boundaryViewport: false, cacheBase: true }]) {
+  for (const rendering of ['auto', 'legacy', { boundaryViewport: false, cacheBase: true }, { featureViewport: true }]) {
     const html = renderToStaticMarkup(createElement(JourneyMap, { ...props, rendering }));
     assert.equal(html, reference);
     assert.match(html, /aria-pressed="true"/);
@@ -18,8 +18,10 @@ test('rendering strategies are SSR safe and preserve the same native fallback', 
   const immediate = renderToStaticMarkup(createElement(JourneyMap, { ...props, animate: false, animationDuration: 0, focusZoomScale: 4 }));
   assert.equal(immediate, reference, 'view options do not leak into DOM or change SSR');
   assert.deepEqual(resolveJourneyMapRendering({ boundaryViewport: false, reuseCanvas: undefined }), {
-    boundaryViewport: false, terrainViewport: true, reuseCanvas: true, cacheBase: true,
+    featureViewport: false, boundaryViewport: false, terrainViewport: true, reuseCanvas: true, cacheBase: true,
   });
+  assert.equal(resolveJourneyMapRendering().featureViewport, false);
+  assert.equal(resolveJourneyMapRendering('legacy').featureViewport, false);
 });
 
 test('programmatic motion honors explicit opt-out and reduced motion, with absolute overview magnification', () => {
