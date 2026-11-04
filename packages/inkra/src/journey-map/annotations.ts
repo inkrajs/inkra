@@ -26,6 +26,8 @@ export interface JourneyPlace {
 
 export interface JourneyRoute {
   id: string;
+  /** Caller-owned classification for optional routeStyles. */
+  type?: string;
   /** [latitude, longitude]; supplied geometry, without routing inference. */
   coordinates: readonly (readonly [number, number])[];
   label?: string;

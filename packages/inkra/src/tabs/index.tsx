@@ -66,7 +66,8 @@ const Root = forwardRef<HTMLDivElement, TabsProps>(function TabsRoot(
   { value, defaultValue, onValueChange, className, size = 'md', animated = true, orientation = 'horizontal', ...props }, ref,
 ) {
   const [internal, setInternal] = useState(defaultValue);
-  const current = value === undefined ? internal : value;
+  // Keep our visual/label contexts identical to the controlled value sent to Radix.
+  const current = (value === undefined ? internal : value) ?? '';
   const pendingRequest = useRef<string | null>(null);
   const change = (next: string) => {
       // Radix pointer activation can request once from focus and once from pointer down.
@@ -145,10 +146,14 @@ const Trigger = forwardRef<HTMLButtonElement, TabsTriggerProps>(function TabsTri
   const [measuredLabel, setMeasuredLabel] = useState('');
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const tooltipLabel = props['aria-label'] ?? overflowLabel ?? (typeof children === 'string' || typeof children === 'number' ? String(children) : measuredLabel);
+  const tooltipEnabled = Boolean(collapsed && tooltipLabel && !hidden);
+  useBrowserLayoutEffect(() => { if (!tooltipEnabled) setTooltipOpen(false); }, [tooltipEnabled]);
   useBrowserLayoutEffect(() => { if (collapsed) setMeasuredLabel(labelRef.current?.textContent ?? ''); }, [collapsed, children]);
   const surface = useRef<HTMLSpanElement>(null);
-  useSelectionDrawing(surface, current === value, useContext(AnimatedContext));
-  const trigger = <Primitive.Trigger {...props} value={value} ref={ref} data-tabs-value={value} data-label-collapsed={collapsed || undefined} data-overflow-label={overflowLabel} data-overflow-hidden={hidden || undefined} aria-hidden={hidden || props['aria-hidden']} inert={hidden || undefined} className={['inkra-tabs__trigger', className].filter(Boolean).join(' ')}>
+  const selected = current === value;
+  useSelectionDrawing(surface, selected, useContext(AnimatedContext));
+  // Tooltip's asChild state is about disclosure; the tab owns its selection state.
+  const trigger = <Primitive.Trigger {...props} value={value} ref={ref} data-state={selected ? 'active' : 'inactive'} data-tabs-value={value} data-label-collapsed={collapsed || undefined} data-overflow-label={overflowLabel} data-overflow-hidden={hidden || undefined} aria-hidden={hidden || props['aria-hidden']} inert={hidden || undefined} className={['inkra-tabs__trigger', className].filter(Boolean).join(' ')}>
     {divided && <PencilLine className="inkra-tabs__divider" orientation={orientation === 'horizontal' ? 'vertical' : 'horizontal'} seed={`tab-divider-${value}`} />}
     <PencilSurface as="span" aria-hidden="true" className="inkra-tabs__selection" variant="selection" seed={`tab-${value}`} ref={surface} />
     <PencilSurface as="span" aria-hidden="true" className="inkra-tabs__focus-ring" variant="outline" seed={`tab-${value}-focus`} />
@@ -156,7 +161,7 @@ const Trigger = forwardRef<HTMLButtonElement, TabsTriggerProps>(function TabsTri
     <span ref={labelRef} className="inkra-tabs__label">{typeof children === 'string' ? <PencilText>{children}</PencilText> : children}</span>
     {endIcon && <span className="inkra-tabs__icon" aria-hidden="true">{endIcon}</span>}
   </Primitive.Trigger>;
-  return <Tooltip.Root open={Boolean(collapsed && tooltipLabel && !hidden && tooltipOpen)} onOpenChange={next => setTooltipOpen(Boolean(next && collapsed && !hidden))}><Tooltip.Trigger asChild>{trigger}</Tooltip.Trigger>{collapsed && tooltipLabel && !hidden && <Tooltip.Portal><Tooltip.Content>{tooltipLabel}</Tooltip.Content></Tooltip.Portal>}</Tooltip.Root>;
+  return <Tooltip.Root open={tooltipEnabled && tooltipOpen} onOpenChange={next => setTooltipOpen(Boolean(next && tooltipEnabled))}><Tooltip.Trigger asChild>{trigger}</Tooltip.Trigger>{tooltipEnabled && <Tooltip.Portal><Tooltip.Content>{tooltipLabel}</Tooltip.Content></Tooltip.Portal>}</Tooltip.Root>;
 });
 
 const Content = forwardRef<HTMLDivElement, TabsContentProps>(function TabsContent({ className, value, ...props }, ref) {

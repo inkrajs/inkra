@@ -55,3 +55,61 @@
 .inkra-journey-map__symbol[data-label-position="right"] .inkra-journey-map__pin { top: 50%; left: calc(50% + var(--inkra-map-label-extent) + var(--inkra-map-label-gap, 0px)); transform: translateY(-50%); }
 .inkra-journey-map__pin[data-label-custom="true"] { max-width: none; }
 .inkra-journey-map__label-content { display: inline-flex; align-items: center; gap: 4px; }
+
+/* Optional screen-unit lines and independent marker presentation. */
+.inkra-journey-map__lines { position: absolute; inset: 0; pointer-events: none; z-index: 350; }
+.inkra-journey-map__marker-layer { position: absolute; inset: 0; z-index: 550; pointer-events: none; }
+.inkra-journey-map__marker-layer[data-expanded="true"] { z-index: 650; }
+.inkra-journey-map__point { position: absolute; width: 44px; height: 44px; transform: translate(-50%, -50%); }
+.inkra-journey-map__marker-frame { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.inkra-journey-map__marker-frame > canvas { position: absolute; width: 64px; height: 64px; left: -10px; top: -10px; pointer-events: none; }
+.inkra-journey-map__marker-content { position: relative; z-index: 1; display: grid; place-items: center; width: 36px; height: 36px; overflow: hidden; border-radius: 50%; color: var(--inkra-ink); font: 14px/1 var(--inkra-font-hand); }
+.inkra-journey-map__marker-content img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.inkra-journey-map__marker-action { position: absolute; inset: 0; width: 44px; height: 44px; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; pointer-events: auto; }
+.inkra-journey-map__marker-frame[data-painted="false"]::before { content: ''; position: absolute; inset: 2px; border: 1px solid currentColor; border-radius: 50%; background: var(--inkra-paper); }
+.inkra-journey-map__marker-frame[data-painted="false"][data-selected="true"]::before { outline: 2px solid currentColor; outline-offset: 4px; }
+.inkra-journey-map__marker-frame[data-painted="false"] .inkra-journey-map__marker-content { z-index: 1; }
+.inkra-journey-map__marker-panel { position: absolute; width: min(260px, calc(100% - 24px)); max-height: calc(100% - 24px); display: grid; padding: 8px; box-sizing: border-box; pointer-events: auto; isolation: isolate; }
+.inkra-journey-map__marker-panel > .inkra-journey-map__marker-panel-surface { position: absolute; inset: 0; z-index: -1; }
+.inkra-journey-map__marker-options { min-height: 0; max-height: 144px; overflow: auto; }
+.inkra-journey-map__marker-option { position: relative; min-height: 56px; }
+.inkra-journey-map__marker-option > .inkra-journey-map__marker-frame { inset: 6px auto auto 4px; width: 44px; height: 44px; }
+.inkra-journey-map__marker-option > button { display: block; position: relative; width: 100%; min-height: 56px; border: 0; padding: 8px 8px 8px 60px; text-align: start; overflow-wrap: anywhere; color: var(--inkra-ink); background: transparent; font: inherit; cursor: pointer; }
+.inkra-journey-map__marker-option > button[aria-pressed="true"] { text-decoration: underline; text-underline-offset: 4px; }
+.inkra-journey-map__markers-list { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 8px 0; padding: 0; }
+.inkra-journey-map__markers-list li { min-width: 0; max-width: 100%; }
+.inkra-journey-map__markers-list button { max-width: 100%; overflow-wrap: anywhere; min-width: 44px; min-height: 44px; padding: 8px; color: inherit; background: transparent; border: 0; font: inherit; cursor: pointer; }
+.inkra-journey-map__markers-list button[aria-pressed="true"] { text-decoration: underline; text-underline-offset: 4px; }
+@media (forced-colors: active) {
+  .inkra-journey-map__marker-frame > canvas { display: none; }
+  .inkra-journey-map__marker-frame::before { content: ''; position: absolute; inset: 2px; border: 1px solid ButtonText; border-radius: 50%; background: Canvas; }
+  .inkra-journey-map__marker-frame[data-selected="true"]::before { outline: 2px solid Highlight; outline-offset: 4px; }
+  .inkra-journey-map__marker-content { z-index: 1; }
+}
+@media print {
+  .inkra-journey-map__marker-frame > canvas { display: none; }
+  .inkra-journey-map__marker-frame::before { content: ''; position: absolute; inset: 2px; border: 1px solid currentColor; border-radius: 50%; }
+  .inkra-journey-map__marker-frame[data-selected="true"]::before { outline: 2px solid currentColor; outline-offset: 4px; }
+  .inkra-journey-map__marker-content { z-index: 1; }
+}
+
+/* Avatar presentation is opt-in: no paper, pencil stop canvas or persistent ring. */
+.inkra-journey-map__avatar-action { inset: 0 auto auto 0; width: 44px; border-radius: 50%; padding: 0; appearance: none; background: transparent; box-shadow: none; overflow: visible; }
+.inkra-journey-map__avatar-slot { position: absolute; top: 2px; width: 40px; height: 40px; display: block; border-radius: 50%; background: transparent; }
+.inkra-journey-map__avatar-image { display: grid; place-items: center; width: 100%; height: 100%; overflow: hidden; border-radius: 50%; background: transparent; }
+.inkra-journey-map__avatar-image img, .inkra-journey-map__avatar-image > svg { display: block; width: 100%; height: 100%; object-fit: cover; }
+.inkra-journey-map__avatar-slot::after { content: ''; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; }
+.inkra-journey-map__avatar-slot[data-selected="true"]::after, .inkra-journey-map__avatar-slot[data-group-selected="true"]::after { outline: 2px solid var(--inkra-accent-strong); outline-offset: 1px; }
+.inkra-journey-map .inkra-journey-map__avatar-action:focus-visible { outline: none; }
+.inkra-journey-map__avatar-action:focus-visible .inkra-journey-map__avatar-slot::after { outline: 2px solid var(--inkra-focus); outline-offset: 2px; }
+.inkra-journey-map__avatar-count { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; overflow: hidden; pointer-events: none; color: var(--inkra-ink); background: transparent; font: bold 16px/1 var(--inkra-font-hand); text-shadow: -1px 0 var(--inkra-paper), 1px 0 var(--inkra-paper), 0 -1px var(--inkra-paper), 0 1px var(--inkra-paper); }
+.inkra-journey-map__avatar-count > span { display: block; flex: 0 0 auto; width: max-content; white-space: nowrap; transform-origin: center; }
+.inkra-journey-map__avatar-placeholder { position: relative; display: block; width: 100%; height: 100%; color: var(--inkra-ink-muted); background: transparent; }
+.inkra-journey-map__avatar-placeholder > :first-child { position: absolute; width: 13px; height: 13px; left: 13.5px; top: 5px; border-radius: 50%; background: currentColor; }
+.inkra-journey-map__avatar-placeholder > :last-child { position: absolute; width: 30px; height: 23px; left: 5px; top: 22px; border-radius: 50% 50% 0 0; background: currentColor; }
+.inkra-journey-map__marker-option > .inkra-journey-map__avatar-slot { top: 8px; pointer-events: none; }
+@media (forced-colors: active) {
+  .inkra-journey-map__avatar-slot[data-selected="true"]::after, .inkra-journey-map__avatar-slot[data-group-selected="true"]::after { outline-color: Highlight; }
+  .inkra-journey-map__avatar-action:focus-visible .inkra-journey-map__avatar-slot::after { outline-color: Highlight; }
+  .inkra-journey-map__avatar-count { color: ButtonText; text-shadow: none; }
+}

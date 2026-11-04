@@ -20,6 +20,8 @@ export interface StrokeSettings {
   viewportTop?: number;
   filaments?: number;
   gain?: number;
+  /** Explicit patterned paths can retain strict flat ends. Omitted keeps the material default. */
+  lineCap?: CanvasLineCap;
   edgeGrain?: boolean;
 }
 
@@ -191,7 +193,7 @@ export function pencilStroke(
       if (opacity < 0.012) continue;
       const nib = width * (0.3 + pressure * 1.65) * Math.pow(scale, 0.32);
       // Round segment caps must not paint back across intentional short gaps.
-      context.lineCap = Math.min(a.gapDistance, b.gapDistance) < nib / 2 + step ? 'butt' : 'round';
+      context.lineCap = settings.lineCap ?? (Math.min(a.gapDistance, b.gapDistance) < nib / 2 + step ? 'butt' : 'round');
       const drift = pass ? (noise(a.at / 6, seed + pass * 107) - 0.5) * width * 1.1 : 0;
       context.globalAlpha = Math.min(1, inheritedAlpha * opacity * (pass ? 0.56 : 1.2)
         * (settings.gain ?? 1));
